@@ -1,0 +1,38 @@
+---
+interface Props {
+  href: string;
+  variant?: 'primary' | 'secondary';
+  size?: 'sm' | 'md';
+  class?: string;
+  'aria-label'?: string;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  class: className = '',
+  'aria-label': ariaLabel,
+} = Astro.props;
+
+const baseClasses =
+  'inline-flex items-center justify-center font-mono rounded-lg transition-all duration-300 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]';
+
+const variants = {
+  primary: 'bg-violet-600 text-white hover:bg-violet-500 hover:shadow-[0_0_24px_rgba(139,92,246,0.4)]',
+  secondary: 'border border-neutral-700 text-neutral-400 hover:border-violet-500/50 hover:text-white hover:shadow-[0_0_16px_rgba(139,92,246,0.15)]',
+};
+
+const sizes = {
+  sm: 'text-xs px-5 py-2.5',
+  md: 'text-sm px-8 py-3',
+};
+---
+
+<a
+  href={href}
+  class:list={[baseClasses, variants[variant], sizes[size], className]}
+  aria-label={ariaLabel}
+>
+  <slot />
+</a>

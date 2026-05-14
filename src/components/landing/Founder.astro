@@ -1,0 +1,110 @@
+---
+import { t, tArr } from '../../lib/i18n';
+
+const { locale = 'es' } = Astro.props;
+
+const bio = tArr('founder.bio', locale);
+
+const founder = {
+  name: 'Cristian Córdova',
+  handle: '@barckcode',
+  location: 'Tenerife, Islas Canarias',
+  bio,
+  quote: t('founder.quote', locale),
+  links: [
+    { label: t('founder.links.twitter', locale), href: 'https://twitter.com/barckcode' },
+    { label: t('founder.links.linkedin', locale), href: 'https://www.linkedin.com/in/helmcode/' },
+    { label: t('founder.links.github', locale), href: 'https://github.com/barckcode' },
+  ],
+};
+---
+
+<div class="gradient-divider"></div>
+<section id="founder" class="px-6 py-24 md:py-32">
+  <div class="max-w-3xl mx-auto">
+    <p class="font-mono text-xs text-violet-400 uppercase tracking-widest mb-6">
+      {t('founder.label', locale)}
+    </p>
+
+    <h2 class="font-mono text-2xl md:text-3xl text-white leading-snug tracking-tight mb-10">
+      {t('founder.heading', locale)}
+    </h2>
+
+    <div class="flex flex-col md:flex-row gap-8 md:gap-10 items-start">
+      <div class="shrink-0">
+        <div class="relative">
+          <div
+            class="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500/30 to-transparent blur-xl"
+            aria-hidden="true"
+          ></div>
+          <img
+            src="/founder.jpg"
+            alt="Cristian Córdova"
+            width="160"
+            height="160"
+            loading="lazy"
+            decoding="async"
+            class="relative rounded-2xl w-40 h-40 object-cover border border-violet-500/20 shadow-[0_0_40px_rgba(139,92,246,0.15)]"
+          />
+        </div>
+      </div>
+
+      <div class="flex-1 min-w-0">
+        <div class="flex items-baseline gap-3 flex-wrap mb-1">
+          <h3 class="font-mono text-lg text-white">{founder.name}</h3>
+          <a
+            href="https://twitter.com/barckcode"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-mono text-xs text-violet-400 hover:text-violet-300 transition-colors"
+          >
+            {founder.handle}
+          </a>
+        </div>
+        <p class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest mb-5">
+          {founder.location}
+        </p>
+
+        <div class="space-y-3 text-sm text-neutral-300 leading-relaxed mb-6">
+          {founder.bio.map((line) => <p class="whitespace-pre-wrap" set:html={line}></p>)}
+        </div>
+
+        <blockquote
+          class="border-l-2 border-violet-500/40 pl-4 text-sm text-neutral-300 italic leading-relaxed mb-6"
+        >
+          {founder.quote}
+        </blockquote>
+
+        <ul class="flex flex-wrap gap-2 font-mono text-xs">
+          {
+            founder.links.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-block border border-neutral-800 rounded-lg px-3 py-1.5 text-neutral-300 hover:border-violet-500/40 hover:text-white transition-colors"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .gradient-divider {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(139, 92, 246, 0.3) 30%,
+      rgba(139, 92, 246, 0.3) 70%,
+      transparent
+    );
+  }
+</style>

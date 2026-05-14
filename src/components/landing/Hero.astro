@@ -1,0 +1,77 @@
+---
+import { t } from '../../lib/i18n';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  locale?: string;
+}
+
+const { locale = 'es' } = Astro.props;
+---
+
+<section
+  id="hero"
+  class="min-h-screen flex flex-col items-center justify-center px-6 relative"
+>
+  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.1),transparent_60%)]"></div>
+
+  <div
+    class="relative z-10 text-center max-w-3xl"
+    style="animation: fade-in-up 1s ease-out forwards;"
+  >
+    <h1
+      class="font-mono text-7xl md:text-9xl font-bold tracking-tighter bg-gradient-to-b from-white via-white to-violet-400 bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(139,92,246,0.3)]"
+    >
+      NaN
+    </h1>
+
+    <p
+      class="mt-8 font-mono text-base md:text-xl text-white tracking-tight"
+      style="animation: fade-in-up 1s ease-out 0.2s both;"
+    >
+      {t('hero.subheadline', locale)}
+    </p>
+
+    <p
+      class="mt-5 text-neutral-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed"
+      style="animation: fade-in-up 1s ease-out 0.35s both;"
+    >
+      {t('hero.description', locale)}
+    </p>
+
+    <div
+      class="mt-8 inline-flex items-center gap-3 rounded-full border border-violet-500/25 bg-violet-950/20 px-4 py-2 font-mono text-xs text-violet-300"
+      style="animation: fade-in-up 1s ease-out 0.5s both;"
+    >
+      <span class="relative flex h-2 w-2">
+        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-60"></span>
+        <span class="relative inline-flex h-2 w-2 rounded-full bg-violet-400"></span>
+      </span>
+      <span>{t('hero.badge', locale)}</span>
+    </div>
+
+    <div
+      class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3"
+      style="animation: fade-in-up 1s ease-out 0.65s both;"
+    >
+      <Button href="#waitlist" aria-label={t('hero.aria.join', locale)}>
+        {t('hero.cta', locale)}
+      </Button>
+      <Button
+        href="/docs"
+        variant="secondary"
+        aria-label={t('hero.aria.docs', locale)}
+      >
+        <svg class="w-5 h-5 mr-2 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg> {t('hero.docs', locale)}
+      </Button>
+    </div>
+  </div>
+
+  <a
+    href="#about"
+    class="absolute bottom-12 text-neutral-400 text-xs font-mono animate-pulse motion-reduce:animate-none hover:text-violet-400 transition-colors"
+    aria-label={t('hero.aria.scroll', locale)}
+  >
+    {t('hero.scroll', locale)}
+  </a>
+</section>

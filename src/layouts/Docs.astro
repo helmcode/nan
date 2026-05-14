@@ -1,0 +1,298 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Documentación de NaN — Conecta a nuestros modelos abiertos via API OpenAI-compatible.' } = Astro.props;
+
+const siteUrl = 'https://nan.builders';
+
+interface NavItem {
+  slug: string;
+  label: string;
+}
+
+const navItems: NavItem[] = [
+  { slug: '/docs', label: 'Introducción' },
+  { slug: '/docs/getting-started', label: 'Empezar' },
+  { slug: '/docs/api', label: 'API' },
+  { slug: '/docs/models', label: 'Models' },
+  { slug: '/docs/examples', label: 'Ejemplos' },
+  { slug: '/docs/agents', label: 'Agents' },
+];
+
+const currentPageIndex = navItems.findIndex(item => item.slug === Astro.url.pathname);
+
+const prevPage = currentPageIndex > 0 ? navItems[currentPageIndex - 1] : null;
+const nextPage = currentPageIndex < navItems.length - 1 ? navItems[currentPageIndex + 1] : null;
+
+// Build breadcrumb from current path
+const pathParts = Astro.url.pathname.split('/').filter(Boolean);
+const breadcrumbSegments = pathParts.map((part, i) => {
+  const path = '/' + pathParts.slice(0, i + 1).join('/');
+  const item = navItems.find(n => n.slug === path);
+  return {
+    label: item ? item.label : part.replace(/-/g, ' '),
+    path: path === Astro.url.pathname ? null : path,
+    isCurrent: path === Astro.url.pathname,
+  };
+});
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/png" href="/nan.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={`${title} — NaN Docs`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={`${siteUrl}${Astro.url.pathname}`} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={`${title} — NaN Docs`} />
+    <meta name="twitter:description" content={description} />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
+    />
+    <title>{title} — NaN Docs</title>
+  </head>
+  <body class="bg-[#0a0a0a] text-neutral-300 font-sans antialiased min-h-screen overflow-x-hidden">
+    <!-- Mobile header -->
+    <header class="sticky top-0 z-40 flex items-center justify-between border-b border-neutral-800/60 bg-[#0a0a0a] px-4 py-3 md:hidden">
+      <a href="https://nan.builders" class="flex items-center gap-2">
+        <img src="/nan-logo.png" alt="NaN" class="h-8 w-auto" />
+        <span class="font-mono text-sm font-bold text-white tracking-tight">NaN</span>
+      </a>
+      <button
+        id="menu-toggle"
+        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-neutral-800 bg-[#0a0a0a] text-neutral-400 transition-colors hover:text-white"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+      >
+        <svg id="menu-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg id="close-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Mobile overlay -->
+    <div id="menu-overlay" class="fixed inset-0 z-40 hidden bg-black/60 md:hidden"></div>
+
+    <div class="flex min-h-screen">
+      <!-- Sidebar: fixed overlay on mobile, static column on desktop -->
+      <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 flex-col border-r border-neutral-800/60 bg-[#0a0a0a] px-5 py-6 shadow-2xl transition-transform duration-200 -translate-x-full md:relative md:w-56 md:translate-x-0 md:shadow-none">
+        <div class="mb-4 flex items-center justify-between">
+          <a href="https://nan.builders" class="flex items-center gap-2">
+            <img src="/nan-logo.png" alt="NaN" class="h-7 w-auto" />
+            <span class="font-mono text-base font-bold text-white tracking-tight">NaN</span>
+          </a>
+          <button id="sidebar-close" class="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-800 bg-[#0a0a0a] text-neutral-400 transition-colors hover:text-white md:hidden" aria-label="Close menu">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="mb-4 h-px bg-neutral-800/60" />
+        <nav class="space-y-1">
+          {navItems.map(item => {
+            const isActive = Astro.url.pathname === item.slug || (item.slug !== '/docs' && Astro.url.pathname.startsWith(item.slug + '/'));
+            return (
+              <a
+                href={item.slug}
+                class:list={[
+                  'block rounded-lg px-3 py-2 text-sm font-mono uppercase tracking-wider transition-colors duration-200',
+                  isActive
+                    ? 'bg-violet-400/10 text-violet-400'
+                    : 'text-neutral-200 hover:bg-neutral-800/60 hover:text-white'
+                ]}
+              >
+                {item.label}
+              </a>
+            );
+          })}
+        </nav>
+      </aside>
+
+      <!-- Main content with TOC -->
+      <div class="flex flex-1 min-w-0">
+        <main class="flex-1 min-w-0 bg-[#141414]">
+          <div class="max-w-4xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-16">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+              <a href="/docs">Docs</a>
+              {breadcrumbSegments.slice(1).map(seg => (
+                <>
+                  <span class="separator">/</span>
+                  {seg.isCurrent ? (
+                    <span class="current">{seg.label}</span>
+                  ) : (
+                    <a href={seg.path}>{seg.label}</a>
+                  )}
+                </>
+              ))}
+            </nav>
+
+            <!-- Page content -->
+            <div class="docs-content">
+              <slot />
+            </div>
+
+            <!-- Prev/Next navigation -->
+            {(prevPage || nextPage) && (
+              <div class="page-nav">
+                {prevPage && (
+                  <a href={prevPage.slug}>
+                    <span class="label">← anterior</span>
+                    <span class="title">{prevPage.label}</span>
+                  </a>
+                )}
+                {nextPage && (
+                  <a href={nextPage.slug} class="next">
+                    <span class="label">siguiente →</span>
+                    <span class="title">{nextPage.label}</span>
+                  </a>
+                )}
+              </div>
+            )}
+
+            <!-- Footer -->
+            <footer class="border-t border-neutral-900 pt-8 mt-16">
+              <div class="flex items-center justify-between text-xs text-neutral-500 font-mono">
+                <span class="shrink-0">nan.builders</span>
+                <span>© {new Date().getFullYear()}</span>
+              </div>
+            </footer>
+          </div>
+        </main>
+
+        <!-- TOC sidebar (desktop only) -->
+        <aside class="hidden xl:block xl:w-56 shrink-0">
+          <div class="sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto px-6 py-8">
+            <p class="font-mono text-[10px] text-neutral-600 uppercase tracking-widest mb-4">
+              en esta página
+            </p>
+            <div class="toc" id="toc">
+              <!-- Populated by JS from h2/h3 headings -->
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Copy toast notification -->
+    <div class="copy-toast" id="copy-toast">¡Copiado al portapapeles!</div>
+
+    <script>
+      const toggle = document.getElementById('menu-toggle')!;
+      const overlay = document.getElementById('menu-overlay')!;
+      const sidebar = document.getElementById('sidebar')!;
+      const sidebarClose = document.getElementById('sidebar-close')!;
+
+      function openMenu() {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeMenu() {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+
+      toggle.addEventListener('click', openMenu);
+      sidebarClose.addEventListener('click', closeMenu);
+      overlay.addEventListener('click', closeMenu);
+
+      // Escape to close sidebar
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMenu();
+      });
+
+      // Build TOC from h2/h3 headings
+      const tocContainer = document.getElementById('toc');
+      const headings = document.querySelectorAll('.docs-content h2, .docs-content h3');
+      
+      if (headings.length > 0 && tocContainer) {
+        headings.forEach((heading) => {
+          const id = heading.id || heading.textContent?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+          if (id) heading.id = id;
+          
+          const link = document.createElement('a');
+          link.href = `#${id}`;
+          link.className = `toc-link ${heading.tagName === 'H3' ? 'h2' : ''}`;
+          link.textContent = heading.textContent || '';
+          link.dataset.target = id;
+          
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = document.getElementById(id);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              history.replaceState(null, '', `#${id}`);
+            }
+          });
+          
+          tocContainer.appendChild(link);
+        });
+
+        // Intersection observer for active TOC link
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            const link = tocContainer.querySelector(`[data-target="${entry.target.id}"]`);
+            if (link) {
+              if (entry.isIntersecting) {
+                tocContainer.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+              }
+            }
+          });
+        }, {
+          rootMargin: '-20% 0px -60% 0px',
+          threshold: 1
+        });
+
+        headings.forEach(heading => {
+          if (heading.id) observer.observe(heading);
+        });
+      }
+
+      // Copy-to-clipboard via event delegation
+      document.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest('.copy-btn');
+        if (!btn) return;
+        const block = btn.closest('.code-block') as HTMLElement;
+        const codeText = block?.dataset?.code;
+        if (!codeText) return;
+        navigator.clipboard.writeText(codeText).then(() => {
+          const label = btn.querySelector('.copy-label') as HTMLElement | null;
+          if (label) {
+            label.textContent = 'Copiado!';
+            setTimeout(() => { label.textContent = 'Copiar'; }, 1500);
+          }
+        }).catch(() => {
+          const label = btn.querySelector('.copy-label') as HTMLElement | null;
+          if (label) {
+            label.textContent = 'Error';
+            setTimeout(() => { label.textContent = 'Copiar'; }, 2000);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

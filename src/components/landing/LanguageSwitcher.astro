@@ -1,0 +1,12 @@
+---
+const currentLang = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+const targetLang = currentLang === 'en' ? 'es' : 'en';
+const label = currentLang === 'en' ? 'ES' : 'EN';
+---
+
+<a
+  href={targetLang === 'en' ? '?lang=en' : '?lang=es'}
+  class="fixed top-4 left-4 z-50 font-mono text-xs px-3 py-1.5 rounded-lg border border-neutral-800 text-neutral-400 hover:border-violet-500/40 hover:text-white transition-colors bg-[#0a0a0a]/80 backdrop-blur-sm"
+>
+  {label}
+</a>

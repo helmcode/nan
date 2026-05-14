@@ -1,0 +1,329 @@
+{
+  "hero": {
+    "subheadline": "GPUs compartidas. Modelos abiertos. Comunidad cerrada.",
+    "description": "Builders compartiendo GPUs para correr los últimos modelos de IA abiertos sin límites de tokens.",
+    "badge": "Plazas limitadas",
+    "cta": "Únete",
+    "docs": "Docs",
+    "scroll": "scroll",
+    "aria": {
+      "join": "Unirse a la lista de espera",
+      "docs": "Leer la documentación",
+      "scroll": "Ir a la siguiente sección"
+    }
+  },
+  "about": {
+    "label": "// what is nan",
+    "heading": "Builders compartiendo GPUs dedicadas para correr modelos abiertos para quemar tokens sin límites.",
+    "p1": "Las APIs de modelos cerrados son cómodas pero caras y limitadas. Los modelos abiertos son gratis pero correrlos en serio requiere hardware que casi nadie tiene en casa.",
+    "p2": "NaN resuelve esto compartiendo GPUs potentes entre builders que las usan de verdad, repartiendo el coste real de la infraestructura.",
+    "p3": "Una comunidad cerrada por diseño, limitada a la capacidad real de las GPUs compartidas. Cuando se llena, se abre lista de espera.",
+    "p4": "La comunidad vive en Discord. El sitio web solo gestiona acceso. Cada miembro paga por estar. Solo están quienes de verdad quieren construir."
+  },
+  "server": {
+    "label": "// inference cluster",
+    "heading": "Cluster de inferencia de modelos abiertos de IA",
+    "description": "Un cluster compartido con NVIDIA RTX PRO 6000 Blackwell, 96 GB de VRAM, 256 GB de RAM DDR5 y 48 threads dedicados por cada nodo. Cuatro modelos abiertos corriendo a la vez, elegidos por la comunidad cada trimestre.",
+    "hardware": "hardware",
+    "stack": "stack",
+    "models": "// current models",
+    "guarantees": {
+      "0": "Tu código no entrena ningún modelo",
+      "1": "Datos en EU, sin logs de prompts",
+      "2": "Sin caps de tokens",
+      "3": "API key personal para cada miembro"
+    },
+    "specs": {
+      "gpu": "GPU",
+      "vram": "VRAM",
+      "ram": "RAM",
+      "cpu": "CPU",
+      "storage": "Storage"
+    }
+  },
+  "privacy": {
+    "label": "// privacy",
+    "heading": "Pura inferencia. Zero logs.",
+    "p1": "NaN es infraestructura de inferencia. No hay datos de registro de prompts, ni de las respuestas del modelo, nada. Todo vive en tu sesión local, en el cliente que sea, en el agente de turno, o en la app custom que te hagas.",
+    "p2": "La API es pura inferencia. Nada de lo que haces con ella queda registrado salvo métricas del propio servidor (tokens/s, RPM, etc.) por puro mantenimiento y medición del cluster.",
+    "p3": "Tu código no entrena ningún modelo. Tus prompts no se guardan. Tus datos no salen de tu sesión.",
+    "points": {
+      "noLogs": "Zero logs: no hay registro de prompts ni respuestas",
+      "localData": "Todo vive en tu sesión local del cliente o agente",
+      "euProcessing": "Procesamiento en la Unión Europea",
+      "noTraining": "Tu código no entrena ningún modelo",
+      "metrics": "Métricas de servidor solo para mantenimiento del cluster (tokens/s, RPM)"
+    }
+  },
+  "modelVoting": {
+    "label": "// how models are chosen",
+    "heading": "Modelos elegidos por la comunidad. Renovados cada trimestre.",
+    "rules": {
+      "0": "Cada 3 meses, los miembros votan los nuevos modelos que correrán en el cluster.",
+      "1": "Los candidatos se preseleccionan técnicamente: tienen que caber en 96 GB de VRAM.",
+      "2": "La votación se hace en Discord, abierta a todos los miembros.",
+      "3": "El ecosistema de modelos abiertos se mueve rápido. NaN también."
+    },
+    "models": "// current models"
+  },
+  "agents": {
+    "label": "// agents platform",
+    "heading": "Tu propia microVM. Acceso root. Aislada por KVM.",
+    "description": "Más allá de la API. Cada miembro puede desplegar un agente en su propia microVM aislada con QEMU, con acceso completo a los modelos del cluster, terminal web, subida de ficheros y observabilidad nativa.",
+    "specs": {
+      "label": "// resources",
+      "cpu": "1 vCPU",
+      "ram": "2 GiB",
+      "disk": "20 GiB"
+    },
+    "features": {
+      "label": "// what you get",
+      "items": {
+        "0": {
+          "name": "microVM aislada",
+          "desc": "microVM aislada por QEMU/KVM. Kernel propio, FS propio, root sin riesgo para el host."
+        },
+        "1": {
+          "name": "Hermes preinstalado",
+          "desc": "Agente conversacional listo. Conéctalo a Telegram con un token y empieza a hablar."
+        },
+        "2": {
+          "name": "Terminal web",
+          "desc": "Consola interactiva en el navegador. apt, pip, git — todo persistente."
+        },
+        "3": {
+          "name": "Carga de ficheros",
+          "desc": "Drag-and-drop hasta 200 MiB por archivo. Datasets, PDFs, configs."
+        },
+        "4": {
+          "name": "Observabilidad nativa",
+          "desc": "Logs en vivo, eventos K8s, métricas de CPU/RAM/disco — sin instalar nada."
+        },
+        "5": {
+          "name": "Endpoint HTTP público",
+          "desc": "Expón cualquier servicio web del agente con una URL en *.apps.nan.builders."
+        }
+      }
+    },
+    "stack": {
+      "label": "// stack",
+      "runtime": "QEMU microVM",
+      "orchestration": "Kubernetes",
+      "storage": "block-mode persistent disk",
+      "isolation": "KVM"
+    },
+    "guarantees": {
+      "0": "Acceso root completo dentro de tu microVM.",
+      "1": "Persistencia real: apt install, configs, datos — todo sobrevive a reinicios.",
+      "2": "Shutdown graceful: sin corrupción de filesystem.",
+      "3": "Aislamiento a nivel kernel del host y de otros miembros."
+    }
+  },
+  "founder": {
+    "label": "// who's behind",
+    "heading": "La comunidad la monta una persona. No una empresa.",
+    "bio": {
+      "0": "Founder de <a href=\"https://helmcode.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-violet-400 hover:text-violet-300 transition-colors\">Helmcode</a>, trabajando con startups en infraestructura cloud, AI tooling y software abierto.",
+      "1": "Gracias a <a href=\"https://helmcode.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-violet-400 hover:text-violet-300 transition-colors\">Helmcode</a> ofrecemos inferencia de modelos abiertos con planes sin límites de tokens para empresas, publico mis experimentos en redes sociales y estudios con IA."
+    },
+    "quote": "Monté NaN porque quería poder correr modelos abiertos de los buenos sin límites de uso y además compartir y aprender con gente que está en la misma: builders que queman tokens de verdad.",
+    "links": {
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn",
+      "github": "GitHub"
+    }
+  },
+  "pricing": {
+    "label": "// pricing",
+    "subheading": "Un tier por región. Sin upsells. Sin trial.",
+    "plan1": {
+      "name": "NaN Member EU",
+      "flagLabel": "Europa",
+      "price": "70€",
+      "period": "/mes",
+      "taxNote": "IVA incluido"
+    },
+    "plan2": {
+      "name": "NaN Member USA/Latam",
+      "flagLabel": "USA / Latam",
+      "price": "$75",
+      "period": "/mo",
+      "taxNote": "Impuestos incluidos"
+    },
+    "plan3": {
+      "name": "NaN Community",
+      "flagLabel": "Comunidad",
+      "price": "$14.99",
+      "period": "/mes",
+      "taxNote": "Impuestos incluidos",
+      "badge": "// comunidad",
+      "noGpuTag": "Sin acceso a GPU · solo Discord"
+    },
+    "limited": "Plazas limitadas",
+    "features": {
+      "0": "Acceso al cluster compartido (96 GB VRAM)",
+      "1": "Modelos abiertos elegidos por la comunidad",
+      "2": "API key personal compatible con OpenAI",
+      "3": "Sin caps de tokens",
+      "4": "Canales privados en Discord solo para miembros",
+      "5": "Voz en la votación trimestral de modelos",
+      "6": "Mes a mes, sin permanencia"
+    },
+    "communityFeatures": {
+      "0": "Acceso a Discord",
+      "1": "Canales privados solo para miembros",
+      "2": "Charlas en directo, builds y AMAs",
+      "3": "Plaza reservada para acceso a inferencia"
+    },
+    "cta": "Únete",
+    "communityCta": "Únete a la comunidad",
+    "footerNote": "Plazas limitadas. Cuando se llena, lista de espera.",
+    "communityFooterNote": "Sin permanencia. Cancela cuando quieras."
+  },
+  "cta": {
+    "label": "// join",
+    "heading": "Una comunidad de builders. Plazas limitadas. GPUs compartidas sin límites de uso.",
+    "description": "Compartimos GPUs dedicadas para correr modelos abiertos y quemar tokens sin límites. Déjanos tu email y te escribimos cuando abramos pagos."
+  },
+  "faq": {
+    "label": "// faq",
+    "heading": "Lo que probablemente vas a preguntar.",
+    "items": {
+      "0": {
+        "id": "what-is-nan",
+        "question": "¿Qué es NaN?",
+        "answer": "NaN es una comunidad cerrada de builders que comparten acceso a GPUs dedicadas para correr modelos de IA de código abierto. Cada miembro paga por estar, y solo hay espacio para los que realmente van a construir."
+      },
+      "1": {
+        "id": "how-it-works",
+        "question": "¿Cómo funciona el cluster de GPUs?",
+        "answer": "Cada miembro de la comunidad comparte una GPU dedicada (RTX PRO 6000 Blackwell, 96 GB VRAM). Las GPUs corren modelos abiertos 24/7 en un cluster compartido. Cada miembro recibe una API key personal compatible con OpenAI para usar los modelos a su gusto, sin caps de tokens."
+      },
+      "2": {
+        "id": "token-limits",
+        "question": "¿Realmente no hay límites de tokens?",
+        "answer": "Correcto. Una vez que tienes acceso al cluster, puedes quemar tokens sin límites. El modelo que corras depende de lo que la comunidad elija cada trimestre. No hay quotas, no hay throttling, no hay sorpresas en la factura."
+      },
+      "3": {
+        "id": "model-voting",
+        "question": "¿Cómo se eligen los modelos?",
+        "answer": "Cada trimestre, los miembros de la comunidad votan qué nuevos modelos correrán en el cluster. Los candidatos se preseleccionan técnicamente para asegurar que caben en 96 GB de VRAM. La votación se hace en Discord, abierta a todos los miembros."
+      },
+      "4": {
+        "id": "where-does-data-go",
+        "question": "¿Dónde van mis datos?",
+        "answer": "Los datos se procesan en la Unión Europea, sin logs de prompts. Tu API key es personal e intransferible. No compartimos datos entre miembros ni vendemos información a terceros. Tu código no entrena ningún modelo."
+      },
+      "5": {
+        "id": "who-is-this-for",
+        "question": "¿Para quién es NaN?",
+        "answer": "Para builders que quieren correr modelos de IA en serio sin la sobrecarga de gestionar infraestructura. Si eres startup, investigador o maker y necesitas inferencia a escala sin límites de tokens, NaN es para ti. No es para quien solo quiere experimentar un par de veces."
+      },
+      "6": {
+        "id": "why-open-models",
+        "question": "¿Por qué solo modelos abiertos?",
+        "answer": "Porque creemos que la innovación real viene de herramientas que puedes auditar, modificar y usar sin restricciones. Los modelos cerrados son cómodos pero crean dependencia. Con los abiertos tienes control total sobre tu stack."
+      },
+      "7": {
+        "id": "can-i-train",
+        "question": "¿Puedo entrenar modelos?",
+        "answer": "No. NaN es para inferencia, no para entrenamiento. Las GPUs están optimizadas para correr modelos existentes a alta velocidad, no para fine-tuning. Si necesitas entrenamiento, hay otras plataformas para eso."
+      },
+      "8": {
+        "id": "payment-methods",
+        "question": "¿Qué métodos de pago aceptan?",
+        "answer": "Actualmente aceptamos pagos por tarjeta de crédito/débito. Los precios incluyen impuestos (IVA para EU, taxes para USA/Latam). Puedes cancelar en cualquier momento, sin permanencia."
+      },
+      "9": {
+        "id": "join-community",
+        "question": "¿Cómo entro a la comunidad?",
+        "answer": "Deja tu email en la lista de espera y te escribimos cuando abramos pagos. La comunidad vive en Discord — una vez que te unes, tienes acceso a todos los canales privados, votaciones trimestrales y soporte directo del equipo."
+      }
+    }
+  },
+  "footer": {
+    "brand": "nan.builders"
+  },
+  "waitlist": {
+    "registered": "// registered",
+    "interest": "// interest registered",
+    "followUp": "No enviamos newsletters. Solo escribiremos cuando abramos pagos.",
+    "confirmation": {
+      "label": "// confirmación",
+      "heading": "¿Seguro que quieres apuntarte?",
+      "p1": "Te estás apuntando a la waitlist de una comunidad privada de pago. Cuando abramos pagos, se requerirá una suscripción mensual para tener acceso a las GPUs compartidas y a los modelos que elija la comunidad.",
+      "p2": "Solo queremos que se apunten personas con intención real de pagar. Si solo tienes curiosidad, mejor no te apuntes.",
+      "cancel": "Cancelar",
+      "confirm": "Sí, apuntarme",
+      "submitting": "Enviando…"
+    },
+    "honeypot": "Do not fill this field",
+    "email": {
+      "label": "email",
+      "placeholder": "tu@email.com"
+    },
+    "region": {
+      "label": "región",
+      "default": "Selecciona tu región"
+    },
+    "submit": {
+      "idle": "Únete a la waitlist",
+      "submitting": "Enviando…"
+    },
+    "footer": "Sin spam. Sin newsletters. Solo te escribimos cuando abramos pagos."
+  },
+  "waitlistHelpers": {
+    "regions": {
+      "europa": "Europa",
+      "latam": "LATAM",
+      "usa": "USA"
+    },
+    "successInterest": "Anotado. Estamos disponibles para ${regionLabel}. Te avisamos en cuanto abramos pagos.",
+    "successRegistered": "Estás en la lista. Iremos aceptando miembros por orden de llegada cuando abramos pagos.",
+    "errors": {
+      "invalidEmail": "Email inválido. Revisa el formato.",
+      "invalidRegion": "Selecciona una región.",
+      "rateLimited": "Demasiados intentos. Espera un minuto.",
+      "networkError": "Sin conexión. Vuelve a intentarlo.",
+      "serverError": "Algo falló en el server. Vuelve a intentarlo en un momento."
+    }
+  },
+  "community": {
+    "label": "// community",
+    "pageTitle": "Comunidad NaN",
+    "title": "Únete a la comunidad mientras esperas tu plaza de inferencia.",
+    "subtitle": "Acceso al Discord, charlas con builders y plaza reservada en la cola para acceso a las GPUs cuando se libere capacidad.",
+    "priceLabel": "$14.99 / mes",
+    "priceTaxNote": "Impuestos incluidos",
+    "includesLabel": "Qué incluye",
+    "notIncludedLabel": "Qué NO incluye",
+    "notIncluded": {
+      "0": "Acceso al servicio de inferencia (GPUs)",
+      "1": "Despliegue de agentes y apps",
+      "2": "API key para llamadas a modelos"
+    },
+    "faqUpgradeQ": "¿Cómo paso al plan de inferencia más adelante?",
+    "faqUpgradeA": "Cuando se libere capacidad de GPU, te invitaremos manualmente. Mientras tanto puedes pedir el upgrade desde tu panel de miembro.",
+    "faqCancelQ": "¿Puedo cancelar?",
+    "faqCancelA": "Sí, en cualquier momento desde tu panel de miembro. Sin permanencia.",
+    "backToLanding": "← Volver a nan.builders",
+    "emailLabel": "email",
+    "emailPlaceholder": "tu@email.com",
+    "regionLabel": "región",
+    "regionDefault": "Selecciona tu región",
+    "regionEU": "Europa",
+    "regionUSA": "USA",
+    "regionLATAM": "LATAM",
+    "submit": "Únete a la comunidad",
+    "submitting": "Procesando…",
+    "redirecting": "Redirigiendo al pago…",
+    "alreadySubscribed": "Ya estás dentro. Si no recibiste el recibo, escríbenos a",
+    "honeypot": "Do not fill this field",
+    "errorInvalidEmail": "Email inválido. Revisa el formato.",
+    "errorInvalidRegion": "Selecciona una región.",
+    "errorRateLimited": "Demasiados intentos. Espera un minuto.",
+    "errorServer": "Algo falló. Vuelve a intentarlo en un momento.",
+    "errorNetwork": "Sin conexión. Vuelve a intentarlo.",
+    "footer": "Cancela cuando quieras."
+  }
+}

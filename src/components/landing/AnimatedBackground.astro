@@ -1,0 +1,214 @@
+---
+---
+
+<div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+  <!-- Dot grid pattern -->
+  <div class="absolute inset-0 dot-grid"></div>
+
+  <!-- Ambient glow orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Light streaks -->
+  <div class="streak streak-1"></div>
+  <div class="streak streak-2"></div>
+  <div class="streak streak-3"></div>
+  <div class="streak streak-4"></div>
+  <div class="streak streak-5"></div>
+  <div class="streak streak-6"></div>
+  <div class="streak streak-7"></div>
+  <div class="streak streak-8"></div>
+</div>
+
+<style>
+  /* Dot grid */
+  .dot-grid {
+    background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at 50% 30%, black 20%, transparent 70%);
+  }
+
+  /* Ambient orbs */
+  @keyframes drift-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(60px, -40px) scale(1.05); }
+    50% { transform: translate(-30px, 50px) scale(0.95); }
+    75% { transform: translate(40px, 20px) scale(1.02); }
+  }
+
+  @keyframes drift-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    30% { transform: translate(-50px, 30px) scale(1.1); }
+    60% { transform: translate(35px, -35px) scale(0.9); }
+  }
+
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    will-change: transform;
+  }
+
+  .orb-1 {
+    top: 10%;
+    left: 25%;
+    width: 500px;
+    height: 500px;
+    background: rgba(139, 92, 246, 0.04);
+    animation: drift-1 22s ease-in-out infinite;
+  }
+
+  .orb-2 {
+    bottom: 20%;
+    right: 20%;
+    width: 400px;
+    height: 400px;
+    background: rgba(124, 58, 237, 0.03);
+    animation: drift-2 28s ease-in-out infinite;
+  }
+
+  .orb-3 {
+    top: 50%;
+    left: 50%;
+    width: 600px;
+    height: 600px;
+    margin-left: -300px;
+    margin-top: -300px;
+    background: rgba(167, 139, 250, 0.02);
+    animation: drift-1 35s ease-in-out infinite reverse;
+  }
+
+  /* Streaks */
+  @keyframes streak-diagonal {
+    0% {
+      transform: translateX(-200px) translateY(-200px) rotate(var(--streak-angle));
+      opacity: 0;
+    }
+    3% { opacity: 1; }
+    70% { opacity: 0.8; }
+    100% {
+      transform: translateX(calc(100vw + 200px)) translateY(calc(100vh + 200px)) rotate(var(--streak-angle));
+      opacity: 0;
+    }
+  }
+
+  .streak {
+    position: absolute;
+    height: 1px;
+    border-radius: 9999px;
+    opacity: 0;
+    will-change: transform, opacity;
+    animation: streak-diagonal var(--streak-duration) linear infinite;
+    animation-delay: var(--streak-delay);
+  }
+
+  .streak::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: var(--head-size, 4px);
+    height: var(--head-size, 4px);
+    border-radius: 50%;
+    background: var(--streak-head-color, rgba(200, 170, 255, 0.9));
+    box-shadow: 0 0 var(--head-glow, 8px) 2px var(--streak-glow-color, rgba(139, 92, 246, 0.6));
+  }
+
+  /* Each streak has unique character */
+  .streak-1 {
+    top: 12%;
+    left: 0;
+    width: 200px;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
+    --streak-angle: -30deg;
+    --streak-duration: 7s;
+    --streak-delay: 0s;
+  }
+
+  .streak-2 {
+    top: 40%;
+    left: 0;
+    width: 140px;
+    background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.4), transparent);
+    --streak-angle: -25deg;
+    --streak-duration: 11s;
+    --streak-delay: 3s;
+    --head-size: 3px;
+    --head-glow: 6px;
+  }
+
+  .streak-3 {
+    top: 65%;
+    left: 0;
+    width: 240px;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), rgba(139, 92, 246, 0.2), transparent);
+    --streak-angle: -35deg;
+    --streak-duration: 9s;
+    --streak-delay: 6s;
+    --head-size: 5px;
+    --head-glow: 12px;
+  }
+
+  .streak-4 {
+    top: 20%;
+    left: 0;
+    width: 100px;
+    background: linear-gradient(90deg, transparent, rgba(192, 132, 252, 0.3), transparent);
+    --streak-angle: -20deg;
+    --streak-duration: 15s;
+    --streak-delay: 2s;
+    --head-size: 2px;
+    --head-glow: 4px;
+    --streak-head-color: rgba(192, 170, 255, 0.7);
+  }
+
+  .streak-5 {
+    top: 80%;
+    left: 0;
+    width: 180px;
+    background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.5), transparent);
+    --streak-angle: -40deg;
+    --streak-duration: 8s;
+    --streak-delay: 9s;
+    --streak-glow-color: rgba(124, 58, 237, 0.5);
+  }
+
+  .streak-6 {
+    top: 50%;
+    left: 0;
+    width: 90px;
+    background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.35), transparent);
+    --streak-angle: -15deg;
+    --streak-duration: 18s;
+    --streak-delay: 5s;
+    --head-size: 2px;
+    --head-glow: 5px;
+  }
+
+  .streak-7 {
+    top: 30%;
+    left: 0;
+    width: 160px;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.45), transparent);
+    --streak-angle: -32deg;
+    --streak-duration: 10s;
+    --streak-delay: 12s;
+    --head-size: 4px;
+  }
+
+  .streak-8 {
+    top: 75%;
+    left: 0;
+    width: 120px;
+    background: linear-gradient(90deg, transparent, rgba(192, 132, 252, 0.3), transparent);
+    --streak-angle: -22deg;
+    --streak-duration: 13s;
+    --streak-delay: 7s;
+    --head-size: 3px;
+    --head-glow: 6px;
+    --streak-head-color: rgba(210, 190, 255, 0.8);
+  }
+</style>

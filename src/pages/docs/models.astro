@@ -1,0 +1,346 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import RateLimits from '../../components/docs/RateLimits.astro';
+---
+
+<Docs title="Modelos" description="Especificaciones técnicas, capacidades y parámetros de los modelos que corren en el cluster.">
+  <div class="mb-6">
+    <p class="font-mono text-xs text-violet-400 uppercase tracking-widest mb-6">
+      // models
+    </p>
+  </div>
+
+  <h1>Models del cluster.</h1>
+
+  <p>Los modelos de la comunidad. Todos se acceden por la misma API OpenAI-compatible
+    con el mismo <code>base URL</code>.</p>
+
+  <!-- gemma4 -->
+  <h2 id="gemma4">gemma4 - 26B-A4B</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2 mb-14">
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        generación de texto y chat
+      </p>
+      <p class="text-xs text-neutral-400 leading-relaxed mb-4">
+        Modelo MoE de 26B parámetros (4B activos), multimodal con visión. Tool calling y reasoning.
+      </p>
+      <dl class="space-y-3">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Tipo</dt>
+          <dd class="text-neutral-200 text-right">MoE (26B total · 4B active)</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Cuantización</dt>
+          <dd class="text-neutral-200 text-right">FP8</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Contexto</dt>
+          <dd class="text-neutral-200 text-right">256K tokens</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Sampling</dt>
+          <dd class="text-neutral-200 text-right">temp=0.6, top_p=0.95</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Reasoning</dt>
+          <dd class="text-neutral-200 text-right">reasoning_config={}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        capacidades
+      </p>
+      <ul class="grid gap-3 font-mono text-xs text-neutral-300">
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Tool calling (formato XML)</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Reasoning mode</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Multimodal (vision / imágenes)</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Generación streaming (SSE)</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- qwen3.6 -->
+  <h2 id="qwen36">qwen3.6 - 35B-A3B</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2 mb-14">
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        generación de texto y chat
+      </p>
+      <p class="text-xs text-neutral-400 leading-relaxed mb-4">
+        El modelo principal. MoE de 35B parámetros, multimodal, con
+        tool calling y reasoning.
+      </p>
+      <dl class="space-y-3">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Tipo</dt>
+          <dd class="text-neutral-200 text-right">MoE (35B total)</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Activo por token</dt>
+          <dd class="text-neutral-200 text-right">3B</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Cuantización</dt>
+          <dd class="text-neutral-200 text-right">FP8</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Contexto</dt>
+          <dd class="text-neutral-200 text-right">256K tokens</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Speculative decoding</dt>
+          <dd class="text-neutral-200 text-right">MTP → ~2x throughput</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Sampling</dt>
+          <dd class="text-neutral-200 text-right">temp=0.6, top_p=0.95</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Reasoning</dt>
+          <dd class="text-neutral-200 text-right">reasoning_config={}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        capacidades
+      </p>
+      <ul class="grid gap-3 font-mono text-xs text-neutral-300">
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Tool calling (formato XML)</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Reasoning mode</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Multimodal (vision / imágenes)</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Generación streaming (SSE)</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- embeddings -->
+  <h2 id="qwen3-embedding">qwen3-embedding - 8B</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2 mb-14">
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        embeddings vectoriales
+      </p>
+      <p class="text-xs text-neutral-400 leading-relaxed mb-4">
+        Modelo de embedding vectorial. MMTEB score 70.58 — top modelos abiertos.
+        Soporta 100+ idiomas incluyendo español y código.
+      </p>
+      <dl class="space-y-3">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Dimensión</dt>
+          <dd class="text-neutral-200 text-right">4096</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Precisión</dt>
+          <dd class="text-neutral-200 text-right">Float32 (CPU)</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">RPM</dt>
+          <dd class="text-neutral-200 text-right">60</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Batch size</dt>
+          <dd class="text-neutral-200 text-right">32</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        casos de uso
+      </p>
+      <ul class="grid gap-3 font-mono text-xs text-neutral-300">
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Similitud cross-lingual (ES↔EN: 0.915)</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Búsqueda semántica</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Clasificación de texto</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>RAG / retrieval aumentado</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TTS -->
+  <h2 id="kokoro">kokoro - v1.0</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2 mb-14">
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        text-to-speech
+      </p>
+      <p class="text-xs text-neutral-400 leading-relaxed mb-4">
+        TTS de 82M params con 67 voice packs. Sub-second latency en CPU.
+      </p>
+      <dl class="space-y-3">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Latencia</dt>
+          <dd class="text-neutral-200 text-right">&lt; 1s</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Partes</dt>
+          <dd class="text-neutral-200 text-right">82M</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">RPM</dt>
+          <dd class="text-neutral-200 text-right">15</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        voces disponibles
+      </p>
+      <ul class="grid gap-3 font-mono text-xs text-neutral-300">
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <div>
+            <span class="text-white">af_heart</span> — English (female)
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <div>
+            <span class="text-white">ef_dora</span> — Spanish (female)
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <div>
+            <span class="text-white">em_alex</span> — Spanish (male)
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>67 voice packs en total (<a class="text-violet-400 hover:underline" href="https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md" target="_blank" rel="noopener">ver listado completo</a>)</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- STT -->
+  <h2 id="whisper">whisper - large-v3</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2 mb-14">
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        speech-to-text
+      </p>
+      <p class="text-xs text-neutral-400 leading-relaxed mb-4">
+        STT en CPU con CTranslate2 e INT8. ~1x realtime. 99+ idiomas.
+      </p>
+      <dl class="space-y-3">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Tamaño</dt>
+          <dd class="text-neutral-200 text-right">~3 GB (INT8)</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">WER ES</dt>
+          <dd class="text-neutral-200 text-right">~3.2%</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">RPM</dt>
+          <dd class="text-neutral-200 text-right">10</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        capacidades
+      </p>
+      <ul class="grid gap-3 font-mono text-xs text-neutral-300">
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Transcripción de audio a texto</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>99+ idiomas</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Detección de idioma automática</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>API OpenAI-compatible</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-amber-900/40 bg-amber-950/20 p-6 mb-14">
+    <p class="font-mono text-[10px] text-amber-400 uppercase tracking-widest mb-4">
+      limitaciones conocidas
+    </p>
+    <dl class="space-y-4 text-xs text-neutral-300">
+      <div>
+        <dt class="font-mono text-neutral-200 mb-1">File size limit — 25 MB</dt>
+        <dd class="text-neutral-400 leading-relaxed">
+          Tamaño máximo por request. Formatos comprimidos (OGG/Opus, MP3) aprovechan
+          mejor este límite que WAV sin comprimir.
+        </dd>
+      </div>
+      <div>
+        <dt class="font-mono text-neutral-200 mb-1">Timeout — audios &gt; 2 min de duración</dt>
+        <dd class="text-neutral-400 leading-relaxed">
+          Whisper procesa en CPU a ~1x realtime. Para audios de más de ~2 minutos,
+          el proxy puede devolver un error <code>524</code> (timeout) antes de que termine
+          la transcripción. Usa formatos comprimidos como <strong>OGG/Opus</strong> y divide
+          archivos largos en segmentos de &le; 2 minutos para evitarlo.
+        </dd>
+      </div>
+      <div>
+        <dt class="font-mono text-neutral-200 mb-1">Formatos recomendados</dt>
+        <dd class="text-neutral-400 leading-relaxed">
+          <code>OGG/Opus</code> y <code>MP3</code> — archivos más pequeños, misma calidad de
+          transcripción. Un audio de 60 min en OGG/Opus a 48 kbps ocupa ~20 MB vs ~550 MB en WAV.
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <RateLimits />
+</Docs>

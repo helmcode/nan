@@ -1,0 +1,142 @@
+---
+import Page from '../layouts/Page.astro';
+import LanguageSwitcher from '../components/landing/LanguageSwitcher.astro';
+import CommunitySignupForm from '../components/landing/CommunitySignupForm.tsx';
+import { t, tArr } from '../lib/i18n';
+
+export const prerender = false;
+
+const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+
+const includes = tArr('pricing.communityFeatures', locale);
+const notIncluded = tArr('community.notIncluded', locale);
+
+const formStrings = {
+  emailLabel: t('community.emailLabel', locale),
+  emailPlaceholder: t('community.emailPlaceholder', locale),
+  regionLabel: t('community.regionLabel', locale),
+  regionEU: t('community.regionEU', locale),
+  regionUSA: t('community.regionUSA', locale),
+  regionLATAM: t('community.regionLATAM', locale),
+  regionDefault: t('community.regionDefault', locale),
+  submit: t('community.submit', locale),
+  submitting: t('community.submitting', locale),
+  redirecting: t('community.redirecting', locale),
+  alreadySubscribed: t('community.alreadySubscribed', locale),
+  honeypot: t('community.honeypot', locale),
+  errorInvalidEmail: t('community.errorInvalidEmail', locale),
+  errorInvalidRegion: t('community.errorInvalidRegion', locale),
+  errorRateLimited: t('community.errorRateLimited', locale),
+  errorServer: t('community.errorServer', locale),
+  errorNetwork: t('community.errorNetwork', locale),
+};
+
+const pageTitle = `${t('community.pageTitle', locale)} — nan.builders`;
+const description = t('community.subtitle', locale);
+---
+
+<Page title={pageTitle} description={description}>
+  <LanguageSwitcher />
+
+  <main class="px-6 pt-24 pb-32 md:pt-32">
+    <div class="mx-auto max-w-2xl">
+      <a
+        href={locale === 'en' ? '/?lang=en' : '/'}
+        class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400"
+      >
+        {t('community.backToLanding', locale)}
+      </a>
+
+      <header class="mt-8">
+        <p class="font-mono text-xs uppercase tracking-widest text-violet-400">
+          {t('community.label', locale)}
+        </p>
+        <h1
+          class="mt-4 font-mono text-2xl md:text-3xl text-white tracking-tight leading-snug"
+        >
+          {t('community.title', locale)}
+        </h1>
+        <p class="mt-4 text-sm md:text-base text-neutral-300 leading-relaxed">
+          {t('community.subtitle', locale)}
+        </p>
+
+        <div class="mt-8 flex items-baseline gap-3">
+          <span
+            class="font-mono text-4xl md:text-5xl font-bold text-white drop-shadow-[0_0_24px_rgba(139,92,246,0.35)]"
+          >
+            {t('community.priceLabel', locale)}
+          </span>
+          <span class="font-mono text-xs text-violet-400">
+            {t('community.priceTaxNote', locale)}
+          </span>
+        </div>
+      </header>
+
+      <section class="mt-12 grid gap-6 md:grid-cols-2">
+        <div>
+          <p
+            class="font-mono text-[10px] uppercase tracking-widest text-violet-400 mb-4"
+          >
+            {t('community.includesLabel', locale)}
+          </p>
+          <ul class="space-y-3 text-sm text-neutral-300">
+            {includes.map((item) => (
+              <li class="flex items-start gap-3">
+                <span
+                  class="mt-[7px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.6)]"
+                  aria-hidden="true"
+                />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <p
+            class="font-mono text-[10px] uppercase tracking-widest text-neutral-500 mb-4"
+          >
+            {t('community.notIncludedLabel', locale)}
+          </p>
+          <ul class="space-y-3 text-sm text-neutral-500">
+            {notIncluded.map((item) => (
+              <li class="flex items-start gap-3">
+                <span
+                  class="mt-[7px] h-[6px] w-[6px] shrink-0 rounded-full bg-neutral-700"
+                  aria-hidden="true"
+                />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section class="mt-14">
+        <CommunitySignupForm client:load t={formStrings} />
+        <p class="mt-6 text-center text-xs text-neutral-500 leading-relaxed">
+          {t('community.footer', locale)}
+        </p>
+      </section>
+
+      <section class="mt-16 space-y-8">
+        <div>
+          <p class="font-mono text-sm text-white">
+            {t('community.faqUpgradeQ', locale)}
+          </p>
+          <p class="mt-2 text-sm text-neutral-400 leading-relaxed">
+            {t('community.faqUpgradeA', locale)}
+          </p>
+        </div>
+        <div>
+          <p class="font-mono text-sm text-white">
+            {t('community.faqCancelQ', locale)}
+          </p>
+          <p class="mt-2 text-sm text-neutral-400 leading-relaxed">
+            {t('community.faqCancelA', locale)}
+          </p>
+        </div>
+      </section>
+    </div>
+  </main>
+</Page>

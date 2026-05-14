@@ -1,0 +1,39 @@
+{
+  "name": "nan-website",
+  "type": "module",
+  "version": "0.0.2",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "overrides": {
+    "vite": "^7.3.1"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check --quiet 2>&1 || true && astro build && cp public/_routes.json dist/client/",
+    "preview": "astro preview",
+    "astro": "astro",
+    "generate-types": "wrangler types",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^13.1.3",
+    "@astrojs/preact": "^5.0.2",
+    "@tailwindcss/vite": "^4.2.2",
+    "astro": "^6.0.8",
+    "astro-i18n": "^2.2.4",
+    "preact": "^10.29.0",
+    "rehype-pretty-code": "^0.14.3",
+    "shiki": "^4.0.2",
+    "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.8",
+    "@cloudflare/workers-types": "^4.20260317.1",
+    "playwright": "^1.59.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0",
+    "wrangler": "^4.76.0"
+  }
+}

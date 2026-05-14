@@ -1,0 +1,253 @@
+---
+import Docs from '../../layouts/Docs.astro';
+---
+
+<Docs title="Agents" description="Despliega agentes de IA en una microVM aislada con QEMU: Hermes, terminal web, carga de ficheros y observabilidad.">
+  <div class="mb-6">
+    <p class="font-mono text-xs text-violet-400 uppercase tracking-widest mb-6">
+      // agents
+    </p>
+  </div>
+
+  <h1>Agents.</h1>
+
+  <p>NaN Cloud te deja desplegar agentes de IA en tu propia <strong class="text-white">microVM</strong>:
+    una máquina virtual ligera con QEMU + KVM, su propio kernel, su propio
+    filesystem y acceso root completo. Aislada del host y del resto de miembros. El
+    primer tipo de agente disponible es <strong class="text-white">Hermes</strong>.</p>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- ARQUITECTURA                                 -->
+  <!-- ════════════════════════════════════════════ -->
+  <h2 id="arquitectura">Arquitectura</h2>
+
+  <p>Cada agente corre dentro de su propia microVM con QEMU. En lugar de
+    compartir el kernel del host (como un container normal), arranca con su
+    propio kernel Linux. La VM monta un disco ext4 de 20 GiB sobre un volumen
+    en modo block, persistente. Todo lo que haces dentro
+    —<code>apt install</code>, <code>pip install</code>, edits en
+    <code>/etc</code>, ficheros que subas, sesiones de bash— vive en ese disco
+    y sobrevive a reinicios.</p>
+
+  <p>El shutdown es <em>graceful</em>: cuando reinicies o borres el agente, el
+    sistema fuerza un <code>sync</code> y espera a que el journal de ext4
+    termine de vaciar antes de matar la VM. Sin corrupciones.</p>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- HERMES                                       -->
+  <!-- ════════════════════════════════════════════ -->
+  <h2 id="hermes">Hermes</h2>
+
+  <p>Hermes es un agente de IA conversacional que se conecta a Telegram.
+    Puedes hablar con él, pedirle que gestione notas, ejecute comandos
+    en su entorno, genere sitios web y mucho más.</p>
+
+  <h3 id="crear-bot-telegram">1. Crear un bot de Telegram</h3>
+
+  <p>Necesitas un bot de Telegram. Abre Telegram, busca
+    <a href="https://core.telegram.org/bots/tutorial#obtain-your-bot-token" target="_blank" rel="noopener noreferrer" class="text-violet-400 hover:text-violet-300 underline underline-offset-2">@BotFather</a>
+    y sigue las instrucciones para crear un bot nuevo. Copia el token que te da.</p>
+
+  <h3 id="crear-agente">2. Crear el agente</h3>
+
+  <p>Ve a <a href="https://cloud.nan.builders/agents/new" target="_blank" rel="noopener noreferrer" class="text-violet-400 hover:text-violet-300 underline underline-offset-2">cloud.nan.builders/agents/new</a>
+    y rellena: nombre, tipo (Hermes), el token de Telegram, modelo y opcionalmente
+    un <em>soul</em> (system prompt) que defina la personalidad de tu agente.</p>
+
+  <div class="my-6 rounded-xl border border-neutral-800/60 overflow-hidden">
+    <img src="/docs/agents/create-agent-form.png" alt="Formulario de creación de agente" class="w-full" loading="lazy" />
+  </div>
+
+  <h3 id="esperar-running">3. Esperar a que esté Running</h3>
+
+  <p>Tras crear el agente espera ~30 segundos a que el microVM arranque, formatee
+    el disco la primera vez (<code>mkfs.ext4</code>) y siembre el sistema de
+    ficheros. El estado pasa a <code>Running</code> y Hermes a <code>Ready</code>.</p>
+
+  <h3 id="hablar-con-hermes">4. Hablar con tu agente</h3>
+
+  <p>Busca tu bot en Telegram y envíale un mensaje. Hermes responderá usando
+    el modelo que hayas configurado.</p>
+
+  <div class="my-6 flex justify-center">
+    <div class="w-80 rounded-xl border border-neutral-800/60 overflow-hidden">
+      <img src="/docs/agents/telegram-hermes-chat.jpg" alt="Conversación con Hermes en Telegram" class="w-full" loading="lazy" />
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6 my-10">
+    <p class="font-mono text-sm text-emerald-400 font-medium mb-2">Tu agente está listo.</p>
+    <p class="text-sm text-neutral-400 leading-relaxed">
+      Con estos 4 pasos ya tienes a Hermes funcionando. Lo que viene a continuación
+      son funcionalidades adicionales del panel del agente: terminal web, subida de
+      ficheros, observabilidad, exposición HTTP, Hermes UI y gestión de variables
+      de entorno.
+    </p>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- CONSOLE                                      -->
+  <!-- ════════════════════════════════════════════ -->
+  <h2 id="console">Console — terminal web</h2>
+
+  <p>La pestaña <strong class="text-white">Console</strong> abre un terminal
+    interactivo (<code>bash --login</code>) dentro de tu microVM, sin que tengas
+    que configurar SSH. El stream va sobre WebSocket con xterm.js: resize
+    automático cuando ajustas el panel, status pill arriba a la derecha y botón
+    de reconexión si la sesión se cae.</p>
+
+  <p>Casos de uso típicos:</p>
+
+  <ul class="space-y-1 list-disc list-inside text-sm text-neutral-300 mb-6">
+    <li>Instalar paquetes: <code>apt update && apt install -y nginx</code></li>
+    <li>Inspeccionar logs internos del agente</li>
+    <li>Mover ficheros que hayas subido a su ubicación final</li>
+    <li>Tirar de <code>htop</code>, <code>df -h</code>, <code>journalctl</code>, etc.</li>
+  </ul>
+
+  <div class="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4 my-6">
+    <p class="font-mono text-xs text-yellow-300 leading-relaxed">
+      Límites operativos: 1 sesión simultánea por agente · idle timeout 10 min ·
+      duración máxima 30 min por sesión.
+    </p>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- FILES                                        -->
+  <!-- ════════════════════════════════════════════ -->
+  <h2 id="files">Files — subida de ficheros</h2>
+
+  <p>La pestaña <strong class="text-white">Files</strong> permite subir ficheros
+    al microVM con drag-and-drop o picker. Multi-fichero, cola secuencial,
+    progress bar en vivo con MiB/s. Los archivos aterrizan en
+    <code>/persist/uploads/</code> y desde ahí los puedes mover con la Console.</p>
+
+  <ul class="space-y-1 list-disc list-inside text-sm text-neutral-300 mb-6">
+    <li>Tamaño máximo: <strong class="text-white">200 MiB</strong> por fichero.</li>
+    <li>Transporte: WebSocket con chunks de 256 KiB y backpressure end-to-end.</li>
+    <li>Filename sanitizado server-side (sin path traversal).</li>
+    <li>Listado en vivo de lo ya subido (refresca cada 5 s).</li>
+  </ul>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- OBSERVABILITY                                -->
+  <!-- ════════════════════════════════════════════ -->
+  <h2 id="observability">Observability</h2>
+
+  <p>La pestaña <strong class="text-white">Observability</strong> agrupa tres
+    sub-pestañas:</p>
+
+  <ul class="space-y-2 list-disc list-inside text-sm text-neutral-300 mb-6">
+    <li><strong class="text-white">Logs</strong> — stream en vivo de stdout/stderr
+      del agente vía WebSocket. Buffer de las últimas 500 líneas en el cliente.</li>
+    <li><strong class="text-white">Events</strong> — eventos de Kubernetes del Pod
+      (BackOff, Scheduled, Pulled, Killing...) con tipo, razón, mensaje, edad y
+      contador. Auto-refresh cada 15 s.</li>
+    <li><strong class="text-white">Metrics</strong> — uso real de CPU, RAM y disco
+      contra los límites configurados. CPU/RAM vía Prometheus
+      (kubelet-cadvisor), disco vía <code>df</code> dentro del microVM (el
+      filesystem es block-mode, kubelet no lo ve). Refresca cada 10 s.</li>
+  </ul>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- WEB: HTTP                                    -->
+  <!-- ════════════════════════════════════════════ -->
+  <h2 id="web">Web — exposición pública</h2>
+
+  <p>La pestaña <strong class="text-white">Web</strong> tiene dos sub-pestañas
+    para sacar servicios HTTP del agente:</p>
+
+  <h3 id="http">HTTP</h3>
+
+  <p>Cualquier servicio que tu agente sirva por HTTP (nginx, una API, un
+    static-site) lo puedes exponer públicamente. Por ejemplo, pídele a Hermes
+    que instale nginx con un HTML personalizado:</p>
+
+  <div class="my-6 flex justify-center">
+    <div class="w-80 rounded-xl border border-neutral-800/60 overflow-hidden">
+      <img src="/docs/agents/telegram-nginx-setup.jpg" alt="Pidiendo a Hermes que instale nginx con un HTML personalizado" class="w-full" loading="lazy" />
+    </div>
+  </div>
+
+  <p>En la pestaña <strong class="text-white">Web → HTTP</strong> pulsa
+    <strong class="text-white">Enable HTTP</strong>. Por defecto se expone el
+    puerto <code>80</code>; si tu servicio escucha en otro puerto, indícalo en
+    <strong>Container Port</strong>. La plataforma genera una URL pública en
+    <code>*.apps.nan.builders</code>.</p>
+
+  <div class="my-6 rounded-xl border border-neutral-800/60 overflow-hidden">
+    <img src="/docs/agents/http-result.png" alt="Sitio web generado por Hermes visible desde la URL pública" class="w-full" loading="lazy" />
+  </div>
+
+  <h3 id="hermes-ui">Hermes UI</h3>
+
+  <p>Hermes incluye una UI web ligera
+    (<a href="https://github.com/nesquena/hermes-webui" target="_blank" rel="noopener noreferrer" class="text-violet-400 hover:text-violet-300 underline underline-offset-2">nesquena/hermes-webui</a>)
+    que se ejecuta siempre dentro del agente. Desde <strong>Web → Hermes UI</strong>
+    puedes habilitar acceso externo: la plataforma genera una URL del estilo
+    <code>webui-&lt;agent&gt;-&lt;user&gt;.apps.nan.builders</code> protegida por
+    una contraseña per-agent que aparece en el panel.</p>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- ENV VARS                                     -->
+  <!-- ════════════════════════════════════════════ -->
+  <h2 id="env">Variables de entorno</h2>
+
+  <p>La pestaña <strong class="text-white">Env</strong> permite añadir, editar
+    y borrar variables de entorno del agente sin tocar el Deployment. Útil para
+    inyectar API keys de terceros, configurar comportamiento de Hermes, etc.</p>
+
+  <p>Dos variables son <strong class="text-white">protegidas</strong> (sólo
+    edit, no delete): <code>OPENAI_API_KEY</code> (tu key del cluster, gestionada
+    por la plataforma) y <code>TELEGRAM_BOT_TOKEN</code>. El resto son
+    creación / edición / borrado libre.</p>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- LIMITES                                      -->
+  <!-- ════════════════════════════════════════════ -->
+  <h2 id="limites">Recursos y límites</h2>
+
+  <p>Cada microVM se aprovisiona con:</p>
+
+  <div class="overflow-x-auto my-6">
+    <table class="w-full text-left font-mono text-sm">
+      <thead>
+        <tr class="border-b border-neutral-800/60">
+          <th class="py-3 pr-4 text-[10px] uppercase tracking-widest text-neutral-500">Recurso</th>
+          <th class="py-3 pr-4 text-[10px] uppercase tracking-widest text-neutral-500">Request</th>
+          <th class="py-3 text-[10px] uppercase tracking-widest text-neutral-500">Limit</th>
+        </tr>
+      </thead>
+      <tbody class="text-neutral-300">
+        <tr class="border-b border-neutral-800/30">
+          <td class="py-3 pr-4 text-white">CPU</td>
+          <td class="py-3 pr-4">200m</td>
+          <td class="py-3 text-violet-400">1 vCPU</td>
+        </tr>
+        <tr class="border-b border-neutral-800/30">
+          <td class="py-3 pr-4 text-white">RAM</td>
+          <td class="py-3 pr-4">512 Mi</td>
+          <td class="py-3 text-violet-400">2 GiB</td>
+        </tr>
+        <tr class="border-b border-neutral-800/30">
+          <td class="py-3 pr-4 text-white">Disco</td>
+          <td class="py-3 pr-4">—</td>
+          <td class="py-3 text-violet-400">20 GiB (PVC block-mode)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="text-sm text-neutral-500">CPU y RAM son los límites máximos del
+    microVM; el uso real suele estar muy por debajo. El disco es persistente —
+    todo lo que instales o modifiques (paquetes, archivos, configuraciones)
+    se conserva entre reinicios. Si el disco se llena (90%+), libéralo desde la
+    Console (<code>du -sh /persist/*</code>).</p>
+
+  <div class="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4 my-6">
+    <p class="font-mono text-xs text-yellow-300 leading-relaxed">
+      Actualmente cada miembro puede desplegar <strong>1 agente microVM</strong>.
+      Este límite se ampliará en futuras versiones.
+    </p>
+  </div>
+</Docs>

@@ -1,0 +1,239 @@
+---
+import { t, tArr } from '../../lib/i18n';
+import Button from '../ui/Button.astro';
+
+const { locale = 'es' } = Astro.props;
+
+const features = tArr('pricing.features', locale);
+const communityFeatures = tArr('pricing.communityFeatures', locale);
+
+interface Plan {
+  name: string;
+  flag: string;
+  flagLabel: string;
+  price: string;
+  period: string;
+  taxNote: string;
+  features: string[];
+  ctaHref: string;
+  variant: 'inference' | 'community';
+  badge?: string;
+  noGpuTag?: string;
+}
+
+const plans: Plan[] = [
+  {
+    name: t('pricing.plan1.name', locale),
+    flag: '🇪🇺',
+    flagLabel: t('pricing.plan1.flagLabel', locale),
+    price: t('pricing.plan1.price', locale),
+    period: t('pricing.plan1.period', locale),
+    taxNote: t('pricing.plan1.taxNote', locale),
+    features,
+    ctaHref: '#waitlist',
+    variant: 'inference',
+  },
+  {
+    name: t('pricing.plan2.name', locale),
+    flag: '🇺🇸',
+    flagLabel: t('pricing.plan2.flagLabel', locale),
+    price: t('pricing.plan2.price', locale),
+    period: t('pricing.plan2.period', locale),
+    taxNote: t('pricing.plan2.taxNote', locale),
+    features,
+    ctaHref: '#waitlist',
+    variant: 'inference',
+  },
+  {
+    name: t('pricing.plan3.name', locale),
+    flag: '💬',
+    flagLabel: t('pricing.plan3.flagLabel', locale),
+    price: t('pricing.plan3.price', locale),
+    period: t('pricing.plan3.period', locale),
+    taxNote: t('pricing.plan3.taxNote', locale),
+    features: communityFeatures,
+    ctaHref: locale === 'en' ? '/community?lang=en' : '/community',
+    variant: 'community',
+    badge: t('pricing.plan3.badge', locale),
+    noGpuTag: t('pricing.plan3.noGpuTag', locale),
+  },
+];
+---
+
+<div class="gradient-divider"></div>
+<section id="pricing" class="px-6 py-24 md:py-32">
+  <div class="max-w-6xl mx-auto">
+    <p class="font-mono text-xs text-violet-400 uppercase tracking-widest mb-4 text-center">
+      {t('pricing.label', locale)}
+    </p>
+    <h2 class="font-mono text-sm text-neutral-400 mb-12 text-center">
+      {t('pricing.subheading', locale)}
+    </h2>
+
+    <div class="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+      {
+        plans.map((plan) => (
+          <div
+            class:list={[
+              'relative rounded-2xl pricing-card p-8 md:p-10',
+              plan.variant === 'community' && 'pricing-card--community',
+            ]}
+          >
+            <div class="relative z-10">
+              {plan.badge && (
+                <p class="font-mono text-[10px] text-violet-300 uppercase tracking-widest mb-3">
+                  {plan.badge}
+                </p>
+              )}
+              <div class="flex items-start justify-between gap-4 mb-6">
+                <h3 class="font-mono text-sm text-white">{plan.name}</h3>
+                <span
+                  class="font-mono text-2xl leading-none"
+                  role="img"
+                  aria-label={plan.flagLabel}
+                >
+                  {plan.flag}
+                </span>
+              </div>
+
+              <div class="flex items-baseline gap-2 mb-2">
+                <span
+                  class="font-mono text-5xl md:text-6xl font-bold text-white drop-shadow-[0_0_24px_rgba(139,92,246,0.35)]"
+                >
+                  {plan.price}
+                </span>
+                <span class="text-sm text-neutral-400">{plan.period}</span>
+              </div>
+              <p class="text-xs text-violet-400 mb-1">{plan.taxNote}</p>
+              {plan.variant === 'community' && plan.noGpuTag ? (
+                <p class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest mb-8">
+                  {plan.noGpuTag}
+                </p>
+              ) : (
+                <p class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest mb-8">
+                  {t('pricing.limited', locale)}
+                </p>
+              )}
+
+              <ul class="space-y-3 text-sm text-neutral-300 mb-10">
+                {plan.features.map((feature) => (
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-[7px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.6)]"
+                      aria-hidden="true"
+                    />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                href={plan.ctaHref}
+                class="block w-full text-center"
+                aria-label={
+                  (plan.variant === 'community'
+                    ? t('pricing.communityCta', locale)
+                    : t('pricing.cta', locale)) +
+                  ': ' +
+                  plan.name
+                }
+              >
+                {plan.variant === 'community'
+                  ? t('pricing.communityCta', locale)
+                  : t('pricing.cta', locale)}
+              </Button>
+
+              <p class="mt-5 text-center text-xs text-neutral-400 leading-relaxed">
+                {plan.variant === 'community'
+                  ? t('pricing.communityFooterNote', locale)
+                  : t('pricing.footerNote', locale)}
+              </p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .gradient-divider {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(139, 92, 246, 0.3) 30%,
+      rgba(139, 92, 246, 0.3) 70%,
+      transparent
+    );
+  }
+
+  .pricing-card {
+    background: linear-gradient(
+      to bottom,
+      rgba(91, 33, 182, 0.18),
+      rgba(91, 33, 182, 0.04)
+    );
+    position: relative;
+    z-index: 0;
+  }
+
+  .pricing-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    padding: 1px;
+    background: linear-gradient(
+      var(--border-angle, 0deg),
+      rgba(139, 92, 246, 0.65),
+      rgba(139, 92, 246, 0.1),
+      rgba(167, 139, 250, 0.45),
+      rgba(139, 92, 246, 0.1)
+    );
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    animation: border-rotate 8s linear infinite;
+    z-index: -1;
+  }
+
+  .pricing-card:hover {
+    box-shadow: 0 0 60px rgba(139, 92, 246, 0.2);
+  }
+
+  .pricing-card--community {
+    background: linear-gradient(
+      to bottom,
+      rgba(76, 29, 149, 0.12),
+      rgba(30, 27, 75, 0.06)
+    );
+  }
+
+  .pricing-card--community::before {
+    background: linear-gradient(
+      var(--border-angle, 0deg),
+      rgba(167, 139, 250, 0.5),
+      rgba(139, 92, 246, 0.08),
+      rgba(196, 181, 253, 0.35),
+      rgba(139, 92, 246, 0.08)
+    );
+  }
+
+  @keyframes border-rotate {
+    to {
+      --border-angle: 360deg;
+    }
+  }
+
+  @property --border-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+</style>

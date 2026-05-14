@@ -1,0 +1,329 @@
+{
+  "hero": {
+    "subheadline": "Shared GPUs. Open-source models. Closed community.",
+    "description": "Builders sharing GPUs to run the latest open AI models without token limits.",
+    "badge": "Limited spots",
+    "cta": "Join",
+    "docs": "Docs",
+    "scroll": "scroll",
+    "aria": {
+      "join": "Join the waitlist",
+      "docs": "Read the documentation",
+      "scroll": "Go to next section"
+    }
+  },
+  "about": {
+    "label": "// what is nan",
+    "heading": "Builders sharing dedicated GPUs to run open models and burn tokens without limits.",
+    "p1": "Closed-model APIs are convenient but expensive and limited. Open models are free but running them seriously requires hardware almost no one has at home.",
+    "p2": "NaN solves this by sharing powerful GPUs among builders who actually use them, splitting the real cost of infrastructure.",
+    "p3": "A closed community by design, limited to the real capacity of shared GPUs. When it fills up, we open a waitlist.",
+    "p4": "The community lives on Discord. The website only manages access. Every member pays to be here. Only those who truly want to build make it in."
+  },
+  "server": {
+    "label": "// inference cluster",
+    "heading": "Inference cluster for open AI models",
+    "description": "A shared cluster with NVIDIA RTX PRO 6000 Blackwell, 96 GB VRAM, 256 GB DDR5 RAM and 48 dedicated threads per node. Four open models running at once, chosen by the community each quarter.",
+    "hardware": "hardware",
+    "stack": "stack",
+    "models": "// current models",
+    "guarantees": {
+      "0": "Your code doesn't train any models",
+      "1": "Data in EU, no prompt logs",
+      "2": "No token caps",
+      "3": "Personal API key for each member"
+    },
+    "specs": {
+      "gpu": "GPU",
+      "vram": "VRAM",
+      "ram": "RAM",
+      "cpu": "CPU",
+      "storage": "Storage"
+    }
+  },
+  "privacy": {
+    "label": "// privacy",
+    "heading": "Pure inference. Zero logs.",
+    "p1": "NaN is inference infrastructure. There is no logging of prompts, model responses, nothing. Everything lives in your local session, on whatever client, agent, or custom app you use.",
+    "p2": "The API is pure inference. Nothing you do with it is logged except server-side metrics (tokens/s, RPM, etc.) for cluster maintenance and monitoring only.",
+    "p3": "Your code doesn't train any models. Your prompts aren't stored. Your data doesn't leave your session.",
+    "points": {
+      "noLogs": "Zero logs: no prompt or response logging",
+      "localData": "Everything lives in your local client or agent session",
+      "euProcessing": "Processing in the European Union",
+      "noTraining": "Your code doesn't train any models",
+      "metrics": "Server metrics only for cluster maintenance (tokens/s, RPM)"
+    }
+  },
+  "modelVoting": {
+    "label": "// how models are chosen",
+    "heading": "Models chosen by the community. Refreshed every quarter.",
+    "rules": {
+      "0": "Every 3 months, members vote on the new models that will run on the cluster.",
+      "1": "Candidates are pre-selected technically: they must fit in 96 GB of VRAM.",
+      "2": "Voting happens on Discord, open to all members.",
+      "3": "The open models ecosystem moves fast. So does NaN."
+    },
+    "models": "// current models"
+  },
+  "agents": {
+    "label": "// agents platform",
+    "heading": "Your own microVM. Root access. KVM-isolated.",
+    "description": "Beyond the API. Every member can deploy an agent into its own QEMU-isolated microVM — full access to the cluster's models, a web terminal, file uploads, and native observability.",
+    "specs": {
+      "label": "// resources",
+      "cpu": "1 vCPU",
+      "ram": "2 GiB",
+      "disk": "20 GiB"
+    },
+    "features": {
+      "label": "// what you get",
+      "items": {
+        "0": {
+          "name": "Isolated microVM",
+          "desc": "QEMU/KVM-isolated microVM. Own kernel, own FS, root with no risk to the host."
+        },
+        "1": {
+          "name": "Hermes preinstalled",
+          "desc": "Conversational agent ready to go. Plug in a Telegram token and start chatting."
+        },
+        "2": {
+          "name": "Web terminal",
+          "desc": "Interactive console in the browser. apt, pip, git — everything persists."
+        },
+        "3": {
+          "name": "File uploads",
+          "desc": "Drag-and-drop up to 200 MiB per file. Datasets, PDFs, configs."
+        },
+        "4": {
+          "name": "Native observability",
+          "desc": "Live logs, K8s events, CPU/RAM/disk metrics — nothing to install."
+        },
+        "5": {
+          "name": "Public HTTP endpoint",
+          "desc": "Expose any of the agent's web services at a *.apps.nan.builders URL."
+        }
+      }
+    },
+    "stack": {
+      "label": "// stack",
+      "runtime": "QEMU microVM",
+      "orchestration": "Kubernetes",
+      "storage": "block-mode persistent disk",
+      "isolation": "KVM"
+    },
+    "guarantees": {
+      "0": "Full root access inside your microVM.",
+      "1": "Real persistence: apt installs, configs, data — all survives restarts.",
+      "2": "Graceful shutdown: no filesystem corruption.",
+      "3": "Kernel-level isolation from the host and from other members."
+    }
+  },
+  "founder": {
+    "label": "// who's behind",
+    "heading": "The community is run by one person. Not a company.",
+    "bio": {
+      "0": "Founder of <a href=\"https://helmcode.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-violet-400 hover:text-violet-300 transition-colors\">Helmcode</a>, working with startups on cloud infrastructure, AI tooling and open source.",
+      "1": "Thanks to <a href=\"https://helmcode.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-violet-400 hover:text-violet-300 transition-colors\">Helmcode</a> we offer open model inference with unlimited token plans for enterprises, I share my experiments on social media and AI research."
+    },
+    "quote": "I started NaN because I wanted to run serious open models without usage limits, and share and learn with people in the same boat: builders who actually burn tokens.",
+    "links": {
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn",
+      "github": "GitHub"
+    }
+  },
+  "pricing": {
+    "label": "// pricing",
+    "subheading": "One tier per region. No upsells. No trial.",
+    "plan1": {
+      "name": "NaN Member EU",
+      "flagLabel": "Europe",
+      "price": "70€",
+      "period": "/mo",
+      "taxNote": "VAT included"
+    },
+    "plan2": {
+      "name": "NaN Member USA/Latam",
+      "flagLabel": "USA / Latam",
+      "price": "$75",
+      "period": "/mo",
+      "taxNote": "Taxes included"
+    },
+    "plan3": {
+      "name": "NaN Community",
+      "flagLabel": "Community",
+      "price": "$14.99",
+      "period": "/mo",
+      "taxNote": "Taxes included",
+      "badge": "// community",
+      "noGpuTag": "No GPU access · Discord only"
+    },
+    "limited": "Limited spots",
+    "features": {
+      "0": "Access to shared cluster (96 GB VRAM)",
+      "1": "Open models chosen by the community",
+      "2": "Personal API key compatible with OpenAI",
+      "3": "No token caps",
+      "4": "Private Discord channels for members only",
+      "5": "Voice in quarterly model voting",
+      "6": "Month to month, no commitment"
+    },
+    "communityFeatures": {
+      "0": "Discord access",
+      "1": "Member-only channels",
+      "2": "Live discussions, builds, AMAs",
+      "3": "Reserved spot in line for inference"
+    },
+    "cta": "Join",
+    "communityCta": "Join the community",
+    "footerNote": "Limited spots. When it fills up, waitlist.",
+    "communityFooterNote": "No commitment. Cancel anytime."
+  },
+  "cta": {
+    "label": "// join",
+    "heading": "A community of builders. Limited spots. Shared GPUs with unlimited usage.",
+    "description": "We share dedicated GPUs to run open models and burn tokens without limits. Leave your email and we'll reach out when we open payments."
+  },
+  "faq": {
+    "label": "// faq",
+    "heading": "What you'll probably ask.",
+    "items": {
+      "0": {
+        "id": "what-is-nan",
+        "question": "What is NaN?",
+        "answer": "NaN is a closed community of builders who share access to dedicated GPUs to run open-source AI models. Every member pays to be here, and there's only room for those who will actually build."
+      },
+      "1": {
+        "id": "how-it-works",
+        "question": "How does the GPU cluster work?",
+        "answer": "Each community member shares a dedicated GPU (RTX PRO 6000 Blackwell, 96 GB VRAM). The GPUs run open models 24/7 on a shared cluster. Each member gets a personal OpenAI-compatible API key to use models as they want, with no token caps."
+      },
+      "2": {
+        "id": "token-limits",
+        "question": "Are there really no token limits?",
+        "answer": "That's right. Once you have cluster access, you can burn tokens without limits. The models you run depend on what the community votes to run each quarter. No quotas, no throttling, no surprises on the bill."
+      },
+      "3": {
+        "id": "model-voting",
+        "question": "How are models chosen?",
+        "answer": "Every quarter, community members vote on which new models will run on the cluster. Candidates are pre-selected technically to ensure they fit within 96 GB of VRAM. Voting happens on Discord, open to all members."
+      },
+      "4": {
+        "id": "where-does-data-go",
+        "question": "Where does my data go?",
+        "answer": "Data is processed in the European Union, with no prompt logging. Your API key is personal and non-transferable. We don't share data between members or sell information to third parties. Your code doesn't train any models."
+      },
+      "5": {
+        "id": "who-is-this-for",
+        "question": "Who is NaN for?",
+        "answer": "For builders who want to run serious AI models without the overhead of managing infrastructure. If you're a startup, researcher, or maker who needs inference at scale without token limits, NaN is for you. It's not for casual experimentation."
+      },
+      "6": {
+        "id": "why-open-models",
+        "question": "Why only open models?",
+        "answer": "Because we believe real innovation comes from tools you can audit, modify, and use without restrictions. Closed models are convenient but create dependency. With open models you have full control over your stack."
+      },
+      "7": {
+        "id": "can-i-train",
+        "question": "Can I train models?",
+        "answer": "No. NaN is for inference, not training. The GPUs are optimized to run existing models at high speed, not for fine-tuning. If you need training, there are other platforms for that."
+      },
+      "8": {
+        "id": "payment-methods",
+        "question": "What payment methods do you accept?",
+        "answer": "We currently accept credit/debit cards. Prices include taxes (VAT for EU, taxes for USA/Latam). You can cancel anytime, no commitment."
+      },
+      "9": {
+        "id": "join-community",
+        "question": "How do I join the community?",
+        "answer": "Leave your email on the waitlist and we'll reach out when we open payments. The community lives on Discord — once you join, you get access to all private channels, quarterly votes, and direct support from the team."
+      }
+    }
+  },
+  "footer": {
+    "brand": "nan.builders"
+  },
+  "waitlist": {
+    "registered": "// registered",
+    "interest": "// interest registered",
+    "followUp": "We don't send newsletters. We'll only write when we open payments.",
+    "confirmation": {
+      "label": "// confirmation",
+      "heading": "Are you sure you want to join?",
+      "p1": "You're joining the waitlist for a paid private community. When we open payments, a monthly subscription will be required to access shared GPUs and the models chosen by the community.",
+      "p2": "We only want people with real intention to pay to join. If you're just curious, better not join.",
+      "cancel": "Cancel",
+      "confirm": "Yes, sign me up",
+      "submitting": "Sending…"
+    },
+    "honeypot": "Do not fill this field",
+    "email": {
+      "label": "email",
+      "placeholder": "you@email.com"
+    },
+    "region": {
+      "label": "region",
+      "default": "Select your region"
+    },
+    "submit": {
+      "idle": "Join the waitlist",
+      "submitting": "Sending…"
+    },
+    "footer": "No spam. No newsletters. We only write when we open payments."
+  },
+  "waitlistHelpers": {
+    "regions": {
+      "europa": "Europe",
+      "latam": "LATAM",
+      "usa": "USA"
+    },
+    "successInterest": "Noted. We're available for ${regionLabel}. We'll let you know as soon as we open payments.",
+    "successRegistered": "You're on the list. We'll accept members in order of arrival when we open payments.",
+    "errors": {
+      "invalidEmail": "Invalid email. Check the format.",
+      "invalidRegion": "Select a region.",
+      "rateLimited": "Too many attempts. Wait a minute.",
+      "networkError": "No connection. Try again.",
+      "serverError": "Something went wrong on the server. Try again in a moment."
+    }
+  },
+  "community": {
+    "label": "// community",
+    "pageTitle": "NaN Community",
+    "title": "Join the community while you wait for an inference seat.",
+    "subtitle": "Discord access, conversations with builders, and a reserved spot in line for GPU access when capacity frees up.",
+    "priceLabel": "$14.99 / month",
+    "priceTaxNote": "Taxes included",
+    "includesLabel": "What's included",
+    "notIncludedLabel": "Not included",
+    "notIncluded": {
+      "0": "Inference service access (GPUs)",
+      "1": "Agents and apps deployment",
+      "2": "API key for model calls"
+    },
+    "faqUpgradeQ": "How do I move to the inference plan later?",
+    "faqUpgradeA": "When GPU capacity frees up, we'll invite you manually. In the meantime you can request the upgrade from your member dashboard.",
+    "faqCancelQ": "Can I cancel?",
+    "faqCancelA": "Yes, anytime from your member dashboard. No commitment.",
+    "backToLanding": "← Back to nan.builders",
+    "emailLabel": "email",
+    "emailPlaceholder": "you@email.com",
+    "regionLabel": "region",
+    "regionDefault": "Select your region",
+    "regionEU": "Europe",
+    "regionUSA": "USA",
+    "regionLATAM": "LATAM",
+    "submit": "Join the community",
+    "submitting": "Processing…",
+    "redirecting": "Redirecting to checkout…",
+    "alreadySubscribed": "You're already in. If you didn't get a receipt, write to us at",
+    "honeypot": "Do not fill this field",
+    "errorInvalidEmail": "Invalid email. Check the format.",
+    "errorInvalidRegion": "Select a region.",
+    "errorRateLimited": "Too many attempts. Wait a minute.",
+    "errorServer": "Something went wrong. Try again in a moment.",
+    "errorNetwork": "No connection. Try again.",
+    "footer": "Cancel anytime."
+  }
+}

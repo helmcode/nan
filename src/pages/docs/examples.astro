@@ -1,0 +1,422 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/docs/CodeBlock.astro';
+---
+
+<Docs title="Ejemplos" description="Code snippets para conectar a la API de NaN con Python, Node.js, curl y más.">
+  <div class="mb-6">
+    <p class="font-mono text-xs text-violet-400 uppercase tracking-widest mb-6">
+      // examples
+    </p>
+  </div>
+
+  <h1>Code snippets.</h1>
+
+  <p>Ejemplos para conectar a la API con diferentes lenguajes y herramientas.
+    Usa <code>https://api.nan.builders/v1</code>
+    como base URL y tu API key personal.</p>
+
+  <!-- qwen3.6 -->
+  <h2 id="qwen36">modelo: qwen3.6</h2>
+  <p class="font-mono text-xs text-neutral-500 mb-6">generación de texto y chat</p>
+
+  <h3 id="qwen36-curl">curl</h3>
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -d '{
+    "model": "qwen3.6",
+    "messages": [{"role": "user", "content": "Hola, ¿cómo estás?"}],
+    "max_tokens": 500
+  }'`} />
+
+  <h3 id="qwen36-python">python (openai)</h3>
+  <CodeBlock language="python" code={`from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-tu-key-aqui",
+  base_url="https://api.nan.builders/v1"
+)
+
+response = client.chat.completions.create(
+  model="qwen3.6",
+  messages=[{"role": "user", "content": "Escribe un hola mundo en Rust"}],
+  max_tokens=500,
+  stream=True
+)
+
+for chunk in response:
+    content = chunk.choices[0].delta.content
+    if content:
+        print(content, end="", flush=True)`} />
+  <p class="font-mono text-xs text-neutral-500 mb-5">
+    Instalar: <code>pip install openai</code>
+  </p>
+
+  <h3 id="qwen36-node">node.js (openai)</h3>
+  <CodeBlock language="node.js" code={`import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-tu-key-aqui",
+  baseURL: "https://api.nan.builders/v1",
+});
+
+const stream = await client.chat.completions.create({
+  model: "qwen3.6",
+  messages: [{ role: "user", content: "Escribe un hola mundo en Zig" }],
+  max_tokens: 500,
+  stream: true,
+});
+
+for await (const chunk of stream) {
+  const content = chunk.choices[0]?.delta?.content;
+  if (content) process.stdout.write(content);
+}`} />
+  <p class="font-mono text-xs text-neutral-500 mb-5">
+    Instalar: <code>npm install openai</code>
+  </p>
+
+  <h3 id="qwen36-opencode">opencode.json (config)</h3>
+  <CodeBlock language="json" code={`{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "nan": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "NaN",
+      "options": {
+        "baseURL": "https://api.nan.builders/v1",
+        "apiKey": "sk-tu-key-aqui"
+      },
+      "models": {
+        "qwen3.6": {
+          "name": "Qwen 3.6",
+          "contextWindow": 262144,
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          }
+        }
+      }
+    }
+  },
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 50000
+  }
+}`} />
+  <p class="font-mono text-xs text-neutral-500">
+    Este es el config para conectar IDEs (Cursor, OpenCode) con qwen3.6 — el único modelo de chat.
+  </p>
+
+  <h3 id="qwen36-pi">.pi/agent/models.json (config)</h3>
+  <CodeBlock language="json" code={`{
+  "providers": {
+    "nan": {
+      "baseUrl": "https://api.nan.builders/v1",
+      "api": "openai-completions",
+      "apiKey": "<api-key>",
+      "compat": {
+        "supportsDeveloperRole": true
+      },
+      "models": [
+        {
+          "id": "qwen3.6",
+          "name": "Qwen 3.6",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 262144,
+          "maxTokens": 16384
+        },
+        {
+          "id": "gemma4",
+          "name": "Gemma 4",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 262144,
+          "maxTokens": 16384
+        }
+      ]
+    }
+  }
+}`} />
+  <p class="font-mono text-xs text-neutral-500">
+    Config para <code>~/.pi/agent/models.json</code>
+  </p>
+
+  <h3 id="qwen36-openclaw">openclaw.json (config)</h3>
+  <CodeBlock language="json" code={`{
+  "models": {
+    "providers": {
+      "nan": {
+        "baseUrl": "https://api.nan.builders/v1",
+        "apiKey": "sk-...",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen3.6",
+            "name": "Qwen 3.6",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 262144,
+            "maxTokens": 65536
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": { "primary": "nan/qwen3.6" },
+      "models": {
+        "nan/qwen3.6": {
+          "params": {
+            "maxTokens": 16000
+          }
+        }
+      }
+    }
+  }
+}`} />
+  <p class="font-mono text-xs text-neutral-500">
+    Config para <code>~/.openclaw/openclaw.json</code>
+  </p>
+  <p class="font-mono text-xs text-neutral-400 mt-3 leading-relaxed">
+    <code>maxTokens: 65536</code> es el máximo que soporta el modelo. <code>params.maxTokens: 16000</code> es lo que se envía por request. 16K es un buen balance para la mayoría de tareas. Si necesitas respuestas más largas, súbelo — pero ten en cuenta que el reasoning también consume de ese presupuesto.
+  </p>
+
+  <h3 id="qwen36-zed">settings.json (Zed)</h3>
+  <CodeBlock language="zed" code={`{
+  "language_models": {
+    "openai": {
+      "api_url": "https://api.nan.builders/v1",
+      "available_models": [
+        {
+          "name": "qwen3.6",
+          "display_name": "NaN",
+          "max_tokens": 262144
+        }
+      ]
+    }
+  },
+  "edit_predictions": {
+    "open_ai_compatible_api": {
+      "api_url": "https://api.nan.builders/v1",
+      "model": "qwen3.6"
+    }
+  }
+}`} />
+  <p class="font-mono text-xs text-neutral-500">
+    Config para <code>~/.config/zed/settings.json</code> — incluye inline predictions.
+  </p>
+
+  <!-- qwen3-embedding -->
+  <h2 id="qwen3-embedding">modelo: qwen3-embedding</h2>
+  <p class="font-mono text-xs text-neutral-500 mb-6">embeddings vectoriales</p>
+
+  <h3 id="qwen3-embedding-curl">curl</h3>
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/embeddings \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -d '{
+    "model": "qwen3-embedding",
+    "input": ["Hola mundo", "Hello world"],
+    "encoding_format": "float"
+  }'
+# → 4096-dimensional vectors per input`} />
+
+  <h3 id="qwen3-embedding-python">python</h3>
+  <CodeBlock language="python" code={`from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-tu-key-aqui",
+  base_url="https://api.nan.builders/v1"
+)
+
+response = client.embeddings.create(
+  model="qwen3-embedding",
+  input=["Kubernetes pod scheduling", "Programación de pods Kubernetes"],
+  encoding_format="float"
+)
+
+embeddings = [d.embedding for d in response.data]
+print(len(embeddings[0]))  // 4096`} />
+
+  <h3 id="qwen3-embedding-node">node.js</h3>
+  <CodeBlock language="node.js" code={`import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: "sk-tu-key-aqui",
+  baseURL: "https://api.nan.builders/v1",
+});
+
+const response = await client.embeddings.create({
+  model: "qwen3-embedding",
+  input: ["Hello world", "Hola mundo"],
+  encoding_format: "float",
+});
+
+const embeddings = response.data.map((d) => d.embedding);
+console.log(embeddings[0].length);  // 4096`} />
+
+  <!-- kokoro -->
+  <h2 id="kokoro">modelo: kokoro</h2>
+  <p class="font-mono text-xs text-neutral-500 mb-6">text-to-speech</p>
+
+  <h3 id="kokoro-curl">curl</h3>
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/audio/speech \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -d '{
+    "model": "kokoro",
+    "input": "Bienvenido a NaN builders.",
+    "voice": "ef_dora"
+  }' \\
+  -o speech.mp3
+
+# Spanish female voice (ef_dora), English (af_heart), etc.
+# Ver todas las voces: https://github.com/hexgrad/Kokoro-82M`} />
+
+  <h3 id="kokoro-python">python</h3>
+  <CodeBlock language="python" code={`from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-tu-key-aqui",
+  base_url="https://api.nan.builders/v1"
+)
+
+response = client.audio.speech.create(
+  model="kokoro",
+  voice="ef_dora",
+  input="Hola, bienvenido a NaN builders.",
+  speed=1.0,
+  response_format="mp3"
+)
+
+response.stream_to_file("output.mp3")
+
+# English voice
+response = client.audio.speech.create(
+  model="kokoro",
+  voice="af_heart",
+  input="Welcome to NaN builders.",
+  response_format="mp3"
+)`} />
+
+  <h3 id="kokoro-node">node.js</h3>
+  <CodeBlock language="node.js" code={`import OpenAI from "openai";
+import fs from "fs";
+
+const client = new OpenAI({
+  apiKey: "sk-tu-key-aqui",
+  baseURL: "https://api.nan.builders/v1",
+});
+
+const response = await client.audio.speech.create({
+  model: "kokoro",
+  voice: "ef_dora",
+  input: "Hola, bienvenido a NaN builders.",
+  speed: 1.0,
+  response_format: "mp3",
+});
+
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync("output.mp3", buffer);`} />
+
+  <!-- whisper -->
+  <h2 id="whisper">modelo: whisper</h2>
+  <p class="font-mono text-xs text-neutral-500 mb-6">speech-to-text</p>
+
+  <h3 id="whisper-curl">curl</h3>
+  <CodeBlock language="curl" code={`# Transcribe audio file
+curl https://api.nan.builders/v1/audio/transcriptions \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -F "model=whisper" \\
+  -F "file=@recording.mp3" \\
+  -F "language=es"
+
+# → {"text":"Texto transcrito","language":"es","duration":5.2}
+
+# Translate to English
+curl https://api.nan.builders/v1/audio/translations \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -F "model=whisper" \\
+  -F "file=@grabacion.mp3"`} />
+
+  <h3 id="whisper-python">python</h3>
+  <CodeBlock language="python" code={`from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-tu-key-aqui",
+  base_url="https://api.nan.builders/v1"
+)
+
+# Transcribe Spanish audio
+with open("grabacion.mp3", "rb") as f:
+    result = client.audio.transcriptions.create(
+        model="whisper",
+        file=f,
+        language="es",
+        response_format="verbose_json"
+    )
+
+print(result.text)              # Transcribed text
+print(result.language)          # "es"
+print(result.duration)          # 5.2 (seconds)
+
+# Translate to English
+with open("grabacion.mp3", "rb") as f:
+    translation = client.audio.translations.create(
+        model="whisper",
+        file=f
+    )
+print(translation.text)  # English translation`} />
+
+  <h3 id="whisper-node">node.js</h3>
+  <CodeBlock language="node.js" code={`import OpenAI from "openai";
+import fs from "fs";
+import FormData from "form-data";
+
+const client = new OpenAI({
+  apiKey: "sk-tu-key-aqui",
+  baseURL: "https://api.nan.builders/v1",
+});
+
+// Transcribe audio
+const file = fs.createReadStream("grabacion.mp3");
+const form = FormData();
+form.append("file", file);
+
+const result = await client.audio.transcriptions.create({
+  model: "whisper",
+  file,
+  language: "es",
+  response_format: "verbose_json",
+});
+
+console.log(result.text);       // Texto transcrito
+console.log(result.language);   // "es"
+console.log(result.duration);   // 5.2`} />
+
+  <div class="gradient-divider mt-16 mb-6"></div>
+  
+  <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-10">
+    <p class="font-mono text-sm text-white mb-3">Integración en IDEs</p>
+    <div class="space-y-4 text-xs text-neutral-400">
+      <div>
+        <p class="text-neutral-200 mb-1 font-mono">Cursor</p>
+        <p>Settings → OpenAI API → Base URL: <code>https://api.nan.builders/v1</code>, API Key: tu key</p>
+      </div>
+      <div>
+        <p class="text-neutral-200 mb-1 font-mono">Zed</p>
+        <p>Settings → <code>settings.json</code> → ver <a href="#qwen36-zed" class="text-violet-400 hover:text-violet-300">config completo arriba</a></p>
+      </div>
+      <div>
+        <p class="text-neutral-200 mb-1 font-mono">Cline / Continue / Aider</p>
+        <p>Configura las vars de entorno:</p>
+        <pre class="inline-code font-mono text-xs text-neutral-300 mt-1 bg-neutral-900/50 rounded-lg px-3 py-2"><code>export OPENAI_BASE_URL="https://api.nan.builders/v1"
+export OPENAI_API_KEY="sk-tu-key-aqui"</code></pre>
+      </div>
+    </div>
+  </div>
+</Docs>

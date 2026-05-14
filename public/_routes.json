@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "description": "Routing rules for Cloudflare Workers with Assets",
+  "rules": [
+    {
+      "pattern": "^/\\_server-islands/(.*)$",
+      "scripts": "dedicated"
+    },
+    {
+      "pattern": "^/api/(.*)$",
+      "scripts": "dedicated"
+    },
+    {
+      "pattern": "^/(.*)$",
+      "scripts": "single",
+      "fallthrough": true
+    }
+  ]
+}
