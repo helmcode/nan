@@ -171,36 +171,6 @@
     "footerNote": "Plazas limitadas. Cuando se llena, lista de espera.",
     "communityFooterNote": "Sin permanencia. Cancela cuando quieras."
   },
-  "sotaCredits": {
-    "label": "// sota credits",
-    "heading": "Packs de créditos SOTA",
-    "subheading": "DeepSeek V4-Flash bajo demanda. Compra créditos cuando agotes los 50 incluidos del mes.",
-    "creditUnit": "créditos",
-    "packs": {
-      "0": {
-        "name": "Starter",
-        "credits": "10 créditos",
-        "price": "$5"
-      },
-      "1": {
-        "name": "Standard",
-        "credits": "50 créditos",
-        "price": "$25",
-        "badge": "// más popular"
-      },
-      "2": {
-        "name": "Pro",
-        "credits": "100 créditos",
-        "price": "$45"
-      },
-      "3": {
-        "name": "Power",
-        "credits": "200 créditos",
-        "price": "$85"
-      }
-    },
-    "note": "Los créditos comprados no expiran. Los 50 incluidos se renuevan cada mes y no son acumulables."
-  },
   "cta": {
     "label": "// join",
     "heading": "Una comunidad de builders. Plazas limitadas. GPUs compartidas sin límites de uso.",
@@ -259,26 +229,6 @@
         "id": "join-community",
         "question": "¿Cómo entro a la comunidad?",
         "answer": "Deja tu email en la lista de espera y te escribimos cuando abramos pagos. La comunidad vive en Discord — una vez que te unes, tienes acceso a todos los canales privados, votaciones trimestrales y soporte directo del equipo."
-      },
-      "10": {
-        "id": "what-is-a-sota-credit",
-        "question": "¿Qué es un crédito SOTA?",
-        "answer": "1M tokens en DeepSeek V4-Flash equivale aproximadamente a 1 crédito. Una sesión típica de coding con un agente consume entre 0.01 y 0.05 créditos."
-      },
-      "11": {
-        "id": "what-happens-when-credits-run-out",
-        "question": "¿Qué pasa cuando agoto los 50 créditos incluidos del mes?",
-        "answer": "Puedes seguir usando todos los modelos del cluster sin límite. Para seguir con V4-Flash, compras un pack que persiste hasta consumirlo."
-      },
-      "12": {
-        "id": "do-purchased-credits-reset",
-        "question": "¿Los créditos comprados se resetean cada mes?",
-        "answer": "No, sólo los 50 incluidos. Los packs persisten indefinidamente."
-      },
-      "13": {
-        "id": "why-unlimited-vs-credits",
-        "question": "¿Por qué unos modelos son ilimitados y otros tienen créditos?",
-        "answer": "Los modelos del cluster corren en GPUs propias en Europa; el coste marginal es cero. Los modelos SOTA frontier los consumimos vía API externa con coste real por token, por eso los metemos detrás de créditos para mantener el plan sostenible."
       }
     }
   },

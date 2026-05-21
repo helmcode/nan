@@ -171,36 +171,6 @@
     "footerNote": "Limited spots. When it fills up, waitlist.",
     "communityFooterNote": "No commitment. Cancel anytime."
   },
-  "sotaCredits": {
-    "label": "// sota credits",
-    "heading": "SOTA credit packs",
-    "subheading": "DeepSeek V4-Flash on demand. Buy credits when you run out of the 50 included each month.",
-    "creditUnit": "credits",
-    "packs": {
-      "0": {
-        "name": "Starter",
-        "credits": "10 credits",
-        "price": "$5"
-      },
-      "1": {
-        "name": "Standard",
-        "credits": "50 credits",
-        "price": "$25",
-        "badge": "// most popular"
-      },
-      "2": {
-        "name": "Pro",
-        "credits": "100 credits",
-        "price": "$45"
-      },
-      "3": {
-        "name": "Power",
-        "credits": "200 credits",
-        "price": "$85"
-      }
-    },
-    "note": "Purchased credits never expire. The 50 included credits refresh every month and do not roll over."
-  },
   "cta": {
     "label": "// join",
     "heading": "A community of builders. Limited spots. Shared GPUs with unlimited usage.",
@@ -259,26 +229,6 @@
         "id": "join-community",
         "question": "How do I join the community?",
         "answer": "Leave your email on the waitlist and we'll reach out when we open payments. The community lives on Discord — once you join, you get access to all private channels, quarterly votes, and direct support from the team."
-      },
-      "10": {
-        "id": "what-is-a-sota-credit",
-        "question": "What is a SOTA credit?",
-        "answer": "1M tokens on DeepSeek V4-Flash is roughly 1 credit. A typical coding session with an agent consumes between 0.01 and 0.05 credits."
-      },
-      "11": {
-        "id": "what-happens-when-credits-run-out",
-        "question": "What happens when I run out of the 50 included credits?",
-        "answer": "You can keep using all cluster models without limits. To continue with V4-Flash, you buy a pack that persists until consumed."
-      },
-      "12": {
-        "id": "do-purchased-credits-reset",
-        "question": "Do purchased credits reset every month?",
-        "answer": "No, only the 50 included credits. Packs persist indefinitely."
-      },
-      "13": {
-        "id": "why-unlimited-vs-credits",
-        "question": "Why are some models unlimited and others use credits?",
-        "answer": "Cluster models run on our own GPUs in Europe; marginal cost is zero. Frontier SOTA models are consumed via an external API with real per-token cost, so we gate them behind credits to keep the plan sustainable."
       }
     }
   },
