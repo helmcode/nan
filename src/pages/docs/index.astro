@@ -3,7 +3,7 @@ import Docs from '../../layouts/Docs.astro';
 import RateLimits from '../../components/docs/RateLimits.astro';
 ---
 
-<Docs title="Introducción" description="Conecta tus herramientas favoritas (OpenCode, Cursor, Cline, etc) a nuestros modelos abiertos corriendo en hardware dedicado con NVIDIA Blackwell.">
+<Docs title="Introducción" description="Conecta tus herramientas favoritas (OpenCode, Cursor, Cline, etc) a nuestro cluster compartido de inferencia.">
   <div class="mb-6">
     <p class="font-mono text-xs text-violet-400 uppercase tracking-widest mb-6">
       // docs
@@ -37,46 +37,6 @@ import RateLimits from '../../components/docs/RateLimits.astro';
     rates
   </p>
   <RateLimits />
-
-  <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-5">
-    hardware
-  </p>
-  <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-14">
-    <dl class="grid gap-3 sm:grid-cols-2">
-      <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-        <dt class="text-neutral-500 uppercase tracking-wider">GPU</dt>
-        <dd class="text-neutral-200 text-right">NVIDIA RTX PRO 6000 Blackwell</dd>
-      </div>
-      <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-        <dt class="text-neutral-500 uppercase tracking-wider">VRAM</dt>
-        <dd class="text-neutral-200 text-right">96 GB GDDR7 ECC</dd>
-      </div>
-      <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-        <dt class="text-neutral-500 uppercase tracking-wider">RAM</dt>
-        <dd class="text-neutral-200 text-right">256 GB DDR5 ECC</dd>
-      </div>
-      <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-        <dt class="text-neutral-500 uppercase tracking-wider">CPU</dt>
-        <dd class="text-neutral-200 text-right">48 threads · Xeon Gold 5412U</dd>
-      </div>
-      <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-        <dt class="text-neutral-500 uppercase tracking-wider">Inference</dt>
-        <dd class="text-neutral-200 text-right">vLLM → LiteLLM</dd>
-      </div>
-      <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-        <dt class="text-neutral-500 uppercase tracking-wider">Embedding</dt>
-        <dd class="text-neutral-200 text-right">HuggingFace TEI → LiteLLM</dd>
-      </div>
-      <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-        <dt class="text-neutral-500 uppercase tracking-wider">TTS</dt>
-        <dd class="text-neutral-200 text-right">kokoro-fastapi → LiteLLM</dd>
-      </div>
-      <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-        <dt class="text-neutral-500 uppercase tracking-wider">STT</dt>
-        <dd class="text-neutral-200 text-right">speaches → LiteLLM</dd>
-      </div>
-    </dl>
-  </div>
 
   <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-5">
     qué hacer a continuación

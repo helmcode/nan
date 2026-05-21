@@ -22,23 +22,14 @@
   },
   "server": {
     "label": "// inference cluster",
-    "heading": "Cluster de inferencia de modelos abiertos de IA",
-    "description": "Un cluster compartido con NVIDIA RTX PRO 6000 Blackwell, 96 GB de VRAM, 256 GB de RAM DDR5 y 48 threads dedicados por cada nodo. Cuatro modelos abiertos corriendo a la vez, elegidos por la comunidad cada trimestre.",
-    "hardware": "hardware",
-    "stack": "stack",
+    "heading": "Cluster de inferencia",
+    "description": "Cluster compartido de inferencia. Modelos elegidos por la comunidad cada trimestre.",
     "models": "// current models",
     "guarantees": {
       "0": "Tu código no entrena ningún modelo",
       "1": "Datos en EU, sin logs de prompts",
-      "2": "Sin caps de tokens",
+      "2": "Tokens ilimitados en modelos del cluster",
       "3": "API key personal para cada miembro"
-    },
-    "specs": {
-      "gpu": "GPU",
-      "vram": "VRAM",
-      "ram": "RAM",
-      "cpu": "CPU",
-      "storage": "Storage"
     }
   },
   "privacy": {
@@ -60,7 +51,7 @@
     "heading": "Modelos elegidos por la comunidad. Renovados cada trimestre.",
     "rules": {
       "0": "Cada 3 meses, los miembros votan los nuevos modelos que correrán en el cluster.",
-      "1": "Los candidatos se preseleccionan técnicamente: tienen que caber en 96 GB de VRAM.",
+      "1": "Los candidatos se preseleccionan técnicamente: tienen que caber en la capacidad del cluster.",
       "2": "La votación se hace en Discord, abierta a todos los miembros.",
       "3": "El ecosistema de modelos abiertos se mueve rápido. NaN también."
     },
@@ -161,10 +152,10 @@
     },
     "limited": "Plazas limitadas",
     "features": {
-      "0": "Acceso al cluster compartido (96 GB VRAM)",
-      "1": "Modelos abiertos elegidos por la comunidad",
-      "2": "API key personal compatible con OpenAI",
-      "3": "Sin caps de tokens",
+      "0": "Acceso al cluster compartido — modelos abiertos sin caps de tokens",
+      "1": "DeepSeek V4-Flash (frontier 284B, contexto 1M, razonamiento avanzado) — 100M tokens/mes",
+      "2": "Modelos abiertos elegidos por la comunidad",
+      "3": "API key personal compatible con OpenAI",
       "4": "Canales privados en Discord solo para miembros",
       "5": "Voz en la votación trimestral de modelos",
       "6": "Mes a mes, sin permanencia"
@@ -179,6 +170,36 @@
     "communityCta": "Únete a la comunidad",
     "footerNote": "Plazas limitadas. Cuando se llena, lista de espera.",
     "communityFooterNote": "Sin permanencia. Cancela cuando quieras."
+  },
+  "sotaCredits": {
+    "label": "// sota credits",
+    "heading": "Packs de créditos SOTA",
+    "subheading": "DeepSeek V4-Flash bajo demanda. Compra créditos cuando agotes los 50 incluidos del mes.",
+    "creditUnit": "créditos",
+    "packs": {
+      "0": {
+        "name": "Starter",
+        "credits": "10 créditos",
+        "price": "$5"
+      },
+      "1": {
+        "name": "Standard",
+        "credits": "50 créditos",
+        "price": "$25",
+        "badge": "// más popular"
+      },
+      "2": {
+        "name": "Pro",
+        "credits": "100 créditos",
+        "price": "$45"
+      },
+      "3": {
+        "name": "Power",
+        "credits": "200 créditos",
+        "price": "$85"
+      }
+    },
+    "note": "Los créditos comprados no expiran. Los 50 incluidos se renuevan cada mes y no son acumulables."
   },
   "cta": {
     "label": "// join",
@@ -196,18 +217,18 @@
       },
       "1": {
         "id": "how-it-works",
-        "question": "¿Cómo funciona el cluster de GPUs?",
-        "answer": "Cada miembro de la comunidad comparte una GPU dedicada (RTX PRO 6000 Blackwell, 96 GB VRAM). Las GPUs corren modelos abiertos 24/7 en un cluster compartido. Cada miembro recibe una API key personal compatible con OpenAI para usar los modelos a su gusto, sin caps de tokens."
+        "question": "¿Cómo funciona el cluster?",
+        "answer": "Cada miembro de la comunidad comparte un cluster de inferencia dedicado. Los modelos del cluster corren 24/7 y cada miembro recibe una API key personal compatible con OpenAI para usar los modelos a su gusto, sin caps de tokens."
       },
       "2": {
         "id": "token-limits",
         "question": "¿Realmente no hay límites de tokens?",
-        "answer": "Correcto. Una vez que tienes acceso al cluster, puedes quemar tokens sin límites. El modelo que corras depende de lo que la comunidad elija cada trimestre. No hay quotas, no hay throttling, no hay sorpresas en la factura."
+        "answer": "Puedes quemar tokens sin límites en los modelos más pequeños del cluster. Los modelos frontier (como DeepSeek V4-Flash) tienen una cuota mensual generosa por miembro para mantener el plan sostenible. No hay sorpresas en la factura: el precio fijo de la suscripción es lo único que pagas."
       },
       "3": {
         "id": "model-voting",
         "question": "¿Cómo se eligen los modelos?",
-        "answer": "Cada trimestre, los miembros de la comunidad votan qué nuevos modelos correrán en el cluster. Los candidatos se preseleccionan técnicamente para asegurar que caben en 96 GB de VRAM. La votación se hace en Discord, abierta a todos los miembros."
+        "answer": "Cada trimestre, los miembros de la comunidad votan qué nuevos modelos correrán en el cluster. Los candidatos se preseleccionan técnicamente para asegurar que caben en la capacidad del cluster. La votación se hace en Discord, abierta a todos los miembros."
       },
       "4": {
         "id": "where-does-data-go",
@@ -238,6 +259,26 @@
         "id": "join-community",
         "question": "¿Cómo entro a la comunidad?",
         "answer": "Deja tu email en la lista de espera y te escribimos cuando abramos pagos. La comunidad vive en Discord — una vez que te unes, tienes acceso a todos los canales privados, votaciones trimestrales y soporte directo del equipo."
+      },
+      "10": {
+        "id": "what-is-a-sota-credit",
+        "question": "¿Qué es un crédito SOTA?",
+        "answer": "1M tokens en DeepSeek V4-Flash equivale aproximadamente a 1 crédito. Una sesión típica de coding con un agente consume entre 0.01 y 0.05 créditos."
+      },
+      "11": {
+        "id": "what-happens-when-credits-run-out",
+        "question": "¿Qué pasa cuando agoto los 50 créditos incluidos del mes?",
+        "answer": "Puedes seguir usando todos los modelos del cluster sin límite. Para seguir con V4-Flash, compras un pack que persiste hasta consumirlo."
+      },
+      "12": {
+        "id": "do-purchased-credits-reset",
+        "question": "¿Los créditos comprados se resetean cada mes?",
+        "answer": "No, sólo los 50 incluidos. Los packs persisten indefinidamente."
+      },
+      "13": {
+        "id": "why-unlimited-vs-credits",
+        "question": "¿Por qué unos modelos son ilimitados y otros tienen créditos?",
+        "answer": "Los modelos del cluster corren en GPUs propias en Europa; el coste marginal es cero. Los modelos SOTA frontier los consumimos vía API externa con coste real por token, por eso los metemos detrás de créditos para mantener el plan sostenible."
       }
     }
   },

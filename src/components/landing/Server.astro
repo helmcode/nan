@@ -3,21 +3,12 @@ import { t, tArr } from '../../lib/i18n';
 
 const { locale = 'es' } = Astro.props;
 
-const hardwareSpecs = [
-  { label: t('server.specs.gpu', locale), value: 'NVIDIA RTX PRO 6000 Blackwell' },
-  { label: t('server.specs.vram', locale), value: '96 GB GDDR7 ECC' },
-  { label: t('server.specs.ram', locale), value: '256 GB DDR5 ECC' },
-  { label: t('server.specs.cpu', locale), value: '48 threads · Intel Xeon Gold 5412U' },
-  { label: t('server.specs.storage', locale), value: '2× 960 GB NVMe RAID 1' },
-];
-
-const stack = [
-  { label: 'Inference', value: 'vLLM / SGLang' },
-  { label: 'Proxy', value: 'LiteLLM' },
-  { label: 'API', value: 'OpenAI-compatible' },
-];
-
 const currentModels = [
+  {
+    name: 'deepseek-v4-flash',
+    role: 'LLM · 284B-21B MoE · FP8 · 1M context · Tool calling · Reasoning · 100M tokens/mes',
+    tag: 'llm',
+  },
   {
     name: 'gemma4',
     role: 'LLM · 26B-A4B MoE · FP8 · 256K context · Tool calling · Reasoning · Vision',
@@ -61,45 +52,6 @@ const guarantees = tArr('server.guarantees', locale);
     <p class="text-sm md:text-base text-neutral-300 leading-relaxed mb-14">
       {t('server.description', locale)}
     </p>
-
-    <!-- Hardware + stack grid -->
-    <div class="grid gap-6 md:grid-cols-2 mb-16">
-      <div class="rounded-xl border border-neutral-800/60 bg-neutral-900/30 p-6">
-        <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-5">
-          {t('server.hardware', locale)}
-        </p>
-        <dl class="space-y-3">
-          {
-            hardwareSpecs.map((spec) => (
-              <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-                <dt class="text-neutral-500 uppercase tracking-wider">
-                  {spec.label}
-                </dt>
-                <dd class="text-neutral-200 text-right">{spec.value}</dd>
-              </div>
-            ))
-          }
-        </dl>
-      </div>
-
-      <div class="rounded-xl border border-neutral-800/60 bg-neutral-900/30 p-6">
-        <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-5">
-          {t('server.stack', locale)}
-        </p>
-        <dl class="space-y-3">
-          {
-            stack.map((item) => (
-              <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-                <dt class="text-neutral-500 uppercase tracking-wider">
-                  {item.label}
-                </dt>
-                <dd class="text-neutral-200 text-right">{item.value}</dd>
-              </div>
-            ))
-          }
-        </dl>
-      </div>
-    </div>
 
     <!-- Current models -->
     <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-5">

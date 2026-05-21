@@ -3,7 +3,7 @@ import Docs from '../../layouts/Docs.astro';
 import RateLimits from '../../components/docs/RateLimits.astro';
 ---
 
-<Docs title="Modelos" description="Especificaciones técnicas, capacidades y parámetros de los modelos que corren en el cluster.">
+<Docs title="Modelos" description="Especificaciones técnicas, capacidades y parámetros de los modelos del cluster compartido.">
   <div class="mb-6">
     <p class="font-mono text-xs text-violet-400 uppercase tracking-widest mb-6">
       // models
@@ -14,6 +14,63 @@ import RateLimits from '../../components/docs/RateLimits.astro';
 
   <p>Los modelos de la comunidad. Todos se acceden por la misma API OpenAI-compatible
     con el mismo <code>base URL</code>.</p>
+
+  <!-- deepseek-v4-flash -->
+  <h2 id="deepseek-v4-flash">deepseek-v4-flash - 284B-21B</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2 mb-14">
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        generación de texto y chat
+      </p>
+      <p class="text-xs text-neutral-400 leading-relaxed mb-4">
+        Modelo MoE de 284B parámetros (21B activos). Contexto de 1M tokens.
+        Tool calling y reasoning. Cuota mensual de 100M tokens por miembro.
+      </p>
+      <dl class="space-y-3">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Tipo</dt>
+          <dd class="text-neutral-200 text-right">MoE (284B total · 21B active)</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Cuantización</dt>
+          <dd class="text-neutral-200 text-right">FP8</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Contexto</dt>
+          <dd class="text-neutral-200 text-right">1M tokens</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Cuota mensual</dt>
+          <dd class="text-neutral-200 text-right">100M tokens / miembro</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        capacidades
+      </p>
+      <ul class="grid gap-3 font-mono text-xs text-neutral-300">
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Tool calling</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Reasoning mode</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Contexto de 1M tokens</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Generación streaming (SSE)</span>
+        </li>
+      </ul>
+    </div>
+  </div>
 
   <!-- gemma4 -->
   <h2 id="gemma4">gemma4 - 26B-A4B</h2>

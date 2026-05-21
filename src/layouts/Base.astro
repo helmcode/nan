@@ -10,6 +10,7 @@ import ModelVoting from '../components/landing/ModelVoting.astro';
 import Agents from '../components/landing/Agents.astro';
 import Founder from '../components/landing/Founder.astro';
 import Pricing from '../components/landing/Pricing.astro';
+import SotaCredits from '../components/landing/SotaCredits.astro';
 import Faq from '../components/landing/Faq.astro';
 import Cta from '../components/landing/Cta.astro';
 
@@ -19,8 +20,8 @@ interface Props {
 }
 
 const {
-  title = 'NaN. GPU compartida. Modelos abiertos. Comunidad de builders.',
-  description = 'Builders compartiendo GPUs dedicadas para correr modelos abiertos y quemar tokens sin límites. API compatible con OpenAI, sin que tu código entrene nada.',
+  title = 'NaN. Cluster compartido de inferencia. Modelos abiertos. Comunidad de builders.',
+  description = 'Builders compartiendo un cluster de inferencia para correr modelos abiertos sin límites de tokens. API compatible con OpenAI, sin que tu código entrene nada.',
 } = Astro.props;
 
 const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
@@ -66,6 +67,7 @@ const siteUrl = 'https://nan.builders';
       <Agents locale={locale} />
       <Founder locale={locale} />
       <Pricing locale={locale} />
+      <SotaCredits locale={locale} />
       <Cta locale={locale} />
       <Faq locale={locale} />
     </main>

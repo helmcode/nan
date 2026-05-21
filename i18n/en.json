@@ -22,23 +22,14 @@
   },
   "server": {
     "label": "// inference cluster",
-    "heading": "Inference cluster for open AI models",
-    "description": "A shared cluster with NVIDIA RTX PRO 6000 Blackwell, 96 GB VRAM, 256 GB DDR5 RAM and 48 dedicated threads per node. Four open models running at once, chosen by the community each quarter.",
-    "hardware": "hardware",
-    "stack": "stack",
+    "heading": "Inference cluster",
+    "description": "Shared inference cluster. Models chosen by the community every quarter.",
     "models": "// current models",
     "guarantees": {
       "0": "Your code doesn't train any models",
       "1": "Data in EU, no prompt logs",
-      "2": "No token caps",
+      "2": "Unlimited tokens on cluster models",
       "3": "Personal API key for each member"
-    },
-    "specs": {
-      "gpu": "GPU",
-      "vram": "VRAM",
-      "ram": "RAM",
-      "cpu": "CPU",
-      "storage": "Storage"
     }
   },
   "privacy": {
@@ -60,7 +51,7 @@
     "heading": "Models chosen by the community. Refreshed every quarter.",
     "rules": {
       "0": "Every 3 months, members vote on the new models that will run on the cluster.",
-      "1": "Candidates are pre-selected technically: they must fit in 96 GB of VRAM.",
+      "1": "Candidates are pre-selected technically: they must fit in the cluster capacity.",
       "2": "Voting happens on Discord, open to all members.",
       "3": "The open models ecosystem moves fast. So does NaN."
     },
@@ -161,10 +152,10 @@
     },
     "limited": "Limited spots",
     "features": {
-      "0": "Access to shared cluster (96 GB VRAM)",
-      "1": "Open models chosen by the community",
-      "2": "Personal API key compatible with OpenAI",
-      "3": "No token caps",
+      "0": "Access to shared cluster — open models with no token caps",
+      "1": "DeepSeek V4-Flash (frontier 284B, 1M context, advanced reasoning) — 100M tokens/month",
+      "2": "Open models chosen by the community",
+      "3": "Personal API key compatible with OpenAI",
       "4": "Private Discord channels for members only",
       "5": "Voice in quarterly model voting",
       "6": "Month to month, no commitment"
@@ -179,6 +170,36 @@
     "communityCta": "Join the community",
     "footerNote": "Limited spots. When it fills up, waitlist.",
     "communityFooterNote": "No commitment. Cancel anytime."
+  },
+  "sotaCredits": {
+    "label": "// sota credits",
+    "heading": "SOTA credit packs",
+    "subheading": "DeepSeek V4-Flash on demand. Buy credits when you run out of the 50 included each month.",
+    "creditUnit": "credits",
+    "packs": {
+      "0": {
+        "name": "Starter",
+        "credits": "10 credits",
+        "price": "$5"
+      },
+      "1": {
+        "name": "Standard",
+        "credits": "50 credits",
+        "price": "$25",
+        "badge": "// most popular"
+      },
+      "2": {
+        "name": "Pro",
+        "credits": "100 credits",
+        "price": "$45"
+      },
+      "3": {
+        "name": "Power",
+        "credits": "200 credits",
+        "price": "$85"
+      }
+    },
+    "note": "Purchased credits never expire. The 50 included credits refresh every month and do not roll over."
   },
   "cta": {
     "label": "// join",
@@ -196,18 +217,18 @@
       },
       "1": {
         "id": "how-it-works",
-        "question": "How does the GPU cluster work?",
-        "answer": "Each community member shares a dedicated GPU (RTX PRO 6000 Blackwell, 96 GB VRAM). The GPUs run open models 24/7 on a shared cluster. Each member gets a personal OpenAI-compatible API key to use models as they want, with no token caps."
+        "question": "How does the cluster work?",
+        "answer": "Each community member shares a dedicated inference cluster. Cluster models run 24/7 and each member gets a personal OpenAI-compatible API key to use the models as they want, with no token caps."
       },
       "2": {
         "id": "token-limits",
         "question": "Are there really no token limits?",
-        "answer": "That's right. Once you have cluster access, you can burn tokens without limits. The models you run depend on what the community votes to run each quarter. No quotas, no throttling, no surprises on the bill."
+        "answer": "You can burn tokens without limits on the smaller cluster models. Frontier models (like DeepSeek V4-Flash) come with a generous monthly token allowance per member to keep the plan sustainable. No surprises on the bill: the flat subscription price is all you pay."
       },
       "3": {
         "id": "model-voting",
         "question": "How are models chosen?",
-        "answer": "Every quarter, community members vote on which new models will run on the cluster. Candidates are pre-selected technically to ensure they fit within 96 GB of VRAM. Voting happens on Discord, open to all members."
+        "answer": "Every quarter, community members vote on which new models will run on the cluster. Candidates are pre-selected technically to ensure they fit within the cluster capacity. Voting happens on Discord, open to all members."
       },
       "4": {
         "id": "where-does-data-go",
@@ -238,6 +259,26 @@
         "id": "join-community",
         "question": "How do I join the community?",
         "answer": "Leave your email on the waitlist and we'll reach out when we open payments. The community lives on Discord — once you join, you get access to all private channels, quarterly votes, and direct support from the team."
+      },
+      "10": {
+        "id": "what-is-a-sota-credit",
+        "question": "What is a SOTA credit?",
+        "answer": "1M tokens on DeepSeek V4-Flash is roughly 1 credit. A typical coding session with an agent consumes between 0.01 and 0.05 credits."
+      },
+      "11": {
+        "id": "what-happens-when-credits-run-out",
+        "question": "What happens when I run out of the 50 included credits?",
+        "answer": "You can keep using all cluster models without limits. To continue with V4-Flash, you buy a pack that persists until consumed."
+      },
+      "12": {
+        "id": "do-purchased-credits-reset",
+        "question": "Do purchased credits reset every month?",
+        "answer": "No, only the 50 included credits. Packs persist indefinitely."
+      },
+      "13": {
+        "id": "why-unlimited-vs-credits",
+        "question": "Why are some models unlimited and others use credits?",
+        "answer": "Cluster models run on our own GPUs in Europe; marginal cost is zero. Frontier SOTA models are consumed via an external API with real per-token cost, so we gate them behind credits to keep the plan sustainable."
       }
     }
   },

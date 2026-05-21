@@ -102,8 +102,8 @@ import RateLimits from '../../components/docs/RateLimits.astro';
 
   <p class="text-sm text-neutral-300 leading-relaxed mb-6">
     Devuelve la lista de modelos disponibles para tu key. Modelos publicados:
-    <code>qwen3.6</code>, <code>gemma4</code>, <code>qwen3-embedding</code>,
-    <code>kokoro</code>, <code>whisper</code>.
+    <code>deepseek-v4-flash</code>, <code>qwen3.6</code>, <code>gemma4</code>,
+    <code>qwen3-embedding</code>, <code>kokoro</code>, <code>whisper</code>.
   </p>
 
   <h3 id="models-request">Request</h3>
@@ -135,7 +135,8 @@ import RateLimits from '../../components/docs/RateLimits.astro';
 
   <p class="text-sm text-neutral-300 leading-relaxed mb-6">
     El endpoint principal de chat. Compatible con OpenAI Chat Completions.
-    Modelos compatibles: <code>qwen3.6</code> y <code>gemma4</code>.
+    Modelos compatibles: <code>deepseek-v4-flash</code>, <code>qwen3.6</code> y
+    <code>gemma4</code>.
   </p>
 
   <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-10">
@@ -143,6 +144,13 @@ import RateLimits from '../../components/docs/RateLimits.astro';
       capacidades por modelo
     </p>
     <dl class="space-y-4 text-xs text-neutral-300">
+      <div>
+        <dt class="font-mono text-neutral-200 mb-1">deepseek-v4-flash</dt>
+        <dd class="text-neutral-400 leading-relaxed">
+          Chat, streaming, tool calling, reasoning, contexto de 1M tokens.
+          Cuota mensual de 100M tokens por miembro.
+        </dd>
+      </div>
       <div>
         <dt class="font-mono text-neutral-200 mb-1">qwen3.6</dt>
         <dd class="text-neutral-400 leading-relaxed">
