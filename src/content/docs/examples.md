@@ -12,7 +12,7 @@ Ejemplos para conectar a la API con diferentes lenguajes y herramientas. Usa `ht
 
 generación de texto y chat
 
-### bash
+### curl
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
@@ -236,7 +236,7 @@ Config para `~/.config/zed/settings.json` — incluye inline predictions.
 
 embeddings vectoriales
 
-### bash
+### curl
 
 ```bash
 curl https://api.nan.builders/v1/embeddings \
@@ -294,7 +294,7 @@ console.log(embeddings[0].length);  // 4096
 
 text-to-speech
 
-### bash
+### curl
 
 ```bash
 curl https://api.nan.builders/v1/audio/speech \
@@ -367,7 +367,7 @@ fs.writeFileSync("output.mp3", buffer);
 
 speech-to-text
 
-### bash
+### curl
 
 ```bash
 # Transcribe audio file
