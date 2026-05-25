@@ -37,7 +37,7 @@ Listado de los endpoints disponibles. Cada uno enlaza a su sección con `request
 
 Todas las peticiones requieren el header `Authorization: Bearer <api-key>`. La key es personal e intransferible — consulta [Empezar](/docs/getting-started) para obtener la tuya.
 
-```curl
+```bash
 curl https://api.nan.builders/v1/models \
   -H "Authorization: Bearer sk-tu-key-aqui"
 ```
@@ -68,7 +68,7 @@ Sin body. Solo el header de autenticación.
 
 ### Ejemplo
 
-```curl
+```bash
 curl https://api.nan.builders/v1/models \
   -H "Authorization: Bearer sk-tu-key-aqui"
 ```
@@ -141,7 +141,7 @@ El campo `reasoning_content` se incluye solo cuando se usa `qwen3.6`. Es opciona
 
 ### Ejemplo
 
-```curl
+```bash
 curl https://api.nan.builders/v1/chat/completions \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -H "Content-Type: application/json" \
@@ -156,7 +156,7 @@ curl https://api.nan.builders/v1/chat/completions \
 
 Con `stream: true`, la respuesta se entrega como Server-Sent Events. Cada chunk es `data: {...}\n\n` con el delta en `choices[0].delta.content`. El stream termina con `data: [DONE]`.
 
-```curl
+```bash
 curl https://api.nan.builders/v1/chat/completions \
   -N \
   -H "Authorization: Bearer sk-tu-key-aqui" \
@@ -172,7 +172,7 @@ curl https://api.nan.builders/v1/chat/completions \
 
 `qwen3.6` soporta function calling estándar OpenAI. Cuando el modelo decide invocar una tool, la respuesta incluye `choices[0].message.tool_calls` con `{id, type:"function", function:{name, arguments}}` y `finish_reason: "tool_calls"`.
 
-```curl
+```bash
 curl https://api.nan.builders/v1/chat/completions \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -H "Content-Type: application/json" \
@@ -202,7 +202,7 @@ curl https://api.nan.builders/v1/chat/completions \
 
 Tanto `qwen3.6` como `gemma4` aceptan input multimodal. El campo `content` del mensaje pasa de string a un array de partes de tipo `text` y/o `image_url`.
 
-```curl
+```bash
 curl https://api.nan.builders/v1/chat/completions \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -H "Content-Type: application/json" \
@@ -229,7 +229,7 @@ Funciona en `qwen3.6` y `gemma4`.
 
 **json_object:**
 
-```curl
+```bash
 curl https://api.nan.builders/v1/chat/completions \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -H "Content-Type: application/json" \
@@ -244,7 +244,7 @@ curl https://api.nan.builders/v1/chat/completions \
 
 **json_schema (strict):**
 
-```curl
+```bash
 curl https://api.nan.builders/v1/chat/completions \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -H "Content-Type: application/json" \
@@ -317,7 +317,7 @@ Ambos modelos soportan reasoning. El toggle se controla con el campo `chat_templ
 | `qwen3.6` | activo por defecto |
 | `gemma4` | desactivado por defecto |
 
-```curl
+```bash
 curl https://api.nan.builders/v1/chat/completions \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -H "Content-Type: application/json" \
@@ -390,7 +390,7 @@ Endpoint legacy de OpenAI para text completion. Modelo compatible: `qwen3.6`.
 
 ### Ejemplo
 
-```curl
+```bash
 curl https://api.nan.builders/v1/completions \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -H "Content-Type: application/json" \
@@ -439,7 +439,7 @@ Genera embeddings vectoriales. Modelo compatible: `qwen3-embedding`. Vectores de
 
 ### Ejemplo
 
-```curl
+```bash
 curl https://api.nan.builders/v1/embeddings \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -H "Content-Type: application/json" \
@@ -469,7 +469,7 @@ Archivo binario de audio en el formato pedido (sin envoltorio JSON).
 
 ### Ejemplo
 
-```curl
+```bash
 curl https://api.nan.builders/v1/audio/speech \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -H "Content-Type: application/json" \
@@ -528,7 +528,7 @@ Si pasas `timestamp_granularities[]=word`, el campo `words` se llena con `[{word
 
 ### Ejemplo
 
-```curl
+```bash
 curl https://api.nan.builders/v1/audio/transcriptions \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -F "model=whisper" \
@@ -611,7 +611,7 @@ El array `output` puede contener bloques de tipo `reasoning` (solo `qwen3.6`) y 
 
 ### Ejemplo
 
-```curl
+```bash
 curl https://api.nan.builders/v1/responses \
   -H "Authorization: Bearer sk-tu-key-aqui" \
   -H "Content-Type: application/json" \

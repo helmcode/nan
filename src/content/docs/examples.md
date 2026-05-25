@@ -12,9 +12,9 @@ Ejemplos para conectar a la API con diferentes lenguajes y herramientas. Usa `ht
 
 generación de texto y chat
 
-### curl
+### bash
 
-```curl
+```bash
 curl https://api.nan.builders/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-tu-key-aqui" \
@@ -236,9 +236,9 @@ Config para `~/.config/zed/settings.json` — incluye inline predictions.
 
 embeddings vectoriales
 
-### curl
+### bash
 
-```curl
+```bash
 curl https://api.nan.builders/v1/embeddings \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-tu-key-aqui" \
@@ -294,9 +294,9 @@ console.log(embeddings[0].length);  // 4096
 
 text-to-speech
 
-### curl
+### bash
 
-```curl
+```bash
 curl https://api.nan.builders/v1/audio/speech \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-tu-key-aqui" \
@@ -367,9 +367,9 @@ fs.writeFileSync("output.mp3", buffer);
 
 speech-to-text
 
-### curl
+### bash
 
-```curl
+```bash
 # Transcribe audio file
 curl https://api.nan.builders/v1/audio/transcriptions \
   -H "Authorization: Bearer sk-tu-key-aqui" \
