@@ -95,6 +95,22 @@ for await (const chunk of stream) {
             "input": ["text", "image"],
             "output": ["text"]
           }
+        },
+        "gemma4": {
+          "name": "Gemma 4",
+          "contextWindow": 262144,
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          }
+        },
+        "deepseek-v4-flash": {
+          "name": "DeepSeek V4 Flash",
+          "contextWindow": 500000,
+          "modalities": {
+            "input": ["text"],
+            "output": ["text"]
+          }
         }
       }
     }
@@ -106,7 +122,7 @@ for await (const chunk of stream) {
   }
 }`} />
   <p class="font-mono text-xs text-neutral-500">
-    Este es el config para conectar IDEs (Cursor, OpenCode) con qwen3.6 — el único modelo de chat.
+    Este es el config para conectar IDEs (Cursor, OpenCode) con los 3 modelos disponibles: <code>qwen3.6</code>, <code>gemma4</code> y <code>deepseek-v4-flash</code>.
   </p>
 
   <h3 id="qwen36-pi">.pi/agent/models.json (config)</h3>
