@@ -1,0 +1,161 @@
+---
+title: Modelos
+description: Especificaciones técnicas, capacidades y parámetros de los modelos del cluster compartido.
+order: 3
+---
+
+import ModelCard from '../../components/docs/ModelCard.astro';
+import LimitationsCard from '../../components/docs/LimitationsCard.astro';
+import RateLimits from '../../components/docs/RateLimits.astro';
+
+# Models del cluster.
+
+Los modelos de la comunidad. Todos se acceden por la misma API OpenAI-compatible
+con el mismo `base URL`.
+
+<ModelCard
+  id="deepseek-v4-flash"
+  name="deepseek-v4-flash"
+  tag="284B-21B"
+  leftLabel="generación de texto y chat"
+  rightLabel="capacidades"
+  description="Modelo MoE de 284B parámetros (21B activos). Contexto de 1M tokens. Tool calling y reasoning. Cuota mensual de 100M tokens por miembro."
+  specs={[
+    { label: 'Tipo', value: 'MoE (284B total · 21B active)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Cuota mensual', value: '100M tokens / miembro' },
+  ]}
+  items={[
+    'Tool calling',
+    'Reasoning mode',
+    'Contexto de 1M tokens',
+    'Generación streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="gemma4"
+  name="gemma4"
+  tag="26B-A4B"
+  leftLabel="generación de texto y chat"
+  rightLabel="capacidades"
+  description="Modelo MoE de 26B parámetros (4B activos), multimodal con visión. Tool calling y reasoning."
+  specs={[
+    { label: 'Tipo', value: 'MoE (26B total · 4B active)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '256K tokens' },
+    { label: 'Sampling', value: 'temp=0.6, top_p=0.95' },
+    { label: 'Reasoning', value: 'reasoning_config={}' },
+  ]}
+  items={[
+    'Tool calling (formato XML)',
+    'Reasoning mode',
+    'Multimodal (vision / imágenes)',
+    'Generación streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="qwen36"
+  name="qwen3.6"
+  tag="35B-A3B"
+  leftLabel="generación de texto y chat"
+  rightLabel="capacidades"
+  description="El modelo principal. MoE de 35B parámetros, multimodal, con tool calling y reasoning."
+  specs={[
+    { label: 'Tipo', value: 'MoE (35B total)' },
+    { label: 'Activo por token', value: '3B' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '256K tokens' },
+    { label: 'Speculative decoding', value: 'MTP → ~2x throughput' },
+    { label: 'Sampling', value: 'temp=0.6, top_p=0.95' },
+    { label: 'Reasoning', value: 'reasoning_config={}' },
+  ]}
+  items={[
+    'Tool calling (formato XML)',
+    'Reasoning mode',
+    'Multimodal (vision / imágenes)',
+    'Generación streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="qwen3-embedding"
+  name="qwen3-embedding"
+  tag="8B"
+  leftLabel="embeddings vectoriales"
+  rightLabel="casos de uso"
+  description="Modelo de embedding vectorial. MMTEB score 70.58 — top modelos abiertos. Soporta 100+ idiomas incluyendo español y código."
+  specs={[
+    { label: 'Dimensión', value: '4096' },
+    { label: 'Precisión', value: 'Float32 (CPU)' },
+    { label: 'RPM', value: '60' },
+    { label: 'Batch size', value: '32' },
+  ]}
+  items={[
+    'Similitud cross-lingual (ES↔EN: 0.915)',
+    'Búsqueda semántica',
+    'Clasificación de texto',
+    'RAG / retrieval aumentado',
+  ]}
+/>
+
+<ModelCard
+  id="kokoro"
+  name="kokoro"
+  tag="v1.0"
+  leftLabel="text-to-speech"
+  rightLabel="voces disponibles"
+  description="TTS de 82M params con 67 voice packs. Sub-second latency en CPU."
+  specs={[
+    { label: 'Latencia', value: '< 1s' },
+    { label: 'Partes', value: '82M' },
+    { label: 'RPM', value: '15' },
+  ]}
+  items={[
+    '<span class="text-white">af_heart</span> — English (female)',
+    '<span class="text-white">ef_dora</span> — Spanish (female)',
+    '<span class="text-white">em_alex</span> — Spanish (male)',
+    '67 voice packs en total (<a class="text-violet-400 hover:underline" href="https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md" target="_blank" rel="noopener">ver listado completo</a>)',
+  ]}
+/>
+
+<ModelCard
+  id="whisper"
+  name="whisper"
+  tag="large-v3"
+  leftLabel="speech-to-text"
+  rightLabel="capacidades"
+  description="STT en CPU con CTranslate2 e INT8. ~1x realtime. 99+ idiomas."
+  specs={[
+    { label: 'Tamaño', value: '~3 GB (INT8)' },
+    { label: 'WER ES', value: '~3.2%' },
+    { label: 'RPM', value: '10' },
+  ]}
+  items={[
+    'Transcripción de audio a texto',
+    '99+ idiomas',
+    'Detección de idioma automática',
+    'API OpenAI-compatible',
+  ]}
+/>
+
+<LimitationsCard
+  items={[
+    {
+      title: 'File size limit — 25 MB',
+      body: 'Tamaño máximo por request. Formatos comprimidos (OGG/Opus, MP3) aprovechan mejor este límite que WAV sin comprimir.',
+    },
+    {
+      title: 'Timeout — audios > 2 min de duración',
+      body: 'Whisper procesa en CPU a ~1x realtime. Para audios de más de ~2 minutos, el proxy puede devolver un error <code>524</code> (timeout) antes de que termine la transcripción. Usa formatos comprimidos como <strong>OGG/Opus</strong> y divide archivos largos en segmentos de &le; 2 minutos para evitarlo.',
+    },
+    {
+      title: 'Formatos recomendados',
+      body: '<code>OGG/Opus</code> y <code>MP3</code> — archivos más pequeños, misma calidad de transcripción. Un audio de 60 min en OGG/Opus a 48 kbps ocupa ~20 MB vs ~550 MB en WAV.',
+    },
+  ]}
+/>
+
+<RateLimits />

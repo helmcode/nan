@@ -1,0 +1,653 @@
+---
+title: API
+description: Referencia de los endpoints públicos de la API. Compatible con OpenAI.
+order: 2
+---
+
+import Callout from '../../components/docs/Callout.astro';
+import EndpointGrid from '../../components/docs/EndpointGrid.astro';
+import LimitationsCard from '../../components/docs/LimitationsCard.astro';
+import RateLimits from '../../components/docs/RateLimits.astro';
+
+# Referencia de la API.
+
+Nuestra API es compatible con OpenAI: cualquier cliente o SDK que acepte un `base URL` + `API key` funciona sin cambios. La base URL es `https://api.nan.builders/v1` y la autenticación es vía `Bearer token`. Para obtener tu key, consulta [Empezar](/docs/getting-started).
+
+<Callout title="Servicio enterprise de Helmcode">
+  Si usas el servicio enterprise de <a href="https://helmcode.com" target="_blank" rel="noopener noreferrer">Helmcode</a> recuerda que la URL de la API es <code>api.helmcode.com</code>. El resto de los endpoints es idéntico.
+</Callout>
+
+## Endpoints
+
+Listado de los endpoints disponibles. Cada uno enlaza a su sección con `request`, `response` y un ejemplo en `curl`.
+
+<EndpointGrid
+  items={[
+    { href: '#models', title: 'Listar modelos', method: 'GET', path: '/v1/models' },
+    { href: '#chat-completions', title: 'Chat completions', method: 'POST', path: '/v1/chat/completions' },
+    { href: '#completions', title: 'Text completions', method: 'POST', path: '/v1/completions' },
+    { href: '#embeddings', title: 'Embeddings', method: 'POST', path: '/v1/embeddings' },
+    { href: '#audio-speech', title: 'Text-to-speech', method: 'POST', path: '/v1/audio/speech' },
+    { href: '#audio-transcriptions', title: 'Speech-to-text', method: 'POST', path: '/v1/audio/transcriptions' },
+    { href: '#responses', title: 'Responses', method: 'POST', path: '/v1/responses' },
+  ]}
+/>
+
+## Autenticación
+
+Todas las peticiones requieren el header `Authorization: Bearer <api-key>`. La key es personal e intransferible — consulta [Empezar](/docs/getting-started) para obtener la tuya.
+
+```curl
+curl https://api.nan.builders/v1/models \
+  -H "Authorization: Bearer sk-tu-key-aqui"
+```
+
+<h2 id="models">GET /v1/models</h2>
+
+Devuelve la lista de modelos disponibles para tu key. Modelos publicados: `deepseek-v4-flash`, `qwen3.6`, `gemma4`, `qwen3-embedding`, `kokoro`, `whisper`.
+
+### Request
+
+Sin body. Solo el header de autenticación.
+
+### Response
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "qwen3.6",
+      "object": "model",
+      "created": 1677610602,
+      "owned_by": "openai"
+    }
+  ]
+}
+```
+
+### Ejemplo
+
+```curl
+curl https://api.nan.builders/v1/models \
+  -H "Authorization: Bearer sk-tu-key-aqui"
+```
+
+<h2 id="chat-completions">POST /v1/chat/completions</h2>
+
+El endpoint principal de chat. Compatible con OpenAI Chat Completions. Modelos compatibles: `deepseek-v4-flash`, `qwen3.6` y `gemma4`.
+
+<LimitationsCard
+  title="capacidades por modelo"
+  items={[
+    {
+      title: 'deepseek-v4-flash',
+      body: 'Chat, streaming, tool calling, reasoning, contexto de 1M tokens. Cuota mensual de 100M tokens por miembro.',
+    },
+    {
+      title: 'qwen3.6',
+      body: 'Chat, streaming, tool calling, vision (image input), reasoning (opt-out, devuelve <code>reasoning_content</code> en el message).',
+    },
+    {
+      title: 'gemma4',
+      body: 'Chat, streaming, vision (image input), reasoning (opt-in).',
+    },
+  ]}
+/>
+
+### Request
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `model` | string · required | `qwen3.6` o `gemma4`. |
+| `messages` | array · required | Lista de mensajes `{ role, content }`. `content` puede ser string o un array de partes `[{type:"text",text}, {type:"image_url",image_url:{url}}]` para input multimodal. |
+| `max_tokens` | integer · optional | Tope de tokens generados. |
+| `stream` | boolean · optional | Default `false`. Si `true`, la respuesta llega como SSE. |
+| `tools` | array · optional | Function calling estándar OpenAI: `{type:"function",function:{name,description,parameters}}`. Validado solo con `qwen3.6`. |
+| `tool_choice` | string \| object · optional | Controla qué tool puede invocar el modelo. Estándar OpenAI. |
+| `temperature` | number · optional | Default `0.6`. |
+| `top_p` | number · optional | Default `0.95`. |
+
+### Response
+
+Respuesta sin streaming. `finish_reason` puede ser `stop`, `length` o `tool_calls`.
+
+```json
+{
+  "id": "chatcmpl-...",
+  "created": 1778258163,
+  "model": "qwen3.6",
+  "object": "chat.completion",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "...",
+        "reasoning_content": "..."
+      }
+    }
+  ],
+  "usage": {
+    "completion_tokens": 20,
+    "prompt_tokens": 17,
+    "total_tokens": 37
+  }
+}
+```
+
+El campo `reasoning_content` se incluye solo cuando se usa `qwen3.6`. Es opcional ignorarlo.
+
+### Ejemplo
+
+```curl
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.6",
+    "messages": [{"role": "user", "content": "Hola"}],
+    "max_tokens": 200
+  }'
+```
+
+### Streaming
+
+Con `stream: true`, la respuesta se entrega como Server-Sent Events. Cada chunk es `data: {...}\n\n` con el delta en `choices[0].delta.content`. El stream termina con `data: [DONE]`.
+
+```curl
+curl https://api.nan.builders/v1/chat/completions \
+  -N \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.6",
+    "messages": [{"role": "user", "content": "Cuéntame un chiste corto"}],
+    "stream": true
+  }'
+```
+
+### Tool calling
+
+`qwen3.6` soporta function calling estándar OpenAI. Cuando el modelo decide invocar una tool, la respuesta incluye `choices[0].message.tool_calls` con `{id, type:"function", function:{name, arguments}}` y `finish_reason: "tool_calls"`.
+
+```curl
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.6",
+    "messages": [{"role": "user", "content": "¿Qué tiempo hace en Madrid?"}],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "description": "Obtiene el tiempo actual de una ciudad",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "city": {"type": "string"}
+            },
+            "required": ["city"]
+          }
+        }
+      }
+    ]
+  }'
+```
+
+### Vision
+
+Tanto `qwen3.6` como `gemma4` aceptan input multimodal. El campo `content` del mensaje pasa de string a un array de partes de tipo `text` y/o `image_url`.
+
+```curl
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.6",
+    "messages": [{
+      "role": "user",
+      "content": [
+        {"type": "text", "text": "¿Qué hay en esta imagen?"},
+        {"type": "image_url", "image_url": {"url": "https://example.com/foto.jpg"}}
+      ]
+    }]
+  }'
+```
+
+### Structured outputs
+
+Los modelos de chat aceptan el campo `response_format` estándar de OpenAI para forzar respuestas JSON válidas. Soportamos los dos modos:
+
+- **json_object**: Garantiza que la respuesta sea JSON sintácticamente válido. No impone estructura.
+- **json_schema**: Restringe la salida a un JSON Schema concreto. Con `strict: true` el modelo no puede emitir campos fuera del schema.
+
+Funciona en `qwen3.6` y `gemma4`.
+
+**json_object:**
+
+```curl
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.6",
+    "messages": [
+      {"role": "user", "content": "Devuelve un objeto user con name=Alice y age=30."}
+    ],
+    "response_format": { "type": "json_object" }
+  }'
+```
+
+**json_schema (strict):**
+
+```curl
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.6",
+    "messages": [
+      {"role": "user", "content": "Alice, 30 años."}
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "user",
+        "strict": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "age":  { "type": "integer" }
+          },
+          "required": ["name", "age"],
+          "additionalProperties": false
+        }
+      }
+    }
+  }'
+```
+
+Con el SDK de `openai` en Python:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-tu-key-aqui",
+  base_url="https://api.nan.builders/v1"
+)
+
+response = client.chat.completions.create(
+  model="qwen3.6",
+  messages=[{"role": "user", "content": "Alice, 30 años."}],
+  response_format={
+    "type": "json_schema",
+    "json_schema": {
+      "name": "user",
+      "strict": True,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "age":  {"type": "integer"}
+        },
+        "required": ["name", "age"],
+        "additionalProperties": False
+      }
+    }
+  }
+)
+
+import json
+data = json.loads(response.choices[0].message.content)
+print(data["name"], data["age"])
+```
+
+### Reasoning
+
+Ambos modelos soportan reasoning. El toggle se controla con el campo `chat_template_kwargs.enable_thinking` en el body del request. Cuando está activo, la respuesta incluye `reasoning_content` en `message` con la cadena de razonamiento del modelo.
+
+| Modelo | Reasoning |
+|---|---|
+| `qwen3.6` | activo por defecto |
+| `gemma4` | desactivado por defecto |
+
+```curl
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gemma4",
+    "messages": [{"role": "user", "content": "Qué es 2+2?"}],
+    "chat_template_kwargs": { "enable_thinking": true }
+  }'
+```
+
+Para desactivarlo en `qwen3.6` pasa `{ "enable_thinking": false }`.
+
+En SDKs como `openai` de Python o Node, este campo va dentro de `extra_body`:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-tu-key-aqui",
+  base_url="https://api.nan.builders/v1"
+)
+
+response = client.chat.completions.create(
+  model="gemma4",
+  messages=[{"role": "user", "content": "Qué es 2+2?"}],
+  extra_body={"chat_template_kwargs": {"enable_thinking": True}}
+)
+
+print(response.choices[0].message.reasoning_content)
+```
+
+<h2 id="completions">POST /v1/completions</h2>
+
+Endpoint legacy de OpenAI para text completion. Modelo compatible: `qwen3.6`.
+
+### Request
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `model` | string · required | `qwen3.6`. |
+| `prompt` | string · required | El prompt a completar. |
+| `max_tokens` | integer · optional | Tope de tokens generados. |
+| `temperature` | number · optional | Default `0.6`. |
+| `top_p` | number · optional | Default `0.95`. |
+| `stream` | boolean · optional | Default `false`. |
+
+### Response
+
+```json
+{
+  "id": "cmpl-...",
+  "object": "text_completion",
+  "created": 1778258166,
+  "model": "qwen3.6",
+  "choices": [
+    {
+      "text": "...",
+      "index": 0,
+      "finish_reason": "stop",
+      "logprobs": null
+    }
+  ],
+  "usage": {
+    "completion_tokens": 10,
+    "prompt_tokens": 5,
+    "total_tokens": 15
+  }
+}
+```
+
+### Ejemplo
+
+```curl
+curl https://api.nan.builders/v1/completions \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.6",
+    "prompt": "The capital of France is",
+    "max_tokens": 10
+  }'
+```
+
+### Notas
+
+Endpoint legacy de OpenAI. Para conversaciones, usa [/v1/chat/completions](#chat-completions).
+
+<h2 id="embeddings">POST /v1/embeddings</h2>
+
+Genera embeddings vectoriales. Modelo compatible: `qwen3-embedding`. Vectores de **4096 dimensiones**.
+
+### Request
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `model` | string · required | `qwen3-embedding`. |
+| `input` | string \| array · required | Texto único o array de strings a embeddear. |
+| `encoding_format` | string · optional | `"float"` (default) o `"base64"`. |
+
+### Response
+
+```json
+{
+  "object": "list",
+  "model": "qwen3-embedding",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": [0.0210, 0.0105, -0.0204, "..."]
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 3,
+    "total_tokens": 3
+  }
+}
+```
+
+### Ejemplo
+
+```curl
+curl https://api.nan.builders/v1/embeddings \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3-embedding",
+    "input": ["Hola mundo", "Hello world"]
+  }'
+```
+
+<h2 id="audio-speech">POST /v1/audio/speech</h2>
+
+Sintetiza audio a partir de texto (text-to-speech). Modelo compatible: `kokoro`.
+
+### Request
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `model` | string · required | `kokoro`. |
+| `input` | string · required | Texto a sintetizar. |
+| `voice` | string · required | Voz a usar. Algunas opciones: `af_heart` (English female), `ef_dora` (Spanish female), `em_alex` (Spanish male). [Ver listado completo](https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md). |
+| `response_format` | string · optional | Formato del audio devuelto. Validados: `mp3` (default), `wav`, `flac`, `aac`, `pcm`, `opus`. |
+| `speed` | number · optional | Default `1.0`. |
+
+### Response
+
+Archivo binario de audio en el formato pedido (sin envoltorio JSON).
+
+### Ejemplo
+
+```curl
+curl https://api.nan.builders/v1/audio/speech \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "kokoro",
+    "input": "Bienvenido a NaN.",
+    "voice": "ef_dora",
+    "response_format": "mp3"
+  }' \
+  -o speech.mp3
+```
+
+<h2 id="audio-transcriptions">POST /v1/audio/transcriptions</h2>
+
+Transcribe audio a texto (speech-to-text). Modelo compatible: `whisper`. La petición es `multipart/form-data`.
+
+### Request
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `file` | file · required | Archivo de audio a transcribir. |
+| `model` | string · required | `whisper`. |
+| `language` | string · optional | Código ISO-639-1 (ej. `es`, `en`). Si no se pasa, se detecta automáticamente. |
+| `response_format` | string · optional | Validados: `json` (default) y `verbose_json`. Otros valores funcionan pero devuelven el contenido envuelto en JSON; recomendamos solo estos dos. |
+| `timestamp_granularities[]` | string · optional | Solo con `verbose_json`. Valores: `word` (timestamps por palabra) o `segment` (default). |
+| `temperature` | number · optional | Sampling temperature. |
+
+### Response
+
+Ejemplo con `response_format=verbose_json`:
+
+```json
+{
+  "text": "Hola, esto es una prueba.",
+  "language": "es",
+  "task": "transcribe",
+  "duration": 1.728,
+  "segments": [
+    {
+      "id": 1,
+      "start": 0.0,
+      "end": 1.4,
+      "text": " Hola, esto es una prueba.",
+      "tokens": [50365, 22637, "..."],
+      "avg_logprob": -0.059,
+      "compression_ratio": 0.806,
+      "no_speech_prob": 0.044,
+      "temperature": 0.0
+    }
+  ],
+  "words": null
+}
+```
+
+Si pasas `timestamp_granularities[]=word`, el campo `words` se llena con `[{word, start, end, probability}]`.
+
+### Ejemplo
+
+```curl
+curl https://api.nan.builders/v1/audio/transcriptions \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -F "model=whisper" \
+  -F "file=@grabacion.mp3" \
+  -F "language=es" \
+  -F "response_format=verbose_json"
+```
+
+### Limitaciones
+
+<LimitationsCard
+  items={[
+    {
+      title: 'Tamaño máximo por request — 25 MB',
+      body: 'Límite de tamaño del archivo de audio.',
+    },
+    {
+      title: 'Audios > 2 min pueden devolver timeout 524',
+      body: 'Recomendamos dividir en segmentos de ≤ 2 min.',
+    },
+    {
+      title: 'Formatos recomendados',
+      body: '<code>OGG/Opus</code> y <code>MP3</code> — mejor compresión, misma calidad de transcripción.',
+    },
+  ]}
+/>
+
+<h2 id="responses">POST /v1/responses</h2>
+
+Endpoint Responses estilo OpenAI. Modelos compatibles: `qwen3.6` y `gemma4`.
+
+### Request
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `model` | string · required | `qwen3.6` o `gemma4`. |
+| `input` | string \| array · required | Texto único o array de mensajes en formato OpenAI Responses. |
+| `max_output_tokens` | integer · optional | Default `65536` en `qwen3.6`. |
+| `temperature` | number · optional | Default `0.6`. |
+| `top_p` | number · optional | Default `0.95`. |
+| `instructions` | string · optional | Instrucciones de sistema. |
+
+### Response
+
+El array `output` puede contener bloques de tipo `reasoning` (solo `qwen3.6`) y `message`.
+
+```json
+{
+  "id": "resp_...",
+  "created_at": 1778258181,
+  "model": "qwen3.6",
+  "object": "response",
+  "status": "completed",
+  "output": [
+    {
+      "id": "rs_...",
+      "type": "reasoning",
+      "summary": [],
+      "content": [
+        { "type": "reasoning_text", "text": "..." }
+      ]
+    },
+    {
+      "id": "msg_...",
+      "type": "message",
+      "role": "assistant",
+      "status": "completed",
+      "content": [
+        { "type": "output_text", "text": "Hola.", "annotations": [] }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 17,
+    "output_tokens": 118,
+    "total_tokens": 135
+  }
+}
+```
+
+### Ejemplo
+
+```curl
+curl https://api.nan.builders/v1/responses \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.6",
+    "input": "Hola, ¿cómo estás?"
+  }'
+```
+
+### Notas
+
+El streaming en este endpoint actualmente entrega un único evento `response.completed` al final, no chunks incrementales. Para streaming token-a-token usa [/v1/chat/completions](#chat-completions) con `stream: true`.
+
+## Errores
+
+Los errores siguen el formato estándar de OpenAI: HTTP status no-2xx con un body JSON describiendo el problema.
+
+```json
+{
+  "error": {
+    "message": "...",
+    "type": null,
+    "param": null,
+    "code": "..."
+  }
+}
+```
+
+| Código | Descripción |
+|---|---|
+| 401 | Header `Authorization` inválido o ausente. |
+| 404 | Modelo no existe (campo `model`). |
+| 429 | Rate limit excedido — `rpm_limit` o `max_parallel_requests`. |
+| 500 | Error interno (incluye errores upstream del modelo). |
+| 524 | Timeout (típico con audios grandes en [/v1/audio/transcriptions](#audio-transcriptions)). |
+
+## Rate limits
+
+<RateLimits />
