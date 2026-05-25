@@ -96,6 +96,22 @@ Instalar: `npm install openai`
             "input": ["text", "image"],
             "output": ["text"]
           }
+        },
+        "gemma4": {
+          "name": "Gemma 4",
+          "contextWindow": 262144,
+          "modalities": {
+            "input": ["text", "image"],
+            "output": ["text"]
+          }
+        },
+        "deepseek-v4-flash": {
+          "name": "DeepSeek V4 Flash",
+          "contextWindow": 500000,
+          "modalities": {
+            "input": ["text"],
+            "output": ["text"]
+          }
         }
       }
     }
@@ -108,7 +124,7 @@ Instalar: `npm install openai`
 }
 ```
 
-Este es el config para conectar IDEs (Cursor, OpenCode) con qwen3.6 — el único modelo de chat.
+Este es el config para conectar IDEs (Cursor, OpenCode) con los 3 modelos disponibles: `qwen3.6`, `gemma4` y `deepseek-v4-flash`.
 
 ### .pi/agent/models.json (config)
 
