@@ -1,0 +1,2 @@
+- Requests / min: 100 rpm
+- Paralelo máximo: 5 concurrentes

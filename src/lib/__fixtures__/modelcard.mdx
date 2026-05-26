@@ -1,0 +1,18 @@
+import ModelCard from '../../components/docs/ModelCard.astro';
+
+<ModelCard
+  id="test"
+  name="test-model"
+  tag="1B"
+  leftLabel="capabilities"
+  rightLabel="use cases"
+  description="Test model description."
+  specs={[
+    { label: 'Param', value: '1B' },
+    { label: 'Context', value: '8K' },
+  ]}
+  items={[
+    'item 1',
+    'item 2',
+  ]}
+/>

@@ -1,0 +1,2 @@
+- `model` - *string · required* - The model name.
+- `temperature` - *number · optional* - Sampling temperature, default `0.6`.
