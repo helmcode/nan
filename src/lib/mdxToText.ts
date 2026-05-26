@@ -66,15 +66,17 @@ export function htmlNodeToMarkdown(input: string): string {
 
 export function astToValue(node: unknown): unknown {
   if (!node || typeof node !== 'object') return undefined;
-  const n = node as { type: string; [k: string]: unknown };
+  const n = node as { [k: string]: unknown };
   switch (n.type) {
     case 'Literal':
-      return (n as { value: unknown }).value;
-    case 'ArrayExpression':
-      return ((n as { elements: unknown[] }).elements || []).map((e) => astToValue(e));
+      return n.value;
+    case 'ArrayExpression': {
+      const elements = (n.elements as unknown[] | undefined) ?? [];
+      return elements.map((e) => astToValue(e));
+    }
     case 'ObjectExpression': {
       const obj: Record<string, unknown> = {};
-      const props = (n as { properties: unknown[] }).properties || [];
+      const props = (n.properties as unknown[] | undefined) ?? [];
       for (const p of props) {
         const prop = p as { type: string; key: { type: string; name?: string; value?: unknown }; value: unknown };
         if (prop.type !== 'Property') continue;
@@ -86,19 +88,19 @@ export function astToValue(node: unknown): unknown {
       return obj;
     }
     case 'TemplateLiteral': {
-      const quasis = ((n as { quasis: { value: { cooked: string } }[] }).quasis || []);
+      const quasis = (n.quasis as { value: { cooked: string } }[] | undefined) ?? [];
       return quasis.map((q) => q.value.cooked).join('');
     }
     case 'UnaryExpression': {
-      const op = (n as { operator: string; argument: unknown }).operator;
-      const arg = astToValue((n as { argument: unknown }).argument);
+      const op = n.operator as string;
+      const arg = astToValue(n.argument);
       if (op === '-' && typeof arg === 'number') return -arg;
       if (op === '+' && typeof arg === 'number') return arg;
       if (op === '!') return !arg;
       return undefined;
     }
     case 'Identifier': {
-      const name = (n as { name: string }).name;
+      const name = n.name as string;
       if (name === 'undefined') return undefined;
       return undefined;
     }
