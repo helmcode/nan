@@ -1,0 +1,28 @@
+---
+interface Endpoint {
+  href: string;
+  title: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  path: string;
+}
+
+interface Props {
+  items: Endpoint[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="grid gap-4 sm:grid-cols-2 mb-14 not-prose">
+  {items.map((ep) => (
+    <a
+      href={ep.href}
+      class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 transition-all duration-300 hover:border-violet-500/30 hover:bg-neutral-800/60"
+    >
+      <p class="font-mono text-sm text-white mb-2">{ep.title}</p>
+      <p class="font-mono text-xs text-neutral-400 leading-relaxed">
+        <span class="text-violet-400/80">{ep.method}</span> {ep.path}
+      </p>
+    </a>
+  ))}
+</div>

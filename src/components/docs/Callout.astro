@@ -1,0 +1,60 @@
+---
+type Variant = 'info' | 'warning';
+
+interface Props {
+  title: string;
+  variant?: Variant;
+}
+
+const { title, variant = 'info' } = Astro.props;
+
+const styles: Record<Variant, { border: string; bg: string; dot: string }> = {
+  info: {
+    border: 'border-neutral-800/60',
+    bg: 'bg-[#0a0a0a]',
+    dot: 'bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]',
+  },
+  warning: {
+    border: 'border-amber-900/40',
+    bg: 'bg-amber-950/20',
+    dot: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]',
+  },
+};
+
+const s = styles[variant];
+---
+
+<div class:list={['rounded-xl border p-6 mb-10 not-prose', s.border, s.bg]}>
+  <div class="flex items-start gap-4">
+    <span class:list={['mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full', s.dot]}></span>
+    <div class="min-w-0 flex-1">
+      <p class="font-mono text-sm text-white mb-2">{title}</p>
+      <div class="text-xs text-neutral-400 leading-relaxed callout-body">
+        <slot />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .callout-body :global(p) {
+    margin: 0 0 0.5rem 0;
+  }
+  .callout-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+  .callout-body :global(a) {
+    color: rgb(167 139 250);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .callout-body :global(a:hover) {
+    color: rgb(196 181 253);
+  }
+  .callout-body :global(code) {
+    background: rgb(23 23 23);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 0.95em;
+  }
+</style>

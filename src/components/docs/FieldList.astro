@@ -1,0 +1,38 @@
+---
+interface Field {
+  name: string;
+  type: string;
+  description: string;
+}
+
+interface Props {
+  fields: Field[];
+}
+
+const { fields } = Astro.props;
+
+const isRequired = (t: string) => /required/i.test(t);
+---
+
+<div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-10 not-prose">
+  <dl class="space-y-5">
+    {fields.map((f, i) => (
+      <div class={i === 0 ? '' : 'border-t border-neutral-800/40 pt-4'}>
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>{f.name}</code></dt>
+          <span
+            class:list={[
+              'font-mono text-[10px] uppercase tracking-widest',
+              isRequired(f.type) ? 'text-violet-400/80' : 'text-neutral-500',
+            ]}
+          >
+            {f.type}
+          </span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          <Fragment set:html={f.description} />
+        </dd>
+      </div>
+    ))}
+  </dl>
+</div>

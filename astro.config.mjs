@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 
 import cloudflare from '@astrojs/cloudflare';
+import mdx from '@astrojs/mdx';
 import preact from '@astrojs/preact';
 import tailwindcss from '@tailwindcss/vite';
 import rehypePrettyCode from 'rehype-pretty-code';
@@ -10,7 +11,7 @@ import rehypePrettyCode from 'rehype-pretty-code';
 export default defineConfig({
   output: 'server',
   adapter: cloudflare(),
-  integrations: [preact()],
+  integrations: [preact(), mdx()],
 
   // We do not use Astro sessions in v1 (no auth). The Cloudflare adapter
   // otherwise auto-enables a KV-backed session driver and tries to inject a

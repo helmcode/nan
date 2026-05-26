@@ -1,0 +1,53 @@
+---
+interface Spec {
+  label: string;
+  value: string;
+}
+
+interface Props {
+  id: string;
+  name: string;
+  tag?: string;
+  leftLabel: string;
+  rightLabel: string;
+  description: string;
+  specs: Spec[];
+  items: string[];
+}
+
+const { id, name, tag, leftLabel, rightLabel, description, specs, items } = Astro.props;
+const heading = tag ? `${name} - ${tag}` : name;
+---
+
+<h2 id={id}>{heading}</h2>
+
+<div class="grid gap-4 sm:grid-cols-2 mb-14 not-prose">
+  <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+    <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+      {leftLabel}
+    </p>
+    <p class="text-xs text-neutral-400 leading-relaxed mb-4">{description}</p>
+    <dl class="space-y-3">
+      {specs.map((spec) => (
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{spec.label}</dt>
+          <dd class="text-neutral-200 text-right"><Fragment set:html={spec.value} /></dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+
+  <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+    <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+      {rightLabel}
+    </p>
+    <ul class="grid gap-3 font-mono text-xs text-neutral-300">
+      {items.map((item) => (
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]"></span>
+          <span><Fragment set:html={item} /></span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>

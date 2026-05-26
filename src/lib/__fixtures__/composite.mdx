@@ -1,0 +1,18 @@
+import Callout from '../../components/docs/Callout.astro';
+import EndpointGrid from '../../components/docs/EndpointGrid.astro';
+
+# Composite
+
+Intro paragraph with `code`.
+
+<Callout title="Tip">
+  Plain prose inside the callout.
+</Callout>
+
+<h2 id="endpoints">Endpoints</h2>
+
+<EndpointGrid
+  items={[
+    { href: '#x', title: 'X', method: 'GET', path: '/v1/x' },
+  ]}
+/>

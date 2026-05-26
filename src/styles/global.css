@@ -97,7 +97,7 @@
   font-weight: 600;
 }
 
-.docs-content code:not(.code-block code):not([class*="bg-neutral-900"]) {
+.docs-content :not(pre) > code:not(.code-block code):not([class*="bg-neutral-900"]) {
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 0.8rem;
   color: rgb(212 212 216);
@@ -241,4 +241,147 @@
 .copy-toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+}
+
+.docs-content h3 {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: rgb(226 232 240);
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.docs-content a {
+  color: rgb(167 139 250);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.docs-content a:hover {
+  color: rgb(196 181 253);
+}
+
+.docs-content ul,
+.docs-content ol {
+  margin: 0 0 1.5rem 1.25rem;
+  color: rgb(203 213 225);
+}
+
+.docs-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.75;
+}
+
+.docs-content blockquote {
+  margin: 0 0 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgb(38 38 38 / 0.6);
+  border-left: 3px solid rgb(139 92 246);
+  border-radius: 0.75rem;
+  background: rgb(10 10 10);
+  box-shadow: 0 0 0 1px rgb(139 92 246 / 0.08) inset;
+}
+
+.docs-content blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.docs-content table {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  display: block;
+  overflow-x: auto;
+}
+
+.docs-content thead tr {
+  border-bottom: 1px solid rgb(38 38 38 / 0.6);
+}
+
+.docs-content tbody tr {
+  border-bottom: 1px solid rgb(38 38 38 / 0.3);
+}
+
+.docs-content th,
+.docs-content td {
+  padding: 0.75rem 1rem 0.75rem 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.docs-content th {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(115 115 115);
+}
+
+.docs-content td {
+  color: rgb(212 212 216);
+}
+
+.docs-code-block {
+  margin: 0 0 1.5rem 0;
+  border: 1px solid rgb(38 38 38 / 0.6);
+  border-radius: 0.75rem;
+  background: rgb(10 10 10);
+  overflow: hidden;
+}
+
+.docs-code-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgb(38 38 38 / 0.6);
+  background: rgb(10 10 10);
+}
+
+.docs-code-label {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(167 139 250);
+}
+
+.docs-code-toolbar .copy-btn {
+  border: 0;
+  background: transparent;
+  color: rgb(163 163 163);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.docs-code-toolbar .copy-btn:hover {
+  color: rgb(226 232 240);
+}
+
+.docs-content pre {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  background: rgb(10 10 10);
+}
+
+.docs-content pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+.docs-content img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.5rem 0;
+  border: 1px solid rgb(38 38 38 / 0.6);
+  border-radius: 0.75rem;
 }
