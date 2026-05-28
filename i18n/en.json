@@ -153,7 +153,7 @@
     "limited": "Limited spots",
     "features": {
       "0": "Access to shared cluster — open models with no token caps",
-      "1": "DeepSeek V4-Flash (frontier 284B, 1M context, advanced reasoning) — 100M tokens/month",
+      "1": "DeepSeek V4-Flash (frontier 284B, 1M context, advanced reasoning) — 500M tokens/month",
       "2": "Open models chosen by the community",
       "3": "Personal API key compatible with OpenAI",
       "4": "Private Discord channels for members only",
