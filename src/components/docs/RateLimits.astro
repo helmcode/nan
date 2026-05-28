@@ -1,18 +1,38 @@
 ---
 ---
 
-<div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-14">
+<div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
   <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
     rate limits por API key
   </p>
   <dl class="grid gap-3 sm:grid-cols-2">
     <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
       <dt class="text-neutral-500 uppercase tracking-wider">Requests / min</dt>
-      <dd class="text-neutral-200 text-right">100 rpm</dd>
+      <dd class="text-neutral-200 text-right">60 rpm</dd>
     </div>
     <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
       <dt class="text-neutral-500 uppercase tracking-wider">Paralelo máximo</dt>
-      <dd class="text-neutral-200 text-right">5 concurrentes</dd>
+      <dd class="text-neutral-200 text-right">3 concurrentes</dd>
+    </div>
+  </dl>
+</div>
+
+<div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-14">
+  <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+    tokens / min por modelo
+  </p>
+  <dl class="grid gap-3 sm:grid-cols-2">
+    <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+      <dt class="text-neutral-500 uppercase tracking-wider">deepseek-v4-flash</dt>
+      <dd class="text-neutral-200 text-right">1.5M tpm</dd>
+    </div>
+    <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+      <dt class="text-neutral-500 uppercase tracking-wider">qwen3.6</dt>
+      <dd class="text-neutral-200 text-right">500K tpm</dd>
+    </div>
+    <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+      <dt class="text-neutral-500 uppercase tracking-wider">gemma4</dt>
+      <dd class="text-neutral-200 text-right">500K tpm</dd>
     </div>
   </dl>
 </div>
