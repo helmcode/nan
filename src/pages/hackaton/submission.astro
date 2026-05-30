@@ -1,0 +1,37 @@
+---
+import Page from '../../layouts/Page.astro';
+import SubmissionForm from '../../components/hackaton/SubmissionForm.tsx';
+import { t, tObj } from '../../lib/i18n';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+const base = env.CLOUD_API_URL.replace(/\/$/, '');
+let hasTeam = false;
+try {
+  const res = await fetch(`${base}/api/hackaton/me`, {
+    headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
+  });
+  if (res.ok) {
+    const body = await res.json();
+    hasTeam = Boolean(body?.data?.team?.id);
+  }
+} catch {}
+---
+
+<Page title={`${t('hackaton.submission.title', locale)} — nan.builders`}>
+  <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
+    <a href="/hackaton/me" class="font-mono text-xs text-neutral-500 hover:text-violet-400">
+      {t('hackaton.backToLanding', locale)}
+    </a>
+    <h1 class="mt-8 font-mono text-2xl text-white">{t('hackaton.submission.title', locale)}</h1>
+    <section class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+      {hasTeam ? (
+        <SubmissionForm client:load t={tObj('hackaton.submission', locale)} />
+      ) : (
+        <p class="text-sm text-neutral-400">{t('hackaton.me.noTeam', locale)}</p>
+      )}
+    </section>
+  </main>
+</Page>

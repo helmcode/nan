@@ -1,0 +1,85 @@
+---
+import Page from '../layouts/Page.astro';
+import LanguageSwitcher from '../components/landing/LanguageSwitcher.astro';
+import RegisterForm from '../components/hackaton/RegisterForm.tsx';
+import { t, tObj } from '../lib/i18n';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+
+// Estado del evento + sesión (SSR): consultamos el backend a través del proxy
+// interno para decidir qué CTA mostrar.
+let status = 'draft';
+let full = false;
+try {
+  const base = env.CLOUD_API_URL.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/hackaton/event`, {
+    headers: { origin: 'https://nan.builders' },
+  });
+  if (res.ok) {
+    const body = await res.json();
+    status = body?.data?.status ?? 'draft';
+  }
+} catch {
+  // best-effort; si falla, mostramos landing informativa
+}
+
+// ¿Hay sesión NaN? Heurística por cookie (el backend es la autoridad real).
+const hasSession = Astro.request.headers.get('cookie')?.includes('nan_session') ?? false;
+
+const form = tObj('hackaton.form', locale);
+const pageTitle = `${t('hackaton.pageTitle', locale)} — nan.builders`;
+
+// El login de NaN lo sirve el backend (no hay página /login propia): el punto
+// de entrada es Discord OAuth en cloud-api. Rebota por Discord y emite la cookie
+// nan_session con Domain=.nan.builders, así que vale en todos los subdominios.
+// Tras login el backend redirige a FRONTEND_URL/ (no de vuelta aquí), el usuario
+// vuelve a /hackaton y ya tiene sesión.
+const apiBase = env.CLOUD_API_URL.replace(/\/$/, '');
+const loginUrl = `${apiBase}/api/auth/discord`;
+---
+
+<Page title={pageTitle} description={t('hackaton.subtitle', locale)}>
+  <LanguageSwitcher />
+  <main class="px-6 pt-24 pb-32 md:pt-32">
+    <div class="mx-auto max-w-2xl">
+      <a href={locale === 'en' ? '/?lang=en' : '/'}
+         class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400">
+        {t('hackaton.backToLanding', locale)}
+      </a>
+
+      <header class="mt-8">
+        <p class="font-mono text-xs uppercase tracking-widest text-violet-400">
+          {t('hackaton.label', locale)}
+        </p>
+        <h1 class="mt-4 font-mono text-2xl md:text-3xl text-white tracking-tight leading-snug">
+          {t('hackaton.title', locale)}
+        </h1>
+        <p class="mt-4 text-sm md:text-base text-neutral-300 leading-relaxed">
+          {t('hackaton.subtitle', locale)}
+        </p>
+        <p class="mt-5 inline-flex items-center gap-2 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 font-mono text-xs text-violet-300">
+          <span aria-hidden="true">📅</span>{t('hackaton.dates', locale)}
+        </p>
+        <p class="mt-3 text-xs text-neutral-500 font-mono">{t('hackaton.rules', locale)}</p>
+      </header>
+
+      <section class="mt-14">
+        {status !== 'registration' ? (
+          <p class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6 text-sm text-neutral-400">
+            {t('hackaton.subtitle', locale)}
+          </p>
+        ) : !hasSession ? (
+          <a href={loginUrl}
+             class="inline-block font-mono text-sm px-8 py-3 rounded-lg bg-violet-600 text-white hover:bg-violet-500 transition-all">
+            {t('hackaton.loginCta', locale)}
+          </a>
+        ) : (
+          <RegisterForm client:load t={form} />
+        )}
+      </section>
+    </div>
+  </main>
+</Page>
