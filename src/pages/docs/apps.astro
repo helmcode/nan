@@ -26,6 +26,63 @@ import Docs from '../../layouts/Docs.astro';
     </p>
   </div>
 
+  <h2 id="tiers">Tiers disponibles</h2>
+
+  <p>Cada Space pertenece a un tier. El tier define la cuota total de CPU, RAM
+    y almacenamiento que se reparte entre todas las apps que despliegues
+    dentro de él. Puedes <strong class="text-white">subir o bajar de tier</strong>
+    en cualquier momento desde el dashboard del Space (la bajada solo se
+    permite si tu uso actual cabe en el tier nuevo).</p>
+
+  <div class="overflow-x-auto my-6">
+    <table class="w-full text-sm border-collapse">
+      <thead>
+        <tr class="border-b border-neutral-800">
+          <th class="py-3 pr-4 text-left text-[10px] uppercase tracking-widest text-neutral-500">Tier</th>
+          <th class="py-3 pr-4 text-left text-[10px] uppercase tracking-widest text-neutral-500">CPU</th>
+          <th class="py-3 pr-4 text-left text-[10px] uppercase tracking-widest text-neutral-500">RAM</th>
+          <th class="py-3 pr-4 text-left text-[10px] uppercase tracking-widest text-neutral-500">Disco</th>
+          <th class="py-3 pr-4 text-left text-[10px] uppercase tracking-widest text-neutral-500">Pods</th>
+          <th class="py-3 text-left text-[10px] uppercase tracking-widest text-neutral-500">Precio</th>
+        </tr>
+      </thead>
+      <tbody class="text-neutral-300">
+        <tr class="border-b border-neutral-800/30">
+          <td class="py-3 pr-4 text-white">Basic</td>
+          <td class="py-3 pr-4 text-violet-400">2 vCPU</td>
+          <td class="py-3 pr-4 text-violet-400">4 GiB</td>
+          <td class="py-3 pr-4 text-violet-400">20 GiB</td>
+          <td class="py-3 pr-4">5</td>
+          <td class="py-3"><span class="text-emerald-400">Gratis</span> con inferencia · $6 / €6 al mes</td>
+        </tr>
+        <tr class="border-b border-neutral-800/30">
+          <td class="py-3 pr-4 text-white">Medium</td>
+          <td class="py-3 pr-4 text-violet-400">4 vCPU</td>
+          <td class="py-3 pr-4 text-violet-400">8 GiB</td>
+          <td class="py-3 pr-4 text-violet-400">40 GiB</td>
+          <td class="py-3 pr-4">10</td>
+          <td class="py-3">$12 / €12 al mes</td>
+        </tr>
+        <tr class="border-b border-neutral-800/30">
+          <td class="py-3 pr-4 text-white">Large</td>
+          <td class="py-3 pr-4 text-violet-400">4 vCPU</td>
+          <td class="py-3 pr-4 text-violet-400">16 GiB</td>
+          <td class="py-3 pr-4 text-violet-400">80 GiB</td>
+          <td class="py-3 pr-4">20</td>
+          <td class="py-3">$24 / €24 al mes</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="text-sm text-neutral-500">CPU y RAM son los <strong class="text-white">topes
+    agregados del Space</strong> (suma de todas tus apps). Por defecto cada app que
+    crees arranca con un límite cómodo de <code>500m</code> CPU y <code>500 MiB</code>
+    de RAM, suficiente para una API o worker típico; puedes subir el límite por app
+    desde la sección <em>Advanced options</em> del formulario hasta consumir el tier
+    completo. El disco se reparte vía PVCs (5/10/20 según tier) y solo lo usan las
+    apps que marques como <em>persistent</em>.</p>
+
   <!-- ════════════════════════════════════════════ -->
   <!-- PASO 1                                       -->
   <!-- ════════════════════════════════════════════ -->
