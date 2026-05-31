@@ -13,6 +13,16 @@ try {
   const res = await fetch(`${base}/api/hackaton/projects`, { headers: { origin: 'https://nan.builders' } });
   if (res.ok) projects = (await res.json())?.data ?? [];
 } catch {}
+
+// Voto actual del usuario (SSR, reenviando la cookie). Permite marcar la tarjeta
+// votada y ofrecer cambiar el voto. Si no hay sesión, /me da 401 y queda null.
+let myVote: string | null = null;
+try {
+  const me = await fetch(`${base}/api/hackaton/me`, {
+    headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
+  });
+  if (me.ok) myVote = (await me.json())?.data?.my_vote ?? null;
+} catch {}
 ---
 
 <Page title={`${t('hackaton.projects.title', locale)} — nan.builders`}>
@@ -37,7 +47,7 @@ try {
               <a href={p.repo_url} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">Repo</a>
             </div>
             <div class="mt-5">
-              <VoteButton client:load teamId={p.team_id} t={tObj('hackaton.projects', locale)} />
+              <VoteButton client:load teamId={p.team_id} votedTeamId={myVote} t={tObj('hackaton.projects', locale)} />
             </div>
           </article>
         ))}

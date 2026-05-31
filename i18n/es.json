@@ -351,7 +351,13 @@
       "checkin": "Las inscripciones están cerradas. Ahora toca hacer check-in para asegurar tu plaza.",
       "checkinCta": "Hacer check-in",
       "checkinDoneTitle": "Check-in confirmado",
-      "checkinDone": "Ya has confirmado tu asistencia y tu plaza está asegurada. Te avisaremos por Discord con los siguientes pasos."
+      "checkinDone": "Ya has confirmado tu asistencia y tu plaza está asegurada. Te avisaremos por Discord con los siguientes pasos.",
+      "votingTitle": "La votación está abierta",
+      "voting": "Las entregas ya están publicadas. Entra a la galería, revisa los proyectos y vota tu favorito.",
+      "votingCta": "Ver proyectos y votar",
+      "resultsTitle": "Resultados publicados",
+      "results": "El hackatón ha terminado. Consulta la clasificación final.",
+      "resultsCta": "Ver clasificación"
     },
     "alreadyRegistered": {
       "title": "Ya estás inscrito",
@@ -430,9 +436,9 @@
     "submission": {
       "title": "Submission del equipo",
       "fTitle": "Título",
-      "description": "Descripción",
+      "description": "Descripción (opcional)",
       "publicUrl": "URL pública",
-      "spaceUrl": "URL del Space",
+      "spaceUrl": "URL del Space (opcional · +1 punto)",
       "repoUrl": "Repo (open source)",
       "mediaUrl": "Media (opcional)",
       "submit": "Guardar submission",
@@ -441,6 +447,12 @@
       "saved": "Submission guardada. Checks ejecutados.",
       "alreadyTitle": "Submission enviada ✓",
       "alreadyNote": "Tu equipo ya tiene submission enviada. Puedes editarla y volver a guardar mientras el plazo siga abierto.",
+      "error": "No se pudo guardar la submission.",
+      "errorRequired": "Faltan campos obligatorios: título, URL pública y repo.",
+      "errorClosed": "El plazo de entrega está cerrado: ya no se puede guardar.",
+      "closedTitle": "Plazo de entrega cerrado",
+      "closedNote": "La fase de construcción ha terminado. Ya no se puede crear ni editar la submission; ahora se verifica antes de la votación.",
+      "notSubmitted": "Tu equipo no llegó a enviar ninguna submission antes de cerrarse el plazo.",
       "checks": "Checks automáticos",
       "urlLive": "URL pública responde",
       "inNanSpace": "Desplegada en Space de NaN",
@@ -456,7 +468,9 @@
       "loginToVote": "Inicia sesión para votar",
       "selfVote": "No puedes votar a tu propio equipo.",
       "alreadyVoted": "Ya has votado.",
-      "notEligible": "Tu cuenta NaN no es elegible para votar."
+      "notEligible": "Tu cuenta NaN no es elegible para votar.",
+      "yourVote": "Tu voto ✓",
+      "changeVote": "Votar por este"
     },
     "leaderboard": {
       "title": "Leaderboard",

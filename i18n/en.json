@@ -351,7 +351,13 @@
       "checkin": "Registration is closed. Now it's time to check in to secure your seat.",
       "checkinCta": "Check in",
       "checkinDoneTitle": "Check-in confirmed",
-      "checkinDone": "You've confirmed your attendance and your seat is secured. We'll reach out on Discord with the next steps."
+      "checkinDone": "You've confirmed your attendance and your seat is secured. We'll reach out on Discord with the next steps.",
+      "votingTitle": "Voting is open",
+      "voting": "Submissions are live. Head to the gallery, browse the projects and vote for your favorite.",
+      "votingCta": "View projects & vote",
+      "resultsTitle": "Results published",
+      "results": "The hackathon has ended. Check out the final leaderboard.",
+      "resultsCta": "View leaderboard"
     },
     "alreadyRegistered": {
       "title": "You're already registered",
@@ -430,9 +436,9 @@
     "submission": {
       "title": "Team submission",
       "fTitle": "Title",
-      "description": "Description",
+      "description": "Description (optional)",
       "publicUrl": "Public URL",
-      "spaceUrl": "Space URL",
+      "spaceUrl": "Space URL (optional · +1 point)",
       "repoUrl": "Repo (open source)",
       "mediaUrl": "Media (optional)",
       "submit": "Save submission",
@@ -441,6 +447,12 @@
       "saved": "Submission saved. Checks executed.",
       "alreadyTitle": "Submission sent ✓",
       "alreadyNote": "Your team already has a submission. You can edit it and save again while the deadline is open.",
+      "error": "Couldn't save the submission.",
+      "errorRequired": "Missing required fields: title, public URL and repo.",
+      "errorClosed": "The submission window is closed: it can no longer be saved.",
+      "closedTitle": "Submission window closed",
+      "closedNote": "The building phase has ended. The submission can no longer be created or edited; it's now being verified before voting.",
+      "notSubmitted": "Your team didn't submit anything before the deadline closed.",
       "checks": "Automatic checks",
       "urlLive": "Public URL responds",
       "inNanSpace": "Deployed in a NaN Space",
@@ -456,7 +468,9 @@
       "loginToVote": "Sign in to vote",
       "selfVote": "You can't vote for your own team.",
       "alreadyVoted": "You've already voted.",
-      "notEligible": "Your NaN account is not eligible to vote."
+      "notEligible": "Your NaN account is not eligible to vote.",
+      "yourVote": "Your vote ✓",
+      "changeVote": "Vote for this one"
     },
     "leaderboard": {
       "title": "Leaderboard",

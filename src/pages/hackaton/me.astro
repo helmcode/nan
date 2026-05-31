@@ -20,7 +20,11 @@ try {
 ---
 <Page title={`${t('hackaton.me.title', locale)} — nan.builders`}>
   <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
-    <h1 class="font-mono text-2xl text-white">{t('hackaton.me.title', locale)}</h1>
+    <a href={locale === 'en' ? '/hackaton?lang=en' : '/hackaton'}
+       class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400">
+      {t('hackaton.backToLanding', locale)}
+    </a>
+    <h1 class="mt-8 font-mono text-2xl text-white">{t('hackaton.me.title', locale)}</h1>
     {!team ? (
       <p class="mt-6 text-neutral-400">{t('hackaton.me.noTeam', locale)}</p>
     ) : (

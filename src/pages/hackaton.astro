@@ -74,6 +74,8 @@ const closedNote = String(cap.closedNote ?? '')
 // Depende de si toca hacer check-in y de si ya lo han hecho (checkin_at).
 const meUrl = locale === 'en' ? '/hackaton/me?lang=en' : '/hackaton/me';
 const checkinUrl = locale === 'en' ? '/hackaton/checkin?lang=en' : '/hackaton/checkin';
+const projectsUrl = locale === 'en' ? '/hackaton/projects?lang=en' : '/hackaton/projects';
+const leaderboardUrl = locale === 'en' ? '/hackaton/leaderboard?lang=en' : '/hackaton/leaderboard';
 const hasCheckedIn = !!myParticipant?.checkin_at;
 const needsCheckin = status === 'checkin' && !hasCheckedIn;
 let participantPanel: { title: string; body: string; href: string; cta: string };
@@ -81,6 +83,12 @@ if (needsCheckin) {
   participantPanel = { title: phase.checkinTitle, body: phase.checkin, href: checkinUrl, cta: phase.checkinCta };
 } else if (status === 'checkin' && hasCheckedIn) {
   participantPanel = { title: phase.checkinDoneTitle, body: phase.checkinDone, href: meUrl, cta: String(already.cta ?? '') };
+} else if (status === 'voting') {
+  // Durante la votación, el CTA lleva a la galería de proyectos a votar.
+  participantPanel = { title: phase.votingTitle, body: phase.voting, href: projectsUrl, cta: phase.votingCta };
+} else if (status === 'closed') {
+  // Cerrado: el CTA lleva a la clasificación final.
+  participantPanel = { title: phase.resultsTitle, body: phase.results, href: leaderboardUrl, cta: phase.resultsCta };
 } else {
   participantPanel = { title: phase.inProgressTitle, body: phase.inProgress, href: meUrl, cta: String(already.cta ?? '') };
 }

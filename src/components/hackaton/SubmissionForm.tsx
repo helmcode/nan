@@ -26,20 +26,35 @@ export default function SubmissionForm({ t, existing }: { t: Record<string, stri
   const [checks, setChecks] = useState<any>(existing ?? null);
   const [submitted, setSubmitted] = useState(Boolean(existing));
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
   const set = (k: string) => (e: any) => setF({ ...f, [k]: e.currentTarget.value });
 
   async function onSubmit(e: TargetedSubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
-    const resp = await fetch('/api/hackaton/submission', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(f),
-    });
+    setError('');
+    let resp: Response;
+    try {
+      resp = await fetch('/api/hackaton/submission', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(f),
+      });
+    } catch {
+      setBusy(false);
+      setError(t.error);
+      return;
+    }
     const b = await resp.json().catch(() => null);
     setBusy(false);
     if (resp.ok && b?.ok) {
       setChecks(b.data);
       setSubmitted(true);
+      return;
     }
+    // Mapear errores conocidos del backend a un mensaje claro.
+    const code = b?.error as string | undefined;
+    if (code === 'validation_failed') setError(t.errorRequired);
+    else if (code === 'wrong_state') setError(t.errorClosed);
+    else setError(t.error);
   }
 
   const inputCls = 'w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-3 text-sm text-white font-mono';
@@ -60,6 +75,7 @@ export default function SubmissionForm({ t, existing }: { t: Record<string, stri
       <button disabled={busy} class="font-mono text-sm px-8 py-3 rounded-lg bg-violet-600 text-white disabled:opacity-50">
         {busy ? t.submitting : submitted ? t.update : t.submit}
       </button>
+      {error && <p role="alert" class="text-sm font-mono text-red-400">{error}</p>}
       {checks && checks.checks && (
         <div class="mt-4 text-sm font-mono text-neutral-300">
           <p>{t.checks}: {checks.auto_points}/2</p>
