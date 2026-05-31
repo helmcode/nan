@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import type { TargetedSubmitEvent } from 'preact';
 
-interface FormStrings {
+export interface FormStrings {
   name: string; discord: string; discordHelp: string;
   specialty: string; level: string;
   specFrontend: string; specBackend: string; specMlAiData: string;

@@ -11,7 +11,7 @@ const base = env.CLOUD_API_URL.replace(/\/$/, '');
 let projects: any[] = [];
 try {
   const res = await fetch(`${base}/api/hackaton/projects`, { headers: { origin: 'https://nan.builders' } });
-  if (res.ok) projects = (await res.json())?.data ?? [];
+  if (res.ok) projects = (await res.json() as { data?: any })?.data ?? [];
 } catch {}
 
 // Voto actual del usuario (SSR, reenviando la cookie). Permite marcar la tarjeta
@@ -21,7 +21,7 @@ try {
   const me = await fetch(`${base}/api/hackaton/me`, {
     headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
   });
-  if (me.ok) myVote = (await me.json())?.data?.my_vote ?? null;
+  if (me.ok) myVote = (await me.json() as { data?: any })?.data?.my_vote ?? null;
 } catch {}
 ---
 

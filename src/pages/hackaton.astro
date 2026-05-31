@@ -1,8 +1,8 @@
 ---
 import Page from '../layouts/Page.astro';
 import LanguageSwitcher from '../components/landing/LanguageSwitcher.astro';
-import RegisterForm from '../components/hackaton/RegisterForm.tsx';
-import LoginForm from '../components/hackaton/LoginForm.tsx';
+import RegisterForm, { type FormStrings } from '../components/hackaton/RegisterForm.tsx';
+import LoginForm, { type LoginStrings } from '../components/hackaton/LoginForm.tsx';
 import RegistrationBar from '../components/hackaton/RegistrationBar.astro';
 import { t, tObj } from '../lib/i18n';
 import { env } from 'cloudflare:workers';
@@ -23,7 +23,7 @@ try {
     headers: { origin: 'https://nan.builders' },
   });
   if (res.ok) {
-    const body = await res.json();
+    const body = await res.json() as { data?: any };
     status = body?.data?.status ?? 'draft';
     registered = body?.data?.registered ?? 0;
     capacity = body?.data?.capacity ?? 40;
@@ -50,7 +50,7 @@ if (hasSession) {
     const meRes = await fetch(`${base}/api/hackaton/me`, {
       headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
     });
-    if (meRes.ok) myParticipant = (await meRes.json())?.data?.participant ?? null;
+    if (meRes.ok) myParticipant = (await meRes.json() as { data?: any })?.data?.participant ?? null;
   } catch {
     // best-effort; si falla, caemos al formulario
   }
@@ -61,9 +61,9 @@ const alreadyRegistered = !!myParticipant && myParticipant.status !== 'withdrawn
 const notYetOpen = status === 'draft';
 const registrationOver = status !== 'draft' && status !== 'registration';
 
-const form = tObj('hackaton.form', locale);
+const form = tObj<FormStrings>('hackaton.form', locale);
 const already = tObj('hackaton.alreadyRegistered', locale);
-const login = tObj('hackaton.login', locale);
+const login = tObj<LoginStrings>('hackaton.login', locale);
 const cap = tObj('hackaton.capacity', locale);
 const phase = tObj<Record<string, string>>('hackaton.phase', locale);
 const closedNote = String(cap.closedNote ?? '')

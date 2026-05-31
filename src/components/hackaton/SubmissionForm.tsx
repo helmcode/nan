@@ -48,7 +48,7 @@ export default function SubmissionForm({ t, existing }: { t: Record<string, stri
       setError(t.error);
       return;
     }
-    const b = await resp.json().catch(() => null);
+    const b = await resp.json().catch(() => null) as { ok?: boolean; data?: any; error?: string } | null;
     setBusy(false);
     if (resp.ok && b?.ok) {
       setChecks(b.data);

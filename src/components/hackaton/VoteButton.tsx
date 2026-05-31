@@ -20,7 +20,7 @@ export default function VoteButton(
     // En éxito recargamos: el SSR vuelve a leer my_vote y deja un único ✓ coherente
     // en toda la galería (las tarjetas son islas independientes).
     if (resp.ok) { window.location.reload(); return; }
-    const body = await resp.json().catch(() => null);
+    const body = await resp.json().catch(() => null) as { error?: string } | null;
     const code = body?.error ?? '';
     if (resp.status === 401) { setState('login'); return; }
     if (code === 'self_vote') { setState('self'); return; }

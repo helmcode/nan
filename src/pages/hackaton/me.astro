@@ -13,9 +13,9 @@ try {
   const res = await fetch(`${base}/api/hackaton/me`, {
     headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
   });
-  if (res.ok) { const b = await res.json(); me = b?.data?.participant; team = b?.data?.team; }
+  if (res.ok) { const b = await res.json() as { data?: any }; me = b?.data?.participant; team = b?.data?.team; }
   const ev = await fetch(`${base}/api/hackaton/event`, { headers: { origin: 'https://nan.builders' } });
-  if (ev.ok) status = (await ev.json())?.data?.status ?? 'draft';
+  if (ev.ok) status = (await ev.json() as { data?: any })?.data?.status ?? 'draft';
 } catch {}
 ---
 <Page title={`${t('hackaton.me.title', locale)} — nan.builders`}>

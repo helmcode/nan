@@ -16,12 +16,12 @@ try {
     headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
   });
   if (res.ok) {
-    const body = await res.json();
+    const body = await res.json() as { data?: any };
     hasTeam = Boolean(body?.data?.team?.id);
     existing = body?.data?.submission ?? null;
   }
   const ev = await fetch(`${base}/api/hackaton/event`, { headers: { origin: 'https://nan.builders' } });
-  if (ev.ok) status = (await ev.json())?.data?.status ?? 'draft';
+  if (ev.ok) status = (await ev.json() as { data?: any })?.data?.status ?? 'draft';
 } catch {}
 
 // La entrega solo se acepta durante `building` (el backend rechaza el resto con

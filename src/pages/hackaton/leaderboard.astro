@@ -8,7 +8,7 @@ const base = env.CLOUD_API_URL.replace(/\/$/, '');
 let lb: any = { public: false, rows: [] };
 try {
   const res = await fetch(`${base}/api/hackaton/leaderboard`, { headers: { origin: 'https://nan.builders' } });
-  if (res.ok) lb = (await res.json())?.data ?? lb;
+  if (res.ok) lb = (await res.json() as { data?: any })?.data ?? lb;
 } catch {}
 ---
 <Page title={`${t('hackaton.leaderboard.title', locale)} — nan.builders`}>

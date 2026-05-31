@@ -45,7 +45,7 @@ export default function ReassignForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ghost_id: ghostId }),
       });
-      const body = await resp.json().catch(() => null);
+      const body = await resp.json().catch(() => null) as { data?: any; error?: string } | null;
       if (!resp.ok) {
         // 409 already_voted: ya convocó esta reasignación, sigue pendiente del 2º voto.
         if (resp.status === 409 && body?.error === 'already_voted') {

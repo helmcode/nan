@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import type { TargetedSubmitEvent } from 'preact';
 
-interface LoginStrings {
+export interface LoginStrings {
   prompt: string;
   description: string;
   emailLabel: string;
