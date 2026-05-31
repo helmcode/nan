@@ -326,7 +326,50 @@
     "backToLanding": "← Volver",
     "rules": "Modelos permitidos: Qwen 3.6 o Gemma 4. El proyecto debe ser open source. Tema libre.",
     "loginCta": "Inicia sesión en NaN para inscribirte",
+    "login": {
+      "prompt": "Entra con tu cuenta NaN",
+      "description": "Introduce el email de tu cuenta NaN y te enviaremos un enlace para iniciar sesión. Es el mismo acceso que la plataforma.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "tu@email.com",
+      "submit": "Enviar enlace",
+      "submitting": "Enviando…",
+      "success": "Si ese email pertenece a un miembro de NaN, te hemos enviado un enlace para entrar. Revisa tu correo (y la carpeta de spam) y luego vuelve aquí.",
+      "errorEmail": "Introduce un email válido.",
+      "errorRate": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+      "errorServer": "No se pudo enviar el enlace. Inténtalo de nuevo.",
+      "errorNetwork": "Error de red. Inténtalo de nuevo."
+    },
     "full": "Las 40 plazas están llenas. Te apuntamos a la lista de reservas (pool).",
+    "phase": {
+      "notOpenTitle": "Inscripciones aún no abiertas",
+      "notOpen": "Las inscripciones para este hackatón todavía no están abiertas. Vuelve pronto para apuntarte.",
+      "closedTitle": "Inscripciones cerradas",
+      "closed": "El plazo de inscripción ya se ha cerrado. ¡Te esperamos en el próximo hackatón de NaN!",
+      "inProgressTitle": "El hackatón está en marcha",
+      "inProgress": "Las inscripciones están cerradas, pero tú ya estás dentro. Consulta tu estado y tu equipo.",
+      "checkinTitle": "Confirma tu asistencia",
+      "checkin": "Las inscripciones están cerradas. Ahora toca hacer check-in para asegurar tu plaza.",
+      "checkinCta": "Hacer check-in",
+      "checkinDoneTitle": "Check-in confirmado",
+      "checkinDone": "Ya has confirmado tu asistencia y tu plaza está asegurada. Te avisaremos por Discord con los siguientes pasos."
+    },
+    "alreadyRegistered": {
+      "title": "Ya estás inscrito",
+      "confirmed": "Tu plaza está confirmada. Te avisaremos por Discord con los siguientes pasos.",
+      "reserve": "Estás en la pool de reservas. Si se libera una plaza entrarás por orden de inscripción; te avisaremos por Discord.",
+      "cta": "Ver mi estado y equipo"
+    },
+    "capacity": {
+      "seatsTaken": "{n} de {cap} plazas ocupadas",
+      "seatsRemaining": "Quedan {n} plazas",
+      "lastSeats": "¡Últimas {n} plazas!",
+      "poolTitle": "Plazas principales completas",
+      "poolNote": "Las {cap} plazas principales están llenas. Si te inscribes ahora entrarás en la pool de reservas ({taken} de {res} ocupadas).",
+      "poolExplain": "La pool es la lista de espera: si alguien confirmado no hace check-in o se da de baja, quien está en la pool entra por orden de inscripción.",
+      "poolBarLabel": "Pool de reservas",
+      "closedTitle": "Inscripciones completas",
+      "closedNote": "Las {cap} plazas y las {res} de la pool de reservas están ocupadas. Atento al Discord por si se libera alguna."
+    },
     "form": {
       "name": "Nombre",
       "discord": "Usuario de Discord",
@@ -365,7 +408,24 @@
       "teammates": "Compañeros",
       "rules": "Reglas: Qwen 3.6 / Gemma 4 + open source.",
       "submissionCta": "Editar submission",
-      "reassignCta": "Convocar reasignación"
+      "reassignCta": "Convocar reasignación",
+      "reassignPending": "Convocatoria registrada. Hace falta que otro compañero la confirme ({have}/{need}).",
+      "reassignFilled": "Reasignación completada: se ha incorporado un miembro de la pool de reservas.",
+      "reassignNoPool": "Reasignación completada: no quedaba nadie en la pool, el equipo continúa con 3 miembros.",
+      "reassignAlready": "Ya has convocado esta reasignación. Falta que otro compañero la confirme.",
+      "reassignInfo": {
+        "label": "Reasignar miembro ausente",
+        "toggleAria": "Más información sobre la reasignación",
+        "title": "¿Qué es y qué ocurre al convocar una reasignación?",
+        "points": [
+          "Sirve para sustituir a un compañero de tu equipo que no va a participar (no apareció o ha desaparecido).",
+          "Hacen falta DOS miembros del equipo: la convocatoria no se ejecuta hasta que un segundo compañero confirma la misma reasignación.",
+          "Cuando se alcanza ese acuerdo, esa persona se marca como ausente y sale de tu equipo y del hackatón. La acción es inmediata e irreversible.",
+          "El sistema busca automáticamente al primer candidato de la pool de reservas (por orden de inscripción) que hizo check-in y lo añade a tu equipo en su lugar.",
+          "Si no queda nadie en la pool, tu equipo continúa con 3 miembros (el mínimo permitido) y se avisa a la organización.",
+          "Solo está disponible durante la fase de construcción."
+        ]
+      }
     },
     "submission": {
       "title": "Submission del equipo",
@@ -376,8 +436,11 @@
       "repoUrl": "Repo (open source)",
       "mediaUrl": "Media (opcional)",
       "submit": "Guardar submission",
+      "update": "Actualizar submission",
       "submitting": "Guardando…",
       "saved": "Submission guardada. Checks ejecutados.",
+      "alreadyTitle": "Submission enviada ✓",
+      "alreadyNote": "Tu equipo ya tiene submission enviada. Puedes editarla y volver a guardar mientras el plazo siga abierto.",
       "checks": "Checks automáticos",
       "urlLive": "URL pública responde",
       "inNanSpace": "Desplegada en Space de NaN",

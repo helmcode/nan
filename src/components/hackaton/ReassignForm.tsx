@@ -6,9 +6,35 @@ interface Member {
   discord_user?: string;
 }
 
-export default function ReassignForm({ members, ctaLabel }: { members: Member[]; ctaLabel: string }) {
+interface ReassignInfo {
+  label: string;
+  toggleAria: string;
+  title: string;
+  points: string[];
+}
+
+interface ReassignLabels {
+  pending: string; // admite {have}/{need}
+  filled: string;
+  noPool: string;
+  already: string;
+}
+
+export default function ReassignForm({
+  members,
+  ctaLabel,
+  info,
+  labels,
+}: {
+  members: Member[];
+  ctaLabel: string;
+  info: ReassignInfo;
+  labels: ReassignLabels;
+}) {
   const [ghostId, setGhostId] = useState('');
   const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
+  const [result, setResult] = useState('');
+  const [showInfo, setShowInfo] = useState(false);
 
   async function submit() {
     if (!ghostId) return;
@@ -19,18 +45,61 @@ export default function ReassignForm({ members, ctaLabel }: { members: Member[];
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ghost_id: ghostId }),
       });
-      setState(resp.ok ? 'done' : 'error');
+      const body = await resp.json().catch(() => null);
+      if (!resp.ok) {
+        // 409 already_voted: ya convocó esta reasignación, sigue pendiente del 2º voto.
+        if (resp.status === 409 && body?.error === 'already_voted') {
+          setResult(labels.already);
+          setState('done');
+          return;
+        }
+        setState('error');
+        return;
+      }
+      const r = body?.data;
+      if (r?.status === 'filled') setResult(labels.filled);
+      else if (r?.status === 'no_pool') setResult(labels.noPool);
+      else {
+        const have = String(r?.requested_by?.length ?? 1);
+        const need = String(r?.quorum ?? 2);
+        setResult(labels.pending.replaceAll('{have}', have).replaceAll('{need}', need));
+      }
+      setState('done');
     } catch {
       setState('error');
     }
   }
 
   if (state === 'done') {
-    return <p class="font-mono text-sm text-violet-400">Reasignación registrada.</p>;
+    return <p class="font-mono text-sm text-violet-400">{result}</p>;
   }
 
   return (
     <div class="space-y-3">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-xs uppercase tracking-widest text-neutral-400">{info.label}</span>
+        <button
+          type="button"
+          onClick={() => setShowInfo((v) => !v)}
+          aria-expanded={showInfo}
+          aria-label={info.toggleAria}
+          title={info.toggleAria}
+          class="flex h-5 w-5 items-center justify-center rounded-full border border-neutral-700 text-[10px] font-mono text-neutral-400 transition-colors hover:border-violet-400 hover:text-violet-300">
+          i
+        </button>
+      </div>
+
+      {showInfo && (
+        <div class="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4 space-y-2">
+          <p class="font-mono text-xs text-violet-300">{info.title}</p>
+          <ul class="list-disc space-y-1 pl-4 text-xs leading-relaxed text-neutral-300">
+            {info.points.map((p) => (
+              <li>{p}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <select
         value={ghostId}
         onChange={(e) => setGhostId((e.currentTarget as HTMLSelectElement).value)}

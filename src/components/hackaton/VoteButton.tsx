@@ -22,7 +22,7 @@ export default function VoteButton({ teamId, t }: { teamId: string; t: Record<st
   if (state === 'voted') return <span class="font-mono text-xs text-violet-400">{t.voted}</span>;
   if (state === 'self') return <span class="font-mono text-xs text-neutral-500">{t.selfVote}</span>;
   if (state === 'dup') return <span class="font-mono text-xs text-neutral-500">{t.alreadyVoted}</span>;
-  if (state === 'login') return <a href="/login?redirect=/hackaton/projects" class="font-mono text-xs text-violet-400">{t.loginToVote}</a>;
+  if (state === 'login') return <a href="/hackaton" class="font-mono text-xs text-violet-400">{t.loginToVote}</a>;
   if (state === 'not_eligible') return <span class="font-mono text-xs text-neutral-500">{t.notEligible}</span>;
   return (
     <button onClick={vote} disabled={state === 'busy'}

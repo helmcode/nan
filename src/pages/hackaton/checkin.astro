@@ -1,13 +1,13 @@
 ---
 import Page from '../../layouts/Page.astro';
 import CheckinForm from '../../components/hackaton/CheckinForm.tsx';
+import LoginForm from '../../components/hackaton/LoginForm.tsx';
 import { t, tObj } from '../../lib/i18n';
 
 export const prerender = false;
 
 const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
 const hasSession = Astro.request.headers.get('cookie')?.includes('nan_session') ?? false;
-const loginUrl = `/login?redirect=${encodeURIComponent('/hackaton/checkin')}`;
 const pageTitle = `${t('hackaton.checkin.title', locale)} — nan.builders`;
 ---
 
@@ -20,9 +20,7 @@ const pageTitle = `${t('hackaton.checkin.title', locale)} — nan.builders`;
     <p class="mt-4 text-sm text-neutral-300">{t('hackaton.checkin.intro', locale)}</p>
     <div class="mt-8">
       {!hasSession ? (
-        <a href={loginUrl} class="inline-block font-mono text-sm px-8 py-3 rounded-lg bg-violet-600 text-white hover:bg-violet-500">
-          {t('hackaton.loginCta', locale)}
-        </a>
+        <LoginForm client:load t={tObj('hackaton.login', locale)} />
       ) : (
         <CheckinForm client:load t={tObj('hackaton.checkin', locale)} />
       )}

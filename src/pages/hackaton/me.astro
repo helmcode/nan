@@ -1,7 +1,7 @@
 ---
 import Page from '../../layouts/Page.astro';
 import ReassignForm from '../../components/hackaton/ReassignForm.tsx';
-import { t } from '../../lib/i18n';
+import { t, tObj } from '../../lib/i18n';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
@@ -40,7 +40,7 @@ try {
         </div>
         {status === 'building' && team.members && (
           <div class="mt-6">
-            <ReassignForm client:load members={team.members} ctaLabel={t('hackaton.me.reassignCta', locale)} />
+            <ReassignForm client:load members={team.members} ctaLabel={t('hackaton.me.reassignCta', locale)} info={tObj('hackaton.me.reassignInfo', locale)} labels={{ pending: t('hackaton.me.reassignPending', locale), filled: t('hackaton.me.reassignFilled', locale), noPool: t('hackaton.me.reassignNoPool', locale), already: t('hackaton.me.reassignAlready', locale) }} />
           </div>
         )}
       </section>

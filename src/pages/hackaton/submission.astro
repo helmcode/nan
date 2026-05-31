@@ -9,6 +9,7 @@ export const prerender = false;
 const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
 const base = env.CLOUD_API_URL.replace(/\/$/, '');
 let hasTeam = false;
+let existing: any = null;
 try {
   const res = await fetch(`${base}/api/hackaton/me`, {
     headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
@@ -16,6 +17,7 @@ try {
   if (res.ok) {
     const body = await res.json();
     hasTeam = Boolean(body?.data?.team?.id);
+    existing = body?.data?.submission ?? null;
   }
 } catch {}
 ---
@@ -28,7 +30,7 @@ try {
     <h1 class="mt-8 font-mono text-2xl text-white">{t('hackaton.submission.title', locale)}</h1>
     <section class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
       {hasTeam ? (
-        <SubmissionForm client:load t={tObj('hackaton.submission', locale)} />
+        <SubmissionForm client:load t={tObj('hackaton.submission', locale)} existing={existing} />
       ) : (
         <p class="text-sm text-neutral-400">{t('hackaton.me.noTeam', locale)}</p>
       )}

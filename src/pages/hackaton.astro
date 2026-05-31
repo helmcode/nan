@@ -2,6 +2,8 @@
 import Page from '../layouts/Page.astro';
 import LanguageSwitcher from '../components/landing/LanguageSwitcher.astro';
 import RegisterForm from '../components/hackaton/RegisterForm.tsx';
+import LoginForm from '../components/hackaton/LoginForm.tsx';
+import RegistrationBar from '../components/hackaton/RegistrationBar.astro';
 import { t, tObj } from '../lib/i18n';
 import { env } from 'cloudflare:workers';
 
@@ -11,34 +13,79 @@ const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
 
 // Estado del evento + sesión (SSR): consultamos el backend a través del proxy
 // interno para decidir qué CTA mostrar.
+const base = env.CLOUD_API_URL.replace(/\/$/, '');
 let status = 'draft';
-let full = false;
+let registered = 0;
+let capacity = 40;
+let reserve = 10;
 try {
-  const base = env.CLOUD_API_URL.replace(/\/$/, '');
   const res = await fetch(`${base}/api/hackaton/event`, {
     headers: { origin: 'https://nan.builders' },
   });
   if (res.ok) {
     const body = await res.json();
     status = body?.data?.status ?? 'draft';
+    registered = body?.data?.registered ?? 0;
+    capacity = body?.data?.capacity ?? 40;
+    reserve = body?.data?.reserve_capacity ?? 10;
   }
 } catch {
   // best-effort; si falla, mostramos landing informativa
 }
 
+// ¿Inscripciones completas? (40 + 10 reservas, §7.3.4). Si lo está, no tiene
+// sentido mostrar formulario ni login.
+const closed = registered >= capacity + reserve;
+
 // ¿Hay sesión NaN? Heurística por cookie (el backend es la autoridad real).
 const hasSession = Astro.request.headers.get('cookie')?.includes('nan_session') ?? false;
 
-const form = tObj('hackaton.form', locale);
-const pageTitle = `${t('hackaton.pageTitle', locale)} — nan.builders`;
+// Si hay sesión, comprobamos si este usuario YA está inscrito (vía /me, que
+// reenvía la cookie). Lo hacemos en cualquier fase: durante la inscripción para
+// no mostrarle el formulario otra vez, y después para distinguir "ya estás
+// dentro" de "inscripciones cerradas".
+let myParticipant: any = null;
+if (hasSession) {
+  try {
+    const meRes = await fetch(`${base}/api/hackaton/me`, {
+      headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
+    });
+    if (meRes.ok) myParticipant = (await meRes.json())?.data?.participant ?? null;
+  } catch {
+    // best-effort; si falla, caemos al formulario
+  }
+}
+const alreadyRegistered = !!myParticipant && myParticipant.status !== 'withdrawn';
 
-// El login de NaN lo sirve el backend (no hay página /login propia): el punto
-// de entrada es Discord OAuth en cloud-api. Rebota por Discord y emite la cookie
-// nan_session con Domain=.nan.builders, así que vale en todos los subdominios.
-// Tras login el backend redirige a FRONTEND_URL/ (no de vuelta aquí), el usuario
-// vuelve a /hackaton y ya tiene sesión.
-const apiBase = env.CLOUD_API_URL.replace(/\/$/, '');
-const loginUrl = `${apiBase}/api/auth/discord`;
+// Fase de cara a la pantalla: antes de abrir, durante, o ya cerrada.
+const notYetOpen = status === 'draft';
+const registrationOver = status !== 'draft' && status !== 'registration';
+
+const form = tObj('hackaton.form', locale);
+const already = tObj('hackaton.alreadyRegistered', locale);
+const login = tObj('hackaton.login', locale);
+const cap = tObj('hackaton.capacity', locale);
+const phase = tObj<Record<string, string>>('hackaton.phase', locale);
+const closedNote = String(cap.closedNote ?? '')
+  .replaceAll('{cap}', String(capacity))
+  .replaceAll('{res}', String(reserve));
+
+// Panel para participantes ya inscritos en fases posteriores a la inscripción.
+// Depende de si toca hacer check-in y de si ya lo han hecho (checkin_at).
+const meUrl = locale === 'en' ? '/hackaton/me?lang=en' : '/hackaton/me';
+const checkinUrl = locale === 'en' ? '/hackaton/checkin?lang=en' : '/hackaton/checkin';
+const hasCheckedIn = !!myParticipant?.checkin_at;
+const needsCheckin = status === 'checkin' && !hasCheckedIn;
+let participantPanel: { title: string; body: string; href: string; cta: string };
+if (needsCheckin) {
+  participantPanel = { title: phase.checkinTitle, body: phase.checkin, href: checkinUrl, cta: phase.checkinCta };
+} else if (status === 'checkin' && hasCheckedIn) {
+  participantPanel = { title: phase.checkinDoneTitle, body: phase.checkinDone, href: meUrl, cta: String(already.cta ?? '') };
+} else {
+  participantPanel = { title: phase.inProgressTitle, body: phase.inProgress, href: meUrl, cta: String(already.cta ?? '') };
+}
+
+const pageTitle = `${t('hackaton.pageTitle', locale)} — nan.builders`;
 ---
 
 <Page title={pageTitle} description={t('hackaton.subtitle', locale)}>
@@ -67,17 +114,79 @@ const loginUrl = `${apiBase}/api/auth/discord`;
       </header>
 
       <section class="mt-14">
-        {status !== 'registration' ? (
-          <p class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6 text-sm text-neutral-400">
-            {t('hackaton.subtitle', locale)}
-          </p>
-        ) : !hasSession ? (
-          <a href={loginUrl}
-             class="inline-block font-mono text-sm px-8 py-3 rounded-lg bg-violet-600 text-white hover:bg-violet-500 transition-all">
-            {t('hackaton.loginCta', locale)}
-          </a>
+        {registrationOver ? (
+          alreadyRegistered ? (
+            <div class="rounded-xl border border-violet-500/30 bg-violet-500/10 p-6">
+              <p class="font-mono text-xs uppercase tracking-widest text-violet-300">
+                {participantPanel.title}
+              </p>
+              <p class="mt-2 text-sm text-neutral-200 leading-relaxed">
+                {participantPanel.body}
+              </p>
+              <a
+                href={participantPanel.href}
+                class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500"
+              >
+                {participantPanel.cta}
+              </a>
+            </div>
+          ) : (
+            <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+              <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">
+                {phase.closedTitle}
+              </p>
+              <p class="mt-2 text-sm text-neutral-300 leading-relaxed">
+                {phase.closed}
+              </p>
+            </div>
+          )
+        ) : notYetOpen ? (
+          <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+            <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">
+              {phase.notOpenTitle}
+            </p>
+            <p class="mt-2 text-sm text-neutral-300 leading-relaxed">
+              {phase.notOpen}
+            </p>
+          </div>
         ) : (
-          <RegisterForm client:load t={form} />
+          <div class="space-y-6">
+            <RegistrationBar
+              registered={registered}
+              capacity={capacity}
+              reserve={reserve}
+              locale={locale}
+            />
+            {alreadyRegistered ? (
+              <div class="rounded-xl border border-violet-500/30 bg-violet-500/10 p-6">
+                <p class="font-mono text-xs uppercase tracking-widest text-violet-300">
+                  {already.title}
+                </p>
+                <p class="mt-2 text-sm text-neutral-200 leading-relaxed">
+                  {myParticipant.is_reserve ? already.reserve : already.confirmed}
+                </p>
+                <a
+                  href={locale === 'en' ? '/hackaton/me?lang=en' : '/hackaton/me'}
+                  class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500"
+                >
+                  {already.cta}
+                </a>
+              </div>
+            ) : closed ? (
+              <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+                <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">
+                  {cap.closedTitle}
+                </p>
+                <p class="mt-2 text-sm text-neutral-300 leading-relaxed">
+                  {closedNote}
+                </p>
+              </div>
+            ) : !hasSession ? (
+              <LoginForm client:load t={login} />
+            ) : (
+              <RegisterForm client:load t={form} />
+            )}
+          </div>
         )}
       </section>
     </div>

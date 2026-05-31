@@ -326,7 +326,50 @@
     "backToLanding": "← Back",
     "rules": "Allowed models: Qwen 3.6 or Gemma 4. The project must be open source. Free theme.",
     "loginCta": "Sign in to NaN to register",
+    "login": {
+      "prompt": "Sign in with your NaN account",
+      "description": "Enter your NaN account email and we'll send you a link to sign in. It's the same access as the platform.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "submit": "Send link",
+      "submitting": "Sending…",
+      "success": "If that email belongs to a NaN member, we've sent you a sign-in link. Check your inbox (and spam folder), then come back here.",
+      "errorEmail": "Enter a valid email.",
+      "errorRate": "Too many attempts. Wait a moment and try again.",
+      "errorServer": "Couldn't send the link. Try again.",
+      "errorNetwork": "Network error. Try again."
+    },
     "full": "All 40 seats are full. We'll add you to the reserve list (pool).",
+    "phase": {
+      "notOpenTitle": "Registration not open yet",
+      "notOpen": "Registration for this hackathon isn't open yet. Check back soon to sign up.",
+      "closedTitle": "Registration closed",
+      "closed": "The registration window has closed. We hope to see you at the next NaN hackathon!",
+      "inProgressTitle": "The hackathon is underway",
+      "inProgress": "Registration is closed, but you're already in. Check your status and your team.",
+      "checkinTitle": "Confirm your attendance",
+      "checkin": "Registration is closed. Now it's time to check in to secure your seat.",
+      "checkinCta": "Check in",
+      "checkinDoneTitle": "Check-in confirmed",
+      "checkinDone": "You've confirmed your attendance and your seat is secured. We'll reach out on Discord with the next steps."
+    },
+    "alreadyRegistered": {
+      "title": "You're already registered",
+      "confirmed": "Your seat is confirmed. We'll reach out on Discord with the next steps.",
+      "reserve": "You're in the reserve pool. If a seat frees up you'll get in by registration order; we'll let you know on Discord.",
+      "cta": "View my status and team"
+    },
+    "capacity": {
+      "seatsTaken": "{n} of {cap} seats taken",
+      "seatsRemaining": "{n} seats left",
+      "lastSeats": "Last {n} seats!",
+      "poolTitle": "Main seats full",
+      "poolNote": "All {cap} main seats are full. If you register now you'll join the reserve pool ({taken} of {res} taken).",
+      "poolExplain": "The pool is the waitlist: if a confirmed participant doesn't check in or drops out, whoever is in the pool gets in by registration order.",
+      "poolBarLabel": "Reserve pool",
+      "closedTitle": "Registration full",
+      "closedNote": "All {cap} seats and the {res} reserve pool spots are taken. Keep an eye on Discord in case one frees up."
+    },
     "form": {
       "name": "Name",
       "discord": "Discord username",
@@ -365,7 +408,24 @@
       "teammates": "Teammates",
       "rules": "Rules: Qwen 3.6 / Gemma 4 + open source.",
       "submissionCta": "Edit submission",
-      "reassignCta": "Request reassignment"
+      "reassignCta": "Request reassignment",
+      "reassignPending": "Request registered. Another teammate must confirm it ({have}/{need}).",
+      "reassignFilled": "Reassignment complete: a member from the reserve pool has joined.",
+      "reassignNoPool": "Reassignment complete: the pool was empty, your team continues with 3 members.",
+      "reassignAlready": "You've already requested this reassignment. Another teammate still needs to confirm it.",
+      "reassignInfo": {
+        "label": "Reassign absent member",
+        "toggleAria": "More information about reassignment",
+        "title": "What is it and what happens when you request a reassignment?",
+        "points": [
+          "It replaces a teammate who won't take part (didn't show up or has gone silent).",
+          "It takes TWO team members: the request isn't executed until a second teammate confirms the same reassignment.",
+          "Once that agreement is reached, that person is marked absent and removed from your team and from the hackathon. The action is immediate and irreversible.",
+          "The system automatically picks the first candidate from the reserve pool (by registration order) who checked in, and adds them to your team in their place.",
+          "If the pool is empty, your team continues with 3 members (the allowed minimum) and the organizers are notified.",
+          "It's only available during the building phase."
+        ]
+      }
     },
     "submission": {
       "title": "Team submission",
@@ -376,8 +436,11 @@
       "repoUrl": "Repo (open source)",
       "mediaUrl": "Media (optional)",
       "submit": "Save submission",
+      "update": "Update submission",
       "submitting": "Saving…",
       "saved": "Submission saved. Checks executed.",
+      "alreadyTitle": "Submission sent ✓",
+      "alreadyNote": "Your team already has a submission. You can edit it and save again while the deadline is open.",
       "checks": "Automatic checks",
       "urlLive": "Public URL responds",
       "inNanSpace": "Deployed in a NaN Space",
