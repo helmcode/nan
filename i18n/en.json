@@ -440,7 +440,11 @@
       "publicUrl": "Public URL",
       "spaceUrl": "Space URL (optional · +1 point)",
       "repoUrl": "Repo (open source)",
-      "mediaUrl": "Media (optional)",
+      "imageUrl": "Cover image link",
+      "videoUrl": "Video link (YouTube)",
+      "attachMedia": "Attach media",
+      "videoInfo": "Upload a short video to YouTube presenting your project and set it as “Unlisted”: it won’t show up in search or on your channel, but anyone with the link can watch it. Paste that link here.",
+      "imageHint": "It will be shown as the project cover during voting.",
       "submit": "Save submission",
       "update": "Update submission",
       "submitting": "Saving…",
@@ -470,7 +474,8 @@
       "alreadyVoted": "You've already voted.",
       "notEligible": "Your NaN account is not eligible to vote.",
       "yourVote": "Your vote ✓",
-      "changeVote": "Vote for this one"
+      "changeVote": "Vote for this one",
+      "presentationVideo": "Presentation video"
     },
     "leaderboard": {
       "title": "Leaderboard",

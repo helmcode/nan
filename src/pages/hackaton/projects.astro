@@ -37,7 +37,7 @@ try {
       <div class="mt-8 grid gap-4 md:grid-cols-2">
         {projects.map((p) => (
           <article class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-5">
-            {p.media_url && <img src={p.media_url} alt="" class="mb-4 aspect-video w-full rounded-lg object-cover" loading="lazy" />}
+            {p.image_url && <img src={p.image_url} alt="" class="mb-4 aspect-video w-full rounded-lg object-cover" loading="lazy" />}
             <h2 class="font-mono text-base text-white">{p.title}</h2>
             <p class="mt-1 font-mono text-xs text-violet-400">{p.team_name}</p>
             <p class="mt-3 text-sm text-neutral-300">{p.description}</p>
@@ -45,6 +45,11 @@ try {
               <a href={p.public_url} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">Live</a>
               <a href={p.space_url} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">Space</a>
               <a href={p.repo_url} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">Repo</a>
+              {p.video_url && (
+                <a href={p.video_url} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">
+                  ▶ {t('hackaton.projects.presentationVideo', locale)}
+                </a>
+              )}
             </div>
             <div class="mt-5">
               <VoteButton client:load teamId={p.team_id} votedTeamId={myVote} t={tObj('hackaton.projects', locale)} />

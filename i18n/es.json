@@ -440,7 +440,11 @@
       "publicUrl": "URL pública",
       "spaceUrl": "URL del Space (opcional · +1 punto)",
       "repoUrl": "Repo (open source)",
-      "mediaUrl": "Media (opcional)",
+      "imageUrl": "Enlace de imagen de portada",
+      "videoUrl": "Enlace de vídeo (YouTube)",
+      "attachMedia": "Adjuntar media",
+      "videoInfo": "Sube a YouTube un vídeo corto presentando tu proyecto y márcalo como «Oculto» (no listado): no aparecerá en búsquedas ni en tu canal, pero cualquiera con el enlace podrá verlo. Pega aquí ese enlace.",
+      "imageHint": "Se mostrará como portada del proyecto durante la votación.",
       "submit": "Guardar submission",
       "update": "Actualizar submission",
       "submitting": "Guardando…",
@@ -470,7 +474,8 @@
       "alreadyVoted": "Ya has votado.",
       "notEligible": "Tu cuenta NaN no es elegible para votar.",
       "yourVote": "Tu voto ✓",
-      "changeVote": "Votar por este"
+      "changeVote": "Votar por este",
+      "presentationVideo": "Vídeo presentación"
     },
     "leaderboard": {
       "title": "Leaderboard",
