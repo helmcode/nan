@@ -102,8 +102,9 @@ import RateLimits from '../../components/docs/RateLimits.astro';
 
   <p class="text-sm text-neutral-300 leading-relaxed mb-6">
     Devuelve la lista de modelos disponibles para tu key. Modelos publicados:
-    <code>deepseek-v4-flash</code>, <code>qwen3.6</code>, <code>gemma4</code>,
-    <code>qwen3-embedding</code>, <code>kokoro</code>, <code>whisper</code>.
+    <code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>, <code>qwen3.6</code>,
+    <code>gemma4</code>, <code>qwen3-embedding</code>, <code>kokoro</code>,
+    <code>whisper</code>.
   </p>
 
   <h3 id="models-request">Request</h3>
@@ -135,8 +136,8 @@ import RateLimits from '../../components/docs/RateLimits.astro';
 
   <p class="text-sm text-neutral-300 leading-relaxed mb-6">
     El endpoint principal de chat. Compatible con OpenAI Chat Completions.
-    Modelos compatibles: <code>deepseek-v4-flash</code>, <code>qwen3.6</code> y
-    <code>gemma4</code>.
+    Modelos compatibles: <code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>,
+    <code>qwen3.6</code> y <code>gemma4</code>.
   </p>
 
   <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-10">
@@ -149,6 +150,14 @@ import RateLimits from '../../components/docs/RateLimits.astro';
         <dd class="text-neutral-400 leading-relaxed">
           Chat, streaming, tool calling, reasoning, contexto de 1M tokens.
           Cuota mensual de 500M tokens por miembro.
+        </dd>
+      </div>
+      <div>
+        <dt class="font-mono text-neutral-200 mb-1">mimo-v2.5</dt>
+        <dd class="text-neutral-400 leading-relaxed">
+          Chat, streaming, tool calling, reasoning, vision (image input) y
+          audio (audio input), contexto de 1M tokens. Cuota mensual de 500M
+          tokens por miembro.
         </dd>
       </div>
       <div>
@@ -175,7 +184,7 @@ import RateLimits from '../../components/docs/RateLimits.astro';
           <dt class="font-mono text-xs text-white"><code>model</code></dt>
           <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">string · required</span>
         </div>
-        <dd class="text-xs text-neutral-400 leading-relaxed"><code>qwen3.6</code> o <code>gemma4</code>.</dd>
+        <dd class="text-xs text-neutral-400 leading-relaxed"><code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>, <code>qwen3.6</code> o <code>gemma4</code>.</dd>
       </div>
       <div class="border-t border-neutral-800/40 pt-4">
         <div class="flex items-baseline justify-between gap-4 mb-1">
@@ -335,9 +344,11 @@ import RateLimits from '../../components/docs/RateLimits.astro';
 
   <h3 id="chat-vision">Vision</h3>
   <p class="text-sm text-neutral-300 leading-relaxed mb-4">
-    Tanto <code>qwen3.6</code> como <code>gemma4</code> aceptan input multimodal.
-    El campo <code>content</code> del mensaje pasa de string a un array de partes
-    de tipo <code>text</code> y/o <code>image_url</code>.
+    <code>mimo-v2.5</code>, <code>qwen3.6</code> y <code>gemma4</code> aceptan
+    input multimodal. El campo <code>content</code> del mensaje pasa de string a
+    un array de partes de tipo <code>text</code> y/o <code>image_url</code>.
+    <code>mimo-v2.5</code> también acepta <code>input_audio</code> como parte de
+    <code>content</code>.
   </p>
   <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/chat/completions \\
   -H "Authorization: Bearer sk-tu-key-aqui" \\

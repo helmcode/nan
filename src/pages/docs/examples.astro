@@ -111,6 +111,14 @@ for await (const chunk of stream) {
             "input": ["text"],
             "output": ["text"]
           }
+        },
+        "mimo-v2.5": {
+          "name": "Xiaomi MiMo V2.5",
+          "contextWindow": 1048576,
+          "modalities": {
+            "input": ["text", "image", "audio"],
+            "output": ["text"]
+          }
         }
       }
     }
@@ -122,7 +130,7 @@ for await (const chunk of stream) {
   }
 }`} />
   <p class="font-mono text-xs text-neutral-500">
-    Este es el config para conectar IDEs (Cursor, OpenCode) con los 3 modelos disponibles: <code>qwen3.6</code>, <code>gemma4</code> y <code>deepseek-v4-flash</code>.
+    Este es el config para conectar IDEs (Cursor, OpenCode) con los 4 modelos LLM disponibles: <code>qwen3.6</code>, <code>gemma4</code>, <code>deepseek-v4-flash</code> y <code>mimo-v2.5</code>.
   </p>
 
   <h3 id="qwen36-pi">.pi/agent/models.json (config)</h3>
@@ -414,8 +422,63 @@ console.log(result.text);       // Texto transcrito
 console.log(result.language);   // "es"
 console.log(result.duration);   // 5.2`} />
 
+  <!-- mimo-v2.5 -->
+  <h2 id="mimo-v2-5">modelo: mimo-v2.5</h2>
+  <p class="font-mono text-xs text-neutral-500 mb-6">omnimodal — chat, visión y audio</p>
+
+  <h3 id="mimo-v2-5-curl">curl</h3>
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -d '{
+    "model": "mimo-v2.5",
+    "messages": [{"role": "user", "content": "Hola, ¿cómo estás?"}],
+    "max_tokens": 500
+  }'`} />
+  <p class="font-mono text-xs text-neutral-500 mb-5">
+    Con reasoning activo se recomienda <code>max_tokens &ge; 300</code> para dejar margen al razonamiento.
+  </p>
+
+  <h3 id="mimo-v2-5-vision">vision (curl)</h3>
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -d '{
+    "model": "mimo-v2.5",
+    "messages": [{
+      "role": "user",
+      "content": [
+        {"type": "text", "text": "¿Qué hay en esta imagen?"},
+        {"type": "image_url", "image_url": {"url": "https://example.com/foto.jpg"}}
+      ]
+    }],
+    "max_tokens": 500
+  }'`} />
+
+  <h3 id="mimo-v2-5-python">python (openai)</h3>
+  <CodeBlock language="python" code={`from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-tu-key-aqui",
+  base_url="https://api.nan.builders/v1"
+)
+
+response = client.chat.completions.create(
+  model="mimo-v2.5",
+  messages=[{
+    "role": "user",
+    "content": [
+      {"type": "text", "text": "Describe esta imagen."},
+      {"type": "image_url", "image_url": {"url": "https://example.com/foto.jpg"}}
+    ]
+  }],
+  max_tokens=500
+)
+
+print(response.choices[0].message.content)`} />
+
   <div class="gradient-divider mt-16 mb-6"></div>
-  
+
   <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-10">
     <p class="font-mono text-sm text-white mb-3">Integración en IDEs</p>
     <div class="space-y-4 text-xs text-neutral-400">
