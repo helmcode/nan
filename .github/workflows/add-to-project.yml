@@ -1,0 +1,16 @@
+name: Auto-add to NaN Staff project
+
+on:
+  issues:
+    types: [opened, reopened, transferred]
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  add-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/orgs/helmcode/projects/6
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
