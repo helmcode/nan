@@ -473,23 +473,37 @@ print(data["name"], data["age"])`} />
 
   <h3 id="chat-reasoning">Reasoning</h3>
 
-  <p>Ambos modelos soportan reasoning. El toggle se controla con el campo
-    <code>chat_template_kwargs.enable_thinking</code> en el body del request.
-    Cuando está activo, la respuesta incluye <code>reasoning_content</code> en
-    <code>message</code> con la cadena de razonamiento del modelo.</p>
+  <p>Los cuatro modelos generan razonamiento y lo devuelven en
+    <code>choices[0].message.reasoning_content</code>. El mecanismo de control
+    cambia según el modelo:</p>
 
   <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
-    <dl class="grid gap-3 sm:grid-cols-2">
-      <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-        <dt class="text-neutral-500 uppercase tracking-wider">qwen3.6</dt>
-        <dd class="text-neutral-200 text-right">activo por defecto</dd>
+    <dl class="space-y-3 text-xs">
+      <div class="flex items-baseline justify-between gap-4 font-mono">
+        <dt class="text-neutral-200">qwen3.6</dt>
+        <dd class="text-neutral-400 text-right"><code>chat_template_kwargs.enable_thinking</code> · activo por defecto</dd>
       </div>
-      <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-        <dt class="text-neutral-500 uppercase tracking-wider">gemma4</dt>
-        <dd class="text-neutral-200 text-right">desactivado por defecto</dd>
+      <div class="flex items-baseline justify-between gap-4 font-mono">
+        <dt class="text-neutral-200">gemma4</dt>
+        <dd class="text-neutral-400 text-right"><code>chat_template_kwargs.enable_thinking</code> · desactivado por defecto</dd>
+      </div>
+      <div class="flex items-baseline justify-between gap-4 font-mono">
+        <dt class="text-neutral-200">deepseek-v4-flash</dt>
+        <dd class="text-neutral-400 text-right"><code>reasoning_effort</code>: <code>low</code> | <code>medium</code> | <code>high</code> · default <code>medium</code></dd>
+      </div>
+      <div class="flex items-baseline justify-between gap-4 font-mono">
+        <dt class="text-neutral-200">mimo-v2.5</dt>
+        <dd class="text-neutral-400 text-right">siempre activo · no configurable por API hoy</dd>
       </div>
     </dl>
   </div>
+
+  <h4 id="chat-reasoning-enable-thinking" class="font-mono text-sm text-white mt-8 mb-3">
+    enable_thinking (qwen3.6, gemma4)
+  </h4>
+
+  <p>Toggle binario. El campo va en el body del request como
+    <code>chat_template_kwargs.enable_thinking</code>:</p>
 
   <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/chat/completions \\
   -H "Authorization: Bearer sk-tu-key-aqui" \\
@@ -523,6 +537,58 @@ response = client.chat.completions.create(
 )
 
 print(response.choices[0].message.reasoning_content)`} />
+
+  <h4 id="chat-reasoning-effort" class="font-mono text-sm text-white mt-10 mb-3">
+    reasoning_effort (deepseek-v4-flash)
+  </h4>
+
+  <p>Parámetro estándar de OpenAI. Acepta <code>low</code>, <code>medium</code>
+    o <code>high</code> y va como campo top-level del body — no dentro de
+    <code>extra_body</code>. Si no lo mandas, va en <code>medium</code> por
+    defecto.</p>
+
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/chat/completions \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "deepseek-v4-flash",
+    "messages": [{"role": "user", "content": "Resuelve paso a paso: 3x + 7 = 22"}],
+    "reasoning_effort": "high"
+  }'`} />
+
+  <p class="text-xs text-neutral-400 leading-relaxed mt-4">
+    Con el SDK <code>openai</code> de Python:
+  </p>
+
+  <CodeBlock language="python" code={`from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-tu-key-aqui",
+  base_url="https://api.nan.builders/v1"
+)
+
+response = client.chat.completions.create(
+  model="deepseek-v4-flash",
+  messages=[{"role": "user", "content": "Resuelve paso a paso: 3x + 7 = 22"}],
+  reasoning_effort="high"
+)
+
+print(response.choices[0].message.reasoning_content)
+print(response.choices[0].message.content)`} />
+
+  <p class="font-mono text-xs text-neutral-500 mt-3">
+    A más <code>effort</code>, más tokens dedicados al razonamiento y mejor
+    calidad en problemas complejos — a cambio de latencia y consumo de tu cuota
+    mensual.
+  </p>
+
+  <h4 class="font-mono text-sm text-white mt-10 mb-3">mimo-v2.5</h4>
+
+  <p>MiMo V2.5 razona siempre y emite <code>reasoning_content</code> en cada
+    respuesta. Hoy el upstream Xiaomi ignora tanto
+    <code>reasoning_effort</code> como <code>enable_thinking</code>, así que el
+    nivel de razonamiento no es configurable desde la API. Si necesitas
+    controlarlo, usa <code>deepseek-v4-flash</code>.</p>
 
   <!-- POST /v1/completions -->
   <h2 id="completions">POST /v1/completions</h2>
