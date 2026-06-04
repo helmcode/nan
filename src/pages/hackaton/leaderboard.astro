@@ -1,6 +1,7 @@
 ---
 import Page from '../../layouts/Page.astro';
-import { t } from '../../lib/i18n';
+import { t, withLang } from '../../lib/i18n';
+import { jsonData } from '../../lib/hackaton';
 import { env } from 'cloudflare:workers';
 export const prerender = false;
 const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
@@ -8,12 +9,15 @@ const base = env.CLOUD_API_URL.replace(/\/$/, '');
 let lb: any = { public: false, rows: [] };
 try {
   const res = await fetch(`${base}/api/hackaton/leaderboard`, { headers: { origin: 'https://nan.builders' } });
-  if (res.ok) lb = (await res.json() as { data?: any })?.data ?? lb;
+  if (res.ok) lb = (await jsonData(res)) ?? lb;
 } catch {}
 ---
 <Page title={`${t('hackaton.leaderboard.title', locale)} — nan.builders`}>
   <main class="px-6 pt-24 pb-32 mx-auto max-w-3xl">
-    <h1 class="font-mono text-2xl text-white">{t('hackaton.leaderboard.title', locale)}</h1>
+    <a href={withLang('/hackaton', locale)} class="font-mono text-xs text-neutral-500 hover:text-violet-400">
+      {t('hackaton.backToLanding', locale)}
+    </a>
+    <h1 class="mt-8 font-mono text-2xl text-white">{t('hackaton.leaderboard.title', locale)}</h1>
     {!lb.public ? (
       <p class="mt-6 text-neutral-400">{t('hackaton.leaderboard.hidden', locale)}</p>
     ) : (

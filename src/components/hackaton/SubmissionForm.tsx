@@ -1,6 +1,13 @@
 import { useState } from 'preact/hooks';
 import type { TargetedSubmitEvent } from 'preact';
 
+interface CheckItem { pass: boolean }
+interface Checks {
+  auto_points: number;
+  not_prize_eligible?: boolean;
+  checks: { url_live: CheckItem; in_nan_space: CheckItem; repo_public: CheckItem };
+}
+
 interface Existing {
   title?: string;
   description?: string;
@@ -11,7 +18,7 @@ interface Existing {
   video_url?: string;
   auto_points?: number;
   not_prize_eligible?: boolean;
-  checks?: any;
+  checks?: Checks;
 }
 
 export default function SubmissionForm({ t, existing }: { t: Record<string, string>; existing?: Existing | null }) {
@@ -25,19 +32,29 @@ export default function SubmissionForm({ t, existing }: { t: Record<string, stri
     video_url: existing?.video_url ?? '',
   });
   // checks: arranca con los de la submission existente; se actualiza al guardar.
-  const [checks, setChecks] = useState<any>(existing ?? null);
+  const [checks, setChecks] = useState<Checks | null>((existing as unknown as Checks) ?? null);
   const [submitted, setSubmitted] = useState(Boolean(existing));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   // Sección de media plegable: abierta si ya hay imagen o vídeo guardados.
   const [showMedia, setShowMedia] = useState(Boolean(existing?.image_url || existing?.video_url));
   const [showInfo, setShowInfo] = useState(false);
-  const set = (k: string) => (e: any) => setF({ ...f, [k]: e.currentTarget.value });
+  const set = (k: string) => (e: Event) =>
+    setF({ ...f, [k]: (e.currentTarget as HTMLInputElement | HTMLTextAreaElement).value });
 
   async function onSubmit(e: TargetedSubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
     setError('');
+    // Revalidar fase: si pasó a congelado mientras el form estaba abierto,
+    // avisar sin enviar (el usuario conserva lo escrito). El backend sigue
+    // siendo la autoridad (mapea wrong_state → errorClosed); esto mejora el caso común.
+    try {
+      const ev = await fetch('/api/hackaton/event');
+      const evb = await ev.json().catch(() => null) as { data?: { status?: string } } | null;
+      const st = evb?.data?.status;
+      if (st && st !== 'building') { setBusy(false); setError(t.errorClosed); return; }
+    } catch { /* best-effort: si falla, dejamos que el backend decida */ }
     let resp: Response;
     try {
       resp = await fetch('/api/hackaton/submission', {
@@ -71,11 +88,16 @@ export default function SubmissionForm({ t, existing }: { t: Record<string, stri
           <p class="mt-1 text-xs leading-relaxed text-neutral-400">{t.alreadyNote}</p>
         </div>
       )}
-      <input placeholder={t.fTitle} required value={f.title} onInput={set('title')} class={inputCls} />
-      <textarea placeholder={t.description} value={f.description} onInput={set('description')} class={inputCls} />
-      <input placeholder={t.publicUrl} required value={f.public_url} onInput={set('public_url')} class={inputCls} />
-      <input placeholder={t.spaceUrl} value={f.space_url} onInput={set('space_url')} class={inputCls} />
-      <input placeholder={t.repoUrl} required value={f.repo_url} onInput={set('repo_url')} class={inputCls} />
+      <label class="sr-only" for="sub-title">{t.fTitle}</label>
+      <input id="sub-title" placeholder={t.fTitle} required value={f.title} onInput={set('title')} class={inputCls} />
+      <label class="sr-only" for="sub-description">{t.description}</label>
+      <textarea id="sub-description" placeholder={t.description} value={f.description} onInput={set('description')} class={inputCls} />
+      <label class="sr-only" for="sub-public-url">{t.publicUrl}</label>
+      <input id="sub-public-url" placeholder={t.publicUrl} required value={f.public_url} onInput={set('public_url')} class={inputCls} />
+      <label class="sr-only" for="sub-space-url">{t.spaceUrl}</label>
+      <input id="sub-space-url" placeholder={t.spaceUrl} value={f.space_url} onInput={set('space_url')} class={inputCls} />
+      <label class="sr-only" for="sub-repo-url">{t.repoUrl}</label>
+      <input id="sub-repo-url" placeholder={t.repoUrl} required value={f.repo_url} onInput={set('repo_url')} class={inputCls} />
 
       {/* Media opcional: portada (imagen) + vídeo de presentación (YouTube). */}
       {!showMedia ? (
@@ -87,7 +109,8 @@ export default function SubmissionForm({ t, existing }: { t: Record<string, stri
         <div class="space-y-3 rounded-lg border border-neutral-800 bg-neutral-950/40 p-4">
           <p class="font-mono text-xs uppercase tracking-widest text-neutral-500">{t.attachMedia}</p>
           <div class="flex items-center gap-2">
-            <input placeholder={t.videoUrl} value={f.video_url} onInput={set('video_url')} class={inputCls} />
+            <label class="sr-only" for="sub-video-url">{t.videoUrl}</label>
+            <input id="sub-video-url" placeholder={t.videoUrl} value={f.video_url} onInput={set('video_url')} class={inputCls} />
             <button type="button" aria-label="info" onClick={() => setShowInfo((v) => !v)}
               class="shrink-0 h-7 w-7 rounded-full border border-neutral-700 font-mono text-xs text-neutral-400 hover:border-violet-500 hover:text-violet-300">
               i
@@ -96,7 +119,8 @@ export default function SubmissionForm({ t, existing }: { t: Record<string, stri
           {showInfo && (
             <p class="rounded-lg bg-neutral-900/60 px-3 py-2 text-xs leading-relaxed text-neutral-400">{t.videoInfo}</p>
           )}
-          <input placeholder={t.imageUrl} value={f.image_url} onInput={set('image_url')} class={inputCls} />
+          <label class="sr-only" for="sub-image-url">{t.imageUrl}</label>
+          <input id="sub-image-url" placeholder={t.imageUrl} value={f.image_url} onInput={set('image_url')} class={inputCls} />
           <p class="text-xs text-neutral-500">{t.imageHint}</p>
         </div>
       )}

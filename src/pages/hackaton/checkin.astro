@@ -2,7 +2,7 @@
 import Page from '../../layouts/Page.astro';
 import CheckinForm from '../../components/hackaton/CheckinForm.tsx';
 import LoginForm from '../../components/hackaton/LoginForm.tsx';
-import { t, tObj } from '../../lib/i18n';
+import { t, tObj, withLang } from '../../lib/i18n';
 
 export const prerender = false;
 
@@ -13,7 +13,7 @@ const pageTitle = `${t('hackaton.checkin.title', locale)} — nan.builders`;
 
 <Page title={pageTitle}>
   <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
-    <a href="/hackaton" class="font-mono text-xs text-neutral-500 hover:text-violet-400">
+    <a href={withLang('/hackaton', locale)} class="font-mono text-xs text-neutral-500 hover:text-violet-400">
       {t('hackaton.backToLanding', locale)}
     </a>
     <h1 class="mt-8 font-mono text-2xl text-white">{t('hackaton.checkin.title', locale)}</h1>
@@ -22,7 +22,7 @@ const pageTitle = `${t('hackaton.checkin.title', locale)} — nan.builders`;
       {!hasSession ? (
         <LoginForm client:load t={tObj('hackaton.login', locale)} />
       ) : (
-        <CheckinForm client:load t={tObj('hackaton.checkin', locale)} />
+        <CheckinForm client:idle t={tObj('hackaton.checkin', locale)} />
       )}
     </div>
   </main>

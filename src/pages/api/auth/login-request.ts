@@ -29,7 +29,7 @@ export const POST: APIRoute = async ({ request }) => {
   // El backend limita por IP usando X-Forwarded-For; sin esto, todas las
   // peticiones compartirían la IP del worker. Propagamos la IP real del cliente.
   const ip = request.headers.get('cf-connecting-ip');
-  if (ip) headers.set('x-forwarded-for', ip);
+  if (ip) { headers.set('x-forwarded-for', ip); headers.set('cf-connecting-ip', ip); }
 
   let resp: Response;
   try {

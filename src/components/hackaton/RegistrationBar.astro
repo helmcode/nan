@@ -27,7 +27,7 @@ const cap = tObj<CapacityStrings>('hackaton.capacity', locale);
 // El caso "completo" (r >= capacity+reserve) lo gestiona la página, no este componente.
 const inPool = registered >= capacity;
 const mainTaken = Math.min(registered, capacity);
-const mainPct = Math.round((mainTaken / capacity) * 100);
+const mainPct = capacity > 0 ? Math.round((mainTaken / capacity) * 100) : 0;
 const poolTaken = Math.max(0, registered - capacity);
 const poolPct = reserve > 0 ? Math.round((poolTaken / reserve) * 100) : 0;
 const remaining = Math.max(0, capacity - registered);

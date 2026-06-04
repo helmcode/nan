@@ -5,6 +5,7 @@ import RegisterForm, { type FormStrings } from '../components/hackaton/RegisterF
 import LoginForm, { type LoginStrings } from '../components/hackaton/LoginForm.tsx';
 import RegistrationBar from '../components/hackaton/RegistrationBar.astro';
 import { t, tObj } from '../lib/i18n';
+import { jsonData, type MeData } from '../lib/hackaton';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
@@ -18,43 +19,41 @@ let status = 'draft';
 let registered = 0;
 let capacity = 40;
 let reserve = 10;
-try {
-  const res = await fetch(`${base}/api/hackaton/event`, {
-    headers: { origin: 'https://nan.builders' },
-  });
-  if (res.ok) {
-    const body = await res.json() as { data?: any };
-    status = body?.data?.status ?? 'draft';
-    registered = body?.data?.registered ?? 0;
-    capacity = body?.data?.capacity ?? 40;
-    reserve = body?.data?.reserve_capacity ?? 10;
-  }
-} catch {
-  // best-effort; si falla, mostramos landing informativa
+
+// ¿Hay sesión NaN? Heurística por cookie (el backend es la autoridad real).
+const cookie = Astro.request.headers.get('cookie') ?? '';
+const hasSession = cookie.includes('nan_session');
+
+// Estado del evento + /me en paralelo: /event siempre; /me solo si hay cookie.
+// Cada fetch es best-effort (si falla → null y caemos a landing/login).
+const [eventRes, meRes] = await Promise.all([
+  fetch(`${base}/api/hackaton/event`, { headers: { origin: 'https://nan.builders' } }).catch(() => null),
+  hasSession
+    ? fetch(`${base}/api/hackaton/me`, { headers: { cookie, origin: 'https://nan.builders' } }).catch(() => null)
+    : Promise.resolve(null),
+]);
+
+if (eventRes?.ok) {
+  const data = await jsonData<{ status?: string; registered?: number; capacity?: number; reserve_capacity?: number }>(eventRes);
+  status = data?.status ?? 'draft';
+  registered = data?.registered ?? 0;
+  capacity = data?.capacity ?? 40;
+  reserve = data?.reserve_capacity ?? 10;
 }
 
 // ¿Inscripciones completas? (40 + 10 reservas, §7.3.4). Si lo está, no tiene
 // sentido mostrar formulario ni login.
 const closed = registered >= capacity + reserve;
 
-// ¿Hay sesión NaN? Heurística por cookie (el backend es la autoridad real).
-const hasSession = Astro.request.headers.get('cookie')?.includes('nan_session') ?? false;
-
-// Si hay sesión, comprobamos si este usuario YA está inscrito (vía /me, que
-// reenvía la cookie). Lo hacemos en cualquier fase: durante la inscripción para
-// no mostrarle el formulario otra vez, y después para distinguir "ya estás
-// dentro" de "inscripciones cerradas".
+// Sesión: distinguimos "ya inscrito" de "inscripciones cerradas" vía /me. Si
+// había cookie pero el backend devuelve 401, la sesión caducó → mostramos login.
 let myParticipant: any = null;
-if (hasSession) {
-  try {
-    const meRes = await fetch(`${base}/api/hackaton/me`, {
-      headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
-    });
-    if (meRes.ok) myParticipant = (await meRes.json() as { data?: any })?.data?.participant ?? null;
-  } catch {
-    // best-effort; si falla, caemos al formulario
-  }
+let sessionInvalid = false;
+if (meRes) {
+  if (meRes.status === 401) sessionInvalid = true;
+  else if (meRes.ok) myParticipant = (await jsonData<MeData>(meRes))?.participant ?? null;
 }
+const sessionExpired = hasSession && sessionInvalid;
 const alreadyRegistered = !!myParticipant && myParticipant.status !== 'withdrawn';
 
 // Fase de cara a la pantalla: antes de abrir, durante, o ya cerrada.
@@ -189,10 +188,10 @@ const pageTitle = `${t('hackaton.pageTitle', locale)} — nan.builders`;
                   {closedNote}
                 </p>
               </div>
-            ) : !hasSession ? (
+            ) : (!hasSession || sessionExpired) ? (
               <LoginForm client:load t={login} />
             ) : (
-              <RegisterForm client:load t={form} />
+              <RegisterForm client:load t={form} meHref={meUrl} />
             )}
           </div>
         )}

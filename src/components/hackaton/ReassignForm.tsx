@@ -18,6 +18,9 @@ interface ReassignLabels {
   filled: string;
   noPool: string;
   already: string;
+  selectAbsent: string;
+  errorSubmit: string;
+  sending: string;
 }
 
 export default function ReassignForm({
@@ -102,17 +105,18 @@ export default function ReassignForm({
 
       <select
         value={ghostId}
+        aria-label={info.label}
         onChange={(e) => setGhostId((e.currentTarget as HTMLSelectElement).value)}
         class="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-3 text-sm text-white font-mono">
-        <option value="" disabled>Selecciona ausente</option>
+        <option value="" disabled>{labels.selectAbsent}</option>
         {members.map((m) => (
           <option value={m.id}>{m.name}{m.discord_user ? ` · ${m.discord_user}` : ''}</option>
         ))}
       </select>
-      {state === 'error' && <p role="alert" class="text-sm text-red-400 font-mono">No se pudo registrar.</p>}
+      {state === 'error' && <p role="alert" class="text-sm text-red-400 font-mono">{labels.errorSubmit}</p>}
       <button type="button" onClick={submit} disabled={state === 'busy' || !ghostId}
         class="font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50">
-        {state === 'busy' ? 'Enviando…' : ctaLabel}
+        {state === 'busy' ? labels.sending : ctaLabel}
       </button>
     </div>
   );

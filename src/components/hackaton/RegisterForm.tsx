@@ -9,7 +9,7 @@ export interface FormStrings {
   levelJunior: string; levelMid: string; levelSenior: string;
   submit: string; submitting: string; success: string; successReserve: string;
   errorDiscord: string; errorFull: string; errorEligible: string;
-  errorServer: string; errorNetwork: string;
+  errorServer: string; errorNetwork: string; errorRate: string;
 }
 
 type Status =
@@ -18,7 +18,7 @@ type Status =
   | { kind: 'success'; reserve: boolean }
   | { kind: 'error'; message: string };
 
-export default function RegisterForm({ t }: { t: FormStrings }) {
+export default function RegisterForm({ t, meHref }: { t: FormStrings; meHref: string }) {
   const [name, setName] = useState('');
   const [discord, setDiscord] = useState('');
   const [specialty, setSpecialty] = useState('');
@@ -61,6 +61,7 @@ export default function RegisterForm({ t }: { t: FormStrings }) {
     const code = body?.error ?? '';
     if (resp.status === 409 || code === 'registration_full') message = t.errorFull;
     else if (resp.status === 403 || code === 'not_eligible') message = t.errorEligible;
+    else if (resp.status === 429 || code === 'rate_limited') message = t.errorRate;
     else if (code === 'discord_required') message = t.errorDiscord;
     setStatus({ kind: 'error', message });
   }
@@ -71,7 +72,7 @@ export default function RegisterForm({ t }: { t: FormStrings }) {
         <p class="text-sm text-white leading-relaxed">
           {status.reserve ? t.successReserve : t.success}
         </p>
-        <a href="/hackaton/me" class="mt-4 inline-block font-mono text-xs text-violet-400 hover:text-violet-300">
+        <a href={meHref} class="mt-4 inline-block font-mono text-xs text-violet-400 hover:text-violet-300">
           → Mi equipo
         </a>
       </div>

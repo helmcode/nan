@@ -398,7 +398,8 @@
       "errorFull": "Registration full (40 + 10 reserves).",
       "errorEligible": "Your NaN account is not eligible to register.",
       "errorServer": "Something went wrong. Try again.",
-      "errorNetwork": "Network error. Try again."
+      "errorNetwork": "Network error. Try again.",
+      "errorRate": "Too many attempts. Wait a moment and try again."
     },
     "checkin": {
       "title": "Check-in",
@@ -406,7 +407,8 @@
       "button": "Confirm attendance",
       "submitting": "Confirming…",
       "done": "Attendance confirmed ✓",
-      "closed": "The check-in window is not open."
+      "closed": "The check-in window is not open.",
+      "error": "Couldn't confirm attendance. Try again."
     },
     "me": {
       "title": "My team",
@@ -419,6 +421,9 @@
       "reassignFilled": "Reassignment complete: a member from the reserve pool has joined.",
       "reassignNoPool": "Reassignment complete: the pool was empty, your team continues with 3 members.",
       "reassignAlready": "You've already requested this reassignment. Another teammate still needs to confirm it.",
+      "reassignSelectAbsent": "Select absent member",
+      "reassignErrorSubmit": "Couldn't register.",
+      "reassignSending": "Sending…",
       "reassignInfo": {
         "label": "Reassign absent member",
         "toggleAria": "More information about reassignment",

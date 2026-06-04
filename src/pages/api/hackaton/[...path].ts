@@ -38,8 +38,9 @@ const handler: APIRoute = async ({ params, request, url }) => {
   // Reenviar cuerpo y status; normalizar a JSON. Propagar Set-Cookie si lo hubiera.
   const text = await resp.text();
   const headers = new Headers({ 'content-type': 'application/json', 'cache-control': 'no-store' });
-  const setCookie = resp.headers.get('set-cookie');
-  if (setCookie) headers.append('set-cookie', setCookie);
+  // getSetCookie() devuelve un array sin colapsar comas (WHATWG); preserva
+  // múltiples cookies (login + refresh, handoff de onboarding, etc.).
+  for (const cookie of resp.headers.getSetCookie()) headers.append('set-cookie', cookie);
   return new Response(text || '{}', { status: resp.status, headers });
 };
 

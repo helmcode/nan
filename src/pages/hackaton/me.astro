@@ -1,21 +1,23 @@
 ---
 import Page from '../../layouts/Page.astro';
 import ReassignForm from '../../components/hackaton/ReassignForm.tsx';
-import { t, tObj } from '../../lib/i18n';
+import { t, tObj, withLang } from '../../lib/i18n';
+import { jsonData, type MeData, type Team } from '../../lib/hackaton';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
 
 const base = env.CLOUD_API_URL.replace(/\/$/, '');
-let me: any = null, team: any = null, status = 'draft';
+let team: Team | null = null, status = 'draft';
 try {
-  const res = await fetch(`${base}/api/hackaton/me`, {
-    headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
-  });
-  if (res.ok) { const b = await res.json() as { data?: any }; me = b?.data?.participant; team = b?.data?.team; }
-  const ev = await fetch(`${base}/api/hackaton/event`, { headers: { origin: 'https://nan.builders' } });
-  if (ev.ok) status = (await ev.json() as { data?: any })?.data?.status ?? 'draft';
+  const cookie = Astro.request.headers.get('cookie') ?? '';
+  const [res, ev] = await Promise.all([
+    fetch(`${base}/api/hackaton/me`, { headers: { cookie, origin: 'https://nan.builders' } }),
+    fetch(`${base}/api/hackaton/event`, { headers: { origin: 'https://nan.builders' } }),
+  ]);
+  if (res.ok) { const b = await jsonData<MeData>(res); team = b?.team ?? null; }
+  if (ev.ok) status = (await jsonData<{ status?: string }>(ev))?.status ?? 'draft';
 } catch {}
 ---
 <Page title={`${t('hackaton.me.title', locale)} — nan.builders`}>
@@ -32,19 +34,19 @@ try {
         <h2 class="font-mono text-white">{team.name}</h2>
         <p class="mt-2 text-[10px] uppercase tracking-widest text-violet-400">{t('hackaton.me.teammates', locale)}</p>
         <ul class="mt-2 space-y-1 text-sm text-neutral-300">
-          {team.members?.map((m: any) => (
+          {team.members?.map((m) => (
             <li>{m.name} · <span class="text-neutral-500">{m.discord_user}</span> · {m.specialty}/{m.level}</li>
           ))}
         </ul>
         <p class="mt-4 text-xs text-neutral-500 font-mono">{t('hackaton.me.rules', locale)}</p>
         <div class="mt-6 flex gap-3">
-          <a href="/hackaton/submission" class="font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-500">
+          <a href={withLang('/hackaton/submission', locale)} class="font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-500">
             {t('hackaton.me.submissionCta', locale)}
           </a>
         </div>
         {status === 'building' && team.members && (
           <div class="mt-6">
-            <ReassignForm client:load members={team.members} ctaLabel={t('hackaton.me.reassignCta', locale)} info={tObj('hackaton.me.reassignInfo', locale)} labels={{ pending: t('hackaton.me.reassignPending', locale), filled: t('hackaton.me.reassignFilled', locale), noPool: t('hackaton.me.reassignNoPool', locale), already: t('hackaton.me.reassignAlready', locale) }} />
+            <ReassignForm client:visible members={team.members} ctaLabel={t('hackaton.me.reassignCta', locale)} info={tObj('hackaton.me.reassignInfo', locale)} labels={{ pending: t('hackaton.me.reassignPending', locale), filled: t('hackaton.me.reassignFilled', locale), noPool: t('hackaton.me.reassignNoPool', locale), already: t('hackaton.me.reassignAlready', locale), selectAbsent: t('hackaton.me.reassignSelectAbsent', locale), errorSubmit: t('hackaton.me.reassignErrorSubmit', locale), sending: t('hackaton.me.reassignSending', locale) }} />
           </div>
         )}
       </section>

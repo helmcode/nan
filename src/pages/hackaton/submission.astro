@@ -1,7 +1,8 @@
 ---
 import Page from '../../layouts/Page.astro';
 import SubmissionForm from '../../components/hackaton/SubmissionForm.tsx';
-import { t, tObj } from '../../lib/i18n';
+import { t, tObj, withLang } from '../../lib/i18n';
+import { jsonData, type MeData } from '../../lib/hackaton';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
@@ -12,16 +13,17 @@ let hasTeam = false;
 let existing: any = null;
 let status = 'draft';
 try {
-  const res = await fetch(`${base}/api/hackaton/me`, {
-    headers: { cookie: Astro.request.headers.get('cookie') ?? '', origin: 'https://nan.builders' },
-  });
+  const cookie = Astro.request.headers.get('cookie') ?? '';
+  const [res, ev] = await Promise.all([
+    fetch(`${base}/api/hackaton/me`, { headers: { cookie, origin: 'https://nan.builders' } }),
+    fetch(`${base}/api/hackaton/event`, { headers: { origin: 'https://nan.builders' } }),
+  ]);
   if (res.ok) {
-    const body = await res.json() as { data?: any };
-    hasTeam = Boolean(body?.data?.team?.id);
-    existing = body?.data?.submission ?? null;
+    const body = await jsonData<MeData>(res);
+    hasTeam = Boolean(body?.team?.id);
+    existing = body?.submission ?? null;
   }
-  const ev = await fetch(`${base}/api/hackaton/event`, { headers: { origin: 'https://nan.builders' } });
-  if (ev.ok) status = (await ev.json() as { data?: any })?.data?.status ?? 'draft';
+  if (ev.ok) status = (await jsonData<{ status?: string }>(ev))?.status ?? 'draft';
 } catch {}
 
 // La entrega solo se acepta durante `building` (el backend rechaza el resto con
@@ -43,7 +45,7 @@ const readonlyRows = existing
 
 <Page title={`${t('hackaton.submission.title', locale)} — nan.builders`}>
   <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
-    <a href="/hackaton/me" class="font-mono text-xs text-neutral-500 hover:text-violet-400">
+    <a href={withLang('/hackaton/me', locale)} class="font-mono text-xs text-neutral-500 hover:text-violet-400">
       {t('hackaton.backToLanding', locale)}
     </a>
     <h1 class="mt-8 font-mono text-2xl text-white">{t('hackaton.submission.title', locale)}</h1>

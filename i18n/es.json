@@ -398,7 +398,8 @@
       "errorFull": "Inscripción completa (40 + 10 reservas).",
       "errorEligible": "Tu cuenta NaN no es elegible para inscribirse.",
       "errorServer": "Algo falló. Inténtalo de nuevo.",
-      "errorNetwork": "Error de red. Inténtalo de nuevo."
+      "errorNetwork": "Error de red. Inténtalo de nuevo.",
+      "errorRate": "Demasiados intentos. Espera un momento e inténtalo de nuevo."
     },
     "checkin": {
       "title": "Check-in",
@@ -406,7 +407,8 @@
       "button": "Confirmar asistencia",
       "submitting": "Confirmando…",
       "done": "Asistencia confirmada ✓",
-      "closed": "La ventana de check-in no está abierta."
+      "closed": "La ventana de check-in no está abierta.",
+      "error": "No se pudo confirmar la asistencia. Inténtalo de nuevo."
     },
     "me": {
       "title": "Mi equipo",
@@ -419,6 +421,9 @@
       "reassignFilled": "Reasignación completada: se ha incorporado un miembro de la pool de reservas.",
       "reassignNoPool": "Reasignación completada: no quedaba nadie en la pool, el equipo continúa con 3 miembros.",
       "reassignAlready": "Ya has convocado esta reasignación. Falta que otro compañero la confirme.",
+      "reassignSelectAbsent": "Selecciona ausente",
+      "reassignErrorSubmit": "No se pudo registrar.",
+      "reassignSending": "Enviando…",
       "reassignInfo": {
         "label": "Reasignar miembro ausente",
         "toggleAria": "Más información sobre la reasignación",
