@@ -39,7 +39,6 @@ export interface Participant {
   id: string;
   name: string;
   status?: string;
-  checkin_at?: string | null;
   discord_user?: string;
   specialty?: string;
   level?: string;

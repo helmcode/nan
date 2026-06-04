@@ -347,11 +347,6 @@
       "closed": "El plazo de inscripción ya se ha cerrado. ¡Te esperamos en el próximo hackatón de NaN!",
       "inProgressTitle": "El hackatón está en marcha",
       "inProgress": "Las inscripciones están cerradas, pero tú ya estás dentro. Consulta tu estado y tu equipo.",
-      "checkinTitle": "Confirma tu asistencia",
-      "checkin": "Las inscripciones están cerradas. Ahora toca hacer check-in para asegurar tu plaza.",
-      "checkinCta": "Hacer check-in",
-      "checkinDoneTitle": "Check-in confirmado",
-      "checkinDone": "Ya has confirmado tu asistencia y tu plaza está asegurada. Te avisaremos por Discord con los siguientes pasos.",
       "votingTitle": "La votación está abierta",
       "voting": "Las entregas ya están publicadas. Entra a la galería, revisa los proyectos y vota tu favorito.",
       "votingCta": "Ver proyectos y votar",
@@ -371,7 +366,7 @@
       "lastSeats": "¡Últimas {n} plazas!",
       "poolTitle": "Plazas principales completas",
       "poolNote": "Las {cap} plazas principales están llenas. Si te inscribes ahora entrarás en la pool de reservas ({taken} de {res} ocupadas).",
-      "poolExplain": "La pool es la lista de espera: si alguien confirmado no hace check-in o se da de baja, quien está en la pool entra por orden de inscripción.",
+      "poolExplain": "La pool es la lista de espera: si una plaza activa se da de baja, quien está en la pool entra por orden de inscripción.",
       "poolBarLabel": "Pool de reservas",
       "closedTitle": "Inscripciones completas",
       "closedNote": "Las {cap} plazas y las {res} de la pool de reservas están ocupadas. Atento al Discord por si se libera alguna."
@@ -401,15 +396,6 @@
       "errorNetwork": "Error de red. Inténtalo de nuevo.",
       "errorRate": "Demasiados intentos. Espera un momento e inténtalo de nuevo."
     },
-    "checkin": {
-      "title": "Check-in",
-      "intro": "Confirma tu asistencia para asegurar tu plaza.",
-      "button": "Confirmar asistencia",
-      "submitting": "Confirmando…",
-      "done": "Asistencia confirmada ✓",
-      "closed": "La ventana de check-in no está abierta.",
-      "error": "No se pudo confirmar la asistencia. Inténtalo de nuevo."
-    },
     "me": {
       "title": "Mi equipo",
       "noTeam": "Aún no se han anunciado los equipos.",
@@ -432,7 +418,7 @@
           "Sirve para sustituir a un compañero de tu equipo que no va a participar (no apareció o ha desaparecido).",
           "Hacen falta DOS miembros del equipo: la convocatoria no se ejecuta hasta que un segundo compañero confirma la misma reasignación.",
           "Cuando se alcanza ese acuerdo, esa persona se marca como ausente y sale de tu equipo y del hackatón. La acción es inmediata e irreversible.",
-          "El sistema busca automáticamente al primer candidato de la pool de reservas (por orden de inscripción) que hizo check-in y lo añade a tu equipo en su lugar.",
+          "El sistema busca automáticamente al primer candidato de la pool de reservas (por orden de inscripción) y lo añade a tu equipo en su lugar.",
           "Si no queda nadie en la pool, tu equipo continúa con 3 miembros (el mínimo permitido) y se avisa a la organización.",
           "Solo está disponible durante la fase de construcción."
         ]

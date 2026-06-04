@@ -347,11 +347,6 @@
       "closed": "The registration window has closed. We hope to see you at the next NaN hackathon!",
       "inProgressTitle": "The hackathon is underway",
       "inProgress": "Registration is closed, but you're already in. Check your status and your team.",
-      "checkinTitle": "Confirm your attendance",
-      "checkin": "Registration is closed. Now it's time to check in to secure your seat.",
-      "checkinCta": "Check in",
-      "checkinDoneTitle": "Check-in confirmed",
-      "checkinDone": "You've confirmed your attendance and your seat is secured. We'll reach out on Discord with the next steps.",
       "votingTitle": "Voting is open",
       "voting": "Submissions are live. Head to the gallery, browse the projects and vote for your favorite.",
       "votingCta": "View projects & vote",
@@ -371,7 +366,7 @@
       "lastSeats": "Last {n} seats!",
       "poolTitle": "Main seats full",
       "poolNote": "All {cap} main seats are full. If you register now you'll join the reserve pool ({taken} of {res} taken).",
-      "poolExplain": "The pool is the waitlist: if a confirmed participant doesn't check in or drops out, whoever is in the pool gets in by registration order.",
+      "poolExplain": "The pool is the waitlist: if an active seat drops out, whoever is in the pool gets in by registration order.",
       "poolBarLabel": "Reserve pool",
       "closedTitle": "Registration full",
       "closedNote": "All {cap} seats and the {res} reserve pool spots are taken. Keep an eye on Discord in case one frees up."
@@ -401,15 +396,6 @@
       "errorNetwork": "Network error. Try again.",
       "errorRate": "Too many attempts. Wait a moment and try again."
     },
-    "checkin": {
-      "title": "Check-in",
-      "intro": "Confirm your attendance to secure your seat.",
-      "button": "Confirm attendance",
-      "submitting": "Confirming…",
-      "done": "Attendance confirmed ✓",
-      "closed": "The check-in window is not open.",
-      "error": "Couldn't confirm attendance. Try again."
-    },
     "me": {
       "title": "My team",
       "noTeam": "Teams haven't been announced yet.",
@@ -432,7 +418,7 @@
           "It replaces a teammate who won't take part (didn't show up or has gone silent).",
           "It takes TWO team members: the request isn't executed until a second teammate confirms the same reassignment.",
           "Once that agreement is reached, that person is marked absent and removed from your team and from the hackathon. The action is immediate and irreversible.",
-          "The system automatically picks the first candidate from the reserve pool (by registration order) who checked in, and adds them to your team in their place.",
+          "The system automatically picks the first candidate from the reserve pool (by registration order) and adds them to your team in their place.",
           "If the pool is empty, your team continues with 3 members (the allowed minimum) and the organizers are notified.",
           "It's only available during the building phase."
         ]
