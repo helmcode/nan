@@ -41,7 +41,7 @@ const safeUrl = (u?: string): string | null =>
       <div class="mt-8 grid gap-4 md:grid-cols-2">
         {projects.map((p) => (
           <article class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-5">
-            {safeUrl(p.image_url) && <img src={safeUrl(p.image_url)} alt="" class="mb-4 aspect-video w-full rounded-lg object-cover" loading="lazy" />}
+            {safeUrl(p.image_url) && <img src={safeUrl(p.image_url)} alt={`${p.title} — ${p.team_name}`} class="mb-4 aspect-video w-full rounded-lg object-cover" loading="lazy" decoding="async" />}
             <h2 class="font-mono text-base text-white">{p.title}</h2>
             <p class="mt-1 font-mono text-xs text-violet-400">{p.team_name}</p>
             <p class="mt-3 text-sm text-neutral-300">{p.description}</p>
