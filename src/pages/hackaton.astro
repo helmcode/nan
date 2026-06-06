@@ -1,0 +1,194 @@
+---
+import Page from '../layouts/Page.astro';
+import LanguageSwitcher from '../components/landing/LanguageSwitcher.astro';
+import RegisterForm, { type FormStrings } from '../components/hackaton/RegisterForm.tsx';
+import LoginForm, { type LoginStrings } from '../components/hackaton/LoginForm.tsx';
+import RegistrationBar from '../components/hackaton/RegistrationBar.astro';
+import { t, tObj } from '../lib/i18n';
+import { jsonData, type MeData } from '../lib/hackaton';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+
+// Estado del evento + sesión (SSR): consultamos el backend a través del proxy
+// interno para decidir qué CTA mostrar.
+const base = env.CLOUD_API_URL.replace(/\/$/, '');
+let status = 'draft';
+let registered = 0;
+let capacity = 40;
+let reserve = 10;
+
+// ¿Hay sesión NaN? Heurística por cookie (el backend es la autoridad real).
+const cookie = Astro.request.headers.get('cookie') ?? '';
+const hasSession = cookie.includes('nan_session');
+
+// Estado del evento + /me en paralelo: /event siempre; /me solo si hay cookie.
+// Cada fetch es best-effort (si falla → null y caemos a landing/login).
+const [eventRes, meRes] = await Promise.all([
+  fetch(`${base}/api/hackaton/event`, { headers: { origin: 'https://nan.builders' } }).catch(() => null),
+  hasSession
+    ? fetch(`${base}/api/hackaton/me`, { headers: { cookie, origin: 'https://nan.builders' } }).catch(() => null)
+    : Promise.resolve(null),
+]);
+
+if (eventRes?.ok) {
+  const data = await jsonData<{ status?: string; registered?: number; capacity?: number; reserve_capacity?: number }>(eventRes);
+  status = data?.status ?? 'draft';
+  registered = data?.registered ?? 0;
+  capacity = data?.capacity ?? 40;
+  reserve = data?.reserve_capacity ?? 10;
+}
+
+// ¿Inscripciones completas? (40 + 10 reservas, §7.3.4). Si lo está, no tiene
+// sentido mostrar formulario ni login.
+const closed = registered >= capacity + reserve;
+
+// Sesión: distinguimos "ya inscrito" de "inscripciones cerradas" vía /me. Si
+// había cookie pero el backend devuelve 401, la sesión caducó → mostramos login.
+let myParticipant: any = null;
+let sessionInvalid = false;
+if (meRes) {
+  if (meRes.status === 401) sessionInvalid = true;
+  else if (meRes.ok) myParticipant = (await jsonData<MeData>(meRes))?.participant ?? null;
+}
+const sessionExpired = hasSession && sessionInvalid;
+const alreadyRegistered = !!myParticipant && myParticipant.status !== 'withdrawn';
+
+// Fase de cara a la pantalla: antes de abrir, durante, o ya cerrada.
+const notYetOpen = status === 'draft';
+const registrationOver = status !== 'draft' && status !== 'registration';
+
+const form = tObj<FormStrings>('hackaton.form', locale);
+const already = tObj('hackaton.alreadyRegistered', locale);
+const login = tObj<LoginStrings>('hackaton.login', locale);
+const cap = tObj('hackaton.capacity', locale);
+const phase = tObj<Record<string, string>>('hackaton.phase', locale);
+const closedNote = String(cap.closedNote ?? '')
+  .replaceAll('{cap}', String(capacity))
+  .replaceAll('{res}', String(reserve));
+
+// Panel para participantes ya inscritos en fases posteriores a la inscripción.
+const meUrl = locale === 'en' ? '/hackaton/me?lang=en' : '/hackaton/me';
+const projectsUrl = locale === 'en' ? '/hackaton/projects?lang=en' : '/hackaton/projects';
+const leaderboardUrl = locale === 'en' ? '/hackaton/leaderboard?lang=en' : '/hackaton/leaderboard';
+let participantPanel: { title: string; body: string; href: string; cta: string };
+if (status === 'voting') {
+  // Durante la votación, el CTA lleva a la galería de proyectos a votar.
+  participantPanel = { title: phase.votingTitle, body: phase.voting, href: projectsUrl, cta: phase.votingCta };
+} else if (status === 'closed') {
+  // Cerrado: el CTA lleva a la clasificación final.
+  participantPanel = { title: phase.resultsTitle, body: phase.results, href: leaderboardUrl, cta: phase.resultsCta };
+} else {
+  // building / submission: estado y equipo.
+  participantPanel = { title: phase.inProgressTitle, body: phase.inProgress, href: meUrl, cta: String(already.cta ?? '') };
+}
+
+const pageTitle = `${t('hackaton.pageTitle', locale)} — nan.builders`;
+---
+
+<Page title={pageTitle} description={t('hackaton.subtitle', locale)}>
+  <LanguageSwitcher />
+  <main class="px-6 pt-24 pb-32 md:pt-32">
+    <div class="mx-auto max-w-2xl">
+      <a href={locale === 'en' ? '/?lang=en' : '/'}
+         class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400">
+        {t('hackaton.backToLanding', locale)}
+      </a>
+
+      <header class="mt-8">
+        <p class="font-mono text-xs uppercase tracking-widest text-violet-400">
+          {t('hackaton.label', locale)}
+        </p>
+        <h1 class="mt-4 font-mono text-2xl md:text-3xl text-white tracking-tight leading-snug">
+          {t('hackaton.title', locale)}
+        </h1>
+        <p class="mt-4 text-sm md:text-base text-neutral-300 leading-relaxed">
+          {t('hackaton.subtitle', locale)}
+        </p>
+        <p class="mt-5 inline-flex items-center gap-2 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 font-mono text-xs text-violet-300">
+          <span aria-hidden="true">📅</span>{t('hackaton.dates', locale)}
+        </p>
+        <p class="mt-3 text-xs text-neutral-500 font-mono">{t('hackaton.rules', locale)}</p>
+      </header>
+
+      <section class="mt-14">
+        {registrationOver ? (
+          alreadyRegistered ? (
+            <div class="rounded-xl border border-violet-500/30 bg-violet-500/10 p-6">
+              <p class="font-mono text-xs uppercase tracking-widest text-violet-300">
+                {participantPanel.title}
+              </p>
+              <p class="mt-2 text-sm text-neutral-200 leading-relaxed">
+                {participantPanel.body}
+              </p>
+              <a
+                href={participantPanel.href}
+                class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500"
+              >
+                {participantPanel.cta}
+              </a>
+            </div>
+          ) : (
+            <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+              <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">
+                {phase.closedTitle}
+              </p>
+              <p class="mt-2 text-sm text-neutral-300 leading-relaxed">
+                {phase.closed}
+              </p>
+            </div>
+          )
+        ) : notYetOpen ? (
+          <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+            <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">
+              {phase.notOpenTitle}
+            </p>
+            <p class="mt-2 text-sm text-neutral-300 leading-relaxed">
+              {phase.notOpen}
+            </p>
+          </div>
+        ) : (
+          <div class="space-y-6">
+            <RegistrationBar
+              registered={registered}
+              capacity={capacity}
+              reserve={reserve}
+              locale={locale}
+            />
+            {alreadyRegistered ? (
+              <div class="rounded-xl border border-violet-500/30 bg-violet-500/10 p-6">
+                <p class="font-mono text-xs uppercase tracking-widest text-violet-300">
+                  {already.title}
+                </p>
+                <p class="mt-2 text-sm text-neutral-200 leading-relaxed">
+                  {myParticipant.is_reserve ? already.reserve : already.confirmed}
+                </p>
+                <a
+                  href={locale === 'en' ? '/hackaton/me?lang=en' : '/hackaton/me'}
+                  class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500"
+                >
+                  {already.cta}
+                </a>
+              </div>
+            ) : closed ? (
+              <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+                <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">
+                  {cap.closedTitle}
+                </p>
+                <p class="mt-2 text-sm text-neutral-300 leading-relaxed">
+                  {closedNote}
+                </p>
+              </div>
+            ) : (!hasSession || sessionExpired) ? (
+              <LoginForm client:load t={login} />
+            ) : (
+              <RegisterForm client:load t={form} meHref={meUrl} />
+            )}
+          </div>
+        )}
+      </section>
+    </div>
+  </main>
+</Page>

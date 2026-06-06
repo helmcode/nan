@@ -50,13 +50,21 @@ const siteUrl = 'https://nan.builders';
     <meta name="twitter:description" content={description} />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
     />
     <title>{title}</title>
   </head>
   <body class="bg-[#0a0a0a] text-neutral-300 font-sans antialiased min-h-screen">
     <LanguageSwitcher />
-    <LoginButton />
+    <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
+      <a
+        href={locale === 'en' ? '/hackaton?lang=en' : '/hackaton'}
+        class="font-mono text-xs px-3 py-1.5 rounded-lg border border-violet-500/40 text-violet-300 hover:border-violet-400 hover:text-white transition-colors bg-violet-500/10 backdrop-blur-sm"
+      >
+        {locale === 'en' ? 'Hackathon' : 'Hackatón'}
+      </a>
+      <LoginButton />
+    </div>
     <main>
       <Hero locale={locale} />
       <About locale={locale} />

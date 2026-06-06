@@ -1,0 +1,93 @@
+---
+import Page from '../../layouts/Page.astro';
+import SubmissionForm from '../../components/hackaton/SubmissionForm.tsx';
+import { t, tObj, withLang } from '../../lib/i18n';
+import { jsonData, type MeData } from '../../lib/hackaton';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+const base = env.CLOUD_API_URL.replace(/\/$/, '');
+let hasTeam = false;
+let existing: any = null;
+let status = 'draft';
+try {
+  const cookie = Astro.request.headers.get('cookie') ?? '';
+  const [res, ev] = await Promise.all([
+    fetch(`${base}/api/hackaton/me`, { headers: { cookie, origin: 'https://nan.builders' } }),
+    fetch(`${base}/api/hackaton/event`, { headers: { origin: 'https://nan.builders' } }),
+  ]);
+  if (res.ok) {
+    const body = await jsonData<MeData>(res);
+    hasTeam = Boolean(body?.team?.id);
+    existing = body?.submission ?? null;
+  }
+  if (ev.ok) status = (await jsonData<{ status?: string }>(ev))?.status ?? 'draft';
+} catch {}
+
+// La entrega solo se acepta durante `building` (el backend rechaza el resto con
+// wrong_state). En fases posteriores la submission queda congelada.
+const canEdit = status === 'building';
+const s = tObj<Record<string, string>>('hackaton.submission', locale);
+const readonlyRows = existing
+  ? [
+      { label: s.fTitle, value: existing.title },
+      { label: s.description, value: existing.description },
+      { label: s.publicUrl, value: existing.public_url },
+      { label: s.spaceUrl, value: existing.space_url },
+      { label: s.repoUrl, value: existing.repo_url },
+      { label: s.imageUrl, value: existing.image_url },
+      { label: s.videoUrl, value: existing.video_url },
+    ].filter((r) => r.value)
+  : [];
+---
+
+<Page title={`${t('hackaton.submission.title', locale)} — nan.builders`}>
+  <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
+    <a href={withLang('/hackaton/me', locale)} class="font-mono text-xs text-neutral-500 hover:text-violet-400">
+      {t('hackaton.backToLanding', locale)}
+    </a>
+    <h1 class="mt-8 font-mono text-2xl text-white">{t('hackaton.submission.title', locale)}</h1>
+    <section class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+      {!hasTeam ? (
+        <p class="text-sm text-neutral-400">{t('hackaton.me.noTeam', locale)}</p>
+      ) : canEdit ? (
+        <SubmissionForm client:load t={s} existing={existing} />
+      ) : (
+        <div class="space-y-4">
+          <div class="rounded-lg border border-neutral-700/60 bg-neutral-900/50 p-4">
+            <p class="font-mono text-sm text-neutral-200">{s.closedTitle}</p>
+            <p class="mt-1 text-xs leading-relaxed text-neutral-400">{s.closedNote}</p>
+          </div>
+          {existing ? (
+            <div class="space-y-3">
+              <p class="font-mono text-xs uppercase tracking-widest text-violet-400">{s.alreadyTitle}</p>
+              <dl class="space-y-2 text-sm">
+                {readonlyRows.map((r) => (
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-wide text-neutral-500">{r.label}</dt>
+                    <dd class="font-mono text-neutral-200 break-all">{r.value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div class="mt-2 text-sm font-mono text-neutral-300">
+                <p>{s.checks}: {existing.auto_points}/2</p>
+                {existing.checks && (
+                  <ul class="mt-1 space-y-1">
+                    <li>{existing.checks.url_live?.pass ? '✓' : '✗'} {s.urlLive}</li>
+                    <li>{existing.checks.in_nan_space?.pass ? '✓' : '✗'} {s.inNanSpace}</li>
+                    <li>{existing.checks.repo_public?.pass ? '✓' : '✗'} {s.repoPublic}</li>
+                  </ul>
+                )}
+                {existing.not_prize_eligible && <p class="mt-2 text-red-400">{s.notPrizeEligible}</p>}
+              </div>
+            </div>
+          ) : (
+            <p class="text-sm text-neutral-400">{s.notSubmitted}</p>
+          )}
+        </div>
+      )}
+    </section>
+  </main>
+</Page>

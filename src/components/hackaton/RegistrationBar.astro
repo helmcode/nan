@@ -1,0 +1,86 @@
+---
+import { tObj } from '../../lib/i18n';
+
+interface Props {
+  registered: number;
+  capacity: number;
+  reserve: number;
+  locale: string;
+}
+
+interface CapacityStrings {
+  seatsTaken: string;
+  seatsRemaining: string;
+  lastSeats: string;
+  poolTitle: string;
+  poolNote: string;
+  poolExplain: string;
+  poolBarLabel: string;
+  closedTitle: string;
+  closedNote: string;
+}
+
+const { registered, capacity, reserve, locale } = Astro.props;
+const cap = tObj<CapacityStrings>('hackaton.capacity', locale);
+
+// Tramos: normal (r < capacity) y pool (capacity <= r < capacity+reserve).
+// El caso "completo" (r >= capacity+reserve) lo gestiona la página, no este componente.
+const inPool = registered >= capacity;
+const mainTaken = Math.min(registered, capacity);
+const mainPct = capacity > 0 ? Math.round((mainTaken / capacity) * 100) : 0;
+const poolTaken = Math.max(0, registered - capacity);
+const poolPct = reserve > 0 ? Math.round((poolTaken / reserve) * 100) : 0;
+const remaining = Math.max(0, capacity - registered);
+const lowSeats = !inPool && remaining > 0 && remaining <= 5;
+
+const fill = (s: string, vars: Record<string, number>) =>
+  Object.entries(vars).reduce((acc, [k, v]) => acc.replaceAll(`{${k}}`, String(v)), s);
+
+const takenLabel = fill(cap.seatsTaken, { n: mainTaken, cap: capacity });
+const remainingLabel = lowSeats
+  ? fill(cap.lastSeats, { n: remaining })
+  : fill(cap.seatsRemaining, { n: remaining });
+const poolNote = fill(cap.poolNote, { cap: capacity, taken: poolTaken, res: reserve });
+---
+
+<div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-5">
+  <div class="flex items-baseline justify-between gap-3">
+    <span class="font-mono text-xs text-neutral-300">{takenLabel}</span>
+    <span class={`font-mono text-xs ${lowSeats ? 'text-amber-400' : 'text-neutral-500'}`}>
+      {!inPool && remainingLabel}
+    </span>
+  </div>
+
+  {/* Barra principal: 40 plazas */}
+  <div class="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-neutral-800">
+    <div
+      class="h-full rounded-full bg-violet-500 transition-all"
+      style={`width: ${mainPct}%`}
+    >
+    </div>
+  </div>
+
+  {inPool && (
+    <div class="mt-4">
+      <div class="flex items-baseline justify-between gap-3">
+        <span class="font-mono text-xs text-amber-400">{cap.poolBarLabel}</span>
+        <span class="font-mono text-xs text-neutral-500">{poolTaken} / {reserve}</span>
+      </div>
+      <div class="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-neutral-800">
+        <div
+          class="h-full rounded-full bg-amber-500 transition-all"
+          style={`width: ${poolPct}%`}
+        >
+        </div>
+      </div>
+
+      <div class="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+        <p class="font-mono text-xs uppercase tracking-widest text-amber-400">
+          {cap.poolTitle}
+        </p>
+        <p class="mt-2 text-sm text-neutral-200 leading-relaxed">{poolNote}</p>
+        <p class="mt-2 text-xs text-neutral-400 leading-relaxed">{cap.poolExplain}</p>
+      </div>
+    </div>
+  )}
+</div>
