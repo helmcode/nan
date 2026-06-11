@@ -336,6 +336,67 @@ import RateLimits from '../../components/docs/RateLimits.astro';
     </div>
   </div>
 
+  <!-- rerank -->
+  <h2 id="rerank">rerank - Qwen3-Reranker-8B</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2 mb-14">
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        reranking semántico
+      </p>
+      <p class="text-xs text-neutral-400 leading-relaxed mb-4">
+        Modelo de reranking de 8B parámetros (BF16). Reordena una lista de
+        documentos por relevancia a una query. Completa el stack RAG junto a
+        <code>qwen3-embedding</code>: primero recuperas top-K por embeddings,
+        después reordenas con <code>rerank</code> para precisión. Soporta 100+
+        idiomas incluyendo español, recuperación de código y cross-lingual.
+        Top-tier en benchmarks MTEB de reranking.
+      </p>
+      <dl class="space-y-3">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Parámetros</dt>
+          <dd class="text-neutral-200 text-right">8B</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Precisión</dt>
+          <dd class="text-neutral-200 text-right">BF16</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Endpoints</dt>
+          <dd class="text-neutral-200 text-right">/v1/rerank · /v2/rerank · /v1/score</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Idiomas</dt>
+          <dd class="text-neutral-200 text-right">100+</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        casos de uso
+      </p>
+      <ul class="grid gap-3 font-mono text-xs text-neutral-300">
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Reranking en pipelines RAG (embedding → rerank → LLM)</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Búsqueda cross-lingual (ES↔EN, etc.)</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Recuperación de código</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Scoring de relevancia query-documento</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
   <!-- TTS -->
   <h2 id="kokoro">kokoro - v1.0</h2>
 

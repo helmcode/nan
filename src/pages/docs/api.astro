@@ -64,6 +64,12 @@ import RateLimits from '../../components/docs/RateLimits.astro';
         <span class="text-violet-400/80">POST</span> /v1/embeddings
       </p>
     </a>
+    <a href="#rerank" class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 transition-all duration-300 hover:border-violet-500/30 hover:bg-neutral-800/60">
+      <p class="font-mono text-sm text-white mb-2">Rerank</p>
+      <p class="font-mono text-xs text-neutral-400 leading-relaxed">
+        <span class="text-violet-400/80">POST</span> /v1/rerank
+      </p>
+    </a>
     <a href="#audio-speech" class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 transition-all duration-300 hover:border-violet-500/30 hover:bg-neutral-800/60">
       <p class="font-mono text-sm text-white mb-2">Text-to-speech</p>
       <p class="font-mono text-xs text-neutral-400 leading-relaxed">
@@ -103,8 +109,8 @@ import RateLimits from '../../components/docs/RateLimits.astro';
   <p class="text-sm text-neutral-300 leading-relaxed mb-6">
     Devuelve la lista de modelos disponibles para tu key. Modelos publicados:
     <code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>, <code>qwen3.6</code>,
-    <code>gemma4</code>, <code>qwen3-embedding</code>, <code>kokoro</code>,
-    <code>whisper</code>.
+    <code>gemma4</code>, <code>qwen3-embedding</code>, <code>rerank</code>,
+    <code>kokoro</code>, <code>whisper</code>.
   </p>
 
   <h3 id="models-request">Request</h3>
@@ -749,6 +755,148 @@ print(response.choices[0].message.content)`} />
     "model": "qwen3-embedding",
     "input": ["Hola mundo", "Hello world"]
   }'`} />
+
+  <!-- POST /v1/rerank -->
+  <h2 id="rerank">POST /v1/rerank</h2>
+
+  <p class="text-sm text-neutral-300 leading-relaxed mb-6">
+    Reordena una lista de documentos por relevancia a una query. Modelo
+    compatible: <code>rerank</code> (<code>Qwen3-Reranker-8B</code>). Completa
+    el stack RAG junto a <code>qwen3-embedding</code>: primero recuperas top-K
+    por embeddings, después reordenas con <code>rerank</code>. Soporta 100+
+    idiomas, recuperación de código y búsqueda cross-lingual. Endpoints alias:
+    <code>/v2/rerank</code> y <code>/v1/score</code>.
+  </p>
+
+  <h3 id="rerank-request">Request</h3>
+  <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
+    <dl class="space-y-5">
+      <div>
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>model</code></dt>
+          <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">string · required</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed"><code>rerank</code>.</dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>query</code></dt>
+          <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">string · required</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Consulta contra la que se mide la relevancia de cada documento.
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>documents</code></dt>
+          <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">array · required</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Array de strings a reordenar. La respuesta los devuelve ordenados de
+          mayor a menor <code>relevance_score</code> con su <code>index</code>
+          original.
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>top_n</code></dt>
+          <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">integer · optional</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Limita la respuesta a los <code>N</code> documentos más relevantes.
+          Por defecto devuelve todos.
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <h3 id="rerank-response">Response</h3>
+  <CodeBlock language="json" code={`{
+  "id": "score-a032ee5767cab0ee",
+  "results": [
+    {
+      "index": 0,
+      "relevance_score": 0.7390941977500916,
+      "document": {
+        "text": "Paris is the capital of France."
+      }
+    },
+    {
+      "index": 1,
+      "relevance_score": 0.6002889275550842,
+      "document": {
+        "text": "Berlin is the capital of Germany."
+      }
+    },
+    {
+      "index": 2,
+      "relevance_score": 0.12374333292245865,
+      "document": {
+        "text": "Madrid is the capital of Spain."
+      }
+    }
+  ],
+  "meta": {
+    "billed_units": {
+      "total_tokens": 43
+    },
+    "tokens": {
+      "input_tokens": 43
+    }
+  }
+}`} />
+  <p class="font-mono text-xs text-neutral-500 mb-10">
+    La respuesta incluye <code>id</code>, <code>results</code> (array de
+    <code>{`{index, relevance_score, document}`}</code>) y <code>meta</code> con
+    <code>billed_units</code> y conteo de tokens. <code>relevance_score</code>
+    está en el rango [0, 1]. El <code>index</code> se refiere a la posición
+    original del documento en el array de entrada.
+  </p>
+
+  <h3 id="rerank-example">Ejemplo</h3>
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/rerank \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "rerank",
+    "query": "What is the capital of France?",
+    "documents": [
+      "Paris is the capital of France and home to the Eiffel Tower.",
+      "Berlin is the capital of Germany.",
+      "Madrid is the capital of Spain."
+    ]
+  }'`} />
+
+  <p class="text-xs text-neutral-400 leading-relaxed mt-4 mb-10">
+    Con el SDK de <code>openai</code> de Python (usando <code>post</code>
+    directo, ya que <code>rerank</code> no forma parte del cliente OpenAI):
+  </p>
+
+  <CodeBlock language="python" code={`import os
+from openai import OpenAI
+
+client = OpenAI(
+  api_key=os.environ["NAN_API_KEY"],
+  base_url="https://api.nan.builders/v1"
+)
+
+response = client.post(
+  path="/rerank",
+  cast_to=object,
+  body={
+    "model": "rerank",
+    "query": "What is the capital of France?",
+    "documents": [
+      "Paris is the capital of France and home to the Eiffel Tower.",
+      "Berlin is the capital of Germany.",
+      "Madrid is the capital of Spain.",
+    ],
+  },
+)
+
+for r in response["results"]:
+    print(r["index"], r["relevance_score"])`} />
 
   <!-- POST /v1/audio/speech -->
   <h2 id="audio-speech">POST /v1/audio/speech</h2>

@@ -283,6 +283,56 @@ const response = await client.embeddings.create({
 const embeddings = response.data.map((d) => d.embedding);
 console.log(embeddings[0].length);  // 4096`} />
 
+  <!-- rerank -->
+  <h2 id="rerank">modelo: rerank</h2>
+  <p class="font-mono text-xs text-neutral-500 mb-6">reranking semántico — completa el stack RAG</p>
+
+  <h3 id="rerank-curl">curl</h3>
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/rerank \\
+  -H "Authorization: Bearer $NAN_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "rerank",
+    "query": "What is the capital of France?",
+    "documents": [
+      "Paris is the capital of France and home to the Eiffel Tower.",
+      "Berlin is the capital of Germany.",
+      "Madrid is the capital of Spain."
+    ]
+  }'
+# → results[] ordenados por relevance_score desc, con index original`} />
+
+  <h3 id="rerank-python">python</h3>
+  <CodeBlock language="python" code={`import os
+from openai import OpenAI
+
+client = OpenAI(
+  api_key=os.environ["NAN_API_KEY"],
+  base_url="https://api.nan.builders/v1"
+)
+
+# El endpoint /rerank no forma parte del cliente OpenAI estandar,
+# pero podemos invocarlo con client.post().
+response = client.post(
+  path="/rerank",
+  cast_to=object,
+  body={
+    "model": "rerank",
+    "query": "What is the capital of France?",
+    "documents": [
+      "Paris is the capital of France and home to the Eiffel Tower.",
+      "Berlin is the capital of Germany.",
+      "Madrid is the capital of Spain.",
+    ],
+  },
+)
+
+for r in response["results"]:
+    print(f"{r['index']}: {r['relevance_score']:.3f}")`} />
+  <p class="font-mono text-xs text-neutral-500 mb-5">
+    Tambien funciona con <code>requests</code> directo o cualquier cliente HTTP — el endpoint es OpenAI-compatible en autenticacion y forma de payload.
+  </p>
+
   <!-- kokoro -->
   <h2 id="kokoro">modelo: kokoro</h2>
   <p class="font-mono text-xs text-neutral-500 mb-6">text-to-speech</p>
