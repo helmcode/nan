@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import AnimatedBackground from '../components/landing/AnimatedBackground.astro';
 import LanguageSwitcher from '../components/landing/LanguageSwitcher.astro';
 import LoginButton from '../components/landing/LoginButton.astro';
 import Hero from '../components/landing/Hero.astro';
@@ -55,6 +56,7 @@ const siteUrl = 'https://nan.builders';
     <title>{title}</title>
   </head>
   <body class="bg-[#0a0a0a] text-neutral-300 font-sans antialiased min-h-screen">
+    <AnimatedBackground />
     <LanguageSwitcher />
     <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
       <a
