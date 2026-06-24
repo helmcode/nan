@@ -73,7 +73,7 @@ const TAG_COLORS: Record<string, string> = {
           {projects.map((project) => {
             const app = safeUrl(project.appUrl);
             return (
-              <article class="group flex flex-col overflow-hidden rounded-xl border border-neutral-800/60 bg-neutral-900/30 transition-all hover:border-violet-500/30 hover:bg-neutral-900/50">
+              <a href="/projects" class="group flex flex-col overflow-hidden rounded-xl border border-neutral-800/60 bg-neutral-900/30 transition-all hover:border-violet-500/30 hover:bg-neutral-900/50 hover:scale-[1.01]">
                 {/* Image */}
                 <div class="relative aspect-video w-full overflow-hidden bg-neutral-900">
                   {safeUrl(project.imageUrl) ? (
@@ -116,20 +116,13 @@ const TAG_COLORS: Record<string, string> = {
                     </div>
                   )}
 
-                  {app && (
-                    <div class="mt-auto pt-3">
-                      <a
-                        href={app}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="font-mono text-xs text-violet-400 transition-colors hover:text-violet-300"
-                      >
-                        ↗ {locale === 'en' ? 'Open project' : 'Ver proyecto'}
-                      </a>
-                    </div>
-                  )}
+                  <div class="mt-auto pt-3">
+                    <span class="font-mono text-[10px] text-neutral-600 transition-colors group-hover:text-neutral-400">
+                      {locale === 'en' ? 'Click to see full details →' : 'Haz click para ver detalles →'}
+                    </span>
+                  </div>
                 </div>
-              </article>
+              </a>
             );
           })}
         </div>

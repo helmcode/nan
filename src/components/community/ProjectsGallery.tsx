@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 
 export interface Project {
   id: number;
@@ -59,14 +59,126 @@ function Highlight({ text, query }: { text: string; query: string }) {
   );
 }
 
+function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
+  const app = safeUrl(project.appUrl);
+  const repo = safeUrl(project.repoUrl);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handler);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      {/* Overlay */}
+      <div class="absolute inset-0 bg-black/75 backdrop-blur-sm" />
+
+      {/* Panel */}
+      <div
+        class="relative z-10 w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close */}
+        <button
+          type="button"
+          onClick={onClose}
+          class="absolute right-4 top-4 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-neutral-900/90 text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+
+        {/* Image */}
+        {safeUrl(project.imageUrl) && (
+          <div class="aspect-video w-full overflow-hidden rounded-t-2xl bg-neutral-900">
+            <img
+              src={safeUrl(project.imageUrl)!}
+              alt={project.name}
+              class="h-full w-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Content */}
+        <div class="p-6">
+          <div class="mb-1 flex items-start justify-between gap-3">
+            <h2 class="font-mono text-lg font-bold text-white leading-snug">{project.name}</h2>
+            <span class="flex shrink-0 items-center gap-1 font-mono text-xs text-amber-300">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              {project.stars}
+            </span>
+          </div>
+          <p class="mb-4 font-mono text-xs text-neutral-500">by {project.handle}</p>
+
+          <p class="mb-5 font-mono text-sm leading-relaxed text-neutral-300 whitespace-pre-line">
+            {project.description}
+          </p>
+
+          {project.tags.length > 0 && (
+            <div class="mb-5 flex flex-wrap gap-1.5">
+              {project.tags.map((tag) => (
+                <span
+                  key={tag}
+                  class={`rounded border px-2 py-0.5 font-mono text-[10px] ${
+                    TAG_COLORS[tag] ?? 'bg-neutral-800/50 text-neutral-400 border-neutral-700'
+                  }`}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {(app || repo) && (
+            <div class="flex items-center gap-4 border-t border-neutral-800 pt-4">
+              {app && (
+                <a
+                  href={app}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 font-mono text-xs font-medium text-white transition-colors hover:bg-violet-500"
+                >
+                  ↗ Open App
+                </a>
+              )}
+              {repo && (
+                <a
+                  href={repo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="font-mono text-xs text-neutral-400 transition-colors hover:text-white"
+                >
+                  ↗ Repository
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProjectCard({
   project,
   searchQuery,
   rank,
+  onClick,
 }: {
   project: Project;
   searchQuery: string;
   rank?: number;
+  onClick: () => void;
 }) {
   const app = safeUrl(project.appUrl);
   const repo = safeUrl(project.repoUrl);
@@ -74,11 +186,12 @@ function ProjectCard({
 
   return (
     <article
-      class={`flex flex-col overflow-hidden rounded-xl border bg-neutral-900/40 transition-all ${
+      class={`group flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-neutral-900/40 transition-all hover:scale-[1.01] ${
         medal
           ? `${medal.border} ${medal.glow}`
-          : 'border-neutral-800/60 hover:border-neutral-700/60'
+          : 'border-neutral-800/60 hover:border-violet-500/30'
       }`}
+      onClick={onClick}
     >
       {/* Image */}
       <div class="relative aspect-video w-full overflow-hidden bg-neutral-900">
@@ -88,7 +201,7 @@ function ProjectCard({
             alt={project.name}
             loading="lazy"
             decoding="async"
-            class="h-full w-full object-cover"
+            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
           <div class="flex h-full w-full items-center justify-center text-neutral-700">
@@ -102,7 +215,7 @@ function ProjectCard({
             {medal.label}
           </span>
         )}
-        <span class="absolute top-2 right-2 flex items-center gap-1 rounded bg-neutral-900/90 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 backdrop-blur-sm border border-neutral-700/50">
+        <span class="absolute top-2 right-2 flex items-center gap-1 rounded border border-neutral-700/50 bg-neutral-900/90 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 backdrop-blur-sm">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </svg>
@@ -116,7 +229,7 @@ function ProjectCard({
           <Highlight text={project.name} query={searchQuery} />
         </h3>
         <p class="font-mono text-[10px] text-neutral-500">by {project.handle}</p>
-        <p class="font-mono text-xs leading-relaxed text-neutral-400 line-clamp-3">
+        <p class="line-clamp-3 font-mono text-xs leading-relaxed text-neutral-400">
           <Highlight text={project.description} query={searchQuery} />
         </p>
 
@@ -137,15 +250,30 @@ function ProjectCard({
 
         <div class="mt-auto flex items-center gap-4 pt-3">
           {app && (
-            <a href={app} target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-violet-400 transition-colors hover:text-violet-300">
+            <a
+              href={app}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-mono text-xs text-violet-400 transition-colors hover:text-violet-300"
+              onClick={(e) => e.stopPropagation()}
+            >
               ↗ App
             </a>
           )}
           {repo && (
-            <a href={repo} target="_blank" rel="noopener noreferrer" class="font-mono text-xs text-neutral-500 transition-colors hover:text-white">
+            <a
+              href={repo}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-mono text-xs text-neutral-500 transition-colors hover:text-white"
+              onClick={(e) => e.stopPropagation()}
+            >
               ↗ Repo
             </a>
           )}
+          <span class="ml-auto font-mono text-[10px] text-neutral-700 group-hover:text-neutral-500 transition-colors">
+            click to expand
+          </span>
         </div>
       </div>
     </article>
@@ -159,6 +287,7 @@ interface Props {
 export function ProjectsGallery({ projects }: Props) {
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Project | null>(null);
 
   const isFiltering = search.trim() !== '' || activeTag !== null;
 
@@ -179,6 +308,8 @@ export function ProjectsGallery({ projects }: Props) {
 
   return (
     <div>
+      {selected && <ProjectModal project={selected} onClose={() => setSelected(null)} />}
+
       {/* Search + Tag filter */}
       <div class="mb-10 space-y-4">
         <input
@@ -229,7 +360,7 @@ export function ProjectsGallery({ projects }: Props) {
           ) : (
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((p) => (
-                <ProjectCard key={p.id} project={p} searchQuery={search.trim()} />
+                <ProjectCard key={p.id} project={p} searchQuery={search.trim()} onClick={() => setSelected(p)} />
               ))}
             </div>
           )}
@@ -244,7 +375,7 @@ export function ProjectsGallery({ projects }: Props) {
               <h2 class="mb-6 font-mono text-xs uppercase tracking-widest text-neutral-500">★ Top Projects</h2>
               <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {featured.map((p, i) => (
-                  <ProjectCard key={p.id} project={p} searchQuery="" rank={i} />
+                  <ProjectCard key={p.id} project={p} searchQuery="" rank={i} onClick={() => setSelected(p)} />
                 ))}
               </div>
             </section>
@@ -255,7 +386,7 @@ export function ProjectsGallery({ projects }: Props) {
               <h2 class="mb-6 font-mono text-xs uppercase tracking-widest text-neutral-500">All Projects</h2>
               <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {rest.map((p) => (
-                  <ProjectCard key={p.id} project={p} searchQuery="" />
+                  <ProjectCard key={p.id} project={p} searchQuery="" onClick={() => setSelected(p)} />
                 ))}
               </div>
             </section>
