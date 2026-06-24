@@ -28,11 +28,11 @@ const TAG_COLORS: Record<string, string> = {
 };
 
 const medalStyle: Record<number, { border: string; glow: string; badge: string; label: string }> = {
-  0: { border: 'border-yellow-500/50', glow: 'shadow-[0_0_24px_rgba(234,179,8,0.12)]', badge: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40', label: '★ #1' },
-  1: { border: 'border-slate-400/40', glow: 'shadow-[0_0_16px_rgba(148,163,184,0.08)]', badge: 'bg-slate-500/20 text-slate-300 border-slate-500/40', label: '★ #2' },
-  2: { border: 'border-amber-700/50', glow: 'shadow-[0_0_16px_rgba(180,83,9,0.10)]', badge: 'bg-amber-700/20 text-amber-400 border-amber-700/40', label: '★ #3' },
-  3: { border: 'border-violet-500/30', glow: '', badge: 'bg-violet-500/10 text-violet-400 border-violet-500/30', label: '★ #4' },
-  4: { border: 'border-violet-500/20', glow: '', badge: 'bg-violet-500/10 text-violet-400 border-violet-500/20', label: '★ #5' },
+  0: { border: 'border-yellow-500/50', glow: 'shadow-[0_0_24px_rgba(234,179,8,0.12)]', badge: 'bg-neutral-900/90 text-yellow-300 border-yellow-500/70', label: '★ #1' },
+  1: { border: 'border-slate-400/40', glow: 'shadow-[0_0_16px_rgba(148,163,184,0.08)]', badge: 'bg-neutral-900/90 text-slate-300 border-slate-400/70', label: '★ #2' },
+  2: { border: 'border-amber-700/50', glow: 'shadow-[0_0_16px_rgba(180,83,9,0.10)]', badge: 'bg-neutral-900/90 text-amber-400 border-amber-600/70', label: '★ #3' },
+  3: { border: 'border-violet-500/30', glow: '', badge: 'bg-neutral-900/90 text-violet-400 border-violet-500/60', label: '★ #4' },
+  4: { border: 'border-violet-500/20', glow: '', badge: 'bg-neutral-900/90 text-violet-400 border-violet-500/50', label: '★ #5' },
 };
 
 const safeUrl = (u?: string): string | null => (u && /^https?:\/\//i.test(u) ? u : null);
@@ -102,7 +102,7 @@ function ProjectCard({
             {medal.label}
           </span>
         )}
-        <span class="absolute top-2 right-2 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 backdrop-blur-sm">
+        <span class="absolute top-2 right-2 flex items-center gap-1 rounded bg-neutral-900/90 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 backdrop-blur-sm border border-neutral-700/50">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </svg>
