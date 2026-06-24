@@ -1,0 +1,170 @@
+---
+import { env } from 'cloudflare:workers';
+
+interface Project {
+  id: number;
+  handle: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
+  appUrl?: string;
+  tags: string[];
+  stars: number;
+}
+
+const { locale = 'es' } = Astro.props;
+
+let projects: Project[] = [];
+try {
+  const base = env.CLOUD_API_URL.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/projects?limit=100`, {
+    headers: { origin: 'https://nan.builders' },
+  });
+  if (res.ok) {
+    const data = await res.json() as { projects: Project[] };
+    projects = (data.projects ?? [])
+      .sort((a, b) => b.stars - a.stars)
+      .slice(0, 3);
+  }
+} catch {}
+
+const safeUrl = (u?: string): string | null =>
+  u && /^https?:\/\//i.test(u) ? u : null;
+
+const TAG_COLORS: Record<string, string> = {
+  agents:     'bg-violet-500/15 text-violet-300 border-violet-800/60',
+  websites:   'bg-sky-500/15 text-sky-300 border-sky-800/60',
+  ai:         'bg-emerald-500/15 text-emerald-300 border-emerald-800/60',
+  api:        'bg-amber-500/15 text-amber-300 border-amber-800/60',
+  tools:      'bg-rose-500/15 text-rose-300 border-rose-800/60',
+  automation: 'bg-indigo-500/15 text-indigo-300 border-indigo-800/60',
+  data:       'bg-cyan-500/15 text-cyan-300 border-cyan-800/60',
+  mcp:        'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-800/60',
+  voice:      'bg-orange-500/15 text-orange-300 border-orange-800/60',
+  vision:     'bg-teal-500/15 text-teal-300 border-teal-800/60',
+};
+---
+
+{projects.length > 0 && (
+  <>
+    <div class="gradient-divider"></div>
+    <section id="community-builds" class="px-6 py-24 md:py-32">
+      <div class="max-w-5xl mx-auto">
+
+        <div class="mb-12">
+          <p class="font-mono text-xs text-violet-400 uppercase tracking-widest mb-4">
+            {locale === 'en' ? '// community builds' : '// lo que construimos'}
+          </p>
+          <h2 class="font-mono text-2xl md:text-3xl font-bold text-white leading-snug mb-4">
+            {locale === 'en'
+              ? <>We don&apos;t burn tokens. <span class="text-violet-400">We build.</span></>
+              : <>No quemamos tokens. <span class="text-violet-400">Construimos.</span></>
+            }
+          </h2>
+          <p class="font-mono text-sm text-neutral-400 max-w-xl leading-relaxed">
+            {locale === 'en'
+              ? 'Real projects built by NaN members using the shared inference cluster. This is what happens when builders get serious hardware.'
+              : 'Proyectos reales construidos por miembros de NaN usando el cluster de inferencia compartido. Esto es lo que pasa cuando builders tienen hardware en serio.'
+            }
+          </p>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-10">
+          {projects.map((project) => {
+            const app = safeUrl(project.appUrl);
+            return (
+              <article class="group flex flex-col overflow-hidden rounded-xl border border-neutral-800/60 bg-neutral-900/30 transition-all hover:border-violet-500/30 hover:bg-neutral-900/50">
+                {/* Image */}
+                <div class="relative aspect-video w-full overflow-hidden bg-neutral-900">
+                  {safeUrl(project.imageUrl) ? (
+                    <img
+                      src={safeUrl(project.imageUrl)!}
+                      alt={project.name}
+                      loading="lazy"
+                      decoding="async"
+                      class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div class="flex h-full w-full items-center justify-center text-neutral-700">
+                      <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h3l2 2h9a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                      </svg>
+                    </div>
+                  )}
+                  {/* Stars badge */}
+                  <span class="absolute top-2 right-2 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 font-mono text-[10px] text-amber-300 backdrop-blur-sm">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    {project.stars}
+                  </span>
+                </div>
+
+                {/* Body */}
+                <div class="flex flex-1 flex-col gap-2 p-4">
+                  <h3 class="font-mono text-sm font-semibold text-white leading-snug">{project.name}</h3>
+                  <p class="font-mono text-[10px] text-neutral-500">by {project.handle}</p>
+                  <p class="font-mono text-xs leading-relaxed text-neutral-400 line-clamp-2">{project.description}</p>
+
+                  {project.tags.length > 0 && (
+                    <div class="mt-1 flex flex-wrap gap-1">
+                      {project.tags.map((tag) => (
+                        <span class={`rounded border px-1.5 py-0.5 font-mono text-[9px] ${TAG_COLORS[tag] ?? 'bg-neutral-800/50 text-neutral-400 border-neutral-700'}`}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {app && (
+                    <div class="mt-auto pt-3">
+                      <a
+                        href={app}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="font-mono text-xs text-violet-400 transition-colors hover:text-violet-300"
+                      >
+                        ↗ {locale === 'en' ? 'Open project' : 'Ver proyecto'}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        {/* CTA */}
+        <div class="flex items-center gap-4">
+          <a
+            href="/projects"
+            class="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-2.5 font-mono text-sm font-medium text-white transition-colors hover:bg-violet-500"
+          >
+            {locale === 'en' ? 'See all community projects' : 'Ver todos los proyectos'}
+            <span class="text-violet-300">→</span>
+          </a>
+          <a
+            href="https://cloud.nan.builders/projects/new"
+            class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400"
+          >
+            {locale === 'en' ? 'Submit yours ↗' : 'Añade el tuyo ↗'}
+          </a>
+        </div>
+
+      </div>
+    </section>
+  </>
+)}
+
+<style>
+  .gradient-divider {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(139, 92, 246, 0.3) 30%,
+      rgba(139, 92, 246, 0.3) 70%,
+      transparent
+    );
+  }
+</style>

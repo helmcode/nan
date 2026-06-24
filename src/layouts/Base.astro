@@ -5,6 +5,7 @@ import LanguageSwitcher from '../components/landing/LanguageSwitcher.astro';
 import LoginButton from '../components/landing/LoginButton.astro';
 import Hero from '../components/landing/Hero.astro';
 import About from '../components/landing/About.astro';
+import CommunityBuilds from '../components/landing/CommunityBuilds.astro';
 import Server from '../components/landing/Server.astro';
 import Privacy from '../components/landing/Privacy.astro';
 import ModelVoting from '../components/landing/ModelVoting.astro';
@@ -69,13 +70,14 @@ const siteUrl = 'https://nan.builders';
         href="/projects"
         class="font-mono text-xs px-3 py-1.5 rounded-lg bg-violet-600 text-white hover:bg-violet-500 transition-colors backdrop-blur-sm"
       >
-        {locale === 'en' ? 'Community' : 'Comunidad'}
+        {locale === 'en' ? 'Community Projects' : 'Proyectos Comunidad'}
       </a>
       <LoginButton />
     </div>
     <main>
       <Hero locale={locale} />
       <About locale={locale} />
+      <CommunityBuilds locale={locale} />
       <Server locale={locale} />
       <Privacy locale={locale} />
       <ModelVoting locale={locale} />
