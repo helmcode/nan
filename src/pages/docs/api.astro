@@ -122,7 +122,8 @@ import RateLimits from '../../components/docs/RateLimits.astro';
     Devuelve la lista de modelos disponibles para tu key. Modelos publicados:
     <code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>, <code>qwen3.6</code>,
     <code>gemma4</code>, <code>qwen3-embedding</code>, <code>rerank</code>,
-    <code>kokoro</code>, <code>whisper</code>.
+    <code>kokoro</code>, <code>whisper</code>, <code>flux-2-klein</code>
+    (incluye el modelo de imagen <code>flux-2-klein</code>).
   </p>
 
   <h3 id="models-request">Request</h3>
@@ -1240,27 +1241,6 @@ for r in response["results"]:
     modelo disponible hoy; el endpoint está diseñado para añadir más). El body
     es JSON.
   </p>
-
-  <div class="rounded-xl border border-amber-900/40 bg-amber-950/20 p-6 mb-10">
-    <dl class="space-y-4 text-xs text-neutral-300">
-      <div>
-        <dt class="font-mono text-neutral-200 mb-1">Requiere membresía inference-tier</dt>
-        <dd class="text-neutral-400 leading-relaxed">
-          La generación de imágenes solo está disponible para miembros con
-          suscripción <em>inference</em>. Las keys de tier community reciben
-          <code>403</code> (<code>tier_restricted</code>).
-        </dd>
-      </div>
-      <div>
-        <dt class="font-mono text-neutral-200 mb-1">Cuota mensual — 100 requests / miembro</dt>
-        <dd class="text-neutral-400 leading-relaxed">
-          Un request cuenta como uno independientemente del valor de
-          <code>n</code>. Esta cuota es independiente de la cuota de 500M tokens
-          de los modelos de chat.
-        </dd>
-      </div>
-    </dl>
-  </div>
 
   <h3 id="images-generations-request">Request</h3>
   <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
