@@ -538,5 +538,67 @@ import RateLimits from '../../components/docs/RateLimits.astro';
     </dl>
   </div>
 
+  <!-- image generation -->
+  <h2 id="flux-2-klein">flux-2-klein</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2 mb-14">
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        generación de imágenes
+      </p>
+      <p class="text-xs text-neutral-400 leading-relaxed mb-4">
+        Modelo de difusión FLUX para text-to-image e image-to-image. Compatible
+        con la Images API de OpenAI (<code>/v1/images/generations</code> y
+        <code>/v1/images/edits</code>). Requiere membresía inference-tier.
+      </p>
+      <dl class="space-y-3">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Tipo</dt>
+          <dd class="text-neutral-200 text-right">Diffusion (FLUX)</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Modalidades</dt>
+          <dd class="text-neutral-200 text-right">text→image · image→image</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Resolución</dt>
+          <dd class="text-neutral-200 text-right">256–1536 px (múltiplos de 16)</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Imágenes / request</dt>
+          <dd class="text-neutral-200 text-right">1–4 (n)</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Cuota mensual</dt>
+          <dd class="text-neutral-200 text-right">100 requests / miembro</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        capacidades
+      </p>
+      <ul class="grid gap-3 font-mono text-xs text-neutral-300">
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Text-to-image (<code>/v1/images/generations</code>)</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Image-to-image con hasta 4 referencias (<code>/v1/images/edits</code>)</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Salida como URL temporal (R2, ~60 min) o base64</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-[3px] h-[6px] w-[6px] shrink-0 rounded-full bg-violet-500/70 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+          <span>Reproducibilidad por <code>seed</code> y control de <code>guidance</code></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
   <RateLimits />
 </Docs>

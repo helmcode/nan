@@ -88,6 +88,18 @@ import RateLimits from '../../components/docs/RateLimits.astro';
         <span class="text-violet-400/80">POST</span> /v1/responses
       </p>
     </a>
+    <a href="#images-generations" class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 transition-all duration-300 hover:border-violet-500/30 hover:bg-neutral-800/60">
+      <p class="font-mono text-sm text-white mb-2">Generación de imágenes</p>
+      <p class="font-mono text-xs text-neutral-400 leading-relaxed">
+        <span class="text-violet-400/80">POST</span> /v1/images/generations
+      </p>
+    </a>
+    <a href="#images-edits" class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 transition-all duration-300 hover:border-violet-500/30 hover:bg-neutral-800/60">
+      <p class="font-mono text-sm text-white mb-2">Edición de imágenes</p>
+      <p class="font-mono text-xs text-neutral-400 leading-relaxed">
+        <span class="text-violet-400/80">POST</span> /v1/images/edits
+      </p>
+    </a>
   </div>
 
   <!-- Auth -->
@@ -1219,6 +1231,323 @@ for r in response["results"]:
     </p>
   </div>
 
+  <!-- POST /v1/images/generations -->
+  <h2 id="images-generations">POST /v1/images/generations</h2>
+
+  <p class="text-sm text-neutral-300 leading-relaxed mb-6">
+    Genera imágenes a partir de texto (text-to-image). Compatible con la
+    Images API de OpenAI. Modelo compatible: <code>flux-2-klein</code> (único
+    modelo disponible hoy; el endpoint está diseñado para añadir más). El body
+    es JSON.
+  </p>
+
+  <div class="rounded-xl border border-amber-900/40 bg-amber-950/20 p-6 mb-10">
+    <dl class="space-y-4 text-xs text-neutral-300">
+      <div>
+        <dt class="font-mono text-neutral-200 mb-1">Requiere membresía inference-tier</dt>
+        <dd class="text-neutral-400 leading-relaxed">
+          La generación de imágenes solo está disponible para miembros con
+          suscripción <em>inference</em>. Las keys de tier community reciben
+          <code>403</code> (<code>tier_restricted</code>).
+        </dd>
+      </div>
+      <div>
+        <dt class="font-mono text-neutral-200 mb-1">Cuota mensual — 100 requests / miembro</dt>
+        <dd class="text-neutral-400 leading-relaxed">
+          Un request cuenta como uno independientemente del valor de
+          <code>n</code>. Esta cuota es independiente de la cuota de 500M tokens
+          de los modelos de chat.
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <h3 id="images-generations-request">Request</h3>
+  <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
+    <dl class="space-y-5">
+      <div>
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>prompt</code></dt>
+          <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">string · required</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Descripción textual de la imagen a generar.
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>model</code></dt>
+          <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">string · optional</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Default <code>flux-2-klein</code> (único modelo disponible). Un modelo
+          desconocido devuelve <code>404</code> (<code>model_not_found</code>).
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>n</code></dt>
+          <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">integer · optional</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Número de imágenes a generar, entre <code>1</code> y <code>4</code>.
+          Default <code>1</code>. Un valor mayor que <code>4</code> devuelve
+          <code>400</code>.
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>size</code></dt>
+          <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">string · optional</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Formato <code>"ANCHOxALTO"</code> con ambos lados divisibles por 16,
+          cada uno entre 256 y 1536, y aspect ratio entre 1:3 y 3:1. Valores
+          estándar como <code>1024x1024</code>, <code>1536x1024</code> o
+          <code>1024x1536</code> funcionan. <code>"auto"</code> u omitido →
+          <code>1024x1024</code>.
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>response_format</code></dt>
+          <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">string · optional</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          <code>"url"</code> (default) o <code>"b64_json"</code>. Con
+          <code>url</code> se devuelve un enlace temporal de R2 válido ~60
+          minutos (mismo contrato que OpenAI). Con <code>b64_json</code> se
+          devuelven los bytes de la imagen en base64 inline.
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
+    <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-3">
+      parámetros aceptados e ignorados
+    </p>
+    <p class="text-xs text-neutral-400 leading-relaxed">
+      Por compatibilidad con SDKs de OpenAI se aceptan
+      <code>quality</code>, <code>style</code>, <code>background</code>,
+      <code>moderation</code>, <code>output_format</code>,
+      <code>output_compression</code> y <code>user</code>, pero <strong>se
+      ignoran</strong> — Flux no actúa sobre ellos. Además,
+      <code>stream: true</code> <strong>no está soportado</strong> y devuelve
+      <code>400</code>.
+    </p>
+  </div>
+
+  <h3 id="images-generations-extensions">Parámetros adicionales (extensiones NaN)</h3>
+  <p class="text-sm text-neutral-300 leading-relaxed mb-4">
+    Estos parámetros <strong>no</strong> forman parte de la Images API de
+    OpenAI. Con el SDK de <code>openai</code> se pasan vía
+    <code>extra_body</code>.
+  </p>
+  <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
+    <dl class="space-y-5">
+      <div>
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>seed</code></dt>
+          <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">integer · optional</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Seed base para reproducibilidad. Cada variante (cuando
+          <code>n &gt; 1</code>) parte de un offset sobre este valor.
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>guidance</code></dt>
+          <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">number · optional</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Guidance scale de FLUX.
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <h3 id="images-generations-response">Response</h3>
+  <p class="text-sm text-neutral-300 leading-relaxed mb-4">
+    Mismo envoltorio que la Images API de OpenAI. <code>created</code> es el
+    timestamp Unix en segundos.
+  </p>
+  <CodeBlock language="json" code={`{
+  "created": 1778258200,
+  "data": [
+    { "url": "https://...r2.../image.png" }
+  ]
+}`} />
+  <p class="font-mono text-xs text-neutral-500 mb-10">
+    Con <code>response_format=b64_json</code>, cada elemento de <code>data</code>
+    es <code>{`{ "b64_json": "..." }`}</code> en lugar de
+    <code>{`{ "url": "..." }`}</code>.
+  </p>
+
+  <h3 id="images-generations-example">Ejemplo</h3>
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/images/generations \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "flux-2-klein",
+    "prompt": "Un faro al atardecer sobre acantilados, estilo cinemático",
+    "size": "1024x1024"
+  }'`} />
+
+  <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mt-6 mb-3">
+    response_format=b64_json
+  </p>
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/images/generations \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "flux-2-klein",
+    "prompt": "Un faro al atardecer sobre acantilados",
+    "size": "1024x1024",
+    "response_format": "b64_json"
+  }'`} />
+
+  <p class="text-xs text-neutral-400 leading-relaxed mt-6 mb-3">
+    Con el SDK de <code>openai</code> en Python (las extensiones
+    <code>seed</code> y <code>guidance</code> van en <code>extra_body</code>):
+  </p>
+  <CodeBlock language="python" code={`from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-tu-key-aqui",
+  base_url="https://api.nan.builders/v1"
+)
+
+response = client.images.generate(
+  model="flux-2-klein",
+  prompt="Un faro al atardecer sobre acantilados, estilo cinemático",
+  size="1024x1024",
+  n=1,
+  extra_body={"seed": 42, "guidance": 3.5}
+)
+
+print(response.data[0].url)`} />
+
+  <h3 id="images-rate-limits">Rate limits y cuota</h3>
+  <p class="text-sm text-neutral-300 leading-relaxed mb-6">
+    La generación de imágenes <strong>no pasa por LiteLLM</strong>, así que los
+    límites por key de LiteLLM (100 rpm / 5 concurrentes) <strong>no</strong> le
+    aplican. Generar imágenes no consume tu presupuesto de rpm del chat, y
+    viceversa. Estos límites aplican igual a la API y a la consola web, y son
+    propios de los endpoints de imágenes:
+  </p>
+  <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
+    <dl class="space-y-5">
+      <div>
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white">Rate limit</dt>
+          <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">1 req/s · burst 3</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          1 request por segundo sostenido, con burst de hasta 3 (puedes disparar
+          hasta 3 generaciones seguidas sin error). Al excederlo devuelve
+          <code>429</code> (<code>rate_limit_exceeded</code>).
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white">Cuota mensual</dt>
+          <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">100 requests / mes</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          100 requests por mes y por usuario (1 request = 1 uso,
+          independientemente del valor de <code>n</code>). Al excederla devuelve
+          <code>429</code> (<code>insufficient_quota</code>). Esta cuota es
+          independiente del límite de 500M tokens/mes del chat.
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white">Tier</dt>
+          <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">inference</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Requiere membresía de tier inference. Las keys de tier community
+          reciben <code>403</code> (<code>tier_restricted</code>).
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <!-- POST /v1/images/edits -->
+  <h2 id="images-edits">POST /v1/images/edits</h2>
+
+  <p class="text-sm text-neutral-300 leading-relaxed mb-6">
+    Genera una imagen a partir de una o varias imágenes de referencia
+    (image-to-image). Compatible con la Images API de OpenAI. Modelo
+    compatible: <code>flux-2-klein</code>. La petición es
+    <code>multipart/form-data</code>. Aplican la misma membresía
+    inference-tier y la misma cuota mensual de 100 requests que
+    <a href="#images-generations" class="text-violet-400 hover:text-violet-300 underline underline-offset-2">/v1/images/generations</a>.
+  </p>
+
+  <h3 id="images-edits-request">Request</h3>
+  <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
+    <dl class="space-y-5">
+      <div>
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>image</code> / <code>image[]</code></dt>
+          <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">file · required</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Una o más imágenes de referencia (hasta 4; las extras se descartan).
+          PNG, JPEG o WebP, cada una &lt; 25 MB.
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>prompt</code></dt>
+          <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">string · required</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Descripción de la edición o transformación a aplicar.
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <div class="flex items-baseline justify-between gap-4 mb-1">
+          <dt class="font-mono text-xs text-white"><code>model</code>, <code>n</code>, <code>size</code>, <code>response_format</code></dt>
+          <span class="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">optional</span>
+        </div>
+        <dd class="text-xs text-neutral-400 leading-relaxed">
+          Mismo comportamiento que en
+          <a href="#images-generations" class="text-violet-400 hover:text-violet-300 underline underline-offset-2">/v1/images/generations</a>.
+          Las extensiones <code>seed</code> y <code>guidance</code> también se
+          aceptan (como campos del form).
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="rounded-xl border border-amber-900/40 bg-amber-950/20 p-6 mb-6">
+    <p class="text-xs text-neutral-400 leading-relaxed">
+      El parámetro <code>mask</code> <strong>no está soportado</strong> y
+      devuelve <code>400</code> — Flux Klein no hace inpainting.
+    </p>
+  </div>
+
+  <h3 id="images-edits-response">Response</h3>
+  <p class="text-sm text-neutral-300 leading-relaxed mb-10">
+    Mismo envoltorio que
+    <a href="#images-generations-response" class="text-violet-400 hover:text-violet-300 underline underline-offset-2">/v1/images/generations</a>:
+    <code>{`{ "created": ..., "data": [{ "url": "..." }] }`}</code> (o elementos
+    <code>{`{ "b64_json": "..." }`}</code> con
+    <code>response_format=b64_json</code>).
+  </p>
+
+  <h3 id="images-edits-example">Ejemplo</h3>
+  <CodeBlock language="curl" code={`curl https://api.nan.builders/v1/images/edits \\
+  -H "Authorization: Bearer sk-tu-key-aqui" \\
+  -F "model=flux-2-klein" \\
+  -F "image[]=@ref.png" \\
+  -F "prompt=Convierte la escena en invierno con nieve" \\
+  -F "size=1024x1024"`} />
+
   <!-- Errors -->
   <h2 id="errores">Errores</h2>
 
@@ -1242,22 +1571,44 @@ for r in response["results"]:
     </p>
     <dl class="space-y-4 text-xs text-neutral-300">
       <div>
+        <dt class="font-mono text-neutral-200 mb-1">400</dt>
+        <dd class="text-neutral-400 leading-relaxed">
+          Parámetro inválido — el body incluye <code>param</code> con el campo
+          que falló (p. ej. <code>prompt</code>, <code>n</code>,
+          <code>size</code>, <code>stream</code>, <code>mask</code> o
+          <code>image</code> en los endpoints de imágenes). El filtro de
+          seguridad devuelve <code>content_policy_violation</code>.
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
         <dt class="font-mono text-neutral-200 mb-1">401</dt>
         <dd class="text-neutral-400 leading-relaxed">
-          Header <code>Authorization</code> inválido o ausente.
+          Header <code>Authorization</code> inválido o ausente
+          (<code>invalid_api_key</code>).
+        </dd>
+      </div>
+      <div class="border-t border-neutral-800/40 pt-4">
+        <dt class="font-mono text-neutral-200 mb-1">403</dt>
+        <dd class="text-neutral-400 leading-relaxed">
+          Tu tier no tiene acceso al endpoint (<code>tier_restricted</code>).
+          La generación de imágenes requiere membresía inference.
         </dd>
       </div>
       <div class="border-t border-neutral-800/40 pt-4">
         <dt class="font-mono text-neutral-200 mb-1">404</dt>
         <dd class="text-neutral-400 leading-relaxed">
-          Modelo no existe (campo <code>model</code>).
+          Modelo no existe (campo <code>model</code>,
+          <code>model_not_found</code>).
         </dd>
       </div>
       <div class="border-t border-neutral-800/40 pt-4">
         <dt class="font-mono text-neutral-200 mb-1">429</dt>
         <dd class="text-neutral-400 leading-relaxed">
           Rate limit excedido — <code>rpm_limit</code> o
-          <code>max_parallel_requests</code>.
+          <code>max_parallel_requests</code>
+          (<code>rate_limit_exceeded</code>), o cuota mensual agotada
+          (<code>quota_exceeded</code> / <code>insufficient_quota</code>, como
+          la de 100 requests de imágenes).
         </dd>
       </div>
       <div class="border-t border-neutral-800/40 pt-4">
