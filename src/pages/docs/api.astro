@@ -120,10 +120,10 @@ import RateLimits from '../../components/docs/RateLimits.astro';
 
   <p class="text-sm text-neutral-300 leading-relaxed mb-6">
     Devuelve la lista de modelos disponibles para tu key. Modelos publicados:
-    <code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>, <code>qwen3.6</code>,
-    <code>gemma4</code>, <code>qwen3-embedding</code>, <code>rerank</code>,
-    <code>kokoro</code>, <code>whisper</code>, <code>flux-2-klein</code>
-    (incluye el modelo de imagen <code>flux-2-klein</code>).
+    <code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>, <code>glm5.2</code>,
+    <code>qwen3.6</code>, <code>gemma4</code>, <code>qwen3-embedding</code>,
+    <code>rerank</code>, <code>kokoro</code>, <code>whisper</code>,
+    <code>flux-2-klein</code> (incluye el modelo de imagen <code>flux-2-klein</code>).
   </p>
 
   <h3 id="models-request">Request</h3>
@@ -142,6 +142,12 @@ import RateLimits from '../../components/docs/RateLimits.astro';
       "object": "model",
       "created": 1677610602,
       "owned_by": "openai"
+    },
+    {
+      "id": "glm5.2",
+      "object": "model",
+      "created": 1677610602,
+      "owned_by": "openai"
     }
   ]
 }`} />
@@ -156,7 +162,7 @@ import RateLimits from '../../components/docs/RateLimits.astro';
   <p class="text-sm text-neutral-300 leading-relaxed mb-6">
     El endpoint principal de chat. Compatible con OpenAI Chat Completions.
     Modelos compatibles: <code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>,
-    <code>qwen3.6</code> y <code>gemma4</code>.
+    <code>glm5.2</code>, <code>qwen3.6</code> y <code>gemma4</code>.
   </p>
 
   <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-10">
@@ -177,6 +183,14 @@ import RateLimits from '../../components/docs/RateLimits.astro';
           Chat, streaming, tool calling, reasoning, vision (image input) y
           audio (audio input), contexto de 1M tokens. Cuota mensual de 500M
           tokens por miembro.
+        </dd>
+      </div>
+      <div>
+        <dt class="font-mono text-neutral-200 mb-1">glm5.2</dt>
+        <dd class="text-neutral-400 leading-relaxed">
+          Chat, streaming, tool calling, reasoning (emite una traza de
+          razonamiento), contexto de 256K tokens. Solo texto. Enfocado en
+          coding y tareas agénticas de largo horizonte.
         </dd>
       </div>
       <div>
@@ -203,7 +217,7 @@ import RateLimits from '../../components/docs/RateLimits.astro';
           <dt class="font-mono text-xs text-white"><code>model</code></dt>
           <span class="font-mono text-[10px] text-violet-400/80 uppercase tracking-widest">string · required</span>
         </div>
-        <dd class="text-xs text-neutral-400 leading-relaxed"><code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>, <code>qwen3.6</code> o <code>gemma4</code>.</dd>
+        <dd class="text-xs text-neutral-400 leading-relaxed"><code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>, <code>glm5.2</code>, <code>qwen3.6</code> o <code>gemma4</code>.</dd>
       </div>
       <div class="border-t border-neutral-800/40 pt-4">
         <div class="flex items-baseline justify-between gap-4 mb-1">
@@ -492,7 +506,7 @@ print(data["name"], data["age"])`} />
 
   <h3 id="chat-reasoning">Reasoning</h3>
 
-  <p>Los cuatro modelos generan razonamiento y lo devuelven en
+  <p>Los cinco modelos generan razonamiento y lo devuelven en
     <code>choices[0].message.reasoning_content</code>. El mecanismo de control
     cambia según el modelo:</p>
 
@@ -513,6 +527,10 @@ print(data["name"], data["age"])`} />
       <div class="flex items-baseline justify-between gap-4 font-mono">
         <dt class="text-neutral-200">mimo-v2.5</dt>
         <dd class="text-neutral-400 text-right">siempre activo · no configurable por API hoy</dd>
+      </div>
+      <div class="flex items-baseline justify-between gap-4 font-mono">
+        <dt class="text-neutral-200">glm5.2</dt>
+        <dd class="text-neutral-400 text-right">emite <code>reasoning_content</code> · enfoque coding agéntico</dd>
       </div>
     </dl>
   </div>

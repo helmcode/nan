@@ -119,6 +119,14 @@ for await (const chunk of stream) {
             "input": ["text", "image", "audio"],
             "output": ["text"]
           }
+        },
+        "glm5.2": {
+          "name": "GLM 5.2",
+          "contextWindow": 262144,
+          "modalities": {
+            "input": ["text"],
+            "output": ["text"]
+          }
         }
       }
     }
@@ -130,7 +138,7 @@ for await (const chunk of stream) {
   }
 }`} />
   <p class="font-mono text-xs text-neutral-500">
-    Este es el config para conectar IDEs (Cursor, OpenCode) con los 4 modelos LLM disponibles: <code>qwen3.6</code>, <code>gemma4</code>, <code>deepseek-v4-flash</code> y <code>mimo-v2.5</code>.
+    Este es el config para conectar IDEs (Cursor, OpenCode) con los 5 modelos LLM disponibles: <code>qwen3.6</code>, <code>gemma4</code>, <code>deepseek-v4-flash</code>, <code>mimo-v2.5</code> y <code>glm5.2</code>.
   </p>
 
   <h3 id="qwen36-pi">.pi/agent/models.json (config)</h3>
@@ -159,6 +167,14 @@ for await (const chunk of stream) {
           "input": ["text", "image"],
           "contextWindow": 262144,
           "maxTokens": 16384
+        },
+        {
+          "id": "glm5.2",
+          "name": "GLM 5.2",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 262144,
+          "maxTokens": 16384
         }
       ]
     }
@@ -182,6 +198,14 @@ for await (const chunk of stream) {
             "name": "Qwen 3.6",
             "reasoning": true,
             "input": ["text", "image"],
+            "contextWindow": 262144,
+            "maxTokens": 65536
+          },
+          {
+            "id": "glm5.2",
+            "name": "GLM 5.2",
+            "reasoning": true,
+            "input": ["text"],
             "contextWindow": 262144,
             "maxTokens": 65536
           }
@@ -218,6 +242,11 @@ for await (const chunk of stream) {
         {
           "name": "qwen3.6",
           "display_name": "NaN",
+          "max_tokens": 262144
+        },
+        {
+          "name": "glm5.2",
+          "display_name": "NaN GLM 5.2",
           "max_tokens": 262144
         }
       ]
