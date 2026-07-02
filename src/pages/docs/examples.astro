@@ -263,6 +263,54 @@ for await (const chunk of stream) {
     Config para <code>~/.config/zed/settings.json</code> — incluye inline predictions.
   </p>
 
+  <!-- github copilot -->
+  <h2 id="copilot">github copilot (byok)</h2>
+  <p class="font-mono text-xs text-neutral-500 mb-6">cli + vs code · trae tu propia key</p>
+
+  <p>Copilot soporta endpoints OpenAI-compatibles via BYOK (bring your own key).
+    Usa un modelo con tool calling + streaming: <code>qwen3.6</code>,
+    <code>deepseek-v4-flash</code> o <code>mimo-v2.5</code>.</p>
+
+  <h3 id="copilot-cli">copilot cli</h3>
+  <CodeBlock language="bash" code={`export COPILOT_PROVIDER_BASE_URL=https://api.nan.builders/v1
+export COPILOT_PROVIDER_API_KEY=sk-tu-key-aqui
+export COPILOT_MODEL=qwen3.6
+copilot`} />
+  <p class="font-mono text-xs text-neutral-500 mb-5">
+    Variables de entorno antes de lanzar <code>copilot</code>. Override por sesión con <code>--model qwen3.6</code>. Docs: <a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-byok-models" target="_blank" rel="noopener noreferrer" class="text-violet-400 hover:text-violet-300 underline underline-offset-2">use-byok-models</a>.
+  </p>
+
+  <h3 id="copilot-vscode">vs code</h3>
+  <ol class="list-decimal list-inside text-sm text-neutral-300 leading-relaxed mb-5 space-y-1">
+    <li>Abrir la paleta de comandos (<code>⌘⇧P</code> / <code>Ctrl+Shift+P</code>) → <code>Chat: Manage Language Models</code>.</li>
+    <li><code>Add Models</code> → <code>Custom Endpoint</code>.</li>
+    <li>Group name: <code>NaN</code>. Display name: <code>qwen3.6</code>. API key: tu <code>sk-...</code>. API type: <code>Chat Completions</code>.</li>
+    <li>VS Code abre <code>chatLanguageModels.json</code>. Reemplazar el contenido con el JSON de abajo y guardar.</li>
+    <li>Seleccionar <code>qwen3.6</code> en el model picker del chat.</li>
+  </ol>
+  <CodeBlock language="json" code={`[
+  {
+    "name": "NaN",
+    "vendor": "customendpoint",
+    "apiKey": "sk-tu-key-aqui",
+    "apiType": "chat-completions",
+    "models": [
+      {
+        "id": "qwen3.6",
+        "name": "qwen3.6",
+        "url": "https://api.nan.builders/v1/chat/completions",
+        "toolCalling": true,
+        "vision": true,
+        "maxInputTokens": 262144,
+        "maxOutputTokens": 16384
+      }
+    ]
+  }
+]`} />
+  <p class="font-mono text-xs text-neutral-500 mb-5">
+    Para agent mode usa un modelo con tool calling (<code>qwen3.6</code>, <code>deepseek-v4-flash</code>, <code>mimo-v2.5</code>). Si el modelo no aparece en el picker, reiniciar VS Code. Docs: <a href="https://code.visualstudio.com/docs/copilot/customization/language-models#_bring-your-own-language-model-key" target="_blank" rel="noopener noreferrer" class="text-violet-400 hover:text-violet-300 underline underline-offset-2">language-models</a>.
+  </p>
+
   <!-- qwen3-embedding -->
   <h2 id="qwen3-embedding">modelo: qwen3-embedding</h2>
   <p class="font-mono text-xs text-neutral-500 mb-6">embeddings vectoriales</p>
