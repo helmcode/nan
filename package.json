@@ -1,7 +1,7 @@
 {
   "name": "nan-website",
   "type": "module",
-  "version": "0.0.2",
+  "version": "0.0.7",
   "engines": {
     "node": ">=22.12.0"
   },

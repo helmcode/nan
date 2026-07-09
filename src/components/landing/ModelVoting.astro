@@ -3,29 +3,6 @@ import { t, tArr } from '../../lib/i18n';
 
 const { locale = 'es' } = Astro.props;
 
-const currentModels = [
-  {
-    name: 'gemma4',
-    note: 'LLM · 26B-A4B MoE',
-  },
-  {
-    name: 'qwen3.6',
-    note: 'LLM · 35B-A3B MoE',
-  },
-  {
-    name: 'qwen3-embedding',
-    note: 'Embeddings · 8B',
-  },
-  {
-    name: 'kokoro',
-    note: 'TTS · 67 voices',
-  },
-  {
-    name: 'whisper',
-    note: 'STT · large-v3',
-  },
-];
-
 const rules = tArr('modelVoting.rules', locale);
 ---
 
@@ -40,7 +17,7 @@ const rules = tArr('modelVoting.rules', locale);
       {t('modelVoting.heading', locale)}
     </h2>
 
-    <ul class="space-y-3 text-sm md:text-base text-neutral-300 leading-relaxed mb-14">
+    <ul class="space-y-3 text-sm md:text-base text-neutral-300 leading-relaxed">
       {
         rules.map((rule) => (
           <li class="flex items-start gap-3">
@@ -50,20 +27,6 @@ const rules = tArr('modelVoting.rules', locale);
         ))
       }
     </ul>
-
-    <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-5">
-      {t('modelVoting.models', locale)}
-    </p>
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-14">
-      {
-        currentModels.map((model) => (
-          <div class="rounded-lg border border-dashed border-neutral-800 bg-neutral-900/20 p-4 transition-colors duration-300 hover:border-violet-500/30">
-            <p class="font-mono text-sm text-white mb-1">{model.name}</p>
-            <p class="text-xs text-neutral-400 leading-relaxed">{model.note}</p>
-          </div>
-        ))
-      }
-    </div>
   </div>
 </section>
 

@@ -112,6 +112,22 @@ Instalar: `npm install openai`
             "input": ["text"],
             "output": ["text"]
           }
+        },
+        "mimo-v2.5": {
+          "name": "Xiaomi MiMo V2.5",
+          "contextWindow": 500000,
+          "modalities": {
+            "input": ["text", "image", "audio"],
+            "output": ["text"]
+          }
+        },
+        "glm5.2": {
+          "name": "GLM 5.2",
+          "contextWindow": 262144,
+          "modalities": {
+            "input": ["text"],
+            "output": ["text"]
+          }
         }
       }
     }
@@ -124,7 +140,7 @@ Instalar: `npm install openai`
 }
 ```
 
-Este es el config para conectar IDEs (Cursor, OpenCode) con los 3 modelos disponibles: `qwen3.6`, `gemma4` y `deepseek-v4-flash`.
+Este es el config para conectar IDEs (Cursor, OpenCode) con los 5 modelos LLM disponibles: `qwen3.6`, `gemma4`, `deepseek-v4-flash`, `mimo-v2.5` y `glm5.2`.
 
 ### .pi/agent/models.json (config)
 
@@ -154,6 +170,14 @@ Este es el config para conectar IDEs (Cursor, OpenCode) con los 3 modelos dispon
           "input": ["text", "image"],
           "contextWindow": 262144,
           "maxTokens": 16384
+        },
+        {
+          "id": "glm5.2",
+          "name": "GLM 5.2",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 262144,
+          "maxTokens": 16384
         }
       ]
     }
@@ -179,6 +203,14 @@ Config para `~/.pi/agent/models.json`
             "name": "Qwen 3.6",
             "reasoning": true,
             "input": ["text", "image"],
+            "contextWindow": 262144,
+            "maxTokens": 65536
+          },
+          {
+            "id": "glm5.2",
+            "name": "GLM 5.2",
+            "reasoning": true,
+            "input": ["text"],
             "contextWindow": 262144,
             "maxTokens": 65536
           }
@@ -216,6 +248,11 @@ Config para `~/.openclaw/openclaw.json`
         {
           "name": "qwen3.6",
           "display_name": "NaN",
+          "max_tokens": 262144
+        },
+        {
+          "name": "glm5.2",
+          "display_name": "NaN GLM 5.2",
           "max_tokens": 262144
         }
       ]
@@ -289,6 +326,61 @@ const response = await client.embeddings.create({
 const embeddings = response.data.map((d) => d.embedding);
 console.log(embeddings[0].length);  // 4096
 ```
+
+## modelo: rerank
+
+reranking semántico — completa el stack RAG
+
+### curl
+
+```bash
+curl https://api.nan.builders/v1/rerank \
+  -H "Authorization: Bearer $NAN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "rerank",
+    "query": "What is the capital of France?",
+    "documents": [
+      "Paris is the capital of France and home to the Eiffel Tower.",
+      "Berlin is the capital of Germany.",
+      "Madrid is the capital of Spain."
+    ]
+  }'
+# → results[] ordenados por relevance_score desc, con index original
+```
+
+### python
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+  api_key=os.environ["NAN_API_KEY"],
+  base_url="https://api.nan.builders/v1"
+)
+
+# El endpoint /rerank no forma parte del cliente OpenAI estandar,
+# pero podemos invocarlo con client.post().
+response = client.post(
+  path="/rerank",
+  cast_to=object,
+  body={
+    "model": "rerank",
+    "query": "What is the capital of France?",
+    "documents": [
+      "Paris is the capital of France and home to the Eiffel Tower.",
+      "Berlin is the capital of Germany.",
+      "Madrid is the capital of Spain.",
+    ],
+  },
+)
+
+for r in response["results"]:
+    print(f"{r['index']}: {r['relevance_score']:.3f}")
+```
+
+Tambien funciona con `requests` directo o cualquier cliente HTTP — el endpoint es OpenAI-compatible en autenticacion y forma de payload.
 
 ## modelo: kokoro
 
@@ -445,6 +537,69 @@ const result = await client.audio.transcriptions.create({
 console.log(result.text);       // Texto transcrito
 console.log(result.language);   // "es"
 console.log(result.duration);   // 5.2
+```
+
+## modelo: mimo-v2.5
+
+omnimodal — chat, visión y audio
+
+### curl
+
+```bash
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -d '{
+    "model": "mimo-v2.5",
+    "messages": [{"role": "user", "content": "Hola, ¿cómo estás?"}],
+    "max_tokens": 500
+  }'
+```
+
+Con reasoning activo se recomienda `max_tokens ≥ 300` para dejar margen al razonamiento.
+
+### vision (curl)
+
+```bash
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -d '{
+    "model": "mimo-v2.5",
+    "messages": [{
+      "role": "user",
+      "content": [
+        {"type": "text", "text": "¿Qué hay en esta imagen?"},
+        {"type": "image_url", "image_url": {"url": "https://example.com/foto.jpg"}}
+      ]
+    }],
+    "max_tokens": 500
+  }'
+```
+
+### python (openai)
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-tu-key-aqui",
+  base_url="https://api.nan.builders/v1"
+)
+
+response = client.chat.completions.create(
+  model="mimo-v2.5",
+  messages=[{
+    "role": "user",
+    "content": [
+      {"type": "text", "text": "Describe esta imagen."},
+      {"type": "image_url", "image_url": {"url": "https://example.com/foto.jpg"}}
+    ]
+  }],
+  max_tokens=500
+)
+
+print(response.choices[0].message.content)
 ```
 
 ## Integración en IDEs

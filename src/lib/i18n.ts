@@ -47,3 +47,9 @@ export function getLocale(queryParams: URLSearchParams): string {
   if (lang === 'en' || lang === 'es') return lang;
   return 'es';
 }
+
+// Mantiene el locale en navegación interna: withLang('/hackaton/me', 'en')
+// → '/hackaton/me?lang=en'. En 'es' devuelve la ruta tal cual.
+export function withLang(path: string, locale: string): string {
+  return locale === 'en' ? `${path}${path.includes('?') ? '&' : '?'}lang=en` : path;
+}

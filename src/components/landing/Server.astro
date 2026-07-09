@@ -6,7 +6,12 @@ const { locale = 'es' } = Astro.props;
 const currentModels = [
   {
     name: 'deepseek-v4-flash',
-    role: 'LLM · 284B-21B MoE · FP8 · 1M context · Tool calling · Reasoning · 100M tokens/mes',
+    role: 'LLM · 284B-21B MoE · FP8 · 1M context · Tool calling · Reasoning · 500M tokens/mes',
+    tag: 'llm',
+  },
+  {
+    name: 'mimo-v2.5',
+    role: 'Omnimodal · 310B-15B MoE · FP8 · 1M context · Vision · Audio · Tool calling · Reasoning · 500M tokens/mes',
     tag: 'llm',
   },
   {
@@ -20,9 +25,19 @@ const currentModels = [
     tag: 'llm',
   },
   {
+    name: 'glm5.2',
+    role: 'LLM · ~753B MoE · FP8 · sparse attention · 256K context · Tool calling · Reasoning · coding agéntico',
+    tag: 'llm',
+  },
+  {
     name: 'qwen3-embedding',
     role: 'Embeddings · 8B · 4096 dims · 100+ languages · MMTEB 70.58',
     tag: 'embedding',
+  },
+  {
+    name: 'rerank',
+    role: 'Reranker · Qwen3-Reranker-8B · BF16 · 100+ languages · cross-lingual · completes RAG stack',
+    tag: 'rerank',
   },
   {
     name: 'kokoro',

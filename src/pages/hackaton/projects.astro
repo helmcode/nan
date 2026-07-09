@@ -1,0 +1,66 @@
+---
+import Page from '../../layouts/Page.astro';
+import VoteButton from '../../components/hackaton/VoteButton.tsx';
+import { t, tObj, withLang } from '../../lib/i18n';
+import { jsonData, type MeData } from '../../lib/hackaton';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+const base = env.CLOUD_API_URL.replace(/\/$/, '');
+let projects: any[] = [];
+// Voto actual del usuario (SSR, reenviando la cookie). Permite marcar la tarjeta
+// votada y ofrecer cambiar el voto. Si no hay sesión, /me da 401 y queda null.
+let myVote: string | null = null;
+try {
+  const cookie = Astro.request.headers.get('cookie') ?? '';
+  const [res, me] = await Promise.all([
+    fetch(`${base}/api/hackaton/projects`, { headers: { origin: 'https://nan.builders' } }),
+    fetch(`${base}/api/hackaton/me`, { headers: { cookie, origin: 'https://nan.builders' } }),
+  ]);
+  if (res.ok) projects = (await jsonData<any[]>(res)) ?? [];
+  if (me.ok) myVote = (await jsonData<MeData>(me))?.my_vote ?? null;
+} catch {}
+
+// Solo http/https en enlaces de proyecto (defensa en profundidad frente a
+// javascript:, data:, etc. aunque el backend ya valide).
+const safeUrl = (u?: string): string | null =>
+  u && /^https?:\/\//i.test(u) ? u : null;
+---
+
+<Page title={`${t('hackaton.projects.title', locale)} — nan.builders`}>
+  <main class="px-6 pt-24 pb-32 mx-auto max-w-4xl">
+    <a href={withLang('/hackaton', locale)} class="font-mono text-xs text-neutral-500 hover:text-violet-400">
+      {t('hackaton.backToLanding', locale)}
+    </a>
+    <h1 class="mt-8 font-mono text-2xl text-white">{t('hackaton.projects.title', locale)}</h1>
+    {projects.length === 0 ? (
+      <p class="mt-8 text-sm text-neutral-400">{t('hackaton.projects.empty', locale)}</p>
+    ) : (
+      <div class="mt-8 grid gap-4 md:grid-cols-2">
+        {projects.map((p) => (
+          <article class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-5">
+            {safeUrl(p.image_url) && <img src={safeUrl(p.image_url)} alt={`${p.title} — ${p.team_name}`} class="mb-4 aspect-video w-full rounded-lg object-cover" loading="lazy" decoding="async" />}
+            <h2 class="font-mono text-base text-white">{p.title}</h2>
+            <p class="mt-1 font-mono text-xs text-violet-400">{p.team_name}</p>
+            <p class="mt-3 text-sm text-neutral-300">{p.description}</p>
+            <div class="mt-4 flex flex-wrap gap-3 font-mono text-xs">
+              {safeUrl(p.public_url) && <a href={safeUrl(p.public_url)} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">Live</a>}
+              {safeUrl(p.space_url) && <a href={safeUrl(p.space_url)} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">Space</a>}
+              {safeUrl(p.repo_url) && <a href={safeUrl(p.repo_url)} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">Repo</a>}
+              {safeUrl(p.video_url) && (
+                <a href={safeUrl(p.video_url)} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">
+                  ▶ {t('hackaton.projects.presentationVideo', locale)}
+                </a>
+              )}
+            </div>
+            <div class="mt-5">
+              <VoteButton client:visible teamId={p.team_id} votedTeamId={myVote} loginHref={withLang('/hackaton', locale)} t={tObj('hackaton.projects', locale)} />
+            </div>
+          </article>
+        ))}
+      </div>
+    )}
+  </main>
+</Page>
