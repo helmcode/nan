@@ -11,6 +11,18 @@ NaN Cloud te permite **desplegar tus propias apps desde un repositorio de GitHub
 > **Antes de empezar**
 > Las Apps viven dentro de un **Space**: tu propio entorno con su cuota de recursos. Si tienes la suscripción de inferencia activa, recibes **un Space Basic gratis** incluido en tu membresía. Si no, puedes comprar uno desde [cloud.nan.builders/spaces](https://cloud.nan.builders/spaces).
 
+## Tiers disponibles
+
+Cada Space pertenece a un tier. El tier define la cuota total de CPU, RAM y almacenamiento que se reparte entre todas las apps que despliegues dentro de él. Puedes **subir o bajar de tier** en cualquier momento desde el dashboard del Space (la bajada solo se permite si tu uso actual cabe en el tier nuevo).
+
+| Tier | CPU | RAM | Disco | Pods | Precio |
+|---|---|---|---|---|---|
+| Basic | 2 vCPU | 4 GiB | 20 GiB | 5 | Gratis con inferencia · $6 / €6 al mes |
+| Medium | 4 vCPU | 8 GiB | 40 GiB | 10 | $12 / €12 al mes |
+| Large | 4 vCPU | 16 GiB | 80 GiB | 20 | $24 / €24 al mes |
+
+CPU y RAM son los **topes agregados del Space** (suma de todas tus apps). Por defecto cada app que crees arranca con un límite cómodo de `500m` CPU y `500 MiB` de RAM, suficiente para una API o worker típico; puedes subir el límite por app desde la sección *Advanced options* del formulario hasta consumir el tier completo. El disco se reparte vía PVCs (5/10/20 según tier) y solo lo usan las apps que marques como *persistent*.
+
 ## 1. Crear un Space
 
 Entra en [cloud.nan.builders/spaces](https://cloud.nan.builders/spaces). Si eres miembro de inferencia verás un panel que te ofrece reclamar tu Space Basic gratis: elige un *slug* (entre 1 y 20 caracteres, minúsculas, sin espacios) y pulsa **Claim free Basic**. El slug se usará para construir los dominios públicos de tus apps, así que escógelo con cariño.

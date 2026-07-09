@@ -15,7 +15,7 @@ Esta doc explica cómo conectar tus herramientas a nuestras GPUs. El cluster cor
 
 | Métrica | Valor |
 |---|---|
-| Requests por minuto | 100 rpm |
+| Requests por minuto | 60 rpm |
 | Paralelo máximo | 5 concurrentes |
 
 ## Qué hacer a continuación
