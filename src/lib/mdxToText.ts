@@ -3,6 +3,7 @@ import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
 import remarkStringify from 'remark-stringify';
+import { DEFAULT_RATE_LIMITS, type RateLimitsConfig } from './rateLimits';
 
 const KNOWN_COMPONENTS = new Set([
   'ModelCard',
@@ -221,7 +222,7 @@ interface MdxNode {
   children?: unknown[];
 }
 
-function componentToBlockMd(node: MdxNode): string {
+function componentToBlockMd(node: MdxNode, rateLimits: RateLimitsConfig): string {
   const name = getName(node);
   switch (name) {
     case 'ModelCard':
@@ -235,7 +236,7 @@ function componentToBlockMd(node: MdxNode): string {
     case 'Callout':
       return calloutToMd(node);
     case 'RateLimits':
-      return rateLimitsToMd();
+      return rateLimitsToMd(rateLimits);
     default:
       throw new Error(`Unknown MDX block component: <${name || '?'}>`);
   }
@@ -327,8 +328,25 @@ function calloutToMd(node: MdxNode): string {
   return `> [!${variant}] ${title}\n>\n${quoted}\n`;
 }
 
-function rateLimitsToMd(): string {
-  return ['- Requests / min: 100 rpm', '- Paralelo máximo: 5 concurrentes', ''].join('\n');
+function rateLimitsToMd(config: RateLimitsConfig): string {
+  const lines = [
+    '**rate limits por API key**',
+    '',
+    `- Requests / min: ${config.perKey.requestsPerMinute} rpm`,
+    `- Paralelo máximo: ${config.perKey.maxParallel} concurrentes`,
+    '',
+  ];
+  if (config.tokensPerMinuteByModel.length) {
+    lines.push('**tokens / min por modelo**', '');
+    for (const m of config.tokensPerMinuteByModel) lines.push(`- ${m.model}: ${m.label}`);
+    lines.push('');
+  }
+  if (config.requestsPerMinuteByModel.length) {
+    lines.push('**requests / min por modelo**', '');
+    for (const m of config.requestsPerMinuteByModel) lines.push(`- ${m.model}: ${m.label}`);
+    lines.push('');
+  }
+  return lines.join('\n');
 }
 
 function htmlTagToBlockMd(node: MdxNode): string {
@@ -406,7 +424,7 @@ function promoteHeadingParagraphs(root: { children?: unknown[] }): void {
   root.children = out;
 }
 
-function transformTree(root: { children?: unknown[] }): void {
+function transformTree(root: { children?: unknown[] }, rateLimits: RateLimitsConfig): void {
   promoteHeadingParagraphs(root);
 
   function process(node: { type?: string; children?: unknown[] }): unknown[] {
@@ -439,7 +457,7 @@ function transformTree(root: { children?: unknown[] }): void {
       if (isMdxJsxFlowComponent(child.type)) {
         const name = getName(child);
         if (KNOWN_COMPONENTS.has(name)) {
-          const md = componentToBlockMd(child);
+          const md = componentToBlockMd(child, rateLimits);
           out.push(...mdToBlockChildren(md));
         } else if (AUTHOR_HTML_BLOCK_TAGS.has(name.toLowerCase()) || AUTHOR_HTML_INLINE_TAGS.has(name.toLowerCase())) {
           const md = htmlTagToBlockMd(child);
@@ -477,10 +495,13 @@ export function normalizeCanonicalText(text: string): string {
   return s.trim();
 }
 
-export async function mdxToText(body: string): Promise<string> {
+export async function mdxToText(
+  body: string,
+  rateLimits: RateLimitsConfig = DEFAULT_RATE_LIMITS,
+): Promise<string> {
   const parser = unified().use(remarkParse).use(remarkGfm).use(remarkMdx);
   const tree = parser.parse(body) as { children: unknown[] };
-  transformTree(tree as { children?: unknown[] });
+  transformTree(tree as { children?: unknown[] }, rateLimits);
   const out = stringifier.stringify(tree as never) as string;
   return normalizeCanonicalText(out);
 }

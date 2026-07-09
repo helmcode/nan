@@ -1,8 +1,10 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
+import { env } from 'cloudflare:workers';
 import { sha256Hex } from '../../../lib/contentHash';
 import { DOCS_CACHE_CONTROL, SAFE_SLUG, ifNoneMatchMatches, quoteEtag } from '../../../lib/docsApi';
 import { mdxToText } from '../../../lib/mdxToText';
+import { getRateLimitsConfig } from '../../../lib/rateLimits';
 
 export const prerender = false;
 
@@ -13,9 +15,10 @@ export const GET: APIRoute = async ({ request }) => {
     return a.id.localeCompare(b.id);
   });
 
+  const rateLimits = getRateLimitsConfig(env);
   const manifestEntries = await Promise.all(
     entries.map(async (entry) => {
-      const text = await mdxToText(entry.body ?? '');
+      const text = await mdxToText(entry.body ?? '', rateLimits);
       const contentHash = `sha256:${await sha256Hex(text)}`;
       return {
         slug: entry.id,

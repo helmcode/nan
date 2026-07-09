@@ -1,8 +1,10 @@
 import type { APIRoute } from 'astro';
 import { getEntry } from 'astro:content';
+import { env } from 'cloudflare:workers';
 import { sha256Hex } from '../../../lib/contentHash';
 import { DOCS_CACHE_CONTROL, SAFE_SLUG, ifNoneMatchMatches, quoteEtag } from '../../../lib/docsApi';
 import { mdxToText } from '../../../lib/mdxToText';
+import { getRateLimitsConfig } from '../../../lib/rateLimits';
 
 export const prerender = false;
 
@@ -18,7 +20,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     return new Response('Not found', { status: 404 });
   }
 
-  const body = await mdxToText(entry.body ?? '');
+  const body = await mdxToText(entry.body ?? '', getRateLimitsConfig(env));
   const contentHash = `sha256:${await sha256Hex(body)}`;
   const etag = quoteEtag(contentHash);
 

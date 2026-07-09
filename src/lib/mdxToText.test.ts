@@ -77,6 +77,38 @@ describe('mdxToText invariants on docs corpus', () => {
   });
 });
 
+describe('mdxToText rate limits', () => {
+  const input = "import RateLimits from '../../components/docs/RateLimits.astro';\n\n<RateLimits />\n";
+
+  it('serves the values from the injected config, not hardcoded ones', async () => {
+    const out = await mdxToText(input, {
+      perKey: { requestsPerMinute: 120, maxParallel: 8 },
+      tokensPerMinuteByModel: [{ model: 'foo', label: '2M tpm' }],
+      requestsPerMinuteByModel: [{ model: 'bar', label: '500 rpm' }],
+    });
+    expect(out).toContain('- Requests / min: 120 rpm');
+    expect(out).toContain('- Paralelo máximo: 8 concurrentes');
+    expect(out).toContain('- foo: 2M tpm');
+    expect(out).toContain('- bar: 500 rpm');
+  });
+
+  it('defaults to the same numbers <RateLimits /> renders', async () => {
+    const out = await mdxToText(input);
+    expect(out).toContain('- Requests / min: 60 rpm');
+    expect(out).toContain('- Paralelo máximo: 5 concurrentes');
+  });
+
+  it('omits the per-model blocks when they are empty', async () => {
+    const out = await mdxToText(input, {
+      perKey: { requestsPerMinute: 60, maxParallel: 5 },
+      tokensPerMinuteByModel: [],
+      requestsPerMinuteByModel: [],
+    });
+    expect(out).not.toContain('tokens / min por modelo');
+    expect(out).not.toContain('requests / min por modelo');
+  });
+});
+
 describe('mdxToText error cases', () => {
   it('throws for an unknown MDX component', async () => {
     const input = '<UnknownThing prop="x" />\n';
