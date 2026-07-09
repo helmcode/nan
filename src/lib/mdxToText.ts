@@ -489,10 +489,27 @@ function transformTree(root: { children?: unknown[] }, rateLimits: RateLimitsCon
   root.children = process(root as { type?: string; children?: unknown[] });
 }
 
+/**
+ * The 29 code points Python's str.isspace() accepts.
+ *
+ * JS .trim() is not the same set: it strips U+FEFF, which Python keeps, and
+ * keeps U+001C..U+001F, which Python strips. The Discord bot re-canonicalises
+ * the body we serve and hashes it (nan-discord-bot, bot/docs_client.py), so a
+ * mismatch here would make its hash disagree with our contentHash forever.
+ */
+const PYTHON_WHITESPACE =
+  '\\t\\n\\v\\f\\r\\x1c-\\x1f \\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000';
+const PYTHON_STRIP_RE = new RegExp(`^[${PYTHON_WHITESPACE}]+|[${PYTHON_WHITESPACE}]+$`, 'g');
+
+/** Mirrors Python's str.strip() rather than JS's .trim(). */
+export function pythonStrip(s: string): string {
+  return s.replace(PYTHON_STRIP_RE, '');
+}
+
 export function normalizeCanonicalText(text: string): string {
   let s = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   s = s.replace(/\n{3,}/g, '\n\n');
-  return s.trim();
+  return pythonStrip(s);
 }
 
 export async function mdxToText(
