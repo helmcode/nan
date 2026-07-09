@@ -88,9 +88,20 @@ export function astToValue(node: unknown): unknown {
       const obj: Record<string, unknown> = {};
       const props = (n.properties as unknown[] | undefined) ?? [];
       for (const p of props) {
-        const prop = p as { type: string; key: { type: string; name?: string; value?: unknown }; value: unknown };
+        const prop = p as {
+          type: string;
+          computed?: boolean;
+          key: { type: string; name?: string; value?: unknown };
+          value: unknown;
+        };
         if (prop.type !== 'Property') {
           throw new Error(`Unsupported MDX expression: ${prop.type} in object literal`);
+        }
+        // `{ [label]: 'x' }` has an Identifier key too, but it names a binding
+        // rather than the field. Reading it as a literal would silently write
+        // the wrong key and blank out the one the component expects.
+        if (prop.computed) {
+          throw new Error('Unsupported MDX expression: computed object key');
         }
         let key: string;
         if (prop.key.type === 'Identifier') key = prop.key.name as string;

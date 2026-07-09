@@ -138,6 +138,12 @@ describe('mdxToText error cases', () => {
     await expect(mdxToText(input)).rejects.toThrow(/template literal with interpolation/);
   });
 
+  it('throws for a computed object key, which would blank out the real field', async () => {
+    const input =
+      "export const label = 'name';\n\n<FieldList fields={[{ [label]: 'model', type: 'string', description: 'desc' }]} />\n";
+    await expect(mdxToText(input)).rejects.toThrow(/computed object key/);
+  });
+
   it('throws for a spread attribute', async () => {
     const input = "import Callout from './x';\n\n<Callout {...props}>\n\ntexto\n\n</Callout>\n";
     await expect(mdxToText(input)).rejects.toThrow(/spread attribute/);

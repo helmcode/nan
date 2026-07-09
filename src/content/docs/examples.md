@@ -52,7 +52,7 @@ Instalar: `pip install openai`
 
 ### node.js (openai)
 
-```node.js
+```javascript
 import OpenAI from "openai";
 
 const client = new OpenAI({
@@ -237,9 +237,9 @@ Config para `~/.openclaw/openclaw.json`
 
 `maxTokens: 65536` es el máximo que soporta el modelo. `params.maxTokens: 16000` es lo que se envía por request. 16K es un buen balance para la mayoría de tareas. Si necesitas respuestas más largas, súbelo — pero ten en cuenta que el reasoning también consume de ese presupuesto.
 
-### settings.json (Zed)
+<h3 id="qwen36-zed">settings.json (Zed)</h3>
 
-```zed
+```json
 {
   "language_models": {
     "openai": {
@@ -309,7 +309,7 @@ print(len(embeddings[0]))  // 4096
 
 ### node.js
 
-```node.js
+```javascript
 import OpenAI from "openai";
 
 const client = new OpenAI({
@@ -434,7 +434,7 @@ response = client.audio.speech.create(
 
 ### node.js
 
-```node.js
+```javascript
 import OpenAI from "openai";
 import fs from "fs";
 
@@ -512,7 +512,7 @@ print(translation.text)  # English translation
 
 ### node.js
 
-```node.js
+```javascript
 import OpenAI from "openai";
 import fs from "fs";
 import FormData from "form-data";

@@ -27,8 +27,8 @@ export interface RateLimitsConfig {
 }
 
 export interface RateLimitsEnv {
-  PUBLIC_RATE_LIMIT_RPM?: string;
-  PUBLIC_RATE_LIMIT_PARALLEL?: string;
+  RATE_LIMIT_RPM?: string;
+  RATE_LIMIT_PARALLEL?: string;
 }
 
 /**
@@ -62,14 +62,14 @@ export function getRateLimitsConfig(env: RateLimitsEnv = {}): RateLimitsConfig {
     ...DEFAULT_RATE_LIMITS,
     perKey: {
       requestsPerMinute: parsePositiveInt(
-        env.PUBLIC_RATE_LIMIT_RPM,
+        env.RATE_LIMIT_RPM,
         DEFAULT_RATE_LIMITS.perKey.requestsPerMinute,
-        'PUBLIC_RATE_LIMIT_RPM',
+        'RATE_LIMIT_RPM',
       ),
       maxParallel: parsePositiveInt(
-        env.PUBLIC_RATE_LIMIT_PARALLEL,
+        env.RATE_LIMIT_PARALLEL,
         DEFAULT_RATE_LIMITS.perKey.maxParallel,
-        'PUBLIC_RATE_LIMIT_PARALLEL',
+        'RATE_LIMIT_PARALLEL',
       ),
     },
   };

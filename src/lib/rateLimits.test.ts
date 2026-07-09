@@ -12,14 +12,14 @@ describe('getRateLimitsConfig', () => {
 
   it('reads both per-key limits from the env', () => {
     const config = getRateLimitsConfig({
-      PUBLIC_RATE_LIMIT_RPM: '120',
-      PUBLIC_RATE_LIMIT_PARALLEL: '8',
+      RATE_LIMIT_RPM: '120',
+      RATE_LIMIT_PARALLEL: '8',
     });
     expect(config.perKey).toEqual({ requestsPerMinute: 120, maxParallel: 8 });
   });
 
   it('leaves the per-model tables untouched', () => {
-    const config = getRateLimitsConfig({ PUBLIC_RATE_LIMIT_RPM: '120' });
+    const config = getRateLimitsConfig({ RATE_LIMIT_RPM: '120' });
     expect(config.tokensPerMinuteByModel).toEqual(DEFAULT_RATE_LIMITS.tokensPerMinuteByModel);
     expect(config.requestsPerMinuteByModel).toEqual(DEFAULT_RATE_LIMITS.requestsPerMinuteByModel);
   });
@@ -28,7 +28,7 @@ describe('getRateLimitsConfig', () => {
     'ignores the invalid value %s and warns instead of taking the docs down',
     (raw) => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      const config = getRateLimitsConfig({ PUBLIC_RATE_LIMIT_RPM: raw });
+      const config = getRateLimitsConfig({ RATE_LIMIT_RPM: raw });
       expect(config.perKey.requestsPerMinute).toBe(DEFAULT_RATE_LIMITS.perKey.requestsPerMinute);
       expect(warn).toHaveBeenCalledOnce();
     },
@@ -36,7 +36,7 @@ describe('getRateLimitsConfig', () => {
 
   it('treats an empty string as absent, without warning', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const config = getRateLimitsConfig({ PUBLIC_RATE_LIMIT_PARALLEL: '  ' });
+    const config = getRateLimitsConfig({ RATE_LIMIT_PARALLEL: '  ' });
     expect(config.perKey.maxParallel).toBe(DEFAULT_RATE_LIMITS.perKey.maxParallel);
     expect(warn).not.toHaveBeenCalled();
   });
