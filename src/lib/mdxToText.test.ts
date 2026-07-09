@@ -82,4 +82,37 @@ describe('mdxToText error cases', () => {
     const input = '<UnknownThing prop="x" />\n';
     await expect(mdxToText(input)).rejects.toThrow(/UnknownThing/);
   });
+
+  it('throws for a bare MDX flow expression', async () => {
+    await expect(mdxToText('texto\n\n{someVar}\n')).rejects.toThrow(/Unexpected MDX expression: \{someVar\}/);
+  });
+
+  it('throws for a bare MDX text expression', async () => {
+    await expect(mdxToText('hola {inline} mundo\n')).rejects.toThrow(/Unexpected MDX expression: \{inline\}/);
+  });
+
+  it('ignores import/export, which is how .mdx pulls in its components', async () => {
+    const input = "import Foo from './Foo.astro';\n\ntexto\n";
+    await expect(mdxToText(input)).resolves.toBe('texto');
+  });
+
+  it('throws when a prop expression does not reduce to a literal', async () => {
+    const input = "import EndpointGrid from './x';\n\n<EndpointGrid items={items} />\n";
+    await expect(mdxToText(input)).rejects.toThrow(/identifier "items" \(in prop "items"\)/);
+  });
+
+  it('throws for a template literal prop with interpolation', async () => {
+    const input = "import Callout from './x';\n\n<Callout title={`hola ${name}`}>\n\ntexto\n\n</Callout>\n";
+    await expect(mdxToText(input)).rejects.toThrow(/template literal with interpolation/);
+  });
+
+  it('throws for a spread attribute', async () => {
+    const input = "import Callout from './x';\n\n<Callout {...props}>\n\ntexto\n\n</Callout>\n";
+    await expect(mdxToText(input)).rejects.toThrow(/spread attribute/);
+  });
+
+  it('keeps rendering components whose props are literals', async () => {
+    const input = "import EndpointGrid from './x';\n\n<EndpointGrid items={[{ method: 'GET', path: '/v1/models' }]} />\n";
+    await expect(mdxToText(input)).resolves.toContain('GET /v1/models');
+  });
 });

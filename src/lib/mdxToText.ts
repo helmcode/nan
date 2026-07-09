@@ -64,8 +64,17 @@ export function htmlNodeToMarkdown(input: string): string {
   return stripInlineHtml(s);
 }
 
+/**
+ * Reduces a prop expression to a static value.
+ *
+ * Only literal constructs are supported: anything the canonical text extractor
+ * cannot evaluate throws, because the alternative is a component silently
+ * vanishing from the text served to API consumers while the page still renders.
+ */
 export function astToValue(node: unknown): unknown {
-  if (!node || typeof node !== 'object') return undefined;
+  if (!node || typeof node !== 'object') {
+    throw new Error('Unsupported MDX expression: missing node');
+  }
   const n = node as { [k: string]: unknown };
   switch (n.type) {
     case 'Literal':
@@ -79,7 +88,9 @@ export function astToValue(node: unknown): unknown {
       const props = (n.properties as unknown[] | undefined) ?? [];
       for (const p of props) {
         const prop = p as { type: string; key: { type: string; name?: string; value?: unknown }; value: unknown };
-        if (prop.type !== 'Property') continue;
+        if (prop.type !== 'Property') {
+          throw new Error(`Unsupported MDX expression: ${prop.type} in object literal`);
+        }
         let key: string;
         if (prop.key.type === 'Identifier') key = prop.key.name as string;
         else key = String(astToValue(prop.key));
@@ -88,6 +99,10 @@ export function astToValue(node: unknown): unknown {
       return obj;
     }
     case 'TemplateLiteral': {
+      const expressions = (n.expressions as unknown[] | undefined) ?? [];
+      if (expressions.length > 0) {
+        throw new Error('Unsupported MDX expression: template literal with interpolation');
+      }
       const quasis = (n.quasis as { value: { cooked: string } }[] | undefined) ?? [];
       return quasis.map((q) => q.value.cooked).join('');
     }
@@ -97,15 +112,15 @@ export function astToValue(node: unknown): unknown {
       if (op === '-' && typeof arg === 'number') return -arg;
       if (op === '+' && typeof arg === 'number') return arg;
       if (op === '!') return !arg;
-      return undefined;
+      throw new Error(`Unsupported MDX expression: unary operator "${op}"`);
     }
     case 'Identifier': {
       const name = n.name as string;
       if (name === 'undefined') return undefined;
-      return undefined;
+      throw new Error(`Unsupported MDX expression: identifier "${name}"`);
     }
     default:
-      return undefined;
+      throw new Error(`Unsupported MDX expression: ${String(n.type)}`);
   }
 }
 
@@ -117,6 +132,10 @@ export function getAttr(node: { attributes?: unknown[] }, name: string): unknown
       name?: string;
       value?: unknown;
     };
+    // A spread hides which props a component actually receives.
+    if (attr.type === 'mdxJsxExpressionAttribute') {
+      throw new Error('Unsupported MDX expression: spread attribute');
+    }
     if (attr.type !== 'mdxJsxAttribute') continue;
     if (attr.name !== name) continue;
     if (typeof attr.value === 'string') return attr.value;
@@ -124,11 +143,17 @@ export function getAttr(node: { attributes?: unknown[] }, name: string): unknown
     const v = attr.value as { type: string; data?: { estree?: { body?: unknown[] } } };
     if (v.type === 'mdxJsxAttributeValueExpression') {
       const body = v.data?.estree?.body;
-      if (Array.isArray(body) && body[0]) {
-        const expr = (body[0] as { expression?: unknown }).expression;
+      if (!Array.isArray(body) || !body[0]) {
+        throw new Error(`Unsupported MDX expression: empty expression (in prop "${name}")`);
+      }
+      const expr = (body[0] as { expression?: unknown }).expression;
+      try {
         return astToValue(expr);
+      } catch (err) {
+        throw new Error(`${(err as Error).message} (in prop "${name}")`);
       }
     }
+    throw new Error(`Unsupported MDX expression: ${v.type} (in prop "${name}")`);
   }
   return undefined;
 }
@@ -395,8 +420,14 @@ function transformTree(root: { children?: unknown[] }): void {
         child.children = newChildren;
       }
 
-      if (isMdxEsm(child.type) || isMdxExpression(child.type)) {
+      // import/export never render; they are how .mdx pulls in its components.
+      if (isMdxEsm(child.type)) {
         continue;
+      }
+
+      if (isMdxExpression(child.type)) {
+        const raw = ((child as unknown as { value?: string }).value ?? '').trim();
+        throw new Error(`Unexpected MDX expression: {${raw}}`);
       }
 
       if (child.type === 'html') {
