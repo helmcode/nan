@@ -1,0 +1,27 @@
+---
+interface Limitation {
+  title: string;
+  body: string;
+}
+
+interface Props {
+  title?: string;
+  items: Limitation[];
+}
+
+const { title = 'limitaciones conocidas', items } = Astro.props;
+---
+
+<div class="rounded-xl border border-amber-900/40 bg-amber-950/20 p-6 mb-14 not-prose">
+  <p class="font-mono text-[10px] text-amber-400 uppercase tracking-widest mb-4">
+    {title}
+  </p>
+  <dl class="space-y-4 text-xs text-neutral-300">
+    {items.map((item) => (
+      <div>
+        <dt class="font-mono text-neutral-200 mb-1">{item.title}</dt>
+        <dd class="text-neutral-400 leading-relaxed"><Fragment set:html={item.body} /></dd>
+      </div>
+    ))}
+  </dl>
+</div>

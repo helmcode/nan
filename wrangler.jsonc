@@ -1,6 +1,6 @@
 {
 	"compatibility_date": "2026-03-17",
-	"compatibility_flags": ["global_fetch_strictly_public"],
+	"compatibility_flags": ["global_fetch_strictly_public", "nodejs_compat"],
 	"name": "nan-website",
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"assets": {
@@ -9,5 +9,13 @@
 	},
 	"observability": {
 		"enabled": true
+	},
+	// Per-key rate limits shown in the docs and served to the Discord bot.
+	// Not secrets. Kept here so the deployed values are reproducible from the
+	// repo; src/lib/rateLimits.ts falls back to the same numbers if they are
+	// missing.
+	"vars": {
+		"RATE_LIMIT_RPM": "60",
+		"RATE_LIMIT_PARALLEL": "5"
 	}
 }

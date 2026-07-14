@@ -1,0 +1,253 @@
+---
+title: Modelos
+description: Especificaciones técnicas, capacidades y parámetros de los modelos del cluster compartido.
+order: 3
+---
+
+import ModelCard from '../../components/docs/ModelCard.astro';
+import LimitationsCard from '../../components/docs/LimitationsCard.astro';
+import RateLimits from '../../components/docs/RateLimits.astro';
+
+# Models del cluster.
+
+Los modelos de la comunidad. Todos se acceden por la misma API OpenAI-compatible
+con el mismo `base URL`.
+
+<ModelCard
+  id="deepseek-v4-flash"
+  name="deepseek-v4-flash"
+  tag="284B-21B"
+  leftLabel="generación de texto y chat"
+  rightLabel="capacidades"
+  description="Modelo MoE de 284B parámetros (21B activos). Contexto de 1M tokens. Tool calling y reasoning. Cuota mensual de 500M tokens por miembro."
+  specs={[
+    { label: 'Tipo', value: 'MoE (284B total · 21B active)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Cuota mensual', value: '500M tokens / miembro' },
+  ]}
+  items={[
+    'Tool calling',
+    'Reasoning mode',
+    'Contexto de 1M tokens',
+    'Generación streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="mimo-v2-5"
+  name="mimo-v2.5"
+  tag="310B-15B"
+  leftLabel="omnimodal — texto, visión y audio"
+  rightLabel="capacidades"
+  description="Modelo MoE de 310B parámetros (15B activos), omnimodal nativo con encoders dedicados de visión y audio. Contexto de 1M tokens. Tool calling y reasoning. Cuota mensual de 500M tokens por miembro. Licencia MIT."
+  specs={[
+    { label: 'Tipo', value: 'MoE (310B total · 15B active)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Modalidades input', value: 'text · image · audio' },
+    { label: 'Modalidades output', value: 'text' },
+    { label: 'Cuota mensual', value: '500M tokens / miembro' },
+    { label: 'Licencia', value: 'MIT' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Reasoning mode (recomendado <code>max_tokens &ge; 300</code>)',
+    'Visión (image input)',
+    'Audio (audio input)',
+    'Contexto de 1M tokens',
+    'Generación streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="glm-5-2"
+  name="glm5.2"
+  tag="753B MoE"
+  leftLabel="generación de texto y chat — coding agéntico"
+  rightLabel="capacidades"
+  description="Modelo MoE de ~753B parámetros, enfocado en coding y tareas agénticas de largo horizonte. Contexto de 256K tokens. Tool calling y reasoning (emite una traza de razonamiento). Solo texto."
+  specs={[
+    { label: 'Tipo', value: 'MoE (~753B total)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Atención', value: 'Sparse attention' },
+    { label: 'Contexto', value: '256K tokens' },
+    { label: 'Modalidades input', value: 'text' },
+    { label: 'Modalidades output', value: 'text' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Reasoning mode (traza de razonamiento)',
+    'Coding y tareas agénticas de largo horizonte',
+    'Contexto de 256K tokens',
+    'Generación streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="gemma4"
+  name="gemma4"
+  tag="26B-A4B"
+  leftLabel="generación de texto y chat"
+  rightLabel="capacidades"
+  description="Modelo MoE de 26B parámetros (4B activos), multimodal con visión. Tool calling y reasoning."
+  specs={[
+    { label: 'Tipo', value: 'MoE (26B total · 4B active)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '256K tokens' },
+    { label: 'Sampling', value: 'temp=0.6, top_p=0.95' },
+    { label: 'Reasoning', value: 'reasoning_config={}' },
+  ]}
+  items={[
+    'Tool calling (formato XML)',
+    'Reasoning mode',
+    'Multimodal (vision / imágenes)',
+    'Generación streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="qwen36"
+  name="qwen3.6"
+  tag="35B-A3B"
+  leftLabel="generación de texto y chat"
+  rightLabel="capacidades"
+  description="El modelo principal. MoE de 35B parámetros, multimodal, con tool calling y reasoning."
+  specs={[
+    { label: 'Tipo', value: 'MoE (35B total)' },
+    { label: 'Activo por token', value: '3B' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '256K tokens' },
+    { label: 'Speculative decoding', value: 'MTP → ~2x throughput' },
+    { label: 'Sampling', value: 'temp=0.6, top_p=0.95' },
+    { label: 'Reasoning', value: 'reasoning_config={}' },
+  ]}
+  items={[
+    'Tool calling (formato XML)',
+    'Reasoning mode',
+    'Multimodal (vision / imágenes)',
+    'Generación streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="qwen3-embedding"
+  name="qwen3-embedding"
+  tag="8B"
+  leftLabel="embeddings vectoriales"
+  rightLabel="casos de uso"
+  description="Modelo de embedding vectorial. MMTEB score 70.58 — top modelos abiertos. Soporta 100+ idiomas incluyendo español y código."
+  specs={[
+    { label: 'Dimensión', value: '4096' },
+    { label: 'Precisión', value: 'Float32 (CPU)' },
+    { label: 'RPM', value: '60' },
+    { label: 'Batch size', value: '32' },
+  ]}
+  items={[
+    'Similitud cross-lingual (ES↔EN: 0.915)',
+    'Búsqueda semántica',
+    'Clasificación de texto',
+    'RAG / retrieval aumentado',
+  ]}
+/>
+
+<ModelCard
+  id="rerank"
+  name="rerank"
+  tag="Qwen3-Reranker-8B"
+  leftLabel="reranking semántico"
+  rightLabel="casos de uso"
+  description="Modelo de reranking de 8B parámetros (BF16). Reordena una lista de documentos por relevancia a una query. Completa el stack RAG junto a qwen3-embedding: primero recuperas top-K por embeddings, después reordenas con rerank para precisión. Soporta 100+ idiomas incluyendo español, recuperación de código y cross-lingual. Top-tier en benchmarks MTEB de reranking."
+  specs={[
+    { label: 'Parámetros', value: '8B' },
+    { label: 'Precisión', value: 'BF16' },
+    { label: 'Endpoints', value: '/v1/rerank · /v2/rerank' },
+    { label: 'Idiomas', value: '100+' },
+  ]}
+  items={[
+    'Reranking en pipelines RAG (embedding → rerank → LLM)',
+    'Búsqueda cross-lingual (ES↔EN, etc.)',
+    'Recuperación de código',
+    'Scoring de relevancia query-documento',
+  ]}
+/>
+
+<ModelCard
+  id="kokoro"
+  name="kokoro"
+  tag="v1.0"
+  leftLabel="text-to-speech"
+  rightLabel="voces disponibles"
+  description="TTS de 82M params con 67 voice packs. Sub-second latency en CPU."
+  specs={[
+    { label: 'Latencia', value: '< 1s' },
+    { label: 'Partes', value: '82M' },
+    { label: 'RPM', value: '15' },
+  ]}
+  items={[
+    '<span class="text-white">af_heart</span> — English (female)',
+    '<span class="text-white">ef_dora</span> — Spanish (female)',
+    '<span class="text-white">em_alex</span> — Spanish (male)',
+    '67 voice packs en total (<a class="text-violet-400 hover:underline" href="https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md" target="_blank" rel="noopener">ver listado completo</a>)',
+  ]}
+/>
+
+<ModelCard
+  id="whisper"
+  name="whisper"
+  tag="large-v3"
+  leftLabel="speech-to-text"
+  rightLabel="capacidades"
+  description="STT en CPU con CTranslate2 e INT8. ~1x realtime. 99+ idiomas."
+  specs={[
+    { label: 'Tamaño', value: '~3 GB (INT8)' },
+    { label: 'WER ES', value: '~3.2%' },
+    { label: 'RPM', value: '10' },
+  ]}
+  items={[
+    'Transcripción de audio a texto',
+    '99+ idiomas',
+    'Detección de idioma automática',
+    'API OpenAI-compatible',
+  ]}
+/>
+
+<LimitationsCard
+  items={[
+    {
+      title: 'File size limit — 25 MB',
+      body: 'Tamaño máximo por request. Formatos comprimidos (OGG/Opus, MP3) aprovechan mejor este límite que WAV sin comprimir.',
+    },
+    {
+      title: 'Timeout — audios > 2 min de duración',
+      body: 'Whisper procesa en CPU a ~1x realtime. Para audios de más de ~2 minutos, el proxy puede devolver un error <code>524</code> (timeout) antes de que termine la transcripción. Usa formatos comprimidos como <strong>OGG/Opus</strong> y divide archivos largos en segmentos de &le; 2 minutos para evitarlo.',
+    },
+    {
+      title: 'Formatos recomendados',
+      body: '<code>OGG/Opus</code> y <code>MP3</code> — archivos más pequeños, misma calidad de transcripción. Un audio de 60 min en OGG/Opus a 48 kbps ocupa ~20 MB vs ~550 MB en WAV.',
+    },
+  ]}
+/>
+
+<ModelCard
+  id="flux-2-klein"
+  name="flux-2-klein"
+  leftLabel="generación de imágenes"
+  rightLabel="capacidades"
+  description="Modelo de difusión FLUX para text-to-image e image-to-image. Compatible con la Images API de OpenAI (/v1/images/generations y /v1/images/edits). Requiere membresía inference-tier."
+  specs={[
+    { label: 'Tipo', value: 'Diffusion (FLUX)' },
+    { label: 'Modalidades', value: 'text→image · image→image' },
+    { label: 'Resolución', value: '256–1536 px (múltiplos de 16)' },
+    { label: 'Imágenes / request', value: '1–4 (n)' },
+    { label: 'Cuota mensual', value: '100 requests / miembro' },
+  ]}
+  items={[
+    'Text-to-image (<code>/v1/images/generations</code>)',
+    'Image-to-image con hasta 4 referencias (<code>/v1/images/edits</code>)',
+    'Salida como URL temporal (R2, ~60 min) o base64',
+    'Reproducibilidad por <code>seed</code> y control de <code>guidance</code>',
+  ]}
+/>
+
+<RateLimits />

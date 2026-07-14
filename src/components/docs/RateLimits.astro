@@ -1,4 +1,8 @@
 ---
+import { env } from 'cloudflare:workers';
+import { getRateLimitsConfig } from '../../lib/rateLimits';
+
+const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel } = getRateLimitsConfig(env);
 ---
 
 <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
@@ -8,11 +12,11 @@
   <dl class="grid gap-3 sm:grid-cols-2">
     <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
       <dt class="text-neutral-500 uppercase tracking-wider">Requests / min</dt>
-      <dd class="text-neutral-200 text-right">60 rpm</dd>
+      <dd class="text-neutral-200 text-right">{perKey.requestsPerMinute} rpm</dd>
     </div>
     <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
       <dt class="text-neutral-500 uppercase tracking-wider">Paralelo máximo</dt>
-      <dd class="text-neutral-200 text-right">5 concurrentes</dd>
+      <dd class="text-neutral-200 text-right">{perKey.maxParallel} concurrentes</dd>
     </div>
   </dl>
 </div>
@@ -22,22 +26,14 @@
     tokens / min por modelo
   </p>
   <dl class="grid gap-3 sm:grid-cols-2">
-    <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-      <dt class="text-neutral-500 uppercase tracking-wider">deepseek-v4-flash</dt>
-      <dd class="text-neutral-200 text-right">1.5M tpm</dd>
-    </div>
-    <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-      <dt class="text-neutral-500 uppercase tracking-wider">mimo-v2.5</dt>
-      <dd class="text-neutral-200 text-right">1.5M tpm</dd>
-    </div>
-    <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-      <dt class="text-neutral-500 uppercase tracking-wider">qwen3.6</dt>
-      <dd class="text-neutral-200 text-right">1.5M tpm</dd>
-    </div>
-    <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-      <dt class="text-neutral-500 uppercase tracking-wider">gemma4</dt>
-      <dd class="text-neutral-200 text-right">1.5M tpm</dd>
-    </div>
+    {
+      tokensPerMinuteByModel.map((m) => (
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{m.model}</dt>
+          <dd class="text-neutral-200 text-right">{m.label}</dd>
+        </div>
+      ))
+    }
   </dl>
 </div>
 
@@ -46,9 +42,13 @@
     requests / min por modelo
   </p>
   <dl class="grid gap-3 sm:grid-cols-2">
-    <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-      <dt class="text-neutral-500 uppercase tracking-wider">rerank</dt>
-      <dd class="text-neutral-200 text-right">1000 rpm</dd>
-    </div>
+    {
+      requestsPerMinuteByModel.map((m) => (
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{m.model}</dt>
+          <dd class="text-neutral-200 text-right">{m.label}</dd>
+        </div>
+      ))
+    }
   </dl>
 </div>

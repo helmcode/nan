@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { getCollection } from 'astro:content';
 
 interface Props {
   title: string;
@@ -10,31 +11,29 @@ const { title, description = 'Documentación de NaN — Conecta a nuestros model
 
 const siteUrl = 'https://nan.builders';
 
+const entries = await getCollection('docs');
+entries.sort((a, b) => a.data.order - b.data.order);
+
 interface NavItem {
   slug: string;
   label: string;
 }
 
-const navItems: NavItem[] = [
-  { slug: '/docs', label: 'Introducción' },
-  { slug: '/docs/getting-started', label: 'Empezar' },
-  { slug: '/docs/api', label: 'API' },
-  { slug: '/docs/models', label: 'Models' },
-  { slug: '/docs/examples', label: 'Ejemplos' },
-  { slug: '/docs/agents', label: 'Agents' },
-  { slug: '/docs/apps', label: 'Apps' },
-];
+const navItems: NavItem[] = entries.map((entry) => ({
+  slug: entry.id === 'intro' ? '/docs' : `/docs/${entry.id}`,
+  label: entry.data.title,
+}));
 
-const currentPageIndex = navItems.findIndex(item => item.slug === Astro.url.pathname);
-
+const currentPageIndex = navItems.findIndex((item) => item.slug === Astro.url.pathname);
 const prevPage = currentPageIndex > 0 ? navItems[currentPageIndex - 1] : null;
-const nextPage = currentPageIndex < navItems.length - 1 ? navItems[currentPageIndex + 1] : null;
+const nextPage = currentPageIndex >= 0 && currentPageIndex < navItems.length - 1
+  ? navItems[currentPageIndex + 1]
+  : null;
 
-// Build breadcrumb from current path
 const pathParts = Astro.url.pathname.split('/').filter(Boolean);
 const breadcrumbSegments = pathParts.map((part, i) => {
   const path = '/' + pathParts.slice(0, i + 1).join('/');
-  const item = navItems.find(n => n.slug === path);
+  const item = navItems.find((n) => n.slug === path);
   return {
     label: item ? item.label : part.replace(/-/g, ' '),
     path: path === Astro.url.pathname ? null : path,
@@ -228,18 +227,18 @@ const breadcrumbSegments = pathParts.map((part, i) => {
       // Build TOC from h2/h3 headings
       const tocContainer = document.getElementById('toc');
       const headings = document.querySelectorAll('.docs-content h2, .docs-content h3');
-      
+
       if (headings.length > 0 && tocContainer) {
         headings.forEach((heading) => {
           const id = heading.id || heading.textContent?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
           if (id) heading.id = id;
-          
+
           const link = document.createElement('a');
           link.href = `#${id}`;
           link.className = `toc-link ${heading.tagName === 'H3' ? 'h2' : ''}`;
           link.textContent = heading.textContent || '';
           link.dataset.target = id;
-          
+
           link.addEventListener('click', (e) => {
             e.preventDefault();
             const target = document.getElementById(id);
@@ -248,7 +247,7 @@ const breadcrumbSegments = pathParts.map((part, i) => {
               history.replaceState(null, '', `#${id}`);
             }
           });
-          
+
           tocContainer.appendChild(link);
         });
 
@@ -273,26 +272,85 @@ const breadcrumbSegments = pathParts.map((part, i) => {
         });
       }
 
-      // Copy-to-clipboard via event delegation
-      document.addEventListener('click', (e) => {
-        const btn = (e.target as HTMLElement).closest('.copy-btn');
-        if (!btn) return;
-        const block = btn.closest('.code-block') as HTMLElement;
-        const codeText = block?.dataset?.code;
-        if (!codeText) return;
-        navigator.clipboard.writeText(codeText).then(() => {
-          const label = btn.querySelector('.copy-label') as HTMLElement | null;
-          if (label) {
-            label.textContent = 'Copiado!';
-            setTimeout(() => { label.textContent = 'Copiar'; }, 1500);
-          }
-        }).catch(() => {
-          const label = btn.querySelector('.copy-label') as HTMLElement | null;
-          if (label) {
-            label.textContent = 'Error';
-            setTimeout(() => { label.textContent = 'Copiar'; }, 2000);
+      // Progressive enhancement for Markdown-generated <pre><code> blocks:
+      // wrap each in a toolbar with language label + copy button.
+      const prettifyLanguage = (raw: string | null | undefined) => {
+        const value = (raw || 'text').replace(/^language-/, '').toLowerCase();
+        const labels: Record<string, string> = {
+          js: 'JavaScript',
+          ts: 'TypeScript',
+          json: 'JSON',
+          bash: 'Bash',
+          shell: 'Shell',
+          sh: 'Shell',
+          curl: 'cURL',
+          python: 'Python',
+          py: 'Python',
+          node: 'Node.js',
+          nodejs: 'Node.js',
+          'node.js': 'Node.js',
+          zed: 'Zed',
+          text: 'Text',
+        };
+        return {
+          key: value,
+          label: labels[value] || value,
+        };
+      };
+
+      const copyToast = document.getElementById('copy-toast');
+      const showCopyToast = (text: string) => {
+        if (!copyToast) return;
+        copyToast.textContent = text;
+        copyToast.classList.add('show');
+        window.setTimeout(() => copyToast.classList.remove('show'), 1500);
+      };
+
+      document.querySelectorAll('.docs-content pre').forEach((pre) => {
+        if (pre.closest('.docs-code-block') || pre.closest('.code-block')) return;
+
+        const code = pre.querySelector('code');
+        const classLanguage = code?.className.match(/language-([\w.-]+)/)?.[1];
+        const attrLanguage = pre.getAttribute('data-language');
+        const lang = prettifyLanguage(attrLanguage || classLanguage);
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'docs-code-block';
+
+        const toolbar = document.createElement('div');
+        toolbar.className = 'docs-code-toolbar';
+
+        const label = document.createElement('span');
+        label.className = 'docs-code-label';
+        label.textContent = lang.label;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-btn';
+        button.setAttribute('aria-label', `Copiar ${lang.label}`);
+        button.innerHTML = '<span class="copy-label">Copiar</span>';
+        button.addEventListener('click', async () => {
+          const text = pre.textContent || '';
+          try {
+            await navigator.clipboard.writeText(text);
+            const copyLabel = button.querySelector('.copy-label');
+            if (copyLabel) copyLabel.textContent = 'Copiado!';
+            showCopyToast('¡Copiado al portapapeles!');
+            window.setTimeout(() => {
+              const resetLabel = button.querySelector('.copy-label');
+              if (resetLabel) resetLabel.textContent = 'Copiar';
+            }, 1500);
+          } catch (err) {
+            console.error('copy failed', err);
+            showCopyToast('Error al copiar');
           }
         });
+
+        toolbar.appendChild(label);
+        toolbar.appendChild(button);
+        pre.parentNode?.insertBefore(wrapper, pre);
+        wrapper.appendChild(toolbar);
+        wrapper.appendChild(pre);
       });
     </script>
   </body>
