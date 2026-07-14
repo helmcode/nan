@@ -15,34 +15,39 @@ export const GET: APIRoute = async ({ params, request }) => {
     return new Response('Invalid slug', { status: 400 });
   }
 
-  const entry = await getEntry('docs', slug);
-  if (!entry) {
-    return new Response('Not found', { status: 404 });
-  }
+  try {
+    const entry = await getEntry('docs', slug);
+    if (!entry) {
+      return new Response('Not found', { status: 404 });
+    }
 
-  const body = await mdxToText(entry.body ?? '', getRateLimitsConfig(env));
-  const contentHash = `sha256:${await sha256Hex(body)}`;
-  const etag = quoteEtag(contentHash);
+    const body = await mdxToText(entry.body ?? '', getRateLimitsConfig(env));
+    const contentHash = `sha256:${await sha256Hex(body)}`;
+    const etag = quoteEtag(contentHash);
 
-  const ifNoneMatch = request.headers.get('if-none-match');
-  if (ifNoneMatchMatches(ifNoneMatch, etag)) {
-    return new Response(null, {
-      status: 304,
+    const ifNoneMatch = request.headers.get('if-none-match');
+    if (ifNoneMatchMatches(ifNoneMatch, etag)) {
+      return new Response(null, {
+        status: 304,
+        headers: {
+          'Cache-Control': DOCS_CACHE_CONTROL,
+          'ETag': etag,
+          'X-Content-Hash': contentHash,
+        },
+      });
+    }
+
+    return new Response(body, {
+      status: 200,
       headers: {
+        'Content-Type': 'text/markdown; charset=utf-8',
         'Cache-Control': DOCS_CACHE_CONTROL,
         'ETag': etag,
         'X-Content-Hash': contentHash,
       },
     });
+  } catch (error) {
+    console.error(`[api/docs] failed to render ${slug}.md`, error);
+    return new Response('Internal error', { status: 500 });
   }
-
-  return new Response(body, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/markdown; charset=utf-8',
-      'Cache-Control': DOCS_CACHE_CONTROL,
-      'ETag': etag,
-      'X-Content-Hash': contentHash,
-    },
-  });
 };
