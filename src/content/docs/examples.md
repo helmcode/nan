@@ -187,6 +187,17 @@ Este es el config para conectar IDEs (Cursor, OpenCode) con los 5 modelos LLM di
 
 Config para `~/.pi/agent/models.json`
 
+### .pi/agent/settings.json (config)
+
+```json
+{
+  "defaultProvider": "nan",
+  "defaultModel": "qwen3.6"
+}
+```
+
+Config para `~/.pi/agent/settings.json`. Sin `defaultProvider` y `defaultModel` Pi usa su proveedor por defecto y devuelve un error de autenticación (401).
+
 ### openclaw.json (config)
 
 ```json
