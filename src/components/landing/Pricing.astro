@@ -2,7 +2,7 @@
 import { t, tArr } from '../../lib/i18n';
 import Button from '../ui/Button.astro';
 
-const { locale = 'es' } = Astro.props;
+const { locale = 'en' } = Astro.props;
 
 const features = tArr('pricing.features', locale);
 const communityFeatures = tArr('pricing.communityFeatures', locale);

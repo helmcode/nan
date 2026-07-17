@@ -1,26 +1,26 @@
 ---
-title: Introducción
-description: Conecta tus herramientas favoritas (OpenCode, Cursor, Cline, etc) a nuestro cluster compartido de inferencia.
+title: Introduction
+description: Connect your favorite tools (OpenCode, Cursor, Cline, etc.) to our shared inference cluster.
 order: 0
 ---
 
-# Bienvenido a NaN.
+# Welcome to NaN.
 
-Esta doc explica cómo conectar tus herramientas a nuestras GPUs. El cluster corre modelos abiertos con una API compatible con OpenAI. Si algo acepta un `base URL` + `API key`, funciona con NaN.
+This doc explains how to connect your tools to our GPUs. The cluster runs open models with an OpenAI-compatible API. If something accepts a `base URL` + `API key`, it works with NaN.
 
-> **Para obtener tu API Key**
-> Debes estar dentro de la comunidad NaN. Puedes generar tu API Key desde la sección de ajustes del usuario en el apartado "API Keys" de la [plataforma](https://cloud.nan.builders/). La key es personal e intransferible.
+> **To get your API Key**
+> You must be a NaN community member. You can generate your API Key from the user settings section under "API Keys" on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable.
 
 ## Rate limits
 
-| Métrica | Valor |
+| Metric | Value |
 |---|---|
-| Requests por minuto | 60 rpm |
-| Paralelo máximo | 5 concurrentes |
+| Requests per minute | 60 rpm |
+| Max parallel | 5 concurrent |
 
-## Qué hacer a continuación
+## What to do next
 
-- [Conectarse](/docs/getting-started): endpoint, auth y configuración paso a paso.
-- [Modelos](/docs/models): capacidades y límites de los modelos.
-- [Ejemplos](/docs/examples): snippets en Python, Node.js y curl.
-- Soporte: reporta problemas por `#support` en Discord.
+- [Getting Started](/docs/getting-started): endpoint, auth, and step-by-step setup.
+- [Models](/docs/models): capabilities and limits of the models.
+- [Examples](/docs/examples): snippets in Python, Node.js, and curl.
+- Support: report issues via `#support` on Discord.

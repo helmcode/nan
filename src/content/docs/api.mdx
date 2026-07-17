@@ -1,6 +1,6 @@
 ---
 title: API
-description: Referencia de los endpoints públicos de la API. Compatible con OpenAI.
+description: Public API endpoint reference. OpenAI-compatible.
 order: 2
 ---
 
@@ -9,21 +9,21 @@ import EndpointGrid from '../../components/docs/EndpointGrid.astro';
 import LimitationsCard from '../../components/docs/LimitationsCard.astro';
 import RateLimits from '../../components/docs/RateLimits.astro';
 
-# Referencia de la API.
+# API Reference.
 
-Nuestra API es compatible con OpenAI: cualquier cliente o SDK que acepte un `base URL` + `API key` funciona sin cambios. La base URL es `https://api.nan.builders/v1` y la autenticación es vía `Bearer token`. Para obtener tu key, consulta [Empezar](/docs/getting-started).
+Our API is OpenAI-compatible: any client or SDK that accepts a `base URL` + `API key` works without changes. The base URL is `https://api.nan.builders/v1` and authentication is via `Bearer token`. To get your key, see [Getting Started](/docs/getting-started).
 
-<Callout title="Servicio enterprise de Helmcode">
-  Si usas el servicio enterprise de <a href="https://helmcode.com" target="_blank" rel="noopener noreferrer">Helmcode</a> recuerda que la URL de la API es <code>api.helmcode.com</code>. El resto de los endpoints es idéntico.
+<Callout title="Helmcode enterprise service">
+  If you use the <a href="https://helmcode.com" target="_blank" rel="noopener noreferrer">Helmcode</a> enterprise service, remember that the API URL is <code>api.helmcode.com</code>. All other endpoints are identical.
 </Callout>
 
 ## Endpoints
 
-Listado de los endpoints disponibles. Cada uno enlaza a su sección con `request`, `response` y un ejemplo en `curl`.
+List of available endpoints. Each links to its section with `request`, `response`, and a `curl` example.
 
 <EndpointGrid
   items={[
-    { href: '#models', title: 'Listar modelos', method: 'GET', path: '/v1/models' },
+    { href: '#models', title: 'List models', method: 'GET', path: '/v1/models' },
     { href: '#chat-completions', title: 'Chat completions', method: 'POST', path: '/v1/chat/completions' },
     { href: '#completions', title: 'Text completions', method: 'POST', path: '/v1/completions' },
     { href: '#embeddings', title: 'Embeddings', method: 'POST', path: '/v1/embeddings' },
@@ -31,27 +31,27 @@ Listado de los endpoints disponibles. Cada uno enlaza a su sección con `request
     { href: '#audio-speech', title: 'Text-to-speech', method: 'POST', path: '/v1/audio/speech' },
     { href: '#audio-transcriptions', title: 'Speech-to-text', method: 'POST', path: '/v1/audio/transcriptions' },
     { href: '#responses', title: 'Responses', method: 'POST', path: '/v1/responses' },
-    { href: '#images-generations', title: 'Generación de imágenes', method: 'POST', path: '/v1/images/generations' },
-    { href: '#images-edits', title: 'Edición de imágenes', method: 'POST', path: '/v1/images/edits' },
+    { href: '#images-generations', title: 'Image generation', method: 'POST', path: '/v1/images/generations' },
+    { href: '#images-edits', title: 'Image editing', method: 'POST', path: '/v1/images/edits' },
   ]}
 />
 
-## Autenticación
+## Authentication
 
-Todas las peticiones requieren el header `Authorization: Bearer <api-key>`. La key es personal e intransferible — consulta [Empezar](/docs/getting-started) para obtener la tuya.
+All requests require the `Authorization: Bearer <api-key>` header. The key is personal and non-transferable — see [Getting Started](/docs/getting-started) to get yours.
 
 ```bash
 curl https://api.nan.builders/v1/models \
-  -H "Authorization: Bearer sk-tu-key-aqui"
+  -H "Authorization: Bearer sk-your-key-here"
 ```
 
 <h2 id="models">GET /v1/models</h2>
 
-Devuelve la lista de modelos disponibles para tu key. Modelos publicados: `deepseek-v4-flash`, `mimo-v2.5`, `glm5.2`, `qwen3.6`, `gemma4`, `qwen3-embedding`, `rerank`, `kokoro`, `whisper`, `flux-2-klein` (incluye el modelo de imagen `flux-2-klein`).
+Returns the list of available models for your key. Published models: `deepseek-v4-flash`, `mimo-v2.5`, `glm5.2`, `qwen3.6`, `gemma4`, `qwen3-embedding`, `rerank`, `kokoro`, `whisper`, `flux-2-klein` (includes the `flux-2-klein` image model).
 
 ### Request
 
-Sin body. Solo el header de autenticación.
+No body. Only the authentication header required.
 
 ### Response
 
@@ -75,35 +75,35 @@ Sin body. Solo el header de autenticación.
 }
 ```
 
-### Ejemplo
+### Example
 
 ```bash
 curl https://api.nan.builders/v1/models \
-  -H "Authorization: Bearer sk-tu-key-aqui"
+  -H "Authorization: Bearer sk-your-key-here"
 ```
 
 <h2 id="chat-completions">POST /v1/chat/completions</h2>
 
-El endpoint principal de chat. Compatible con OpenAI Chat Completions. Modelos compatibles: `deepseek-v4-flash`, `mimo-v2.5`, `glm5.2`, `qwen3.6` y `gemma4`.
+The main chat endpoint. OpenAI Chat Completions compatible. Compatible models: `deepseek-v4-flash`, `mimo-v2.5`, `glm5.2`, `qwen3.6`, and `gemma4`.
 
 <LimitationsCard
-  title="capacidades por modelo"
+  title="capabilities by model"
   items={[
     {
       title: 'deepseek-v4-flash',
-      body: 'Chat, streaming, tool calling, reasoning, contexto de 1M tokens. Cuota mensual de 500M tokens por miembro.',
+      body: 'Chat, streaming, tool calling, reasoning, 1M token context. 500M token monthly quota per member.',
     },
     {
       title: 'mimo-v2.5',
-      body: 'Chat, streaming, tool calling, reasoning, vision (image input) y audio (audio input), contexto de 1M tokens. Cuota mensual de 500M tokens por miembro.',
+      body: 'Chat, streaming, tool calling, reasoning, vision (image input) and audio (audio input), 1M token context. 500M token monthly quota per member.',
     },
     {
       title: 'glm5.2',
-      body: 'Chat, streaming, tool calling, reasoning (emite una traza de razonamiento), contexto de 256K tokens. Solo texto. Enfocado en coding y tareas agénticas de largo horizonte.',
+      body: 'Chat, streaming, tool calling, reasoning (emits a reasoning trace), 256K token context. Text only. Focused on coding and long-horizon agentic tasks.',
     },
     {
       title: 'qwen3.6',
-      body: 'Chat, streaming, tool calling, vision (image input), reasoning (opt-out, devuelve <code>reasoning_content</code> en el message).',
+      body: 'Chat, streaming, tool calling, vision (image input), reasoning (opt-out, returns <code>reasoning_content</code> in the message).',
     },
     {
       title: 'gemma4',
@@ -114,20 +114,20 @@ El endpoint principal de chat. Compatible con OpenAI Chat Completions. Modelos c
 
 ### Request
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
-| `model` | string · required | `deepseek-v4-flash`, `mimo-v2.5`, `glm5.2`, `qwen3.6` o `gemma4`. |
-| `messages` | array · required | Lista de mensajes `{ role, content }`. `content` puede ser string o un array de partes `[{type:"text",text}, {type:"image_url",image_url:{url}}]` para input multimodal. |
-| `max_tokens` | integer · optional | Tope de tokens generados. |
-| `stream` | boolean · optional | Default `false`. Si `true`, la respuesta llega como SSE. |
-| `tools` | array · optional | Function calling estándar OpenAI: `{type:"function",function:{name,description,parameters}}`. Validado solo con `qwen3.6`. |
-| `tool_choice` | string \| object · optional | Controla qué tool puede invocar el modelo. Estándar OpenAI. |
+| `model` | string · required | `deepseek-v4-flash`, `mimo-v2.5`, `glm5.2`, `qwen3.6` or `gemma4`. |
+| `messages` | array · required | List of messages `{ role, content }`. `content` can be a string or an array of parts `[{type:"text",text}, {type:"image_url",image_url:{url}}]` for multimodal input. |
+| `max_tokens` | integer · optional | Maximum tokens to generate. |
+| `stream` | boolean · optional | Default `false`. If `true`, the response arrives as SSE. |
+| `tools` | array · optional | Standard OpenAI function calling: `{type:"function",function:{name,description,parameters}}`. Validated only with `qwen3.6`. |
+| `tool_choice` | string \| object · optional | Controls which tool the model can invoke. Standard OpenAI. |
 | `temperature` | number · optional | Default `0.6`. |
 | `top_p` | number · optional | Default `0.95`. |
 
 ### Response
 
-Respuesta sin streaming. `finish_reason` puede ser `stop`, `length` o `tool_calls`.
+Non-streaming response. `finish_reason` puede ser `stop`, `length` o `tool_calls`.
 
 ```json
 {
@@ -154,13 +154,13 @@ Respuesta sin streaming. `finish_reason` puede ser `stop`, `length` o `tool_call
 }
 ```
 
-El campo `reasoning_content` se incluye solo cuando se usa `qwen3.6`. Es opcional ignorarlo.
+The `reasoning_content` field is included only when using `qwen3.6`. It is optional to ignore it.
 
-### Ejemplo
+### Example
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3.6",
@@ -171,12 +171,12 @@ curl https://api.nan.builders/v1/chat/completions \
 
 ### Streaming
 
-Con `stream: true`, la respuesta se entrega como Server-Sent Events. Cada chunk es `data: {...}\n\n` con el delta en `choices[0].delta.content`. El stream termina con `data: [DONE]`.
+With `stream: true`, the response is delivered as Server-Sent Events. Each chunk is `data: {...}\n\n` with the delta in `choices[0].delta.content`. The stream ends with `data: [DONE]`.
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
   -N \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3.6",
@@ -187,11 +187,11 @@ curl https://api.nan.builders/v1/chat/completions \
 
 ### Tool calling
 
-`qwen3.6` soporta function calling estándar OpenAI. Cuando el modelo decide invocar una tool, la respuesta incluye `choices[0].message.tool_calls` con `{id, type:"function", function:{name, arguments}}` y `finish_reason: "tool_calls"`.
+`qwen3.6` supports standard OpenAI function calling. When the model decides to invoke a tool, the response includes `choices[0].message.tool_calls` with `{id, type:"function", function:{name, arguments}}` and `finish_reason: "tool_calls"`.
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3.6",
@@ -201,7 +201,7 @@ curl https://api.nan.builders/v1/chat/completions \
         "type": "function",
         "function": {
           "name": "get_weather",
-          "description": "Obtiene el tiempo actual de una ciudad",
+          "description": "Gets the current weather for a city",
           "parameters": {
             "type": "object",
             "properties": {
@@ -217,11 +217,11 @@ curl https://api.nan.builders/v1/chat/completions \
 
 ### Vision
 
-`mimo-v2.5`, `qwen3.6` y `gemma4` aceptan input multimodal. El campo `content` del mensaje pasa de string a un array de partes de tipo `text` y/o `image_url`. `mimo-v2.5` también acepta `input_audio` como parte de `content`.
+`mimo-v2.5`, `qwen3.6` and `gemma4` accept multimodal input. The `content` field of the message changes from string to an array of parts of type `text` and/or `image_url`. `mimo-v2.5` also accepts `input_audio` as part of `content`.
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3.6",
@@ -237,10 +237,10 @@ curl https://api.nan.builders/v1/chat/completions \
 
 ### Structured outputs
 
-Los modelos de chat aceptan el campo `response_format` estándar de OpenAI para forzar respuestas JSON válidas. Soportamos los dos modos:
+Chat models accept the standard OpenAI `response_format` field to force valid JSON responses. We support both modes:
 
 - **json_object**: Garantiza que la respuesta sea JSON sintácticamente válido. No impone estructura.
-- **json_schema**: Restringe la salida a un JSON Schema concreto. Con `strict: true` el modelo no puede emitir campos fuera del schema.
+- **json_schema**: Restricts output to a specific JSON Schema. With `strict: true` the model cannot emit fields outside the schema.
 
 Funciona en `qwen3.6` y `gemma4`.
 
@@ -248,7 +248,7 @@ Funciona en `qwen3.6` y `gemma4`.
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3.6",
@@ -263,7 +263,7 @@ curl https://api.nan.builders/v1/chat/completions \
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3.6",
@@ -295,7 +295,7 @@ Con el SDK de `openai` en Python:
 from openai import OpenAI
 
 client = OpenAI(
-  api_key="sk-tu-key-aqui",
+  api_key="sk-your-key-here",
   base_url="https://api.nan.builders/v1"
 )
 
@@ -327,9 +327,9 @@ print(data["name"], data["age"])
 
 ### Reasoning
 
-Los cinco modelos generan razonamiento y lo devuelven en `choices[0].message.reasoning_content`. El mecanismo de control cambia según el modelo:
+All five models generate reasoning and return it in `choices[0].message.reasoning_content`. The control mechanism varies by model:
 
-| Modelo | Control |
+| Model | Control |
 |---|---|
 | `qwen3.6` | `chat_template_kwargs.enable_thinking` · activo por defecto |
 | `gemma4` | `chat_template_kwargs.enable_thinking` · desactivado por defecto |
@@ -339,11 +339,11 @@ Los cinco modelos generan razonamiento y lo devuelven en `choices[0].message.rea
 
 #### enable_thinking (qwen3.6, gemma4)
 
-Toggle binario. El campo va en el body del request como `chat_template_kwargs.enable_thinking`:
+Binary toggle. The field goes in the request body as `chat_template_kwargs.enable_thinking`:
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gemma4",
@@ -352,7 +352,7 @@ curl https://api.nan.builders/v1/chat/completions \
   }'
 ```
 
-Para desactivarlo en `qwen3.6` pasa `{ "enable_thinking": false }`.
+To disable it on `qwen3.6` pass `{ "enable_thinking": false }`.
 
 En SDKs como `openai` de Python o Node, este campo va dentro de `extra_body`:
 
@@ -360,7 +360,7 @@ En SDKs como `openai` de Python o Node, este campo va dentro de `extra_body`:
 from openai import OpenAI
 
 client = OpenAI(
-  api_key="sk-tu-key-aqui",
+  api_key="sk-your-key-here",
   base_url="https://api.nan.builders/v1"
 )
 
@@ -375,11 +375,11 @@ print(response.choices[0].message.reasoning_content)
 
 #### reasoning_effort (deepseek-v4-flash)
 
-Parámetro estándar de OpenAI. Acepta `low`, `medium` o `high` y va como campo top-level del body — no dentro de `extra_body`. Si no lo mandas, va en `medium` por defecto.
+Standard OpenAI parameter. Accepts `low`, `medium`, or `high` and goes as a top-level body field — not inside `extra_body`. If not provided, defaults to `medium`.
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "deepseek-v4-flash",
@@ -394,7 +394,7 @@ Con el SDK `openai` de Python:
 from openai import OpenAI
 
 client = OpenAI(
-  api_key="sk-tu-key-aqui",
+  api_key="sk-your-key-here",
   base_url="https://api.nan.builders/v1"
 )
 
@@ -412,19 +412,19 @@ A más `effort`, más tokens dedicados al razonamiento y mejor calidad en proble
 
 #### mimo-v2.5
 
-MiMo V2.5 razona siempre y emite `reasoning_content` en cada respuesta. Hoy el upstream Xiaomi ignora tanto `reasoning_effort` como `enable_thinking`, así que el nivel de razonamiento no es configurable desde la API. Si necesitas controlarlo, usa `deepseek-v4-flash`.
+MiMo V2.5 always reasons and emits `reasoning_content` in every response. Currently upstream Xiaomi ignores both `reasoning_effort` and `enable_thinking`, so the reasoning level is not configurable via the API. If you need to control it, use `deepseek-v4-flash`.
 
 <h2 id="completions">POST /v1/completions</h2>
 
-Endpoint legacy de OpenAI para text completion. Modelo compatible: `qwen3.6`.
+Endpoint legacy de OpenAI para text completion. Compatible model: `qwen3.6`.
 
 ### Request
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
 | `model` | string · required | `qwen3.6`. |
-| `prompt` | string · required | El prompt a completar. |
-| `max_tokens` | integer · optional | Tope de tokens generados. |
+| `prompt` | string · required | The prompt to complete. |
+| `max_tokens` | integer · optional | Maximum tokens to generate. |
 | `temperature` | number · optional | Default `0.6`. |
 | `top_p` | number · optional | Default `0.95`. |
 | `stream` | boolean · optional | Default `false`. |
@@ -453,11 +453,11 @@ Endpoint legacy de OpenAI para text completion. Modelo compatible: `qwen3.6`.
 }
 ```
 
-### Ejemplo
+### Example
 
 ```bash
 curl https://api.nan.builders/v1/completions \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3.6",
@@ -466,20 +466,20 @@ curl https://api.nan.builders/v1/completions \
   }'
 ```
 
-### Notas
+### Notes
 
 Endpoint legacy de OpenAI. Para conversaciones, usa [/v1/chat/completions](#chat-completions).
 
 <h2 id="embeddings">POST /v1/embeddings</h2>
 
-Genera embeddings vectoriales. Modelo compatible: `qwen3-embedding`. Vectores de **4096 dimensiones**.
+Genera embeddings vectoriales. Compatible model: `qwen3-embedding`. Vectores de **4096 dimensiones**.
 
 ### Request
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
 | `model` | string · required | `qwen3-embedding`. |
-| `input` | string \| array · required | Texto único o array de strings a embeddear. |
+| `input` | string \| array · required | Single text or array of strings to embed. |
 | `encoding_format` | string · optional | `"float"` (default) o `"base64"`. |
 
 ### Response
@@ -502,11 +502,11 @@ Genera embeddings vectoriales. Modelo compatible: `qwen3-embedding`. Vectores de
 }
 ```
 
-### Ejemplo
+### Example
 
 ```bash
 curl https://api.nan.builders/v1/embeddings \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3-embedding",
@@ -516,16 +516,16 @@ curl https://api.nan.builders/v1/embeddings \
 
 <h2 id="rerank">POST /v1/rerank</h2>
 
-Reordena una lista de documentos por relevancia a una query. Modelo compatible: `rerank` (`Qwen3-Reranker-8B`). Completa el stack RAG junto a `qwen3-embedding`: primero recuperas top-K por embeddings, después reordenas con `rerank`. Soporta 100+ idiomas, recuperación de código y búsqueda cross-lingual. Endpoint alias: `/v2/rerank`.
+Reordena una lista de documentos por relevancia a una query. Compatible model: `rerank` (`Qwen3-Reranker-8B`). Completa el stack RAG junto a `qwen3-embedding`: primero recuperas top-K por embeddings, después reordenas con `rerank`. Soporta 100+ idiomas, recuperación de código y búsqueda cross-lingual. Endpoint alias: `/v2/rerank`.
 
 ### Request
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
 | `model` | string · required | `rerank`. |
-| `query` | string · required | Consulta contra la que se mide la relevancia de cada documento. |
-| `documents` | array · required | Array de strings a reordenar. La respuesta los devuelve ordenados de mayor a menor `relevance_score` con su `index` original. |
-| `top_n` | integer · optional | Limita la respuesta a los `N` documentos más relevantes. Por defecto devuelve todos. |
+| `query` | string · required | Query against which each document's relevance is measured. |
+| `documents` | array · required | Array de strings a reordenar. La respuesta los returns ordenados de mayor a menor `relevance_score` con su `index` original. |
+| `top_n` | integer · optional | Limita la respuesta a los `N` documentos más relevantes. Por defecto returns todos. |
 
 ### Response
 
@@ -568,11 +568,11 @@ Reordena una lista de documentos por relevancia a una query. Modelo compatible: 
 
 La respuesta incluye `id`, `results` (array de `{index, relevance_score, document}`) y `meta` con `billed_units` y conteo de tokens. `relevance_score` está en el rango [0, 1]. El `index` se refiere a la posición original del documento en el array de entrada.
 
-### Ejemplo
+### Example
 
 ```bash
 curl https://api.nan.builders/v1/rerank \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "rerank",
@@ -616,27 +616,27 @@ for r in response["results"]:
 
 <h2 id="audio-speech">POST /v1/audio/speech</h2>
 
-Sintetiza audio a partir de texto (text-to-speech). Modelo compatible: `kokoro`.
+Synthesizes audio from text (text-to-speech). Compatible model: `kokoro`.
 
 ### Request
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
 | `model` | string · required | `kokoro`. |
-| `input` | string · required | Texto a sintetizar. |
-| `voice` | string · required | Voz a usar. Algunas opciones: `af_heart` (English female), `ef_dora` (Spanish female), `em_alex` (Spanish male). [Ver listado completo](https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md). |
-| `response_format` | string · optional | Formato del audio devuelto. Validados: `mp3` (default), `wav`, `flac`, `aac`, `pcm`, `opus`. |
+| `input` | string · required | Text to synthesize. |
+| `voice` | string · required | Voice to use. Some options: `af_heart` (English female), `ef_dora` (Spanish female), `em_alex` (Spanish male). [See full list](https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md). |
+| `response_format` | string · optional | Format of the returned audio. Validated: `mp3` (default), `wav`, `flac`, `aac`, `pcm`, `opus`. |
 | `speed` | number · optional | Default `1.0`. |
 
 ### Response
 
-Archivo binario de audio en el formato pedido (sin envoltorio JSON).
+Binary audio file in the requested format (without JSON wrapper).
 
-### Ejemplo
+### Example
 
 ```bash
 curl https://api.nan.builders/v1/audio/speech \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "kokoro",
@@ -649,22 +649,22 @@ curl https://api.nan.builders/v1/audio/speech \
 
 <h2 id="audio-transcriptions">POST /v1/audio/transcriptions</h2>
 
-Transcribe audio a texto (speech-to-text). Modelo compatible: `whisper`. La petición es `multipart/form-data`.
+Transcribes audio to text (speech-to-text). Compatible model: `whisper`. The request is `multipart/form-data`.
 
 ### Request
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
-| `file` | file · required | Archivo de audio a transcribir. |
+| `file` | file · required | Audio file to transcribe. |
 | `model` | string · required | `whisper`. |
-| `language` | string · optional | Código ISO-639-1 (ej. `es`, `en`). Si no se pasa, se detecta automáticamente. |
-| `response_format` | string · optional | Validados: `json` (default) y `verbose_json`. Otros valores funcionan pero devuelven el contenido envuelto en JSON; recomendamos solo estos dos. |
-| `timestamp_granularities[]` | string · optional | Solo con `verbose_json`. Valores: `word` (timestamps por palabra) o `segment` (default). |
+| `language` | string · optional | ISO-639-1 code (ej. `es`, `en`). If not provided, detected automatically. |
+| `response_format` | string · optional | Validated: `json` (default) y `verbose_json`. Other values work but return content wrapped in JSON; we recommend only these two. |
+| `timestamp_granularities[]` | string · optional | Only with `verbose_json`. Valores: `word` (timestamps por palabra) o `segment` (default). |
 | `temperature` | number · optional | Sampling temperature. |
 
 ### Response
 
-Ejemplo con `response_format=verbose_json`:
+Example with `response_format=verbose_json`:
 
 ```json
 {
@@ -689,20 +689,20 @@ Ejemplo con `response_format=verbose_json`:
 }
 ```
 
-Si pasas `timestamp_granularities[]=word`, el campo `words` se llena con `[{word, start, end, probability}]`.
+If you pass `timestamp_granularities[]=word`, el campo `words` is populated with `[{word, start, end, probability}]`.
 
-### Ejemplo
+### Example
 
 ```bash
 curl https://api.nan.builders/v1/audio/transcriptions \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -F "model=whisper" \
   -F "file=@grabacion.mp3" \
   -F "language=es" \
   -F "response_format=verbose_json"
 ```
 
-### Limitaciones
+### Limitations
 
 <LimitationsCard
   items={[
@@ -715,7 +715,7 @@ curl https://api.nan.builders/v1/audio/transcriptions \
       body: 'Recomendamos dividir en segmentos de ≤ 2 min.',
     },
     {
-      title: 'Formatos recomendados',
+      title: 'Formats recomendados',
       body: '<code>OGG/Opus</code> y <code>MP3</code> — mejor compresión, misma calidad de transcripción.',
     },
   ]}
@@ -723,22 +723,22 @@ curl https://api.nan.builders/v1/audio/transcriptions \
 
 <h2 id="responses">POST /v1/responses</h2>
 
-Endpoint Responses estilo OpenAI. Modelos compatibles: `qwen3.6` y `gemma4`.
+OpenAI-style Responses endpoint. Modelos compatibles: `qwen3.6` y `gemma4`.
 
 ### Request
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
 | `model` | string · required | `qwen3.6` o `gemma4`. |
-| `input` | string \| array · required | Texto único o array de mensajes en formato OpenAI Responses. |
+| `input` | string \| array · required | Single text or array of messages in OpenAI Responses format. |
 | `max_output_tokens` | integer · optional | Default `65536` en `qwen3.6`. |
 | `temperature` | number · optional | Default `0.6`. |
 | `top_p` | number · optional | Default `0.95`. |
-| `instructions` | string · optional | Instrucciones de sistema. |
+| `instructions` | string · optional | System instructions. |
 
 ### Response
 
-El array `output` puede contener bloques de tipo `reasoning` (solo `qwen3.6`) y `message`.
+The array `output` can contain blocks of type `reasoning` (solo `qwen3.6`) y `message`.
 
 ```json
 {
@@ -774,11 +774,11 @@ El array `output` puede contener bloques de tipo `reasoning` (solo `qwen3.6`) y 
 }
 ```
 
-### Ejemplo
+### Example
 
 ```bash
 curl https://api.nan.builders/v1/responses \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "qwen3.6",
@@ -786,40 +786,40 @@ curl https://api.nan.builders/v1/responses \
   }'
 ```
 
-### Notas
+### Notes
 
-El streaming en este endpoint actualmente entrega un único evento `response.completed` al final, no chunks incrementales. Para streaming token-a-token usa [/v1/chat/completions](#chat-completions) con `stream: true`.
+Streaming on this endpoint currently delivers a single event `response.completed` at the end, not incremental chunks. For token-by-token streaming use [/v1/chat/completions](#chat-completions) con `stream: true`.
 
 <h2 id="images-generations">POST /v1/images/generations</h2>
 
-Genera imágenes a partir de texto (text-to-image). Compatible con la Images API de OpenAI. Modelo compatible: `flux-2-klein` (único modelo disponible hoy; el endpoint está diseñado para añadir más). El body es JSON.
+Generates images from text (text-to-image). Compatible with OpenAI's Images API. Compatible model: `flux-2-klein` (only model available today; the endpoint is designed to add more). The body is JSON.
 
 ### Request
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
-| `prompt` | string · required | Descripción textual de la imagen a generar. |
-| `model` | string · optional | Default `flux-2-klein` (único modelo disponible). Un modelo desconocido devuelve `404` (`model_not_found`). |
-| `n` | integer · optional | Número de imágenes a generar, entre `1` y `4`. Default `1`. Un valor mayor que `4` devuelve `400`. |
-| `size` | string · optional | Formato `"ANCHOxALTO"` con ambos lados divisibles por 16, cada uno entre 256 y 1536, y aspect ratio entre 1:3 y 3:1. Valores estándar como `1024x1024`, `1536x1024` o `1024x1536` funcionan. `"auto"` u omitido → `1024x1024`. |
-| `response_format` | string · optional | `"url"` (default) o `"b64_json"`. Con `url` se devuelve un enlace temporal de R2 válido ~60 minutos (mismo contrato que OpenAI). Con `b64_json` se devuelven los bytes de la imagen en base64 inline. |
+| `prompt` | string · required | Textual description of the image to generate. |
+| `model` | string · optional | Default `flux-2-klein` (único modelo disponible). An unknown model returns `404` (`model_not_found`). |
+| `n` | integer · optional | Number of images to generate, between `1` y `4`. Default `1`. A value greater than `4` returns `400`. |
+| `size` | string · optional | Format `"ANCHOxALTO"` con both sides divisible by 16, each between 256 and 1536, and aspect ratio between 1:3 and 3:1. Standard values like `1024x1024`, `1536x1024` o `1024x1536` work. `"auto"` or omitted → `1024x1024`. |
+| `response_format` | string · optional | `"url"` (default) o `"b64_json"`. Con `url` a temporary R2 link is returned valid ~60 minutos (same contract as OpenAI). Con `b64_json` the image bytes are returned inline as base64. |
 
 <Callout title="Parámetros aceptados e ignorados">
-  Por compatibilidad con SDKs de OpenAI se aceptan <code>quality</code>, <code>style</code>, <code>background</code>, <code>moderation</code>, <code>output_format</code>, <code>output_compression</code> y <code>user</code>, pero <strong>se ignoran</strong> — Flux no actúa sobre ellos. Además, <code>stream: true</code> <strong>no está soportado</strong> y devuelve <code>400</code>.
+  For OpenAI SDK compatibility, the following are accepted <code>quality</code>, <code>style</code>, <code>background</code>, <code>moderation</code>, <code>output_format</code>, <code>output_compression</code> y <code>user</code>, pero <strong>are ignored</strong> — Flux does not act on them. Además, <code>stream: true</code> <strong>is not supported</strong> y returns <code>400</code>.
 </Callout>
 
 ### Parámetros adicionales (extensiones NaN)
 
-Estos parámetros **no** forman parte de la Images API de OpenAI. Con el SDK de `openai` se pasan vía `extra_body`.
+These parameters **no** forman parte de la Images API de OpenAI. Con el SDK de `openai` are passed via `extra_body`.
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
-| `seed` | integer · optional | Seed base para reproducibilidad. Cada variante (cuando `n > 1`) parte de un offset sobre este valor. |
-| `guidance` | number · optional | Guidance scale de FLUX. |
+| `seed` | integer · optional | Base seed for reproducibility. Each variant (when `n > 1`) starts from an offset on this value. |
+| `guidance` | number · optional | FLUX guidance scale. |
 
 ### Response
 
-Mismo envoltorio que la Images API de OpenAI. `created` es el timestamp Unix en segundos.
+Same wrapper as OpenAI's Images API. `created` is the Unix timestamp in seconds.
 
 ```json
 {
@@ -830,13 +830,13 @@ Mismo envoltorio que la Images API de OpenAI. `created` es el timestamp Unix en 
 }
 ```
 
-Con `response_format=b64_json`, cada elemento de `data` es `{ "b64_json": "..." }` en lugar de `{ "url": "..." }`.
+Con `response_format=b64_json`, cada elemento de `data` es `{ "b64_json": "..." }` instead of `{ "url": "..." }`.
 
-### Ejemplo
+### Example
 
 ```bash
 curl https://api.nan.builders/v1/images/generations \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "flux-2-klein",
@@ -849,7 +849,7 @@ curl https://api.nan.builders/v1/images/generations \
 
 ```bash
 curl https://api.nan.builders/v1/images/generations \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "flux-2-klein",
@@ -859,13 +859,13 @@ curl https://api.nan.builders/v1/images/generations \
   }'
 ```
 
-Con el SDK de `openai` en Python (las extensiones `seed` y `guidance` van en `extra_body`):
+Con el SDK de `openai` en Python (the extensions `seed` y `guidance` van en `extra_body`):
 
 ```python
 from openai import OpenAI
 
 client = OpenAI(
-  api_key="sk-tu-key-aqui",
+  api_key="sk-your-key-here",
   base_url="https://api.nan.builders/v1"
 )
 
@@ -886,44 +886,44 @@ La generación de imágenes **no pasa por LiteLLM**, así que los límites por k
 
 | Límite | Valor | Descripción |
 |---|---|---|
-| Rate limit | `1 req/s · burst 3` | 1 request por segundo sostenido, con burst de hasta 3 (puedes disparar hasta 3 generaciones seguidas sin error). Al excederlo devuelve `429` (`rate_limit_exceeded`). |
-| Cuota mensual | `100 requests / mes` | 100 requests por mes y por usuario (1 request = 1 uso, independientemente del valor de `n`). Al excederla devuelve `429` (`insufficient_quota`). Esta cuota es independiente del límite de 500M tokens/mes del chat. |
+| Rate limit | `1 req/s · burst 3` | 1 request por segundo sostenido, con burst de hasta 3 (puedes disparar hasta 3 generaciones seguidas sin error). Al excederlo returns `429` (`rate_limit_exceeded`). |
+| Cuota mensual | `100 requests / mes` | 100 requests por mes y por usuario (1 request = 1 uso, independientemente del valor de `n`). Al excederla returns `429` (`insufficient_quota`). Esta cuota es independiente del límite de 500M tokens/mes del chat. |
 | Tier | `inference` | Requiere membresía de tier inference. Las keys de tier community reciben `403` (`tier_restricted`). |
 
 <h2 id="images-edits">POST /v1/images/edits</h2>
 
-Genera una imagen a partir de una o varias imágenes de referencia (image-to-image). Compatible con la Images API de OpenAI. Modelo compatible: `flux-2-klein`. La petición es `multipart/form-data`. Aplican la misma membresía inference-tier y la misma cuota mensual de 100 requests que [/v1/images/generations](#images-generations).
+Generates an image from one or more reference images (image-to-image). Compatible with OpenAI's Images API. Compatible model: `flux-2-klein`. The request is `multipart/form-data`. Aplican la misma membresía inference-tier y la misma cuota mensual de 100 requests que [/v1/images/generations](#images-generations).
 
 ### Request
 
-| Campo | Tipo | Descripción |
+| Field | Type | Description |
 |---|---|---|
-| `image` / `image[]` | file · required | Una o más imágenes de referencia (hasta 4; las extras se descartan). PNG, JPEG o WebP, cada una < 25 MB. |
-| `prompt` | string · required | Descripción de la edición o transformación a aplicar. |
-| `model`, `n`, `size`, `response_format` | optional | Mismo comportamiento que en [/v1/images/generations](#images-generations). Las extensiones `seed` y `guidance` también se aceptan (como campos del form). |
+| `image` / `image[]` | file · required | One or more reference images (up to 4; extras are discarded). PNG, JPEG, or WebP, each < 25 MB. |
+| `prompt` | string · required | Description of the edit or transformation to apply. |
+| `model`, `n`, `size`, `response_format` | optional | Same behavior as in [/v1/images/generations](#images-generations). Las extensiones `seed` y `guidance` are also accepted (as form fields). |
 
 <Callout title="mask no soportado" variant="warning">
-  El parámetro <code>mask</code> <strong>no está soportado</strong> y devuelve <code>400</code> — Flux Klein no hace inpainting.
+  El parámetro <code>mask</code> <strong>is not supported</strong> y returns <code>400</code> — Flux Klein does not do inpainting.
 </Callout>
 
 ### Response
 
-Mismo envoltorio que [/v1/images/generations](#images-generations): `{ "created": ..., "data": [{ "url": "..." }] }` (o elementos `{ "b64_json": "..." }` con `response_format=b64_json`).
+Same wrapper as [/v1/images/generations](#images-generations): `{ "created": ..., "data": [{ "url": "..." }] }` (o elementos `{ "b64_json": "..." }` con `response_format=b64_json`).
 
-### Ejemplo
+### Example
 
 ```bash
 curl https://api.nan.builders/v1/images/edits \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -F "model=flux-2-klein" \
   -F "image[]=@ref.png" \
   -F "prompt=Convierte la escena en invierno con nieve" \
   -F "size=1024x1024"
 ```
 
-## Errores
+## Errors
 
-Los errores siguen el formato estándar de OpenAI: HTTP status no-2xx con un body JSON describiendo el problema.
+Errors follow the standard OpenAI format: HTTP non-2xx status with a JSON body describing the problem.
 
 ```json
 {
@@ -938,13 +938,13 @@ Los errores siguen el formato estándar de OpenAI: HTTP status no-2xx con un bod
 
 | Código | Descripción |
 |---|---|
-| 400 | Parámetro inválido — el body incluye `param` con el campo que falló (p. ej. `prompt`, `n`, `size`, `stream`, `mask` o `image` en los endpoints de imágenes). El filtro de seguridad devuelve `content_policy_violation`. |
-| 401 | Header `Authorization` inválido o ausente (`invalid_api_key`). |
-| 403 | Tu tier no tiene acceso al endpoint (`tier_restricted`). La generación de imágenes requiere membresía inference. |
-| 404 | Modelo no existe (campo `model`, `model_not_found`). |
-| 429 | Rate limit excedido — `rpm_limit` o `max_parallel_requests` (`rate_limit_exceeded`), o cuota mensual agotada (`quota_exceeded` / `insufficient_quota`, como la de 100 requests de imágenes). |
-| 500 | Error interno (incluye errores upstream del modelo). |
-| 524 | Timeout (típico con audios grandes en [/v1/audio/transcriptions](#audio-transcriptions)). |
+| 400 | Parámetro inválido — the body includes `param` with the field that failed (e.g. `prompt`, `n`, `size`, `stream`, `mask` o `image` en los endpoints de imágenes). El filtro de seguridad returns `content_policy_violation`. |
+| 401 | `Authorization` header invalid or missing (`invalid_api_key`). |
+| 403 | Your tier does not have access to the endpoint (`tier_restricted`). Image generation requires inference membership. |
+| 404 | Model does not exist (campo `model`, `model_not_found`). |
+| 429 | Rate limit exceeded — `rpm_limit` o `max_parallel_requests` (`rate_limit_exceeded`), or monthly quota exhausted (`quota_exceeded` / `insufficient_quota`, como la de 100 requests de imágenes). |
+| 500 | Internal error (includes upstream model errors). |
+| 524 | Timeout (typical with large audios on [/v1/audio/transcriptions](#audio-transcriptions)). |
 
 ## Rate limits
 

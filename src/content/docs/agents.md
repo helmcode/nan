@@ -1,112 +1,112 @@
 ---
 title: Agents
-description: "Despliega agentes de IA en una microVM aislada con QEMU: Hermes, terminal web, carga de ficheros y observabilidad."
+description: "Deploy AI agents in an isolated microVM with QEMU: Hermes, web terminal, file uploads, and observability."
 order: 5
 ---
 
 # Agents.
 
-NaN Cloud te deja desplegar agentes de IA en tu propia **microVM**: una máquina virtual ligera con QEMU + KVM, su propio kernel, su propio filesystem y acceso root completo. Aislada del host y del resto de miembros. El primer tipo de agente disponible es **Hermes**.
+NaN Cloud lets you deploy AI agents in your own **microVM**: a lightweight virtual machine with QEMU + KVM, its own kernel, its own filesystem, and full root access. Isolated from the host and from other members. The first available agent type is **Hermes**.
 
-## Arquitectura
+## Architecture
 
-Cada agente corre dentro de su propia microVM con QEMU. En lugar de compartir el kernel del host (como un container normal), arranca con su propio kernel Linux. La VM monta un disco ext4 de 20 GiB sobre un volumen en modo block, persistente. Todo lo que haces dentro —`apt install`, `pip install`, edits en `/etc`, ficheros que subas, sesiones de bash— vive en ese disco y sobrevive a reinicios.
+Each agent runs inside its own QEMU microVM. Instead of sharing the host kernel (like a regular container), it starts with its own Linux kernel. The VM mounts a 20 GiB ext4 disk on a block-mode persistent volume. Everything you do inside — `apt install`, `pip install`, edits to `/etc`, files you upload — lives on that disk and survives restarts.
 
-El shutdown es *graceful*: cuando reinicies o borres el agente, el sistema fuerza un `sync` y espera a que el journal de ext4 termine de vaciar antes de matar la VM. Sin corrupciones.
+Shutdown is *graceful*: when you restart or delete the agent, the system forces a `sync` and waits for the ext4 journal to finish flushing before killing the VM. No corruption.
 
 ## Hermes
 
-Hermes es un agente de IA conversacional que se conecta a Telegram. Puedes hablar con él, pedirle que gestione notas, ejecute comandos en su entorno, genere sitios web y mucho más.
+Hermes is a conversational AI agent that connects to Telegram. You can chat with it, ask it to manage notes, run commands in its environment, generate websites, and much more.
 
-### 1. Crear un bot de Telegram
+### 1. Create a Telegram bot
 
-Necesitas un bot de Telegram. Abre Telegram, busca [@BotFather](https://core.telegram.org/bots/tutorial#obtain-your-bot-token) y sigue las instrucciones para crear un bot nuevo. Copia el token que te da.
+You need a Telegram bot. Open Telegram, search for [@BotFather](https://core.telegram.org/bots/tutorial#obtain-your-bot-token) and follow the instructions to create a new bot. Copy the token it gives you.
 
-### 2. Crear el agente
+### 2. Create the agent
 
-Ve a [cloud.nan.builders/agents/new](https://cloud.nan.builders/agents/new) y rellena: nombre, tipo (Hermes), el token de Telegram, modelo y opcionalmente un *soul* (system prompt) que defina la personalidad de tu agente.
+Go to [cloud.nan.builders/agents/new](https://cloud.nan.builders/agents/new) and fill in: name, type (Hermes), the Telegram token, model, and optionally a *soul* (system prompt) that defines your agent's personality.
 
-![Formulario de creación de agente](/docs/agents/create-agent-form.png)
+![Agent creation form](/docs/agents/create-agent-form.png)
 
-### 3. Esperar a que esté Running
+### 3. Wait for it to be Running
 
-Tras crear el agente espera ~30 segundos a que el microVM arranque, formatee el disco la primera vez (`mkfs.ext4`) y siembre el sistema de ficheros. El estado pasa a `Running` y Hermes a `Ready`.
+After creating the agent, wait ~30 seconds for the microVM to start, format the disk for the first time (`mkfs.ext4`), and seed the filesystem. The status changes to `Running` and Hermes to `Ready`.
 
-### 4. Hablar con tu agente
+### 4. Chat with your agent
 
-Busca tu bot en Telegram y envíale un mensaje. Hermes responderá usando el modelo que hayas configurado.
+Find your bot on Telegram and send it a message. Hermes will respond using the model you configured.
 
-![Conversación con Hermes en Telegram](/docs/agents/telegram-hermes-chat.jpg)
+![Hermes conversation on Telegram](/docs/agents/telegram-hermes-chat.jpg)
 
-> **Tu agente está listo.**
-> Con estos 4 pasos ya tienes a Hermes funcionando. Lo que viene a continuación son funcionalidades adicionales del panel del agente: terminal web, subida de ficheros, observabilidad, exposición HTTP, Hermes UI y gestión de variables de entorno.
+> **Your agent is ready.**
+> With these 4 steps you already have Hermes running. What follows below are additional agent panel features: web terminal, file uploads, observability, HTTP exposure, Hermes UI, and environment variable management.
 
-## Console — terminal web
+## Console — web terminal
 
-La pestaña **Console** abre un terminal interactivo (`bash --login`) dentro de tu microVM, sin que tengas que configurar SSH. El stream va sobre WebSocket con xterm.js: resize automático cuando ajustas el panel, status pill arriba a la derecha y botón de reconexión si la sesión se cae.
+The **Console** tab opens an interactive terminal (`bash --login`) inside your microVM, without needing to configure SSH. The stream runs over WebSocket with xterm.js: auto-resize when you adjust the panel, status pill in the top right, and a reconnect button if the session drops.
 
-Casos de uso típicos:
+Typical use cases:
 
-- Instalar paquetes: `apt update && apt install -y nginx`
-- Inspeccionar logs internos del agente
-- Mover ficheros que hayas subido a su ubicación final
-- Tirar de `htop`, `df -h`, `journalctl`, etc.
+- Install packages: `apt update && apt install -y nginx`
+- Inspect the agent's internal logs
+- Move files you've uploaded to their final location
+- Use `htop`, `df -h`, `journalctl`, etc.
 
-> **Límites operativos**
-> 1 sesión simultánea por agente · idle timeout 10 min · duración máxima 30 min por sesión.
+> **Operational limits**
+> 1 simultaneous session per agent · 10 min idle timeout · 30 min max duration per session.
 
-## Files — subida de ficheros
+## Files — file uploads
 
-La pestaña **Files** permite subir ficheros al microVM con drag-and-drop o picker. Multi-fichero, cola secuencial, progress bar en vivo con MiB/s. Los archivos aterrizan en `/persist/uploads/` y desde ahí los puedes mover con la Console.
+The **Files** tab allows uploading files to the microVM with drag-and-drop or file picker. Multi-file, sequential queue, live progress bar with MiB/s. Files land in `/persist/uploads/` and from there you can move them with the Console.
 
-- Tamaño máximo: **200 MiB** por fichero.
-- Transporte: WebSocket con chunks de 256 KiB y backpressure end-to-end.
-- Filename sanitizado server-side (sin path traversal).
-- Listado en vivo de lo ya subido (refresca cada 5 s).
+- Max size: **200 MiB** per file.
+- Transport: WebSocket with 256 KiB chunks and end-to-end backpressure.
+- Filename sanitized server-side (no path traversal).
+- Live listing of uploaded files (refreshes every 5s).
 
 ## Observability
 
-La pestaña **Observability** agrupa tres sub-pestañas:
+The **Observability** tab groups three sub-tabs:
 
-- **Logs** — stream en vivo de stdout/stderr del agente vía WebSocket. Buffer de las últimas 500 líneas en el cliente.
-- **Events** — eventos de Kubernetes del Pod (BackOff, Scheduled, Pulled, Killing...) con tipo, razón, mensaje, edad y contador. Auto-refresh cada 15 s.
-- **Metrics** — uso real de CPU, RAM y disco contra los límites configurados. CPU/RAM vía Prometheus (kubelet-cadvisor), disco vía `df` dentro del microVM (el filesystem es block-mode, kubelet no lo ve). Refresca cada 10 s.
+- **Logs** — live stream of the agent's stdout/stderr via WebSocket. Buffer of the last 500 lines on the client.
+- **Events** — Kubernetes Pod events (BackOff, Scheduled, Pulled, Killing...) with type, reason, message, age, and count. Auto-refresh every 15s.
+- **Metrics** — actual CPU, RAM, and disk usage against configured limits. CPU/RAM via Prometheus (kubelet-cadvisor), disk via `df` inside the microVM (the filesystem is block-mode, kubelet can't see it). Refreshes every 10s.
 
-## Web — exposición pública
+## Web — public exposure
 
-La pestaña **Web** tiene dos sub-pestañas para sacar servicios HTTP del agente:
+The **Web** tab has two sub-tabs for exposing HTTP services from the agent:
 
 ### HTTP
 
-Cualquier servicio que tu agente sirva por HTTP (nginx, una API, un static-site) lo puedes exponer públicamente. Por ejemplo, pídele a Hermes que instale nginx con un HTML personalizado:
+Any service your agent serves over HTTP (nginx, an API, a static site) you can expose publicly. For example, ask Hermes to install nginx with a custom HTML page:
 
-![Pidiendo a Hermes que instale nginx con un HTML personalizado](/docs/agents/telegram-nginx-setup.jpg)
+![Asking Hermes to install nginx with a custom HTML page](/docs/agents/telegram-nginx-setup.jpg)
 
-En la pestaña **Web → HTTP** pulsa **Enable HTTP**. Por defecto se expone el puerto `80`; si tu servicio escucha en otro puerto, indícalo en **Container Port**. La plataforma genera una URL pública en `*.apps.nan.builders`.
+In the **Web → HTTP** tab, click **Enable HTTP**. By default port `80` is exposed; if your service listens on another port, specify it in **Container Port**. The platform generates a public URL at `*.apps.nan.builders`.
 
-![Sitio web generado por Hermes visible desde la URL pública](/docs/agents/http-result.png)
+![Website generated by Hermes visible from the public URL](/docs/agents/http-result.png)
 
 ### Hermes UI
 
-Hermes incluye una UI web ligera ([nesquena/hermes-webui](https://github.com/nesquena/hermes-webui)) que se ejecuta siempre dentro del agente. Desde **Web → Hermes UI** puedes habilitar acceso externo: la plataforma genera una URL del estilo `webui-<agent>-<user>.apps.nan.builders` protegida por una contraseña per-agent que aparece en el panel.
+Hermes includes a lightweight web UI ([nesquena/hermes-webui](https://github.com/nesquena/hermes-webui)) that always runs inside the agent. From **Web → Hermes UI** you can enable external access: the platform generates a URL like `webui-<agent>-<user>.apps.nan.builders` protected by a per-agent password shown in the panel.
 
-## Variables de entorno
+## Environment variables
 
-La pestaña **Env** permite añadir, editar y borrar variables de entorno del agente sin tocar el Deployment. Útil para inyectar API keys de terceros, configurar comportamiento de Hermes, etc.
+The **Env** tab lets you add, edit, and delete agent environment variables without touching the Deployment. Useful for injecting third-party API keys, configuring Hermes behavior, etc.
 
-Dos variables son **protegidas** (sólo edit, no delete): `OPENAI_API_KEY` (tu key del cluster, gestionada por la plataforma) y `TELEGRAM_BOT_TOKEN`. El resto son creación / edición / borrado libre.
+Two variables are **protected** (edit-only, no delete): `OPENAI_API_KEY` (your cluster key, managed by the platform) and `TELEGRAM_BOT_TOKEN`. The rest are free to create, edit, or delete.
 
-## Recursos y límites
+## Resources and limits
 
-Cada microVM se aprovisiona con:
+Each microVM is provisioned with:
 
-| Recurso | Request | Limit |
+| Resource | Request | Limit |
 |---|---|---|
 | CPU | 200m | 1 vCPU |
 | RAM | 512 Mi | 2 GiB |
-| Disco | — | 20 GiB (PVC block-mode) |
+| Disk | — | 20 GiB (block-mode PVC) |
 
-CPU y RAM son los límites máximos del microVM; el uso real suele estar muy por debajo. El disco es persistente — todo lo que instales o modifiques (paquetes, archivos, configuraciones) se conserva entre reinicios. Si el disco se llena (90%+), libéralo desde la Console (`du -sh /persist/*`).
+CPU and RAM are the microVM's maximum limits; actual usage is usually well below. Disk is persistent — everything you install or modify (packages, files, configurations) is preserved across restarts. If the disk fills up (90%+), free it from the Console (`du -sh /persist/*`).
 
-> **Límite actual**
-> Actualmente cada miembro puede desplegar **1 agente microVM**. Este límite se ampliará en futuras versiones.
+> **Current limit**
+> Currently each member can deploy **1 microVM agent**. This limit will be expanded in future versions.

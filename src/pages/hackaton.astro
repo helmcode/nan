@@ -10,7 +10,7 @@ import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 
-const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+const locale = Astro.url.searchParams.get('lang') === 'es' ? 'es' : 'en';
 
 // Estado del evento + sesión (SSR): consultamos el backend a través del proxy
 // interno para decidir qué CTA mostrar.

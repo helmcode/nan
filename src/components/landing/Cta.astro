@@ -3,7 +3,7 @@ import { t } from '../../lib/i18n';
 import WaitlistForm from './WaitlistForm.tsx';
 import { getTranslations, getRegionLabels } from './waitlistForm.helpers';
 
-const { locale = 'es' } = Astro.props;
+const { locale = 'en' } = Astro.props;
 const translations = getTranslations(locale);
 const regionLabels = getRegionLabels(locale);
 ---

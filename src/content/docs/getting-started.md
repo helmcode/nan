@@ -1,36 +1,36 @@
 ---
-title: Empezar
-description: Configura tu IDE o herramienta favorita para conectar a los modelos de NaN.
+title: Getting Started
+description: Configure your favorite IDE or tool to connect to NaN models.
 order: 1
 ---
 
-# Conectarse.
+# Getting Started.
 
-El acceso es vía LiteLLM con una API compatible con OpenAI. Funciona con cualquier herramienta que acepte un `base URL` + `API key`: Cursor, Cline, Continue, Aider, Open Code, Open WebUI o cualquier SDK compatible con OpenAI.
+Access is via LiteLLM with an OpenAI-compatible API. Works with any tool that accepts a `base URL` + `API key`: Cursor, Cline, Continue, Aider, Open Code, Open WebUI, or any OpenAI-compatible SDK.
 
-## Obtener tu API Key
+## Get your API Key
 
-Debes estar dentro de la comunidad NaN. Si ya estás suscrito, genera tu API Key desde la sección de ajustes del usuario en el apartado "API Keys" de la [plataforma](https://cloud.nan.builders/). La key es personal e intransferible.
+You must be a NaN community member. If you're already subscribed, generate your API Key from the user settings section under "API Keys" on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable.
 
-> **Nota**
-> El soporte es solo para temas técnicos.
+> **Note**
+> Support is for technical issues only.
 
-## Configurar tu herramienta
+## Configure your tool
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
 | base URL | `https://api.nan.builders/v1` |
-| API Key | `sk-tu-key-aqui` |
+| API Key | `sk-your-key-here` |
 | Model | `qwen3.6` |
 
-Ejemplo de configuración OpenAI-compatible:
+OpenAI-compatible configuration example:
 
 ```json
 provider: {
   openai: {
     npm: "@ai-sdk/openai",
     name: "NaN",
-    apiKey: "sk-tu-key-aqui",
+    apiKey: "sk-your-key-here",
     baseURL: "https://api.nan.builders/v1",
     model: "qwen3.6"
   }

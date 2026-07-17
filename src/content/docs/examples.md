@@ -1,26 +1,26 @@
 ---
-title: Ejemplos
-description: Code snippets para conectar a la API de NaN con Python, Node.js, curl y más.
+title: Examples
+description: Code snippets to connect to the NaN API with Python, Node.js, curl, and more.
 order: 4
 ---
 
 # Code snippets.
 
-Ejemplos para conectar a la API con diferentes lenguajes y herramientas. Usa `https://api.nan.builders/v1` como base URL y tu API key personal.
+Examples to connect to the API with different languages and tools. Use `https://api.nan.builders/v1` as base URL and your personal API key.
 
-## modelo: qwen3.6
+## model: qwen3.6
 
-generación de texto y chat
+text generation and chat
 
 ### curl
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -d '{
     "model": "qwen3.6",
-    "messages": [{"role": "user", "content": "Hola, ¿cómo estás?"}],
+    "messages": [{"role": "user", "content": "Hello, how are you?"}],
     "max_tokens": 500
   }'
 ```
@@ -31,13 +31,13 @@ curl https://api.nan.builders/v1/chat/completions \
 from openai import OpenAI
 
 client = OpenAI(
-  api_key="sk-tu-key-aqui",
+  api_key="sk-your-key-here",
   base_url="https://api.nan.builders/v1"
 )
 
 response = client.chat.completions.create(
   model="qwen3.6",
-  messages=[{"role": "user", "content": "Escribe un hola mundo en Rust"}],
+  messages=[{"role": "user", "content": "Write a hello world in Rust"}],
   max_tokens=500,
   stream=True
 )
@@ -48,7 +48,7 @@ for chunk in response:
         print(content, end="", flush=True)
 ```
 
-Instalar: `pip install openai`
+Install: `pip install openai`
 
 ### node.js (openai)
 
@@ -56,13 +56,13 @@ Instalar: `pip install openai`
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: "sk-tu-key-aqui",
+  apiKey: "sk-your-key-here",
   baseURL: "https://api.nan.builders/v1",
 });
 
 const stream = await client.chat.completions.create({
   model: "qwen3.6",
-  messages: [{ role: "user", content: "Escribe un hola mundo en Zig" }],
+  messages: [{ role: "user", content: "Write a hello world in Zig" }],
   max_tokens: 500,
   stream: true,
 });
@@ -73,7 +73,7 @@ for await (const chunk of stream) {
 }
 ```
 
-Instalar: `npm install openai`
+Install: `npm install openai`
 
 ### opencode.json (config)
 
@@ -86,7 +86,7 @@ Instalar: `npm install openai`
       "name": "NaN",
       "options": {
         "baseURL": "https://api.nan.builders/v1",
-        "apiKey": "sk-tu-key-aqui"
+        "apiKey": "sk-your-key-here"
       },
       "models": {
         "qwen3.6": {
@@ -140,7 +140,7 @@ Instalar: `npm install openai`
 }
 ```
 
-Este es el config para conectar IDEs (Cursor, OpenCode) con los 5 modelos LLM disponibles: `qwen3.6`, `gemma4`, `deepseek-v4-flash`, `mimo-v2.5` y `glm5.2`.
+This is the config to connect IDEs (Cursor, OpenCode) with the 5 available LLM models: `qwen3.6`, `gemma4`, `deepseek-v4-flash`, `mimo-v2.5` and `glm5.2`.
 
 ### .pi/agent/models.json (config)
 
@@ -185,7 +185,7 @@ Este es el config para conectar IDEs (Cursor, OpenCode) con los 5 modelos LLM di
 }
 ```
 
-Config para `~/.pi/agent/models.json`
+Config for `~/.pi/agent/models.json`
 
 ### .pi/agent/settings.json (config)
 
@@ -196,7 +196,7 @@ Config para `~/.pi/agent/models.json`
 }
 ```
 
-Config para `~/.pi/agent/settings.json`. Sin `defaultProvider` y `defaultModel` Pi usa su proveedor por defecto y devuelve un error de autenticación (401).
+Config for `~/.pi/agent/settings.json`. Without `defaultProvider` and `defaultModel`, Pi uses its default provider and returns an authentication error (401).
 
 ### openclaw.json (config)
 
@@ -244,9 +244,9 @@ Config para `~/.pi/agent/settings.json`. Sin `defaultProvider` y `defaultModel` 
 }
 ```
 
-Config para `~/.openclaw/openclaw.json`
+Config for `~/.openclaw/openclaw.json`
 
-`maxTokens: 65536` es el máximo que soporta el modelo. `params.maxTokens: 16000` es lo que se envía por request. 16K es un buen balance para la mayoría de tareas. Si necesitas respuestas más largas, súbelo — pero ten en cuenta que el reasoning también consume de ese presupuesto.
+`maxTokens: 65536` is the maximum the model supports. `params.maxTokens: 16000` is what is sent per request. 16K is a good balance for most tasks. If you need longer responses, increase it — but keep in mind that reasoning also consumes from that budget.
 
 <h3 id="qwen36-zed">settings.json (Zed)</h3>
 
@@ -278,21 +278,21 @@ Config para `~/.openclaw/openclaw.json`
 }
 ```
 
-Config para `~/.config/zed/settings.json` — incluye inline predictions.
+Config for `~/.config/zed/settings.json` — includes inline predictions.
 
-## modelo: qwen3-embedding
+## model: qwen3-embedding
 
-embeddings vectoriales
+vector embeddings
 
 ### curl
 
 ```bash
 curl https://api.nan.builders/v1/embeddings \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -d '{
     "model": "qwen3-embedding",
-    "input": ["Hola mundo", "Hello world"],
+    "input": ["Hello world", "Hola mundo"],
     "encoding_format": "float"
   }'
 # → 4096-dimensional vectors per input
@@ -304,13 +304,13 @@ curl https://api.nan.builders/v1/embeddings \
 from openai import OpenAI
 
 client = OpenAI(
-  api_key="sk-tu-key-aqui",
+  api_key="sk-your-key-here",
   base_url="https://api.nan.builders/v1"
 )
 
 response = client.embeddings.create(
   model="qwen3-embedding",
-  input=["Kubernetes pod scheduling", "Programación de pods Kubernetes"],
+  input=["Kubernetes pod scheduling", "Pod scheduling in Kubernetes"],
   encoding_format="float"
 )
 
@@ -324,7 +324,7 @@ print(len(embeddings[0]))  // 4096
 import OpenAI from "openai";
 
 const client = new OpenAI({
-  apiKey: "sk-tu-key-aqui",
+  apiKey: "sk-your-key-here",
   baseURL: "https://api.nan.builders/v1",
 });
 
@@ -338,9 +338,9 @@ const embeddings = response.data.map((d) => d.embedding);
 console.log(embeddings[0].length);  // 4096
 ```
 
-## modelo: rerank
+## model: rerank
 
-reranking semántico — completa el stack RAG
+semantic reranking — completes the RAG stack
 
 ### curl
 
@@ -357,7 +357,7 @@ curl https://api.nan.builders/v1/rerank \
       "Madrid is the capital of Spain."
     ]
   }'
-# → results[] ordenados por relevance_score desc, con index original
+# → results[] ordered by relevance_score desc, with original index
 ```
 
 ### python
@@ -371,8 +371,8 @@ client = OpenAI(
   base_url="https://api.nan.builders/v1"
 )
 
-# El endpoint /rerank no forma parte del cliente OpenAI estandar,
-# pero podemos invocarlo con client.post().
+# The /rerank endpoint is not part of the standard OpenAI client,
+# but we can invoke it with client.post().
 response = client.post(
   path="/rerank",
   cast_to=object,
@@ -391,9 +391,9 @@ for r in response["results"]:
     print(f"{r['index']}: {r['relevance_score']:.3f}")
 ```
 
-Tambien funciona con `requests` directo o cualquier cliente HTTP — el endpoint es OpenAI-compatible en autenticacion y forma de payload.
+Also works with raw `requests` or any HTTP client — the endpoint is OpenAI-compatible in authentication and payload format.
 
-## modelo: kokoro
+## model: kokoro
 
 text-to-speech
 
@@ -402,16 +402,16 @@ text-to-speech
 ```bash
 curl https://api.nan.builders/v1/audio/speech \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -d '{
     "model": "kokoro",
-    "input": "Bienvenido a NaN builders.",
-    "voice": "ef_dora"
+    "input": "Welcome to NaN builders.",
+    "voice": "af_heart"
   }' \
   -o speech.mp3
 
-# Spanish female voice (ef_dora), English (af_heart), etc.
-# Ver todas las voces: https://github.com/hexgrad/Kokoro-82M
+# English female voice (af_heart), Spanish (ef_dora), etc.
+# See all voices: https://github.com/hexgrad/Kokoro-82M
 ```
 
 ### python
@@ -420,25 +420,25 @@ curl https://api.nan.builders/v1/audio/speech \
 from openai import OpenAI
 
 client = OpenAI(
-  api_key="sk-tu-key-aqui",
+  api_key="sk-your-key-here",
   base_url="https://api.nan.builders/v1"
 )
 
 response = client.audio.speech.create(
   model="kokoro",
-  voice="ef_dora",
-  input="Hola, bienvenido a NaN builders.",
+  voice="af_heart",
+  input="Hello, welcome to NaN builders.",
   speed=1.0,
   response_format="mp3"
 )
 
 response.stream_to_file("output.mp3")
 
-# English voice
+# Spanish voice
 response = client.audio.speech.create(
   model="kokoro",
-  voice="af_heart",
-  input="Welcome to NaN builders.",
+  voice="ef_dora",
+  input="Hola, bienvenido a NaN builders.",
   response_format="mp3"
 )
 ```
@@ -450,14 +450,14 @@ import OpenAI from "openai";
 import fs from "fs";
 
 const client = new OpenAI({
-  apiKey: "sk-tu-key-aqui",
+  apiKey: "sk-your-key-here",
   baseURL: "https://api.nan.builders/v1",
 });
 
 const response = await client.audio.speech.create({
   model: "kokoro",
-  voice: "ef_dora",
-  input: "Hola, bienvenido a NaN builders.",
+  voice: "af_heart",
+  input: "Hello, welcome to NaN builders.",
   speed: 1.0,
   response_format: "mp3",
 });
@@ -466,7 +466,7 @@ const buffer = Buffer.from(await response.arrayBuffer());
 fs.writeFileSync("output.mp3", buffer);
 ```
 
-## modelo: whisper
+## model: whisper
 
 speech-to-text
 
@@ -475,18 +475,18 @@ speech-to-text
 ```bash
 # Transcribe audio file
 curl https://api.nan.builders/v1/audio/transcriptions \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -F "model=whisper" \
   -F "file=@recording.mp3" \
-  -F "language=es"
+  -F "language=en"
 
-# → {"text":"Texto transcrito","language":"es","duration":5.2}
+# → {"text":"Transcribed text","language":"en","duration":5.2}
 
 # Translate to English
 curl https://api.nan.builders/v1/audio/translations \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -F "model=whisper" \
-  -F "file=@grabacion.mp3"
+  -F "file=@recording.mp3"
 ```
 
 ### python
@@ -495,25 +495,25 @@ curl https://api.nan.builders/v1/audio/translations \
 from openai import OpenAI
 
 client = OpenAI(
-  api_key="sk-tu-key-aqui",
+  api_key="sk-your-key-here",
   base_url="https://api.nan.builders/v1"
 )
 
-# Transcribe Spanish audio
-with open("grabacion.mp3", "rb") as f:
+# Transcribe English audio
+with open("recording.mp3", "rb") as f:
     result = client.audio.transcriptions.create(
         model="whisper",
         file=f,
-        language="es",
+        language="en",
         response_format="verbose_json"
     )
 
 print(result.text)              # Transcribed text
-print(result.language)          # "es"
+print(result.language)          # "en"
 print(result.duration)          # 5.2 (seconds)
 
 # Translate to English
-with open("grabacion.mp3", "rb") as f:
+with open("recording.mp3", "rb") as f:
     translation = client.audio.translations.create(
         model="whisper",
         file=f
@@ -529,59 +529,59 @@ import fs from "fs";
 import FormData from "form-data";
 
 const client = new OpenAI({
-  apiKey: "sk-tu-key-aqui",
+  apiKey: "sk-your-key-here",
   baseURL: "https://api.nan.builders/v1",
 });
 
 // Transcribe audio
-const file = fs.createReadStream("grabacion.mp3");
+const file = fs.createReadStream("recording.mp3");
 const form = FormData();
 form.append("file", file);
 
 const result = await client.audio.transcriptions.create({
   model: "whisper",
   file,
-  language: "es",
+  language: "en",
   response_format: "verbose_json",
 });
 
-console.log(result.text);       // Texto transcrito
-console.log(result.language);   // "es"
+console.log(result.text);       // Transcribed text
+console.log(result.language);   // "en"
 console.log(result.duration);   // 5.2
 ```
 
-## modelo: mimo-v2.5
+## model: mimo-v2.5
 
-omnimodal — chat, visión y audio
+omnimodal — chat, vision, and audio
 
 ### curl
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -d '{
     "model": "mimo-v2.5",
-    "messages": [{"role": "user", "content": "Hola, ¿cómo estás?"}],
+    "messages": [{"role": "user", "content": "Hello, how are you?"}],
     "max_tokens": 500
   }'
 ```
 
-Con reasoning activo se recomienda `max_tokens ≥ 300` para dejar margen al razonamiento.
+With reasoning enabled, `max_tokens ≥ 300` is recommended to leave room for reasoning.
 
 ### vision (curl)
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-tu-key-aqui" \
+  -H "Authorization: Bearer sk-your-key-here" \
   -d '{
     "model": "mimo-v2.5",
     "messages": [{
       "role": "user",
       "content": [
-        {"type": "text", "text": "¿Qué hay en esta imagen?"},
-        {"type": "image_url", "image_url": {"url": "https://example.com/foto.jpg"}}
+        {"type": "text", "text": "What's in this image?"},
+        {"type": "image_url", "image_url": {"url": "https://example.com/photo.jpg"}}
       ]
     }],
     "max_tokens": 500
@@ -594,7 +594,7 @@ curl https://api.nan.builders/v1/chat/completions \
 from openai import OpenAI
 
 client = OpenAI(
-  api_key="sk-tu-key-aqui",
+  api_key="sk-your-key-here",
   base_url="https://api.nan.builders/v1"
 )
 
@@ -603,8 +603,8 @@ response = client.chat.completions.create(
   messages=[{
     "role": "user",
     "content": [
-      {"type": "text", "text": "Describe esta imagen."},
-      {"type": "image_url", "image_url": {"url": "https://example.com/foto.jpg"}}
+      {"type": "text", "text": "Describe this image."},
+      {"type": "image_url", "image_url": {"url": "https://example.com/photo.jpg"}}
     ]
   }],
   max_tokens=500
@@ -613,13 +613,13 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-## Integración en IDEs
+## IDE Integration
 
-- **Cursor**: Settings → OpenAI API → Base URL: `https://api.nan.builders/v1`, API Key: tu key
-- **Zed**: Settings → `settings.json` → ver [config completo arriba](#qwen36-zed)
-- **Cline / Continue / Aider**: Configura las vars de entorno:
+- **Cursor**: Settings → OpenAI API → Base URL: `https://api.nan.builders/v1`, API Key: your key
+- **Zed**: Settings → `settings.json` → see [full config above](#qwen36-zed)
+- **Cline / Continue / Aider**: Set the environment variables:
 
 ```bash
 export OPENAI_BASE_URL="https://api.nan.builders/v1"
-export OPENAI_API_KEY="sk-tu-key-aqui"
+export OPENAI_API_KEY="sk-your-key-here"
 ```

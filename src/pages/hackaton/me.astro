@@ -6,7 +6,7 @@ import { jsonData, type MeData, type Team } from '../../lib/hackaton';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
-const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+const locale = Astro.url.searchParams.get('lang') === 'es' ? 'es' : 'en';
 
 const base = env.CLOUD_API_URL.replace(/\/$/, '');
 let team: Team | null = null, status = 'draft';

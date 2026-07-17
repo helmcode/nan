@@ -19,13 +19,13 @@ function resolveKey(obj: Record<string, unknown>, key: string): unknown {
   return current;
 }
 
-export function t(key: string, locale: string = 'es'): string {
+export function t(key: string, locale: string = 'en'): string {
   const data = translations[locale] || translations.es;
   const result = resolveKey(data, key);
   return typeof result === 'string' ? result : key;
 }
 
-export function tArr(key: string, locale: string = 'es'): string[] {
+export function tArr(key: string, locale: string = 'en'): string[] {
   const data = translations[locale] || translations.es;
   const result = resolveKey(data, key);
   if (typeof result === 'object' && result !== null) {
@@ -35,7 +35,7 @@ export function tArr(key: string, locale: string = 'es'): string[] {
   return [];
 }
 
-export function tObj<T = Record<string, unknown>>(key: string, locale: string = 'es'): T {
+export function tObj<T = Record<string, unknown>>(key: string, locale: string = 'en'): T {
   const data = translations[locale] || translations.es;
   const result = resolveKey(data, key);
   if (typeof result === 'object' && result !== null) return result as T;
@@ -45,11 +45,11 @@ export function tObj<T = Record<string, unknown>>(key: string, locale: string = 
 export function getLocale(queryParams: URLSearchParams): string {
   const lang = queryParams.get('lang');
   if (lang === 'en' || lang === 'es') return lang;
-  return 'es';
+  return 'en';
 }
 
-// Mantiene el locale en navegación interna: withLang('/hackaton/me', 'en')
-// → '/hackaton/me?lang=en'. En 'es' devuelve la ruta tal cual.
+// Keeps locale in internal navigation: withLang('/hackaton/me', 'es')
+// → '/hackaton/me?lang=es'. Default is 'en', so 'en' returns the path as-is.
 export function withLang(path: string, locale: string): string {
-  return locale === 'en' ? `${path}${path.includes('?') ? '&' : '?'}lang=en` : path;
+  return locale === 'es' ? `${path}${path.includes('?') ? '&' : '?'}lang=es` : path;
 }

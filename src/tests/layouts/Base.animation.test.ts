@@ -26,6 +26,24 @@ const here = dirname(fileURLToPath(import.meta.url));
 const baseLayoutPath = resolve(here, '../../layouts/Base.astro');
 const componentPath = resolve(here, '../../components/landing/AnimatedBackground.astro');
 
+describe('Base layout — Agents removal guard', () => {
+  const baseSource = readFileSync(baseLayoutPath, 'utf-8');
+
+  // Regression guard: Agents.astro was removed from the landing. If someone
+  // accidentally re-adds the import or the <Agents /> usage, this test fails.
+  it('does NOT import Agents.astro', () => {
+    expect(baseSource).not.toMatch(
+      /import\s+Agents\s+from\s+['"][^'"]*components\/landing\/Agents\.astro['"]/,
+    );
+  });
+
+  it('does NOT render <Agents /> inside the <body>', () => {
+    const bodyMatch = baseSource.match(/<body[^>]*>([\s\S]*?)<\/body>/);
+    expect(bodyMatch, 'Base.astro must have a <body> tag').not.toBeNull();
+    expect(bodyMatch![1]).not.toContain('<Agents');
+  });
+});
+
 describe('Base layout — animated background guard', () => {
   const baseSource = readFileSync(baseLayoutPath, 'utf-8');
   const componentSource = readFileSync(componentPath, 'utf-8');

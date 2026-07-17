@@ -57,62 +57,9 @@
     },
     "models": "// current models"
   },
-  "agents": {
-    "label": "// agents platform",
-    "heading": "Tu propia microVM. Acceso root. Aislada por KVM.",
-    "description": "Más allá de la API. Cada miembro puede desplegar un agente en su propia microVM aislada con QEMU, con acceso completo a los modelos del cluster, terminal web, subida de ficheros y observabilidad nativa.",
-    "specs": {
-      "label": "// resources",
-      "cpu": "1 vCPU",
-      "ram": "2 GiB",
-      "disk": "20 GiB"
-    },
-    "features": {
-      "label": "// what you get",
-      "items": {
-        "0": {
-          "name": "microVM aislada",
-          "desc": "microVM aislada por QEMU/KVM. Kernel propio, FS propio, root sin riesgo para el host."
-        },
-        "1": {
-          "name": "Hermes preinstalado",
-          "desc": "Agente conversacional listo. Conéctalo a Telegram con un token y empieza a hablar."
-        },
-        "2": {
-          "name": "Terminal web",
-          "desc": "Consola interactiva en el navegador. apt, pip, git — todo persistente."
-        },
-        "3": {
-          "name": "Carga de ficheros",
-          "desc": "Drag-and-drop hasta 200 MiB por archivo. Datasets, PDFs, configs."
-        },
-        "4": {
-          "name": "Observabilidad nativa",
-          "desc": "Logs en vivo, eventos K8s, métricas de CPU/RAM/disco — sin instalar nada."
-        },
-        "5": {
-          "name": "Endpoint HTTP público",
-          "desc": "Expón cualquier servicio web del agente con una URL en *.apps.nan.builders."
-        }
-      }
-    },
-    "stack": {
-      "label": "// stack",
-      "runtime": "QEMU microVM",
-      "orchestration": "Kubernetes",
-      "storage": "block-mode persistent disk",
-      "isolation": "KVM"
-    },
-    "guarantees": {
-      "0": "Acceso root completo dentro de tu microVM.",
-      "1": "Persistencia real: apt install, configs, datos — todo sobrevive a reinicios.",
-      "2": "Shutdown graceful: sin corrupción de filesystem.",
-      "3": "Aislamiento a nivel kernel del host y de otros miembros."
-    }
-  },
   "founder": {
     "label": "// who's behind",
-    "heading": "La comunidad la monta una persona. No una empresa.",
+    "heading": "La comunidad NaN la dirigen Cristian Córdova y Borja Perez.",
     "bio": {
       "0": "Founder de <a href=\"https://helmcode.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-violet-400 hover:text-violet-300 transition-colors\">Helmcode</a>, trabajando con startups en infraestructura cloud, AI tooling y software abierto.",
       "1": "Gracias a <a href=\"https://helmcode.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-violet-400 hover:text-violet-300 transition-colors\">Helmcode</a> ofrecemos inferencia de modelos abiertos con planes sin límites de tokens para empresas, publico mis experimentos en redes sociales y estudios con IA."
@@ -122,7 +69,8 @@
       "twitter": "Twitter",
       "linkedin": "LinkedIn",
       "github": "GitHub"
-    }
+    },
+    "companyIntro": "La comunidad NaN existe gracias a <a href=\"https://helmcode.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-violet-400 hover:text-violet-300 transition-colors\">Helmcode</a>, la empresa detrás de toda la infraestructura de inferencia que alimenta la comunidad."
   },
   "pricing": {
     "label": "// pricing",

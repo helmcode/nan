@@ -6,7 +6,7 @@ import { t, tArr } from '../lib/i18n';
 
 export const prerender = false;
 
-const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+const locale = Astro.url.searchParams.get('lang') === 'es' ? 'es' : 'en';
 
 const includes = tArr('pricing.communityFeatures', locale);
 const notIncluded = tArr('community.notIncluded', locale);

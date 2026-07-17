@@ -2,7 +2,7 @@
 import { t, tObj } from '../../lib/i18n';
 import FaqAccordion from './FaqAccordion.tsx';
 
-const { locale = 'es' } = Astro.props;
+const { locale = 'en' } = Astro.props;
 
 const itemsRaw = tObj<Record<string, { id: string; question: string; answer: string }>>('faq.items', locale);
 const items = Object.values(itemsRaw);

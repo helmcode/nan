@@ -4,7 +4,7 @@ import { t, withLang } from '../../lib/i18n';
 import { jsonData } from '../../lib/hackaton';
 import { env } from 'cloudflare:workers';
 export const prerender = false;
-const locale = Astro.url.searchParams.get('lang') === 'en' ? 'en' : 'es';
+const locale = Astro.url.searchParams.get('lang') === 'es' ? 'es' : 'en';
 const base = env.CLOUD_API_URL.replace(/\/$/, '');
 let lb: any = { public: false, rows: [] };
 try {
