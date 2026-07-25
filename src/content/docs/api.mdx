@@ -33,6 +33,7 @@ List of available endpoints. Each links to its section with `request`, `response
     { href: '#responses', title: 'Responses', method: 'POST', path: '/v1/responses' },
     { href: '#images-generations', title: 'Image generation', method: 'POST', path: '/v1/images/generations' },
     { href: '#images-edits', title: 'Image editing', method: 'POST', path: '/v1/images/edits' },
+    { href: '#web-search', title: 'Web search', method: 'POST', path: '/v1/search' },
   ]}
 />
 
@@ -920,6 +921,127 @@ curl https://api.nan.builders/v1/images/edits \
   -F "prompt=Convierte la escena en invierno con nieve" \
   -F "size=1024x1024"
 ```
+
+<h2 id="web-search">POST /v1/search</h2>
+
+An authenticated web-search tool for your agents. You send a query and we return ranked results (title, URL, snippet, and optionally the page's readable content) through our API — your key never talks to a third-party search provider directly. Results come from a hybrid of an external search API (primary) and an internal fallback; you don't need to know which served a given request.
+
+Designed to be wired as an agent tool: give the model the [function schema below](#web-search-tool), and when it emits a `web_search` tool call, invoke this endpoint with the arguments and feed the JSON response back as the tool result.
+
+### Request
+
+The body is JSON.
+
+| Field | Type | Description |
+|---|---|---|
+| `query` | string · required | The search query. |
+| `count` | integer · optional | Number of results to return, `1`–`20` (clamped). Default `5`. |
+| `freshness` | string · optional | Recency filter: `pd` (past day), `pw` (past week), `pm` (past month), `py` (past year), or a `YYYY-MM-DDtoYYYY-MM-DD` date range. Omit for no time filter. |
+| `fetch_content` | boolean · optional | When `true`, also fetch and include the readable text of the top results. Adds latency. Default `false` returns snippets only. |
+
+<Callout title="You only supply the query">
+  When <code>fetch_content</code> is <code>true</code>, the server fetches page content <strong>only</strong> for the URLs the search engine returned, through a hardened anti-SSRF fetcher — you cannot pass an arbitrary URL to fetch.
+</Callout>
+
+### Response
+
+```json
+{
+  "results": [
+    {
+      "title": "Go 1.23 is released",
+      "url": "https://go.dev/blog/go1.23",
+      "snippet": "The latest Go release ...",
+      "content": "Full readable page text (only present when fetch_content=true)",
+      "source": "brave"
+    }
+  ],
+  "cached": false
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `results[].title` | string | Result title (plain text). |
+| `results[].url` | string | Result URL. |
+| `results[].snippet` | string | Short excerpt. |
+| `results[].content` | string | Readable page text — present only when `fetch_content=true` and the fetch succeeded. |
+| `results[].source` | string | Which upstream served the result. |
+| `cached` | boolean | `true` when the results came from the short-lived (~15 min) exact-query cache. Cached hits still count toward your rate limit and daily quota. |
+
+### Example
+
+```bash
+curl https://api.nan.builders/v1/search \
+  -H "Authorization: Bearer sk-your-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "latest go release",
+    "count": 5,
+    "freshness": "pw"
+  }'
+```
+
+<h3 id="web-search-tool">Wire it as an agent tool</h3>
+
+Drop this into your model call's `tools` array (OpenAI-style function calling). When the model emits a `web_search` tool call, invoke `POST /v1/search` with the arguments and return the JSON response as the tool result.
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "web_search",
+    "description": "Search the public web and return relevant results (title, URL, snippet, and optional page content). Use it when the answer may depend on current events, recent developments, prices, release/version numbers, or facts you are not confident are up to date.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The web search query."
+        },
+        "count": {
+          "type": "integer",
+          "description": "Number of results to return (1-20).",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 5
+        },
+        "freshness": {
+          "type": "string",
+          "description": "Restrict results by recency: 'pd' (past day), 'pw' (past week), 'pm' (past month), 'py' (past year), or a 'YYYY-MM-DDtoYYYY-MM-DD' date range. Omit for no time filter."
+        },
+        "fetch_content": {
+          "type": "boolean",
+          "description": "When true, also fetch and include the readable text of the top results (slower). Default false returns snippets only.",
+          "default": false
+        }
+      },
+      "required": ["query"]
+    }
+  }
+}
+```
+
+### Rate limits and quota
+
+Web search **does not go through LiteLLM**, so the per-key LiteLLM limits (see [Rate limits](#rate-limits)) do **not** apply to it. These limits are specific to the search endpoint and are enforced per API key:
+
+| Limit | Value | Description |
+|---|---|---|
+| Rate limit | `20 req/min` | 20 requests per minute. Exceeding it returns `429` (`rate_limit_exceeded`); respect the `Retry-After` header. |
+| Concurrency | `3` | Up to 3 concurrent searches. Exceeding it returns `429` (`rate_limit_exceeded`). |
+| Daily quota | `500 / day` | 500 searches per day per API key. Exceeding it returns `429` (`insufficient_quota`). |
+
+### Search errors
+
+In addition to the [common errors](#errors), this endpoint may return:
+
+| Status | `code` | Description |
+|---|---|---|
+| 401 | `invalid_api_key` | The `Authorization` header is missing or the key is invalid. |
+| 429 | `rate_limit_exceeded` | Per-minute or concurrency limit reached. Respect the `Retry-After` header. |
+| 429 | `insufficient_quota` | Daily search quota exhausted. |
+| 503 | `search_unavailable` | Search is temporarily unavailable; retry shortly. |
 
 ## Errors
 
