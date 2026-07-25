@@ -883,7 +883,7 @@ print(response.data[0].url)
 
 ### Rate limits y cuota
 
-La generación de imágenes **no pasa por LiteLLM**, así que los límites por key de LiteLLM (ver [Rate limits](#rate-limits)) **no** le aplican. Generar imágenes no consume tu presupuesto de rpm del chat, y viceversa. Estos límites aplican igual a la API y a la consola web, y son propios de los endpoints de imágenes:
+La generación de imágenes tiene sus propios límites, independientes de los [rate limits](#rate-limits) de los endpoints de modelos: generar imágenes no consume tu presupuesto de rpm del chat, y viceversa. Estos límites aplican igual a la API y a la consola web, y son propios de los endpoints de imágenes:
 
 | Límite | Valor | Descripción |
 |---|---|---|
@@ -1024,7 +1024,7 @@ Drop this into your model call's `tools` array (OpenAI-style function calling). 
 
 ### Rate limits and quota
 
-Web search **does not go through LiteLLM**, so the per-key LiteLLM limits (see [Rate limits](#rate-limits)) do **not** apply to it. These limits are specific to the search endpoint and are enforced per API key:
+Web search has its own limits, separate from the standard [rate limits](#rate-limits) of the model endpoints: searching does not consume your chat rpm budget, and vice versa. These limits are enforced per API key:
 
 | Limit | Value | Description |
 |---|---|---|
