@@ -953,7 +953,7 @@ The body is JSON.
       "url": "https://go.dev/blog/go1.23",
       "snippet": "The latest Go release ...",
       "content": "Full readable page text (only present when fetch_content=true)",
-      "source": "brave"
+      "source": "primary"
     }
   ],
   "cached": false
@@ -966,7 +966,7 @@ The body is JSON.
 | `results[].url` | string | Result URL. |
 | `results[].snippet` | string | Short excerpt. |
 | `results[].content` | string | Readable page text — present only when `fetch_content=true` and the fetch succeeded. |
-| `results[].source` | string | Which upstream served the result. |
+| `results[].source` | string | Which tier served the result: `primary` or `fallback`. |
 | `cached` | boolean | `true` when the results came from the short-lived (~15 min) exact-query cache. Cached hits still count toward your rate limit and daily quota. |
 
 ### Example
