@@ -25,6 +25,7 @@
     "heading": "Inference cluster",
     "description": "Shared inference cluster. Models chosen by the community every quarter.",
     "models": "// current models",
+    "comingSoon": "coming soon",
     "guarantees": {
       "0": "Your code doesn't train any models",
       "1": "Data in EU, no prompt logs",

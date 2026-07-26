@@ -25,6 +25,7 @@
     "heading": "Cluster de inferencia",
     "description": "Cluster compartido de inferencia. Modelos elegidos por la comunidad cada trimestre.",
     "models": "// current models",
+    "comingSoon": "disponible pronto",
     "guarantees": {
       "0": "Tu código no entrena ningún modelo",
       "1": "Datos en EU, sin logs de prompts",
