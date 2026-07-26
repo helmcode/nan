@@ -34,6 +34,7 @@ List of available endpoints. Each links to its section with `request`, `response
     { href: '#images-generations', title: 'Image generation', method: 'POST', path: '/v1/images/generations' },
     { href: '#images-edits', title: 'Image editing', method: 'POST', path: '/v1/images/edits' },
     { href: '#web-search', title: 'Web search', method: 'POST', path: '/v1/search' },
+    { href: '#mcp', title: 'MCP server', method: 'POST', path: '/mcp' },
   ]}
 />
 
@@ -1037,6 +1038,85 @@ In addition to the [common errors](#errors), this endpoint may return:
 | 429 | `rate_limit_exceeded` | Per-minute or concurrency limit reached. Respect the `Retry-After` header. |
 | 429 | `insufficient_quota` | Daily search quota exhausted. |
 | 503 | `search_unavailable` | Search is temporarily unavailable; retry shortly. |
+
+<h2 id="mcp">MCP server</h2>
+
+We expose a remote [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server so you can use our tools directly inside any MCP-compatible agent or client, authenticated with the **same** `sk-` API key as the REST API. The endpoint is `https://api.nan.builders/mcp` (Helmcode enterprise uses the same shape on `api.helmcode.com/mcp`).
+
+Today the server exposes a single tool, [`web_search`](#web-search) (same capability and arguments as `POST /v1/search`), and it is a growing registry — more tools will be added over time and appear automatically under `tools/list`.
+
+| Property | Value |
+|---|---|
+| Endpoint | `https://api.nan.builders/mcp` |
+| Transport | Streamable HTTP (remote), stateless |
+| Protocol | JSON-RPC 2.0 — methods: `initialize`, `tools/list`, `tools/call`, `ping` |
+| Auth | `Authorization: Bearer <your API key>` — the same `sk-` key as the REST API. Unauthenticated requests get `401`. |
+| Tools | `web_search` (more coming). Arguments match [`POST /v1/search`](#web-search): `query`, `count` (1–20, default 5), `freshness`, `fetch_content` (default false). |
+
+<Callout title="One budget, shared with the REST API">
+  MCP calls share the <strong>same</strong> per-key rate limit, daily quota, and concurrency as the equivalent REST endpoint — there is no separate budget. A <code>web_search</code> tool call over MCP counts exactly like a <code>POST /v1/search</code> request.
+</Callout>
+
+### Connect an MCP client
+
+Most native remote MCP clients accept a `url` plus `headers`. Point them at the endpoint and pass your key in the `Authorization` header:
+
+```json
+{
+  "mcpServers": {
+    "nan": {
+      "url": "https://api.nan.builders/mcp",
+      "headers": {
+        "Authorization": "Bearer sk-your-key-here"
+      }
+    }
+  }
+}
+```
+
+Clients that only speak stdio (some desktop apps) can bridge to the remote server with [`mcp-remote`](https://www.npmjs.com/package/mcp-remote):
+
+```json
+{
+  "mcpServers": {
+    "nan": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://api.nan.builders/mcp",
+        "--header",
+        "Authorization:Bearer sk-your-key-here"
+      ]
+    }
+  }
+}
+```
+
+<Callout title="Keep the server name short">
+  Many clients prefix each tool with the server name, so a server entry named <code>nan</code> surfaces the tool as <code>nan_web_search</code>. A verbose name like <code>nan-web-search</code> would produce a duplicated-looking <code>nan_web_search_web_search</code> — name the entry <code>nan</code>.
+</Callout>
+
+### Raw JSON-RPC
+
+You can also drive the server directly. A `tools/call` for `web_search`:
+
+```bash
+curl https://api.nan.builders/mcp \
+  -H "Authorization: Bearer sk-your-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "web_search",
+      "arguments": { "query": "kubernetes 1.34 release", "count": 5 }
+    }
+  }'
+```
+
+Use `tools/list` to discover the current tool set and each tool's input schema.
 
 ## Errors
 
