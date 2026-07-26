@@ -120,14 +120,6 @@ Install: `npm install openai`
             "input": ["text", "image", "audio"],
             "output": ["text"]
           }
-        },
-        "glm5.2": {
-          "name": "GLM 5.2",
-          "contextWindow": 262144,
-          "modalities": {
-            "input": ["text"],
-            "output": ["text"]
-          }
         }
       }
     }
@@ -140,7 +132,7 @@ Install: `npm install openai`
 }
 ```
 
-This is the config to connect IDEs (Cursor, OpenCode) with the 5 available LLM models: `qwen3.6`, `gemma4`, `deepseek-v4-flash`, `mimo-v2.5` and `glm5.2`.
+This is the config to connect IDEs (Cursor, OpenCode) with the 4 available LLM models: `qwen3.6`, `gemma4`, `deepseek-v4-flash` and `mimo-v2.5`.
 
 ### .pi/agent/models.json (config)
 
@@ -168,14 +160,6 @@ This is the config to connect IDEs (Cursor, OpenCode) with the 5 available LLM m
           "name": "Gemma 4",
           "reasoning": true,
           "input": ["text", "image"],
-          "contextWindow": 262144,
-          "maxTokens": 16384
-        },
-        {
-          "id": "glm5.2",
-          "name": "GLM 5.2",
-          "reasoning": true,
-          "input": ["text"],
           "contextWindow": 262144,
           "maxTokens": 16384
         }
@@ -216,14 +200,6 @@ Config for `~/.pi/agent/settings.json`. Without `defaultProvider` and `defaultMo
             "input": ["text", "image"],
             "contextWindow": 262144,
             "maxTokens": 65536
-          },
-          {
-            "id": "glm5.2",
-            "name": "GLM 5.2",
-            "reasoning": true,
-            "input": ["text"],
-            "contextWindow": 262144,
-            "maxTokens": 65536
           }
         ]
       }
@@ -259,11 +235,6 @@ Config for `~/.openclaw/openclaw.json`
         {
           "name": "qwen3.6",
           "display_name": "NaN",
-          "max_tokens": 262144
-        },
-        {
-          "name": "glm5.2",
-          "display_name": "NaN GLM 5.2",
           "max_tokens": 262144
         }
       ]

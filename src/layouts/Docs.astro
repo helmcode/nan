@@ -236,7 +236,8 @@ const breadcrumbSegments = pathParts.map((part, i) => {
           const link = document.createElement('a');
           link.href = `#${id}`;
           link.className = `toc-link ${heading.tagName === 'H3' ? 'h2' : ''}`;
-          link.textContent = heading.textContent || '';
+          // data-toc-text lets a heading keep decorations (badges) out of the TOC
+          link.textContent = heading.dataset.tocText || heading.textContent || '';
           link.dataset.target = id;
 
           link.addEventListener('click', (e) => {
