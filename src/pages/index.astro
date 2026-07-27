@@ -1,8 +1,5 @@
 ---
-import NanBase from '../layouts/NanBase.astro';
-import Nav from '../components/nan/Nav.astro';
-import Footer from '../components/nan/Footer.astro';
-import CookieBanner from '../components/nan/CookieBanner.astro';
+import NanPage from '../layouts/NanPage.astro';
 import StructuredData from '../components/nan/StructuredData.astro';
 import Hero from '../components/nan/home/Hero.astro';
 import WhyNan from '../components/nan/home/WhyNan.astro';
@@ -19,7 +16,7 @@ const site = Astro.site ?? new URL('https://nan.builders');
 const canonical = new URL(Astro.url.pathname.replace(/\/+$/, '') || '/', site).href;
 ---
 
-<NanBase>
+<NanPage>
   <StructuredData
     slot="head"
     lang={locale}
@@ -27,7 +24,6 @@ const canonical = new URL(Astro.url.pathname.replace(/\/+$/, '') || '/', site).h
     canonical={canonical}
     origin={site.origin}
   />
-  <Nav slot="nav" />
 
   <Hero />
   <WhyNan />
@@ -37,22 +33,10 @@ const canonical = new URL(Astro.url.pathname.replace(/\/+$/, '') || '/', site).h
   <Pricing />
   <WhoBehind />
   <Faq />
-
-  <Fragment slot="footer">
-    <Footer />
-    <CookieBanner />
-  </Fragment>
-</NanBase>
+</NanPage>
 
 <script>
+  // El campo de partículas es exclusivo de la home.
   import { initParticles } from '../scripts/particles';
-  import { initWaitlist } from '../scripts/waitlist';
-  import { initReveal } from '../scripts/reveal';
-  import { initNanGlitch } from '../scripts/nanGlitch';
-
-  // Las partículas son solo de la home.
   initParticles();
-  initWaitlist();
-  initReveal();
-  initNanGlitch();
 </script>

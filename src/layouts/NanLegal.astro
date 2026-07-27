@@ -1,5 +1,5 @@
 ---
-import Base from './NanBase.astro';
+import NanPage from './NanPage.astro';
 import { getLang } from '../lib/i18n';
 interface Props { title: string; updated: string; }
 const { title, updated } = Astro.props;
@@ -11,7 +11,7 @@ const description =
     : `${title} for the NaN community.`;
 ---
 
-<Base title={`${title} — NaN`} description={description}>
+<NanPage title={`${title} — NaN`} description={description}>
   <section class="legal">
     <div class="container legal__wrap">
       <p class="eyebrow">// legal</p>
@@ -22,7 +22,7 @@ const description =
       </div>
     </div>
   </section>
-</Base>
+</NanPage>
 
 <style>
   .legal { padding-block: clamp(56px, 8vh, 100px) clamp(80px, 12vh, 160px); }
