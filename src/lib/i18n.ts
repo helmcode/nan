@@ -42,14 +42,34 @@ export function tObj<T = Record<string, unknown>>(key: string, locale: string = 
   return {} as T;
 }
 
-export function getLocale(queryParams: URLSearchParams): string {
-  const lang = queryParams.get('lang');
-  if (lang === 'en' || lang === 'es') return lang;
-  return 'en';
+export const LOCALES = ['en', 'es'] as const;
+export type Locale = (typeof LOCALES)[number];
+export const DEFAULT_LOCALE: Locale = 'en';
+
+/**
+ * The locale lives in the PATH, not in a query param: English at `/`, Spanish
+ * under `/es/`. Query params are invisible to crawlers as a language signal
+ * and cannot carry hreflang, so `/es/...` is what we index and link.
+ *
+ * Accepts a URL or a pathname so callers can pass `Astro.url` directly.
+ */
+export function getLocale(source: URL | string): Locale {
+  const pathname = typeof source === 'string' ? source : source.pathname;
+  return pathname.split('/')[1] === 'es' ? 'es' : 'en';
 }
 
-// Keeps locale in internal navigation: withLang('/hackaton/me', 'es')
-// → '/hackaton/me?lang=es'. Default is 'en', so 'en' returns the path as-is.
+/**
+ * Keeps the locale in internal navigation: withLang('/hackaton/me', 'es')
+ * → '/es/hackaton/me'. English is the default locale and has no prefix.
+ */
 export function withLang(path: string, locale: string): string {
-  return locale === 'es' ? `${path}${path.includes('?') ? '&' : '?'}lang=es` : path;
+  if (locale !== 'es') return path;
+  const clean = path.startsWith('/') ? path : `/${path}`;
+  return clean === '/' ? '/es' : `/es${clean}`;
+}
+
+/** Same page in the other language, for the language switcher. */
+export function switchLocalePath(pathname: string, target: Locale): string {
+  const stripped = pathname.replace(/^\/es(?=\/|$)/, '') || '/';
+  return target === 'en' ? stripped : withLang(stripped, 'es');
 }

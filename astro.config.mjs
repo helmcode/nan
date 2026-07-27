@@ -9,9 +9,19 @@ import rehypePrettyCode from 'rehype-pretty-code';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://nan.builders',
   output: 'server',
   adapter: cloudflare(),
   integrations: [preact(), mdx()],
+
+  // El idioma va en la RUTA, no en un query param: EN en `/`, ES en `/es/`.
+  // Un `?lang=` no es una señal de idioma para los buscadores y no se puede
+  // acompañar de hreflang; con rutas sí, y además se pueden prerenderizar.
+  i18n: {
+    locales: ['en', 'es'],
+    defaultLocale: 'en',
+    routing: { prefixDefaultLocale: false },
+  },
 
   // We do not use Astro sessions in v1 (no auth). The Cloudflare adapter
   // otherwise auto-enables a KV-backed session driver and tries to inject a

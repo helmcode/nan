@@ -1,13 +1,13 @@
 ---
 import Page from '../../layouts/Page.astro';
 import VoteButton from '../../components/hackaton/VoteButton.tsx';
-import { t, tObj, withLang } from '../../lib/i18n';
+import { getLocale, t, tObj, withLang } from '../../lib/i18n';
 import { jsonData, type MeData } from '../../lib/hackaton';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 
-const locale = Astro.url.searchParams.get('lang') === 'es' ? 'es' : 'en';
+const locale = getLocale(Astro.url);
 const base = env.CLOUD_API_URL.replace(/\/$/, '');
 let projects: any[] = [];
 // Voto actual del usuario (SSR, reenviando la cookie). Permite marcar la tarjeta

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { t, tArr, tObj, getLocale, withLang } from '../../lib/i18n';
+import { t, tArr, tObj, getLocale, withLang, switchLocalePath } from '../../lib/i18n';
 
 describe('i18n', () => {
   describe('t()', () => {
@@ -61,38 +61,69 @@ describe('i18n', () => {
   });
 
   describe('getLocale()', () => {
-    test('returns "en" when no lang param', () => {
-      expect(getLocale(new URLSearchParams())).toBe('en');
+    test('returns "en" for the root path', () => {
+      expect(getLocale('/')).toBe('en');
     });
 
-    test('returns "en" when lang=en', () => {
-      expect(getLocale(new URLSearchParams([['lang', 'en']]))).toBe('en');
+    test('returns "en" for an unprefixed path', () => {
+      expect(getLocale('/hackaton/me')).toBe('en');
     });
 
-    test('returns "es" when lang=es', () => {
-      expect(getLocale(new URLSearchParams([['lang', 'es']]))).toBe('es');
+    test('returns "es" for the /es root', () => {
+      expect(getLocale('/es')).toBe('es');
     });
 
-    test('returns "en" for unknown lang value', () => {
-      expect(getLocale(new URLSearchParams([['lang', 'fr']]))).toBe('en');
+    test('returns "es" for a prefixed path', () => {
+      expect(getLocale('/es/hackaton/me')).toBe('es');
+    });
+
+    test('accepts a URL as well as a pathname', () => {
+      expect(getLocale(new URL('https://nan.builders/es/community'))).toBe('es');
+      expect(getLocale(new URL('https://nan.builders/community'))).toBe('en');
+    });
+
+    test('does not treat a lookalike segment as Spanish', () => {
+      expect(getLocale('/espanol')).toBe('en');
+    });
+
+    test('ignores a leftover ?lang query param', () => {
+      expect(getLocale(new URL('https://nan.builders/?lang=es'))).toBe('en');
     });
   });
 
   describe('withLang()', () => {
-    test('appends ?lang=es for Spanish locale', () => {
-      expect(withLang('/hackaton/me', 'es')).toBe('/hackaton/me?lang=es');
+    test('prefixes /es for Spanish locale', () => {
+      expect(withLang('/hackaton/me', 'es')).toBe('/es/hackaton/me');
     });
 
     test('returns path as-is for English locale', () => {
       expect(withLang('/hackaton/me', 'en')).toBe('/hackaton/me');
     });
 
-    test('appends &lang=es when URL already has query params', () => {
-      expect(withLang('/page?x=1', 'es')).toBe('/page?x=1&lang=es');
+    test('maps the root to /es', () => {
+      expect(withLang('/', 'es')).toBe('/es');
+      expect(withLang('/', 'en')).toBe('/');
     });
 
-    test('returns path as-is for English with existing params', () => {
-      expect(withLang('/page?x=1', 'en')).toBe('/page?x=1');
+    test('keeps query params untouched', () => {
+      expect(withLang('/page?x=1', 'es')).toBe('/es/page?x=1');
+    });
+  });
+
+  describe('switchLocalePath()', () => {
+    test('adds the prefix going to Spanish', () => {
+      expect(switchLocalePath('/community', 'es')).toBe('/es/community');
+      expect(switchLocalePath('/', 'es')).toBe('/es');
+    });
+
+    test('strips the prefix going to English', () => {
+      expect(switchLocalePath('/es/community', 'en')).toBe('/community');
+      expect(switchLocalePath('/es', 'en')).toBe('/');
+    });
+
+    test('is idempotent when already in the target locale', () => {
+      expect(switchLocalePath('/es/community', 'es')).toBe('/es/community');
+      expect(switchLocalePath('/community', 'en')).toBe('/community');
     });
   });
 });

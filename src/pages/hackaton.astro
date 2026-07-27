@@ -4,13 +4,13 @@ import LanguageSwitcher from '../components/landing/LanguageSwitcher.astro';
 import RegisterForm, { type FormStrings } from '../components/hackaton/RegisterForm.tsx';
 import LoginForm, { type LoginStrings } from '../components/hackaton/LoginForm.tsx';
 import RegistrationBar from '../components/hackaton/RegistrationBar.astro';
-import { t, tObj } from '../lib/i18n';
+import { getLocale, t, tObj } from '../lib/i18n';
 import { jsonData, type MeData } from '../lib/hackaton';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 
-const locale = Astro.url.searchParams.get('lang') === 'es' ? 'es' : 'en';
+const locale = getLocale(Astro.url);
 
 // Estado del evento + sesión (SSR): consultamos el backend a través del proxy
 // interno para decidir qué CTA mostrar.
