@@ -16,10 +16,12 @@ const glitchText = `'${`${tt.line1}\\A ${tt.line2}`.replace(/'/g, "\\'")}'`;
 const waitlistMsgs = JSON.stringify({
   sending: tt.sending,
   okRegistered: tt.okRegistered,
+  okInterest: tt.okInterest,
   okPosition: tt.okPosition,
   okText: tt.okText,
   errEmail: tt.errEmail,
   errRegion: tt.errRegion,
+  errRateLimited: tt.errRateLimited,
   errNetwork: tt.errNetwork,
   errGeneric: tt.errGeneric,
 });

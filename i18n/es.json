@@ -479,7 +479,9 @@
       "errEmail": "Ese email no parece válido.",
       "errRegion": "Elige una región.",
       "errNetwork": "Ha fallado la red, no tú. Prueba otra vez.",
-      "errGeneric": "Algo se ha roto por nuestro lado. Prueba en un rato."
+      "errGeneric": "Algo se ha roto por nuestro lado. Prueba en un rato.",
+      "okInterest": "Anotado. Todavía no estamos abiertos en tu región, pero te escribimos en cuanto lo estemos.",
+      "errRateLimited": "Demasiados intentos. Espera un minuto."
     },
     "why": {
       "label": "qué es nan",

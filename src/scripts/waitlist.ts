@@ -1,34 +1,32 @@
 /**
  * NaN — envío de la waitlist. Cablea todos los <form data-waitlist>.
- * Contrato del backend (ver AGENTS.md):
- *   POST /api/waitlist {email, region, _hp} → {ok, position, total, status}
+ *   POST /api/waitlist {email, region, _hp} → ver src/pages/api/waitlist.ts
  *
- * Los textos NO viven aquí: el componente los serializa en data-msgs desde
- * src/i18n/ui.ts, así que siguen al idioma de la página sin arrastrar todo el
- * diccionario al bundle de cliente.
+ * La VALIDACIÓN y el PARSEO no viven aquí: se reutilizan los helpers que ya
+ * usaba la isla Preact (components/landing/waitlistForm.helpers), para que haya
+ * una sola implementación y la sigan cubriendo sus tests. En particular el
+ * espejo de dominios bloqueados, que debe coincidir con el de lib/waitlist.ts
+ * (el servidor es la autoridad; el cliente solo evita un viaje de ida y vuelta).
+ *
+ * Los TEXTOS sí son de aquí: el componente los serializa en data-msgs desde el
+ * diccionario, para no arrastrar todo el i18n al bundle de cliente.
  */
-
-/**
- * Respuesta de POST /api/waitlist (ver src/pages/api/waitlist.ts).
- * EU recibe una posición de llegada; LATAM y USA se guardan como interés con
- * posición 0, así que `position` puede venir a 0 y no se muestra.
- */
-interface WaitlistResponse {
-  ok: boolean;
-  position?: number;
-  total?: number;
-  status?: 'registered' | 'interest';
-  region?: string;
-  error?: string;
-}
+import {
+  isValidEmail,
+  isWaitlistRegion,
+  normalizeEmail,
+  parseWaitlistResponse,
+} from '../components/landing/waitlistForm.helpers';
 
 interface Msgs {
   sending: string;
   okRegistered: string;
+  okInterest: string;
   okPosition: string;
   okText: string;
   errEmail: string;
   errRegion: string;
+  errRateLimited: string;
   errNetwork: string;
   errGeneric: string;
 }
@@ -36,10 +34,12 @@ interface Msgs {
 const FALLBACK: Msgs = {
   sending: 'Sending…',
   okRegistered: "You're on the waitlist.",
+  okInterest: 'Noted. We are not open in your region yet.',
   okPosition: 'position',
   okText: "We'll approve your spot in the next few days.",
   errEmail: 'That email does not look valid.',
   errRegion: 'Pick a region.',
+  errRateLimited: 'Too many attempts. Wait a minute.',
   errNetwork: 'The network failed, not you. Try again.',
   errGeneric: 'Something broke on our side. Try again in a bit.',
 };
@@ -63,6 +63,7 @@ function wire(form: HTMLFormElement): void {
   /** Error: lo anuncia el live region, marca el campo y le devuelve el foco. */
   const fail = (msg: string, focus?: HTMLElement | null) => {
     status.textContent = msg;
+    submit.disabled = false;
     if (focus) {
       focus.setAttribute('aria-invalid', 'true');
       focus.focus();
@@ -72,17 +73,19 @@ function wire(form: HTMLFormElement): void {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = new FormData(form);
-    const value = String(data.get('email') ?? '').trim();
+    const value = normalizeEmail(String(data.get('email') ?? ''));
     const region = String(data.get('region') ?? '');
     const hp = String(data.get('_hp') ?? '');
 
     email?.removeAttribute('aria-invalid');
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    // Mismo criterio que la isla Preact: formato, longitud y dominios de
+    // ejemplo o desechables.
+    if (!isValidEmail(value)) {
       fail(t.errEmail, email);
       return;
     }
-    if (form.querySelector('[name="region"]') && !region) {
+    if (form.querySelector('[name="region"]') && !isWaitlistRegion(region)) {
       fail(t.errRegion, form.querySelector<HTMLElement>('[data-region] button'));
       return;
     }
@@ -90,29 +93,48 @@ function wire(form: HTMLFormElement): void {
     submit.disabled = true;
     status.textContent = t.sending;
 
+    let res: Response;
     try {
-      const res = await fetch('/api/waitlist', {
+      res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: value, region, _hp: hp }),
       });
-      const body = (await res.json().catch(() => null)) as WaitlistResponse | null;
-
-      if (res.ok && body?.ok) {
-        form.querySelectorAll('input, select, button').forEach((el) => ((el as HTMLInputElement).disabled = true));
-        const pos =
-          body.position && body.total
-            ? ` ${t.okPosition} ${String(body.position).padStart(3, '0')} / ${body.total} ·`
-            : '';
-        status.textContent = `${t.okRegistered}${pos} ${t.okText}`;
-      } else {
-        status.textContent = t.errGeneric;
-        submit.disabled = false;
-      }
     } catch {
-      status.textContent = t.errNetwork;
-      submit.disabled = false;
+      fail(t.errNetwork);
+      return;
     }
+
+    const body = await res.json().catch(() => null);
+    const result = parseWaitlistResponse(res.status, body);
+
+    if (!result.ok) {
+      // El backend distingue rate limit de error genérico; antes se mostraba
+      // "algo se ha roto" para todo, que es mentira y no dice qué hacer.
+      const map: Record<string, string> = {
+        invalid_email: t.errEmail,
+        invalid_region: t.errRegion,
+        rate_limited: t.errRateLimited,
+        network_error: t.errNetwork,
+        server_error: t.errGeneric,
+      };
+      fail(map[result.error] ?? t.errGeneric, result.error === 'invalid_email' ? email : null);
+      return;
+    }
+
+    form.querySelectorAll('input, select, button').forEach((el) => ((el as HTMLInputElement).disabled = true));
+
+    // EU recibe una posición de llegada. LATAM y USA se guardan como interés
+    // con posición 0: ahí no hay puesto que enseñar.
+    if (result.status === 'interest') {
+      status.textContent = t.okInterest;
+      return;
+    }
+    const pos =
+      result.position && result.total
+        ? ` ${t.okPosition} ${String(result.position).padStart(3, '0')} / ${result.total} ·`
+        : '';
+    status.textContent = `${t.okRegistered}${pos} ${t.okText}`;
   });
 }
 
