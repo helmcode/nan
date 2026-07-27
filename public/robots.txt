@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://nan.builders/sitemap-index.xml
+Sitemap: https://nan.builders/sitemap.xml

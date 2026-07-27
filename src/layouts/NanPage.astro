@@ -13,11 +13,12 @@ interface Props {
   title?: string;
   description?: string;
   noindex?: boolean;
+  scale?: boolean;
 }
-const { title, description, noindex } = Astro.props;
+const { title, description, noindex, scale } = Astro.props;
 ---
 
-<NanBase title={title} description={description} noindex={noindex}>
+<NanBase title={title} description={description} noindex={noindex} scale={scale}>
   <slot name="head" slot="head" />
   <Nav slot="nav" />
 

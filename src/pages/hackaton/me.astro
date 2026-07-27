@@ -1,5 +1,8 @@
 ---
-import Page from '../../layouts/Page.astro';
+// El marcado de estas pantallas sigue escrito con utilidades de Tailwind.
+// El tema de Tailwind apunta a nuestros tokens (ver styles/global.css).
+import '../../styles/global.css';
+import NanPage from '../../layouts/NanPage.astro';
 import ReassignForm from '../../components/hackaton/ReassignForm.tsx';
 import { getLocale, t, tObj, withLang } from '../../lib/i18n';
 import { jsonData, type MeData, type Team } from '../../lib/hackaton';
@@ -20,7 +23,7 @@ try {
   if (ev.ok) status = (await jsonData<{ status?: string }>(ev))?.status ?? 'draft';
 } catch {}
 ---
-<Page title={`${t('hackaton.me.title', locale)} — nan.builders`}>
+<NanPage scale={false} title={`${t('hackaton.me.title', locale)} — nan.builders`}>
   <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
     <a href={locale === 'en' ? '/hackaton?lang=en' : '/hackaton'}
        class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400">
@@ -52,4 +55,4 @@ try {
       </section>
     )}
   </main>
-</Page>
+</NanPage>

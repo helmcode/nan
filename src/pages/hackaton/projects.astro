@@ -1,5 +1,8 @@
 ---
-import Page from '../../layouts/Page.astro';
+// El marcado de estas pantallas sigue escrito con utilidades de Tailwind.
+// El tema de Tailwind apunta a nuestros tokens (ver styles/global.css).
+import '../../styles/global.css';
+import NanPage from '../../layouts/NanPage.astro';
 import VoteButton from '../../components/hackaton/VoteButton.tsx';
 import { getLocale, t, tObj, withLang } from '../../lib/i18n';
 import { jsonData, type MeData } from '../../lib/hackaton';
@@ -29,7 +32,7 @@ const safeUrl = (u?: string): string | null =>
   u && /^https?:\/\//i.test(u) ? u : null;
 ---
 
-<Page title={`${t('hackaton.projects.title', locale)} — nan.builders`}>
+<NanPage scale={false} title={`${t('hackaton.projects.title', locale)} — nan.builders`}>
   <main class="px-6 pt-24 pb-32 mx-auto max-w-4xl">
     <a href={withLang('/hackaton', locale)} class="font-mono text-xs text-neutral-500 hover:text-violet-400">
       {t('hackaton.backToLanding', locale)}
@@ -63,4 +66,4 @@ const safeUrl = (u?: string): string | null =>
       </div>
     )}
   </main>
-</Page>
+</NanPage>

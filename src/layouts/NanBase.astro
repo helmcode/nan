@@ -19,6 +19,13 @@ interface Props {
   description?: string;
   /** Páginas que no deben indexarse. */
   noindex?: boolean;
+  /**
+   * Escala de titulares del sistema (H1 gigante en mayúsculas). Se apaga en
+   * las pantallas que todavía se escriben con utilidades de Tailwind y
+   * columnas estrechas, donde un H1 de 96px parte las palabras. Esas páginas
+   * conservan sus tamaños hasta que se rediseñen de verdad.
+   */
+  scale?: boolean;
 }
 
 const locale = getLocale(Astro.url);
@@ -26,6 +33,7 @@ const {
   title = t('nan.meta.title', locale),
   description = t('nan.meta.description', locale),
   noindex = false,
+  scale = true,
 } = Astro.props;
 
 // ---- URLs canónicas -------------------------------------------------------
@@ -116,7 +124,7 @@ const csp = [
       </style>
     </noscript>
   </head>
-  <body>
+  <body class={scale ? 'nan-scale' : undefined}>
     <a class="skip-link" href="#main">{t('nan.a11y.skip', locale)}</a>
     <canvas id="bg-fx" aria-hidden="true"></canvas>
     <slot name="nav" />

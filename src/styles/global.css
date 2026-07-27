@@ -1,8 +1,33 @@
 @import "tailwindcss";
 
+/*
+ * Tema de Tailwind apuntado a los tokens del rediseño.
+ *
+ * Las pantallas que siguen escritas con utilidades (el hackatón, el formulario
+ * de alta de community) heredan así la tipografía, el violeta y la esquina
+ * recta sin tener que reescribir clase por clase. `bg-violet-600`,
+ * `rounded-lg` o `font-sans` pasan a significar lo que dice tokens.css.
+ *
+ * Los valores viven en src/styles/tokens.css, que es la fuente de verdad.
+ */
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: "Archivo Variable", "Archivo", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* monoacento: toda la escala violeta de Tailwind colapsa a los dos tonos
+     del sistema, para que no se cuele un segundo acento por la puerta de atrás */
+  --color-violet-300: #9B6BF0;
+  --color-violet-400: #9B6BF0;
+  --color-violet-500: #7D39EB;
+  --color-violet-600: #7D39EB;
+  --color-violet-700: #7D39EB;
+
+  /* esquina recta en toda la UI */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
 }
 
 @keyframes fade-in-up {

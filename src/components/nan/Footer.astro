@@ -51,9 +51,14 @@ const year = new Date().getFullYear();
 
   /* ---------- CTA centrado ---------- */
   .footer__cta { text-align: center; }
+  /* El footer es parte del shell y sale también en páginas montadas con
+     scale={false} (el hackatón), donde no hay .nan-scale que aplique la escala
+     de titulares. Por eso se declara aquí entera en vez de heredarla. */
   .footer__title {
     font-family: var(--font-serif); font-weight: 400;
     font-size: var(--fs-h1) !important; /* tamaño H1 */
+    font-variation-settings: 'wdth' 118, 'wght' 850;
+    text-transform: uppercase;
     line-height: 0.96; letter-spacing: -0.02em; color: var(--color-text);
   }
   .footer__title-2 { color: var(--color-violet-2); }

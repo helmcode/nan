@@ -69,26 +69,34 @@ main, footer { position: relative; z-index: 1; }
 /* Titulares: Archivo variable EXPANDIDO (wdth+wght) y en mayúsculas.
    Sistema UNIFORME en toda la web (mismos tamaños). El !important gana a los
    estilos scoped de cada componente (clase + atributo de Astro > h1 pelado). */
-h1, h2, h3, h4 {
+/* ESCALA DE TITULARES — solo bajo .nan-scale (lo pone NanBase salvo que la
+   página pida lo contrario). Va con !important para ganar a los estilos scoped
+   de cada componente, y por eso mismo aplastaría las pantallas que aún se
+   escriben con utilidades de Tailwind y columnas estrechas: allí un H1 de 96px
+   parte las palabras. Esas páginas montan el shell con scale={false}. */
+.nan-scale h1,
+.nan-scale h2,
+.nan-scale h3,
+.nan-scale h4 {
   font-family: var(--font-serif);
   text-transform: uppercase !important;
   /* red de seguridad: si algún día entra una palabra más larga que la caja,
      que parta en vez de salirse y provocar scroll horizontal */
   overflow-wrap: break-word;
 }
-h1 {
+.nan-scale h1 {
   font-variation-settings: 'wdth' 118, 'wght' 850 !important;
   font-size: var(--fs-h1) !important;
   line-height: 0.98 !important;
   letter-spacing: -0.02em !important;
 }
-h2 {
+.nan-scale h2 {
   font-variation-settings: 'wdth' 115, 'wght' 800 !important;
   font-size: var(--fs-h2) !important;
   line-height: 1.05 !important;
   letter-spacing: -0.01em !important;
 }
-h3 {
+.nan-scale h3 {
   font-variation-settings: 'wdth' 110, 'wght' 750 !important;
   font-size: var(--fs-h3) !important;
   line-height: 1.2 !important;

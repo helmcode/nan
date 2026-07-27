@@ -1,6 +1,8 @@
 ---
-import Page from '../layouts/Page.astro';
-import LanguageSwitcher from '../components/landing/LanguageSwitcher.astro';
+// El marcado de estas pantallas sigue escrito con utilidades de Tailwind.
+// El tema de Tailwind apunta a nuestros tokens (ver styles/global.css).
+import '../styles/global.css';
+import NanPage from '../layouts/NanPage.astro';
 import RegisterForm, { type FormStrings } from '../components/hackaton/RegisterForm.tsx';
 import LoginForm, { type LoginStrings } from '../components/hackaton/LoginForm.tsx';
 import RegistrationBar from '../components/hackaton/RegistrationBar.astro';
@@ -88,8 +90,7 @@ if (status === 'voting') {
 const pageTitle = `${t('hackaton.pageTitle', locale)} — nan.builders`;
 ---
 
-<Page title={pageTitle} description={t('hackaton.subtitle', locale)}>
-  <LanguageSwitcher />
+<NanPage scale={false} title={pageTitle} description={t('hackaton.subtitle', locale)}>
   <main class="px-6 pt-24 pb-32 md:pt-32">
     <div class="mx-auto max-w-2xl">
       <a href={locale === 'en' ? '/?lang=en' : '/'}
@@ -191,4 +192,4 @@ const pageTitle = `${t('hackaton.pageTitle', locale)} — nan.builders`;
       </section>
     </div>
   </main>
-</Page>
+</NanPage>
