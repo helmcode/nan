@@ -1,0 +1,70 @@
+---
+/**
+ * JSON-LD del sitio. Se pinta desde Base.astro.
+ *  - Organization: siempre (identifica la marca ante buscadores y redes).
+ *  - FAQPage: solo en la home, con las MISMAS preguntas que renderiza el FAQ.
+ *  - ItemList de eventos: solo en /events, a partir de los datos reales.
+ * Regla del proyecto: datos reales o nada. Todo sale de ui.ts y de data/*.json.
+ */
+import { useT, type Locale } from '../../lib/i18n';
+import eventos from '../../data/eventos.json';
+
+interface Props {
+  lang: Locale;
+  page: 'home' | 'events' | 'other';
+  canonical: string;
+  origin: string;
+}
+const { lang, page, canonical, origin } = Astro.props;
+const t = useT(lang);
+
+const organization = {
+  '@type': 'Organization',
+  '@id': `${origin}/#organization`,
+  name: 'NaN',
+  alternateName: 'nan.builders',
+  url: `${origin}/`,
+  logo: `${origin}/brand/nan-isotipo-color.png`,
+  description: t.meta.description,
+  parentOrganization: { '@type': 'Organization', name: 'Helmcode', url: 'https://helmcode.com' },
+};
+
+const graph: Record<string, unknown>[] = [organization];
+
+if (page === 'home') {
+  graph.push({
+    '@type': 'FAQPage',
+    '@id': `${canonical}#faq`,
+    mainEntity: t.faq.items.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  });
+}
+
+if (page === 'events') {
+  // Solo lo verificable: título, duración y que son de la comunidad NaN.
+  const all = [...eventos.workshops, ...eventos.events];
+  graph.push({
+    '@type': 'ItemList',
+    '@id': `${canonical}#list`,
+    name: t.events.metaTitle,
+    itemListElement: all.map((v, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'VideoObject',
+        name: v.title,
+        thumbnailUrl: `${origin}${v.thumb}`,
+        uploadDate: v.date,
+        publisher: { '@id': `${origin}/#organization` },
+      },
+    })),
+  });
+}
+
+const jsonld = { '@context': 'https://schema.org', '@graph': graph };
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(jsonld)} is:inline />

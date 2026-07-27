@@ -1,7 +1,58 @@
 ---
-// SSR (not prerendered): the Hero counter reads the live waitlist total from KV.
-import Base from '../layouts/Base.astro';
+import NanBase from '../layouts/NanBase.astro';
+import Nav from '../components/nan/Nav.astro';
+import Footer from '../components/nan/Footer.astro';
+import CookieBanner from '../components/nan/CookieBanner.astro';
+import StructuredData from '../components/nan/StructuredData.astro';
+import Hero from '../components/nan/home/Hero.astro';
+import WhyNan from '../components/nan/home/WhyNan.astro';
+import BuiltWithNan from '../components/nan/home/BuiltWithNan.astro';
+import Models from '../components/nan/home/Models.astro';
+import Privacy from '../components/nan/home/Privacy.astro';
+import Pricing from '../components/nan/home/Pricing.astro';
+import WhoBehind from '../components/nan/home/WhoBehind.astro';
+import Faq from '../components/nan/home/Faq.astro';
+import { getLocale } from '../lib/i18n';
+
+const locale = getLocale(Astro.url);
+const site = Astro.site ?? new URL('https://nan.builders');
+const canonical = new URL(Astro.url.pathname.replace(/\/+$/, '') || '/', site).href;
 ---
 
-<Base />
+<NanBase>
+  <StructuredData
+    slot="head"
+    lang={locale}
+    page="home"
+    canonical={canonical}
+    origin={site.origin}
+  />
+  <Nav slot="nav" />
 
+  <Hero />
+  <WhyNan />
+  <BuiltWithNan />
+  <Models />
+  <Privacy />
+  <Pricing />
+  <WhoBehind />
+  <Faq />
+
+  <Fragment slot="footer">
+    <Footer />
+    <CookieBanner />
+  </Fragment>
+</NanBase>
+
+<script>
+  import { initParticles } from '../scripts/particles';
+  import { initWaitlist } from '../scripts/waitlist';
+  import { initReveal } from '../scripts/reveal';
+  import { initNanGlitch } from '../scripts/nanGlitch';
+
+  // Las partículas son solo de la home.
+  initParticles();
+  initWaitlist();
+  initReveal();
+  initNanGlitch();
+</script>

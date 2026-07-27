@@ -1,0 +1,157 @@
+---
+// Fotos de producción, sin dither por ahora.
+import { getLang, useT } from '../../../lib/i18n';
+
+const tt = useT(getLang(Astro.url)).who;
+---
+
+<section class="who" id="who">
+  <div class="container">
+    <div class="who__head" data-reveal>
+      <div class="sechead">
+        <span class="sechead__n">06</span><span class="sechead__label">{tt.label}</span>
+      </div>
+      <h2 class="who__title caret-type">{tt.title}</h2>
+    </div>
+
+    <div class="who__grid" data-reveal>
+      <blockquote class="who__quote">
+        <p>{tt.quote}</p>
+        <cite>{tt.quoteBy}</cite>
+      </blockquote>
+
+      <div class="who__people">
+        <article class="person">
+          <div class="person__photo">
+            <img src="/img/founder.webp" alt="Cristian Córdova" width="240" height="240" loading="lazy" />
+          </div>
+          <div class="person__info">
+            <h3 class="person__name">Cristian Córdova</h3>
+            <p class="person__meta">
+              <a href="https://twitter.com/barckcode" target="_blank" rel="noopener">@barckcode</a>
+              · {tt.cristianLoc}
+            </p>
+            <p class="person__role">{tt.cristianRole}</p>
+            <div class="person__bio">
+              {tt.cristianBio.map((para) => <p>{para}</p>)}
+            </div>
+            <div class="person__links">
+              <a href="https://twitter.com/barckcode" target="_blank" rel="noopener">twitter</a>
+              <a href="https://www.linkedin.com/in/helmcode/" target="_blank" rel="noopener">linkedin</a>
+              <a href="https://github.com/barckcode" target="_blank" rel="noopener">github</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="person">
+          <div class="person__photo">
+            <img src="/img/borja.webp" alt="Borja Perez" width="240" height="240" loading="lazy" />
+          </div>
+          <div class="person__info">
+            <h3 class="person__name">Borja Perez</h3>
+            <p class="person__meta">
+              <a href="https://twitter.com/borjaperfra" target="_blank" rel="noopener">@borjaperfra</a>
+              · {tt.borjaLoc}
+            </p>
+            <p class="person__role">{tt.borjaRole}</p>
+            <div class="person__bio">
+              {tt.borjaBio.map((para) => <p>{para}</p>)}
+            </div>
+            <div class="person__links">
+              <a href="https://twitter.com/borjaperfra" target="_blank" rel="noopener">twitter</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .who { padding-block: clamp(64px, 9vh, 130px); }
+
+  .who__title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    color: var(--color-text);
+    font-size: clamp(34px, 4.2vw, 64px);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    max-width: 22ch;
+  }
+
+  /* cita a la izquierda, personas a la derecha; ambas arrancan a la misma altura */
+  .who__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-16);
+    margin-top: var(--space-12);
+    align-items: start;
+  }
+
+  .who__quote {
+    margin: 0;
+    padding-left: var(--space-6);
+    border-left: 2px solid var(--color-violet);
+    max-width: 40ch;
+  }
+  .who__quote p {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(20px, 2vw, 28px);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+  .who__quote cite {
+    display: block;
+    margin-top: var(--space-4);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-style: normal;
+    color: var(--color-violet-2);
+  }
+
+  .who__people { display: flex; flex-direction: column; gap: var(--space-8); }
+  .person { display: flex; gap: var(--space-5); align-items: flex-start; }
+
+  /* foto cuadrada 1:1 con esquinas un poco redondeadas */
+  .person__photo {
+    flex: 0 0 auto;
+    width: clamp(112px, 13vw, 152px);
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .person__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    display: block;
+  }
+
+  .person__info { flex: 1 1 auto; }
+  .person__name { font-weight: 700; font-size: clamp(19px, 2vw, 24px); letter-spacing: -0.02em; }
+  .person__meta { margin-top: var(--space-2); font-family: var(--font-mono); font-size: 13px; color: var(--color-text-dim); }
+  .person__meta a { color: var(--color-link); }
+  .person__meta a:hover { color: var(--color-violet-2); }
+  .person__role { margin-top: var(--space-1); font-family: var(--font-mono); font-size: 12px; color: var(--color-violet-2); }
+  .person__bio { margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); max-width: 52ch; }
+  .person__bio p { font-size: 15px; line-height: 1.6; color: var(--color-text); }
+  .person__links { display: flex; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-5); }
+  .person__links a {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-link);
+    border-bottom: 1px solid var(--color-link-line);
+    padding-block: 5px 3px; /* llega a 28px de alto: mínimo táctil */
+    transition: color var(--dur-micro) var(--ease), border-color var(--dur-micro) var(--ease);
+  }
+  .person__links a:hover { color: var(--color-violet-2); border-color: var(--color-violet-2); }
+
+  @media (max-width: 860px) {
+    .who { padding-block: var(--space-16); }
+    .who__grid { grid-template-columns: 1fr; gap: var(--space-10); }
+  }
+</style>

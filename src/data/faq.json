@@ -1,0 +1,42 @@
+[
+  {
+    "q": "¿Qué es NaN?",
+    "a": "Una comunidad cerrada de builders que comparten GPUs dedicadas para correr modelos abiertos. Cada miembro paga por estar, y solo hay espacio para los que de verdad construyen."
+  },
+  {
+    "q": "¿Cómo funciona el cluster?",
+    "a": "Los modelos corren 24/7 en un cluster de inferencia compartido. Cada miembro recibe una API key personal compatible con OpenAI: cambias la base_url y estás dentro."
+  },
+  {
+    "q": "¿Realmente no hay límites de tokens?",
+    "a": "En los modelos del cluster, sin contador. Los frontier (como DeepSeek V4-Flash) llevan 500M tokens/mes por miembro para que el plan se sostenga — el límite está publicado aquí, no en letra pequeña. La factura es el precio fijo de la suscripción y no se mueve."
+  },
+  {
+    "q": "¿Cómo se eligen los modelos?",
+    "a": "Cada trimestre los miembros votan en Discord qué modelos nuevos entran al cluster. Los candidatos se preseleccionan técnicamente: tienen que caber en la capacidad real. El ecosistema abierto se mueve rápido; el cluster también."
+  },
+  {
+    "q": "¿Dónde van mis datos?",
+    "a": "Se procesan en la Unión Europea, sin logs de prompts ni de respuestas. Tu API key es personal e intransferible. Tu código no entrena ningún modelo y tus datos no salen de tu sesión."
+  },
+  {
+    "q": "¿Para quién es NaN?",
+    "a": "Para builders que quieren correr modelos abiertos en serio sin montarse la infraestructura: indie hackers, makers, gente con agentes y side projects en producción. No es para quien solo quiere probar un par de prompts."
+  },
+  {
+    "q": "¿Por qué solo modelos abiertos?",
+    "a": "Porque se pueden auditar, modificar y usar sin pedir permiso. Los cerrados son cómodos pero crean dependencia; con los abiertos el stack es tuyo."
+  },
+  {
+    "q": "¿Puedo entrenar modelos?",
+    "a": "No. NaN es inferencia, no entrenamiento. Las GPUs están optimizadas para correr modelos existentes a alta velocidad, no para fine-tuning."
+  },
+  {
+    "q": "¿Qué métodos de pago aceptan?",
+    "a": "Tarjeta de crédito o débito. Los precios incluyen impuestos (IVA en EU, taxes en USA/Latam). Sin permanencia: cancelas cuando quieras."
+  },
+  {
+    "q": "¿Cómo entro?",
+    "a": "Déjanos tu email en la waitlist y te escribimos cuando haya plaza. Hay lista de espera porque no hay más GPUs: cuando entra cómputo, entra gente."
+  }
+]

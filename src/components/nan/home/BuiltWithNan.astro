@@ -1,0 +1,142 @@
+---
+import proyectos from '../../../data/proyectos.json';
+import Floppy from '../Floppy.astro';
+import { getLang, useT } from '../../../lib/i18n';
+
+const lang = getLang(Astro.url);
+const tt = useT(lang).built;
+const total = proyectos.length;
+const projectsHref = lang === 'es' ? '/es/projects' : '/projects';
+---
+
+<section class="built" id="built_with_nan">
+  <div class="container built__head" data-reveal>
+    <div class="sechead">
+      <span class="sechead__n">02</span><span class="sechead__label">{tt.label}</span>
+    </div>
+    <h2 class="built__title caret-type">{tt.title1}<br /><span class="hl">{tt.title2}</span></h2>
+    <p class="built__sub">{tt.sub}</p>
+  </div>
+
+  <div class="rail" data-rail tabindex="0" role="region" aria-label={tt.railLabel}>
+    {proyectos.map((p, i) => <Floppy project={p} index={i} variant="rail" />)}
+  </div>
+
+  <div class="container built__progress">
+    <span class="built__count mono" data-rail-count>1/{total}</span>
+    <div class="built__bar"><i data-rail-fill></i></div>
+    <div class="built__links">
+      <a href={projectsHref} class="btn btn-primary">{tt.seeAll}</a>
+      <a href="https://cloud.nan.builders/projects/new" rel="noopener" class="btn btn-ghost">{tt.addYours}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .built { padding-block: clamp(64px, 9vh, 130px) var(--space-16); }
+
+  .built__head { margin-bottom: var(--space-8); }
+  .built__title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    color: var(--color-text);
+    font-size: clamp(40px, 5vw, 76px);
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+    max-width: 16ch;
+  }
+  .built__sub {
+    margin-top: var(--space-6);
+    max-width: 54ch;
+    color: var(--color-text);
+    font-size: clamp(16px, 1.15vw, 18px);
+    line-height: 1.7;
+  }
+
+  /* ---------- pista de scroll horizontal ---------- */
+  .rail {
+    display: flex;
+    gap: 44px;
+    align-items: flex-start;
+    overflow-x: auto;
+    scroll-behavior: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    padding-top: 34px;
+    padding-bottom: 20px;
+    padding-right: var(--space-16);
+    padding-left: max(var(--container-pad), calc((100% - var(--container-max)) / 2 + var(--container-pad)));
+    scrollbar-width: none;
+    cursor: grab;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail.dragging { cursor: grabbing; }
+  .rail.dragging :global(a.floppy) { pointer-events: none; }
+
+  /* ---------- progreso ---------- */
+  .built__progress {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-top: var(--space-6);
+    flex-wrap: wrap;
+  }
+  .built__count { font-size: 13px; color: var(--color-text); }
+  .built__bar { flex: 1; min-width: 120px; height: 2px; background: var(--color-line); position: relative; }
+  .built__bar i { position: absolute; inset: 0 auto 0 0; width: 33%; background: var(--color-violet); transition: width var(--dur-micro) ease-out; }
+  .built__links { display: flex; gap: var(--space-4); }
+
+  @media (max-width: 720px) {
+    .built__links { flex-direction: column; gap: var(--space-2); }
+  }
+</style>
+
+<script>
+  import { initScramble } from '../../../scripts/scramble';
+  initScramble();
+
+  const rail = document.querySelector<HTMLElement>('[data-rail]');
+  const count = document.querySelector<HTMLElement>('[data-rail-count]');
+  const fill = document.querySelector<HTMLElement>('[data-rail-fill]');
+  const slides = rail?.querySelectorAll('.slide') ?? [];
+  const total = slides.length;
+
+  if (rail && count && fill && total) {
+    const update = () => {
+      const max = rail.scrollWidth - rail.clientWidth;
+      const p = max > 0 ? rail.scrollLeft / max : 0;
+      const idx = Math.min(total, Math.max(1, Math.round(p * (total - 1)) + 1));
+      count.textContent = `${idx}/${total}`;
+      fill.style.width = `${Math.round((100 / total) + p * (100 - 100 / total))}%`;
+    };
+    rail.addEventListener('scroll', update, { passive: true });
+    update();
+
+    let down = false, dragged = false, startX = 0, startScroll = 0;
+    rail.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || e.pointerType !== 'mouse') return;
+      down = true; dragged = false; startX = e.clientX; startScroll = rail.scrollLeft;
+    });
+    rail.addEventListener('pointermove', (e) => {
+      if (!down) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 5) { dragged = true; rail.classList.add('dragging'); }
+      rail.scrollLeft = startScroll - dx;
+    });
+    const endDrag = () => { down = false; rail.classList.remove('dragging'); };
+    rail.addEventListener('pointerup', endDrag);
+    rail.addEventListener('pointerleave', endDrag);
+    rail.addEventListener('pointercancel', endDrag);
+    rail.addEventListener('click', (e) => {
+      if (dragged) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+
+    rail.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      const max = rail.scrollWidth - rail.clientWidth;
+      if ((rail.scrollLeft <= 0 && e.deltaY < 0) || (rail.scrollLeft >= max - 1 && e.deltaY > 0)) return;
+      rail.scrollLeft += e.deltaY;
+      e.preventDefault();
+    }, { passive: false });
+  }
+</script>

@@ -1,0 +1,94 @@
+{
+  "nota": "Fuente de verdad técnica: esta página. Verificar contra el cluster antes de tocar cifras.",
+  "nodo": {
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell",
+    "vram": "96GB VRAM por nodo",
+    "region": "EU",
+    "logs": "zero logs"
+  },
+  "categorias": [
+    {
+      "id": "llm",
+      "label": "llm",
+      "modelos": [
+        {
+          "id": "deepseek-v4-flash",
+          "by": "DeepSeek",
+          "specs": "284B-21B MoE · FP8 · 1M context · tool calling · reasoning",
+          "cuota": "500M tokens/mes",
+          "frontier": true,
+          "mostUsed": true
+        },
+        {
+          "id": "mimo-v2.5",
+          "by": "Xiaomi",
+          "specs": "omnimodal · 310B-15B MoE · FP8 · 1M context · vision · audio · tool calling · reasoning",
+          "cuota": "500M tokens/mes",
+          "frontier": true,
+          "mostUsed": true
+        },
+        {
+          "id": "gemma4",
+          "by": "Google",
+          "specs": "26B-A4B MoE · FP8 · 256K context · tool calling · reasoning · vision",
+          "cuota": "sin contador",
+          "frontier": false
+        },
+        {
+          "id": "qwen3.6",
+          "by": "Alibaba",
+          "specs": "35B-A3B MoE · FP8 · 256K context · tool calling · reasoning",
+          "cuota": "sin contador",
+          "frontier": false,
+          "mostUsed": true
+        }
+      ]
+    },
+    {
+      "id": "embedding",
+      "label": "embedding",
+      "modelos": [
+        {
+          "id": "qwen3-embedding",
+          "by": "Alibaba",
+          "specs": "8B · 4096 dims · 100+ languages · MMTEB 70.58",
+          "cuota": "sin contador",
+          "frontier": false
+        }
+      ]
+    },
+    {
+      "id": "rerank",
+      "label": "rerank",
+      "modelos": [
+        {
+          "id": "qwen3-reranker",
+          "by": "Alibaba",
+          "specs": "8B · BF16 · 100+ languages · cross-lingual",
+          "cuota": "sin contador",
+          "frontier": false
+        }
+      ]
+    },
+    {
+      "id": "voz",
+      "label": "tts / stt",
+      "modelos": [
+        {
+          "id": "kokoro",
+          "by": "Hexgrad",
+          "specs": "TTS · 82M params · 67 voces · <1s latency · ef_dora · em_alex",
+          "cuota": "sin contador",
+          "frontier": false
+        },
+        {
+          "id": "whisper",
+          "by": "OpenAI",
+          "specs": "STT · large-v3 · CTranslate2 · ~3.2% WER Spanish · auto language detection",
+          "cuota": "sin contador",
+          "frontier": false
+        }
+      ]
+    }
+  ]
+}

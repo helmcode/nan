@@ -1,0 +1,228 @@
+---
+// Hero del sistema definitivo. Ilustración dithered en canvas (blanco->violeta
+// al hover), glitch en el H1, formulario waitlist cableado (data-waitlist).
+import { getLang, useT } from '../../../lib/i18n';
+
+const lang = getLang(Astro.url);
+const tt = useT(lang).hero;
+const a11y = useT(lang).a11y;
+
+// Las capas de glitch del H1 son pseudoelementos, así que su texto tiene que
+// viajar por CSS. Se lo pasamos como custom property para que siga al idioma
+// (antes iba hardcodeado en inglés y se veía sobre el titular español).
+const glitchText = `'${`${tt.line1}\\A ${tt.line2}`.replace(/'/g, "\\'")}'`;
+
+// Mensajes de estado del formulario: los lee waitlist.ts desde el <form>.
+const waitlistMsgs = JSON.stringify({
+  sending: tt.sending,
+  okRegistered: tt.okRegistered,
+  okPosition: tt.okPosition,
+  okText: tt.okText,
+  errEmail: tt.errEmail,
+  errRegion: tt.errRegion,
+  errNetwork: tt.errNetwork,
+  errGeneric: tt.errGeneric,
+});
+---
+
+<header class="hero" id="waitlist">
+  <canvas id="hero-fx" class="hero__fx" aria-hidden="true"></canvas>
+
+  <div class="container hero__inner">
+    <div class="hero__col">
+      <h1 class="hero__title" style={`--glitch: ${glitchText}`}>
+        {tt.line1}<br /><span class="hl">{tt.line2}</span>
+      </h1>
+
+      <p class="hero__sub">{tt.sub}</p>
+
+      <p class="hero__body">{tt.body}</p>
+
+      <p class="hero__waitline">
+        <span class="spots"><span class="spots__dot" aria-hidden="true"></span>{tt.spots}</span>
+        {tt.waitline}
+      </p>
+
+      <form class="hero__form" data-waitlist data-msgs={waitlistMsgs} novalidate>
+        <label class="hero__hp" aria-hidden="true">
+          Do not fill this field
+          <input type="text" name="_hp" tabindex="-1" autocomplete="off" />
+        </label>
+        <input type="hidden" name="region" value="" />
+
+        <div class="hero__field field">
+          <input
+            type="email" name="email" required autocomplete="email" inputmode="email"
+            spellcheck="false" placeholder={tt.emailPlaceholder} aria-label={a11y.email}
+          />
+        </div>
+
+        <div class="region" data-region role="group" aria-label={a11y.region}>
+          <span class="region__label">{tt.regionLabel}</span>
+          <button type="button" data-value="EU" aria-pressed="false">EU</button>
+          <button type="button" data-value="LATAM" aria-pressed="false">Latam</button>
+          <button type="button" data-value="USA" aria-pressed="false">USA</button>
+        </div>
+
+        <button type="submit" class="btn btn-primary" data-submit>{tt.submit}</button>
+
+        <p class="hero__status" data-status role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+</header>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    min-height: calc(100svh - var(--nav-h));
+    display: flex;
+    align-items: center;
+  }
+  .hero__fx { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; }
+  .hero__inner { position: relative; z-index: 2; }
+  .hero__col { max-width: 720px; transform: translateY(-4vh); }
+
+  /* ---- H1 con glitch (aberración cromática violeta, ráfagas espaciadas) ---- */
+  .hero__title {
+    position: relative;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    white-space: nowrap;
+    font-size: clamp(50px, 6.6vw, 104px);
+    line-height: 0.96;
+    letter-spacing: -0.01em;
+    margin-bottom: 22px;
+  }
+  .hero__title::before, .hero__title::after {
+    content: var(--glitch, '');
+    white-space: pre;
+    position: absolute; top: 0; left: 0;
+    pointer-events: none;
+  }
+  .hero__title::before { color: var(--color-violet); animation: glitchA 9s infinite steps(2, end); }
+  .hero__title::after { color: var(--color-text); opacity: 0.85; animation: glitchB 13s infinite steps(2, end); }
+  @keyframes glitchA {
+    0%, 7%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+    1% { clip-path: inset(14% 0 60% 0); transform: translate(-4px, -1px); }
+    3% { clip-path: inset(56% 0 24% 0); transform: translate(4px, 1px); }
+    5% { clip-path: inset(34% 0 46% 0); transform: translate(-3px, 0); }
+  }
+  @keyframes glitchB {
+    0%, 6%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+    68% { clip-path: inset(70% 0 12% 0); transform: translate(4px, 1px); }
+    74% { clip-path: inset(20% 0 60% 0); transform: translate(-4px, -1px); }
+    80% { clip-path: inset(46% 0 34% 0); transform: translate(3px, 0); }
+    86% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__title::before, .hero__title::after { display: none; }
+  }
+
+  .hero__sub {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    color: var(--color-text);
+    font-size: clamp(21px, 2.4vw, 32px);
+    line-height: 1.12;
+    margin-bottom: 32px;
+  }
+  .hero__body {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    color: var(--color-text);
+    font-size: clamp(18px, 1.5vw, 22px);
+    line-height: 1.5;
+    max-width: 660px;
+    margin-bottom: 52px;
+  }
+
+  .hero__waitline {
+    display: flex; align-items: center; flex-wrap: wrap;
+    font-family: var(--font-sans);
+    color: var(--color-muted);
+    font-size: 15px;
+    margin-bottom: 22px;
+  }
+  .spots {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: var(--font-sans);
+    font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--color-text); white-space: nowrap; margin-right: 12px;
+  }
+  .spots__dot {
+    width: 9px; height: 9px; background: var(--color-violet); border-radius: 50%;
+    box-shadow: 0 0 0 0 var(--pulse); animation: spots-pulse 2.2s infinite;
+  }
+  @keyframes spots-pulse {
+    0% { box-shadow: 0 0 0 0 var(--pulse); }
+    70% { box-shadow: 0 0 0 12px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+
+  .hero__form { display: flex; flex-direction: column; gap: 18px; align-items: flex-start; width: 100%; max-width: 540px; }
+  .hero__hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .hero__field { width: 100%; display: flex; align-items: center; padding: 0; }
+  .hero__field input {
+    flex: 1; background: transparent; border: 0; outline: none; color: var(--color-text);
+    caret-color: var(--color-violet); font-family: var(--font-sans); font-size: 16px; padding: 0 16px; height: 100%;
+  }
+  .hero__field input::placeholder { color: #6a6a6e; }
+
+  /* flex-wrap: a 320px los 3 botones + la etiqueta no caben en una línea y se
+     salían de la pantalla (la subida a 44px de alto lo empeoró) */
+  .region { display: inline-flex; flex-wrap: wrap; max-width: 100%; border: 1px solid var(--color-line); }
+  .region__label {
+    display: flex; align-items: center; padding: 0 16px;
+    border-right: 1px solid var(--color-line);
+    font-family: var(--font-mono); color: var(--color-muted);
+    font-size: 12px; letter-spacing: 0.04em; white-space: nowrap;
+  }
+  .region button {
+    background: transparent; border: 0; color: var(--color-muted); cursor: pointer;
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em;
+    /* 44px: eran 38 y son controles de formulario en móvil */
+    min-height: 44px; padding: 0 18px;
+    transition: background var(--dur-micro) var(--ease), color var(--dur-micro) var(--ease);
+  }
+  .region button + button { border-left: 1px solid var(--color-line); }
+  .region button:hover { color: var(--color-text); }
+  .region button[aria-pressed='true'] { background: var(--color-violet); color: #fff; }
+
+  .hero__status {
+    min-height: 1.2em; margin-top: 2px;
+    font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.02em;
+    color: var(--color-violet-2);
+  }
+
+  @media (max-width: 860px) {
+    .hero__fx { opacity: 0.5; }
+    .hero__col { transform: none; }
+  }
+  @media (max-width: 720px) {
+    /* apilado, la ilustración queda DEBAJO del texto y se lo comía: al ser
+       píxeles blancos sobre texto blanco había tramos ilegibles */
+    .hero__fx { opacity: 0.22; }
+    .hero { min-height: 0; padding-block: var(--space-12) var(--space-16); }
+    .hero__title { white-space: normal; }
+    .hero__title::before, .hero__title::after { display: none; }
+  }
+</style>
+
+<script>
+  import { initHeroDither } from '../../../scripts/heroDither';
+  initHeroDither('hero-fx');
+
+  // control segmentado de región -> input oculto name="region"
+  document.querySelectorAll<HTMLElement>('[data-region]').forEach((group) => {
+    const hidden = group.parentElement?.querySelector<HTMLInputElement>('input[name="region"]');
+    group.querySelectorAll('button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+        if (hidden) hidden.value = btn.dataset.value ?? '';
+      });
+    });
+  });
+</script>

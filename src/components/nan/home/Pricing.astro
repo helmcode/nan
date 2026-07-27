@@ -1,0 +1,214 @@
+---
+// Datos verificados contra nan.builders: Member EU 70€ · Member USA/Latam $75 · Community $14.99.
+import { getLang, useT } from '../../../lib/i18n';
+
+const lang = getLang(Astro.url);
+const tt = useT(lang).pricing;
+const home = lang === 'es' ? '/es' : '/';
+
+const tiers = [
+  {
+    name: 'nan_member · eu',
+    amount: '70€',
+    per: tt.perVat,
+    badge: tt.inferenceIncluded,
+    ref: true,
+    includes: tt.memberIncludes,
+    cond: tt.memberCond,
+    cta: tt.memberCta,
+    href: `${home}#waitlist`,
+    primary: true,
+  },
+  {
+    name: 'nan_member · usa / latam',
+    amount: '$75',
+    per: tt.perTaxes,
+    badge: tt.inferenceIncluded,
+    ref: true,
+    includes: tt.memberIncludes,
+    cond: tt.memberCond,
+    cta: tt.memberCta,
+    href: `${home}#waitlist`,
+    primary: true,
+  },
+  {
+    name: 'nan_community',
+    amount: '$14.99',
+    per: tt.perTaxes,
+    badge: null,
+    ref: false,
+    includes: tt.communityIncludes,
+    cond: tt.communityCond,
+    cta: tt.communityCta,
+    href: 'https://cloud.nan.builders/',
+    primary: false,
+  },
+];
+---
+
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="pricing__head" data-reveal>
+      <div class="sechead">
+        <span class="sechead__n">05</span><span class="sechead__label">{tt.label}</span>
+      </div>
+      <h2 class="pricing__title caret-type">{tt.title1}<br /><span class="hl">{tt.title2}</span></h2>
+      <p class="pricing__sub">{tt.sub}</p>
+    </div>
+
+    <div class="pricing__grid" data-reveal-stagger>
+      {tiers.map((tier) => (
+        <article class:list={['ptier', { 'ptier--ref': tier.ref }]}>
+          <div class="ptier__top">
+            <span class="ptier__name">{tier.name}</span>
+            {tier.badge
+              ? <span class="ptier__badge">{tier.badge}</span>
+              : <span class="ptier__badge ptier__badge--ghost" aria-hidden="true">{tt.inferenceIncluded}</span>}
+          </div>
+
+          <div class="ptier__price">
+            <span class="ptier__amount" data-nan="NaN">{tier.amount}</span>
+            <span class="ptier__per">{tier.per}</span>
+          </div>
+
+          <ul class="ptier__list">
+            {tier.includes.map((item) => <li>{item}</li>)}
+          </ul>
+
+          <a
+            class:list={['btn', 'ptier__cta', tier.primary ? 'btn-primary' : 'btn-ghost']}
+            href={tier.href}
+            rel={tier.href.startsWith('http') ? 'noopener' : undefined}
+          >
+            {tier.cta}
+          </a>
+          <p class="ptier__cond">{tier.cond}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .pricing { padding-block: clamp(64px, 9vh, 130px); }
+  .pricing__title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    color: var(--color-text);
+    font-size: clamp(40px, 5vw, 76px);
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+  }
+  .pricing__sub {
+    margin-top: var(--space-6);
+    max-width: 52ch;
+    color: var(--color-text);
+    font-size: clamp(16px, 1.15vw, 18px);
+    line-height: 1.7;
+  }
+
+  .pricing__grid {
+    display: grid;
+    /* entre 900 y 1100px las 3 columnas dejaban tarjetas de ~280px con 560 de
+       alto; auto-fit las baja a 2 y luego a 1 sin escalón intermedio duro.
+       min(300px, 100%) es imprescindible: con minmax(300px,...) a secas la
+       pista no baja de 300 y desborda 28px en un móvil de 320. */
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-12);
+    align-items: stretch;
+    max-width: 1080px;
+    margin-inline: auto;
+  }
+
+  .ptier {
+    display: flex;
+    flex-direction: column;
+    min-height: 560px;
+    padding: var(--space-8) var(--space-6);
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+    transition: border-color var(--dur-micro) var(--ease), transform var(--dur-micro) var(--ease);
+  }
+  .ptier:hover { border-color: var(--color-violet); transform: translateY(-4px); }
+  .ptier--ref { background: var(--color-violet-dim); border-color: var(--color-violet); }
+
+  .ptier__top { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
+  .ptier__name { font-family: var(--font-mono); font-size: 14px; color: var(--color-text-dim); }
+  .ptier__badge {
+    align-self: flex-start;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--color-violet);
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+  .ptier__badge--ghost { visibility: hidden; }
+
+  .ptier__price {
+    margin-top: var(--space-6);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+  .ptier__amount {
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-size: clamp(42px, 4.6vw, 60px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--color-text);
+  }
+  /* per siempre en su propia línea -> bloque de precio de altura igual en los 3 tiers */
+  .ptier__per { flex-basis: 100%; font-family: var(--font-mono); font-size: 13px; color: var(--color-text-dim); }
+
+  .ptier__list {
+    list-style: none;
+    margin: var(--space-8) 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    flex: 1;
+  }
+  .ptier__list li {
+    position: relative;
+    padding-left: 24px;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-text);
+  }
+  .ptier__list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-violet);
+  }
+
+  /* botón anclado abajo; los 3 CTAs quedan a la misma altura */
+  .ptier__cta { width: 100%; margin-top: auto; }
+  .ptier__cond {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--color-muted);
+    margin-top: var(--space-4);
+    min-height: 3em; /* reserva 2 líneas -> condición de altura igual en los 3 tiers */
+  }
+
+  @media (max-width: 900px) {
+    .pricing { padding-block: var(--space-16); }
+  }
+  @media (max-width: 640px) {
+    .ptier { min-height: 0; }
+  }
+</style>

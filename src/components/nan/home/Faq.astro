@@ -1,0 +1,82 @@
+---
+import { getLang, useT } from '../../../lib/i18n';
+
+const tt = useT(getLang(Astro.url)).faq;
+const faqs = tt.items;
+---
+
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="faq__head" data-reveal>
+      <div class="sechead">
+        <span class="sechead__n">07</span><span class="sechead__label">{tt.label}</span>
+      </div>
+      <h2 class="faq__title caret-type">{tt.title}</h2>
+    </div>
+
+    <div class="faq__list" data-reveal-stagger>
+      {faqs.map((item) => (
+        <details class="faq__item">
+          <summary class="faq__q">
+            <span>{item.q}</span>
+            <span class="faq__mark" aria-hidden="true">+</span>
+          </summary>
+          <p class="faq__a">{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq { padding-block: clamp(64px, 9vh, 130px); }
+
+  .faq__head { margin-bottom: var(--space-12); }
+  .faq__title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    color: var(--color-text);
+    font-size: clamp(40px, 5vw, 76px);
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+    max-width: 18ch;
+  }
+
+  .faq__list { border-top: 1px solid var(--color-hairline); }
+  .faq__item { border-bottom: 1px solid var(--color-hairline); }
+  .faq__q {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-6);
+    padding-block: var(--space-5);
+    cursor: pointer;
+    list-style: none;
+    font-weight: 700;
+    font-size: clamp(17px, 1.6vw, 21px);
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+    transition: color var(--dur-micro) var(--ease);
+  }
+  .faq__q::-webkit-details-marker { display: none; }
+  .faq__q:hover { color: var(--color-violet-2); }
+  .faq__mark {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 20px;
+    color: var(--color-violet-2);
+    transition: transform var(--dur-ui) var(--ease);
+  }
+  .faq__item[open] .faq__mark { transform: rotate(45deg); }
+  .faq__a {
+    padding: 0 0 var(--space-6);
+    max-width: 70ch;
+    font-size: clamp(17px, 1.3vw, 19px);
+    line-height: 1.62;
+    color: var(--color-text);
+  }
+
+  @media (max-width: 900px) {
+    .faq { padding-block: var(--space-16); }
+  }
+</style>

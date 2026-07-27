@@ -73,3 +73,26 @@ export function switchLocalePath(pathname: string, target: Locale): string {
   const stripped = pathname.replace(/^\/es(?=\/|$)/, '') || '/';
   return target === 'en' ? stripped : withLang(stripped, 'es');
 }
+
+// --------------------------------------------------------------------------
+// Diccionario del rediseño
+//
+// Todo el copy del rediseño vive bajo la clave `nan` de i18n/{en,es}.json, para
+// no pisar el copy de los componentes que todavía no se han migrado. `useT`
+// devuelve ese subárbol ya tipado a partir de en.json, así que los componentes
+// portados desde nan-site siguen escribiéndose igual:
+//
+//   const tt = useT(getLang(Astro.url)).hero;
+//
+// Cuando no quede ningún componente viejo, esto se puede aplanar y fusionar con
+// t()/tObj().
+// --------------------------------------------------------------------------
+
+export type NanDict = typeof enData.nan;
+
+export function useT(locale: string): NanDict {
+  return (locale === 'es' ? (esData as unknown as typeof enData) : enData).nan;
+}
+
+/** Alias del nombre que usaban los componentes de nan-site. */
+export const getLang = getLocale;

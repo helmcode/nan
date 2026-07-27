@@ -1,0 +1,49 @@
+---
+import Base from './NanBase.astro';
+import { getLang } from '../lib/i18n';
+interface Props { title: string; updated: string; }
+const { title, updated } = Astro.props;
+const lang = getLang(Astro.url);
+const updatedLabel = lang === 'es' ? 'Última actualización' : 'Last updated';
+const description =
+  lang === 'es'
+    ? `${title}: cómo tratamos tus datos en la comunidad NaN.`
+    : `${title} for the NaN community.`;
+---
+
+<Base title={`${title} — NaN`} description={description}>
+  <section class="legal">
+    <div class="container legal__wrap">
+      <p class="eyebrow">// legal</p>
+      <h1 class="legal__title caret-type">{title}</h1>
+      <p class="legal__updated">{updatedLabel}: {updated}</p>
+      <div class="legal__body">
+        <slot />
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .legal { padding-block: clamp(56px, 8vh, 100px) clamp(80px, 12vh, 160px); }
+  .legal__wrap { max-width: 760px; }
+  .legal__title {
+    font-family: var(--font-serif); font-weight: 400; color: var(--color-text);
+    font-size: clamp(40px, 5vw, 72px); line-height: 1.0; letter-spacing: -0.01em;
+  }
+  .legal__updated { margin-top: var(--space-4); font-family: var(--font-mono); font-size: 13px; color: var(--color-muted); }
+
+  .legal__body { margin-top: var(--space-12); }
+  .legal__body :global(h2) {
+    font-family: var(--font-serif); font-weight: 400; color: var(--color-text);
+    font-size: clamp(22px, 2.2vw, 30px); line-height: 1.1;
+    margin-top: var(--space-12); margin-bottom: var(--space-4);
+  }
+  .legal__body :global(p) { color: var(--color-text); font-size: 16px; line-height: 1.75; }
+  .legal__body :global(p + p) { margin-top: var(--space-4); }
+  .legal__body :global(ul) { margin: var(--space-4) 0 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-3); }
+  .legal__body :global(li) { position: relative; padding-left: 24px; color: var(--color-text); font-family: var(--font-sans); font-size: 16px; line-height: 1.6; }
+  .legal__body :global(li)::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 8px; height: 8px; border-radius: 50%; background: var(--color-violet); }
+  .legal__body :global(a) { color: var(--color-link); border-bottom: 1px solid var(--color-link-line); }
+  .legal__body :global(a):hover { color: var(--color-violet-2); }
+</style>

@@ -1,0 +1,53 @@
+[
+  {
+    "id": "member-eu",
+    "nombre": "nan_member · eu",
+    "precio": "70€",
+    "periodo": "/mes",
+    "impuestos": "IVA incluido",
+    "referencia": true,
+    "inferencia": true,
+    "incluye": [
+      "Acceso al cluster compartido — modelos abiertos sin caps de tokens",
+      "DeepSeek V4-Flash (frontier 284B, contexto 1M) — 500M tokens/mes",
+      "Modelos elegidos por la comunidad, renovados cada trimestre",
+      "API key personal compatible con OpenAI",
+      "Canales privados en Discord solo para miembros",
+      "Voz en la votación trimestral de modelos"
+    ],
+    "condiciones": "Mes a mes, sin permanencia."
+  },
+  {
+    "id": "member-usa-latam",
+    "nombre": "nan_member · usa/latam",
+    "precio": "$75",
+    "periodo": "/mo",
+    "impuestos": "impuestos incluidos",
+    "referencia": false,
+    "inferencia": true,
+    "incluye": [
+      "Acceso al cluster compartido — modelos abiertos sin caps de tokens",
+      "DeepSeek V4-Flash (frontier 284B, contexto 1M) — 500M tokens/mes",
+      "Modelos elegidos por la comunidad, renovados cada trimestre",
+      "API key personal compatible con OpenAI",
+      "Canales privados en Discord solo para miembros",
+      "Voz en la votación trimestral de modelos"
+    ],
+    "condiciones": "Mes a mes, sin permanencia."
+  },
+  {
+    "id": "community",
+    "nombre": "nan_community",
+    "precio": "$14.99",
+    "periodo": "/mes",
+    "impuestos": "impuestos incluidos",
+    "referencia": false,
+    "inferencia": false,
+    "incluye": [
+      "Acceso a Discord y canales privados de miembros",
+      "Charlas en directo, builds y AMAs",
+      "Plaza reservada para cuando quieras añadir inferencia"
+    ],
+    "condiciones": "Sin permanencia. Cancela cuando quieras."
+  }
+]

@@ -1,0 +1,137 @@
+---
+// Banner de cookies con guiño retro Win95. No rastreamos nada; es un chiste.
+import { getLang, useT } from '../../lib/i18n';
+
+const lang = getLang(Astro.url);
+const tt = useT(lang).cookie;
+const a11y = useT(lang).a11y;
+---
+
+<!-- No es modal (no bloquea la página), así que region y no dialog. -->
+<div class="cwin" data-cookie hidden role="region" aria-label={a11y.cookies}>
+  <div class="cwin__bar">
+    <span class="cwin__title">{tt.title}</span>
+    <button class="cwin__x" data-cookie-close aria-label={a11y.close}>×</button>
+  </div>
+  <div class="cwin__body">
+    <div class="cwin__icon"><img src="/img/cat.png" alt="" width="80" height="73" /></div>
+    <div class="cwin__msg">
+      <p>{tt.line1}</p>
+      <p class="cwin__q">{tt.q}</p>
+    </div>
+  </div>
+  <div class="cwin__actions">
+    <button class="cwin__btn" data-cookie-close>{tt.yes}</button>
+    <button class="cwin__btn" data-cookie-close data-nyan>{tt.yesIDo}</button>
+  </div>
+</div>
+
+<style>
+  .cwin {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 200;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    background: #c0c0c0;
+    color: #000;
+    font-family: Tahoma, Verdana, 'Segoe UI', sans-serif;
+    border: 1px solid #000;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
+      inset -2px -2px #808080, inset 2px 2px #dfdfdf, 4px 4px 0 rgba(0, 0, 0, 0.4);
+    padding: 3px;
+    animation: cwin-in 0.28s var(--ease, ease) both;
+  }
+  .cwin[hidden] { display: none; }
+
+  /* En móvil ocupaba el centro-abajo y tapaba el formulario de waitlist del
+     hero. Pegado al borde y a todo el ancho estorba mucho menos. */
+  @media (max-width: 620px) {
+    .cwin {
+      left: 8px; right: 8px; bottom: 8px;
+      width: auto; max-width: none;
+    }
+  }
+  @keyframes cwin-in { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .cwin__bar {
+    display: flex; align-items: center; justify-content: space-between;
+    /* el azul claro original dejaba el título en 3.0:1; oscurecido para pasar AA */
+    background: linear-gradient(90deg, #000080, #0b5c92);
+    color: #fff; padding: 3px 4px 3px 7px;
+  }
+  .cwin__title { font-size: 12px; font-weight: 700; letter-spacing: 0.02em; }
+  .cwin__x {
+    /* 18x16 se quedaba por debajo del mínimo de 24x24 */
+    width: 26px; height: 24px; line-height: 1; font-size: 14px; color: #000;
+    background: #c0c0c0; border: 1px solid #000;
+    box-shadow: inset -1px -1px #808080, inset 1px 1px #fff; cursor: pointer;
+  }
+
+  .cwin__body { display: flex; align-items: center; gap: 14px; padding: 16px 14px 10px; }
+  .cwin__icon {
+    flex: 0 0 auto; width: 52px; height: 48px; background: #000; overflow: hidden;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #808080;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cwin__icon img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+  .cwin__msg p { font-family: inherit; color: #000; font-size: 13px; line-height: 1.35; margin: 0; }
+  .cwin__q { font-weight: 700; margin-top: 4px !important; }
+
+  .cwin__actions { display: flex; justify-content: center; gap: 12px; padding: 4px 14px 16px; }
+  .cwin__btn {
+    min-width: 88px; min-height: 32px; padding: 6px 14px;
+    font-family: inherit; font-size: 12px; color: #000;
+    background: #c0c0c0; border: 1px solid #000;
+    box-shadow: inset -1px -1px #808080, inset 1px 1px #fff; cursor: pointer;
+  }
+  .cwin__btn:active { box-shadow: inset 1px 1px #808080, inset -1px -1px #fff; }
+  .cwin__btn:focus-visible { outline: 1px dotted #000; outline-offset: 2px; }
+
+  /* ---------- nyan cat cruzando ---------- */
+  :global(.nyan) {
+    position: fixed; left: 0; z-index: 300; display: flex; align-items: center;
+    pointer-events: none; animation: nyan-fly 2.6s linear forwards;
+  }
+  :global(.nyan__trail) {
+    width: 62vw; height: 34px; flex: 0 0 auto;
+    background: linear-gradient(180deg,
+      #ff2d2d 0 16.66%, #ff9a2d 0 33.33%, #ffe62d 0 50%,
+      #3dff5b 0 66.66%, #2db6ff 0 83.33%, #8a5bff 0 100%);
+    clip-path: polygon(0 8%, 100% 8%, 100% 92%, 0 92%);
+  }
+  :global(.nyan__cat) {
+    width: 54px; height: auto; margin-left: -6px; image-rendering: pixelated;
+    animation: nyan-bob 0.28s steps(2) infinite alternate;
+  }
+  @keyframes nyan-fly { from { transform: translateX(-64vw); } to { transform: translateX(122vw); } }
+  @keyframes nyan-bob { from { transform: translateY(-4px); } to { transform: translateY(4px); } }
+  @media (prefers-reduced-motion: reduce) { :global(.nyan) { display: none; } }
+</style>
+
+<script>
+  const KEY = 'nan-cats-ack';
+  const el = document.querySelector<HTMLElement>('[data-cookie]');
+  // ¿ya se cerró en esta sesión? (sessionStorage -> reaparece en una sesión nueva)
+  let acked = false;
+  try { acked = sessionStorage.getItem(KEY) === '1'; } catch {}
+  const nyan = () => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const n = document.createElement('div');
+    n.className = 'nyan';
+    n.style.top = (12 + Math.random() * 64) + 'vh';
+    n.innerHTML = '<span class="nyan__trail"></span><img class="nyan__cat" src="/img/cat.png" alt="" />';
+    document.body.appendChild(n);
+    n.addEventListener('animationend', () => n.remove());
+  };
+
+  if (el && !acked) {
+    el.hidden = false;
+    // el gato aparece con CUALQUIER botón que cierre el banner (incluida la X)
+    const dismiss = () => { nyan(); el.hidden = true; try { sessionStorage.setItem(KEY, '1'); } catch {} };
+    el.querySelectorAll('[data-cookie-close]').forEach((b) => b.addEventListener('click', dismiss));
+    // Escape también lo descarta, mientras el foco esté dentro del aviso
+    el.addEventListener('keydown', (e) => { if (e.key === 'Escape') dismiss(); });
+  }
+</script>
