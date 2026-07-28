@@ -6,7 +6,7 @@ import NanPage from '../layouts/NanPage.astro';
 import RegisterForm, { type FormStrings } from '../components/hackaton/RegisterForm.tsx';
 import LoginForm, { type LoginStrings } from '../components/hackaton/LoginForm.tsx';
 import RegistrationBar from '../components/hackaton/RegistrationBar.astro';
-import { getLocale, t, tObj } from '../lib/i18n';
+import { getLocale, t, tObj, withLang } from '../lib/i18n';
 import { jsonData, type MeData } from '../lib/hackaton';
 import { env } from 'cloudflare:workers';
 
@@ -72,9 +72,9 @@ const closedNote = String(cap.closedNote ?? '')
   .replaceAll('{res}', String(reserve));
 
 // Panel para participantes ya inscritos en fases posteriores a la inscripción.
-const meUrl = locale === 'en' ? '/hackaton/me?lang=en' : '/hackaton/me';
-const projectsUrl = locale === 'en' ? '/hackaton/projects?lang=en' : '/hackaton/projects';
-const leaderboardUrl = locale === 'en' ? '/hackaton/leaderboard?lang=en' : '/hackaton/leaderboard';
+const meUrl = withLang('/hackaton/me', locale);
+const projectsUrl = withLang('/hackaton/projects', locale);
+const leaderboardUrl = withLang('/hackaton/leaderboard', locale);
 let participantPanel: { title: string; body: string; href: string; cta: string };
 if (status === 'voting') {
   // Durante la votación, el CTA lleva a la galería de proyectos a votar.
@@ -93,7 +93,7 @@ const pageTitle = `${t('hackaton.pageTitle', locale)} — nan.builders`;
 <NanPage scale={false} title={pageTitle} description={t('hackaton.subtitle', locale)}>
   <main class="px-6 pt-24 pb-32 md:pt-32">
     <div class="mx-auto max-w-2xl">
-      <a href={locale === 'en' ? '/?lang=en' : '/'}
+      <a href={withLang('/', locale)}
          class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400">
         {t('hackaton.backToLanding', locale)}
       </a>
@@ -167,7 +167,7 @@ const pageTitle = `${t('hackaton.pageTitle', locale)} — nan.builders`;
                   {myParticipant.is_reserve ? already.reserve : already.confirmed}
                 </p>
                 <a
-                  href={locale === 'en' ? '/hackaton/me?lang=en' : '/hackaton/me'}
+                  href={meUrl}
                   class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500"
                 >
                   {already.cta}
