@@ -1,7 +1,10 @@
 /* ============================================
    NaN — Design tokens (fuente de verdad)
-   Sistema DEFINITIVO (2026-07-23): off-black + monoacento violeta,
-   Inria Serif (display) + Inria Sans (cuerpo/UI) + JetBrains Mono (técnico).
+   Sistema vigente: off-black + monoacento violeta,
+   Archivo (display y cuerpo, variable con ejes wdth+wght) + JetBrains Mono
+   (técnico). Ojo con los nombres: --font-serif NO es una serif, es la misma
+   Archivo que --font-sans; el nombre viene de una iteración con Inria Serif y
+   se conserva para no tocar todos los componentes de golpe.
    Solo modo oscuro. Esquina recta (radio 0). Regla: interactivo -> violeta.
    Hex sueltos en código = prohibido: todo color pasa por aquí.
    ============================================ */

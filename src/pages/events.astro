@@ -7,7 +7,11 @@ const lang = getLang(Astro.url);
 const tt = useT(lang).events;
 const a11y = useT(lang).a11y;
 
-// Calendario real de los próximos 30 días (se congela en cada build).
+// Calendario real de los próximos 30 días. La página NO está prerenderizada,
+// así que esto se recalcula en cada petición, con el reloj del Worker (UTC):
+// para quien esté en Canarias o LATAM cerca de medianoche, "hoy" puede ir un
+// día adelantado. Si algún día se prerenderiza, el calendario sí se congelaría
+// en el build y habría que moverlo a cliente o a una isla.
 const agenda = eventos.agenda ?? [];
 const fmtISO = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

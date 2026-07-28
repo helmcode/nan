@@ -1,10 +1,11 @@
 ---
 /**
- * JSON-LD del sitio. Se pinta desde Base.astro.
+ * JSON-LD del sitio. Lo incluye cada página que lo necesita (la home y /events).
  *  - Organization: siempre (identifica la marca ante buscadores y redes).
  *  - FAQPage: solo en la home, con las MISMAS preguntas que renderiza el FAQ.
  *  - ItemList de eventos: solo en /events, a partir de los datos reales.
- * Regla del proyecto: datos reales o nada. Todo sale de ui.ts y de data/*.json.
+ * Regla del proyecto: datos reales o nada. Todo sale del diccionario
+ * (`i18n/{en,es}.json`, clave `nan`, vía useT) y de data/*.json.
  */
 import { useT, type Locale } from '../../lib/i18n';
 import eventos from '../../data/eventos.json';

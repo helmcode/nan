@@ -71,7 +71,9 @@ try {
   if (res.ok) {
     const data = (await res.json()) as { projects: ApiProject[] };
     proyectos = (data.projects ?? [])
-      .sort((a, b) => b.stars - a.stars)
+      // El `?? 0` va aquí y no solo en el map de abajo: si la API omite `stars`
+      // el comparador devuelve NaN y el orden queda indefinido.
+      .sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
       .map((p) => {
         const thumbnail = safeImage(p.imageUrl);
         const app = safeUrl(p.appUrl);
