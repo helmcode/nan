@@ -96,12 +96,31 @@ export function initHeroDither(canvasId: string, src = '/img/hero-dither.webp') 
     }
     ctx!.globalAlpha = 1;
   }
+  let rafId = 0;
+  let visible = true;
+
   function frame() {
     hover += (hoverTarget - hover) * 0.09;
     ctx!.clearRect(0, 0, W, H);
     drawSkull();
     drawPlume();
-    requestAnimationFrame(frame);
+    rafId = requestAnimationFrame(frame);
+  }
+
+  /**
+   * A diferencia del dither de WhyNan, aquí el bucle NO puede pararse cuando el
+   * crossfade se estabiliza: la estela de partículas se mueve siempre. Lo que sí
+   * se puede es no animar cuando el hero no se ve, que es la mayor parte del
+   * tiempo que alguien pasa en la home.
+   */
+  function start() {
+    if (rafId || reduce || !visible) return;
+    rafId = requestAnimationFrame(frame);
+  }
+  function stop() {
+    if (!rafId) return;
+    cancelAnimationFrame(rafId);
+    rafId = 0;
   }
 
   const img = new Image();
@@ -117,13 +136,40 @@ export function initHeroDither(canvasId: string, src = '/img/hero-dither.webp') 
     maskImg = im;
     buildBuffers();
     resize();
-    if (reduce) { drawSkull(); drawPlume(); } else requestAnimationFrame(frame);
+    if (reduce) { drawSkull(); drawPlume(); } else start();
   };
   img.src = src;
 
-  window.addEventListener('resize', resize);
-  window.addEventListener('mousemove', (e) => {
-    const r = canvas!.getBoundingClientRect();
-    hoverTarget = overSkull(e.clientX - r.left, e.clientY - r.top) ? 1 : 0;
+  /**
+   * El rect va cacheado. Antes se pedía un `getBoundingClientRect()` en CADA
+   * movimiento de ratón sobre la página entera, y eso fuerza layout: con dos
+   * canvas dither eran dos reflows por cada movimiento del cursor.
+   *
+   * El listener sigue en `window` y no en el canvas porque `#hero-fx` lleva
+   * `pointer-events: none` (está detrás del contenido del hero), así que sobre
+   * él no llegaría ningún evento.
+   */
+  let rect: DOMRect | null = null;
+  const invalidateRect = () => { rect = null; };
+
+  window.addEventListener('resize', () => { resize(); invalidateRect(); });
+  window.addEventListener('scroll', invalidateRect, { passive: true });
+
+  window.addEventListener('pointermove', (e) => {
+    if (!visible) return;              // hero fuera de pantalla: no hay nada que resaltar
+    if (!rect) rect = canvas!.getBoundingClientRect();
+    const next = overSkull(e.clientX - rect.left, e.clientY - rect.top) ? 1 : 0;
+    if (next !== hoverTarget) hoverTarget = next;
+  });
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entries) => {
+      visible = entries[0]?.isIntersecting ?? true;
+      if (visible) start(); else stop();
+    }).observe(canvas);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stop(); else start();
   });
 }

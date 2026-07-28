@@ -66,7 +66,37 @@ export function initDither(canvasId: string, src: string, opts: Opts = {}) {
     if (hover > 0.002) { ctx!.globalAlpha = hover; ctx!.drawImage(bufV!, dx, dy, dw, dh); }
     ctx!.globalAlpha = 1;
   }
-  function frame() { hover += (hoverTarget - hover) * 0.09; draw(); requestAnimationFrame(frame); }
+  /**
+   * Por debajo de esto el crossfade ya no se distingue: se cuadra al objetivo,
+   * se pinta un último fotograma y el bucle se para.
+   *
+   * Antes no paraba nunca: redibujaba en cada fotograma aunque `hover` ya
+   * hubiera llegado a `hoverTarget` y aunque el canvas estuviera fuera de
+   * pantalla. Entre este dither, el del hero y las partículas, la home tenía
+   * tres bucles rAF permanentes.
+   */
+  const SETTLED = 0.002;
+
+  let rafId = 0;
+  let visible = true;
+
+  function frame() {
+    hover += (hoverTarget - hover) * 0.09;
+    if (Math.abs(hoverTarget - hover) < SETTLED) {
+      hover = hoverTarget;
+      draw();
+      rafId = 0;          // se ha estabilizado: nada que animar
+      return;
+    }
+    draw();
+    rafId = requestAnimationFrame(frame);
+  }
+
+  /** Despierta el bucle. Lo llaman los eventos de puntero, no un rAF eterno. */
+  function wake() {
+    if (reduce || rafId || !visible) return;
+    rafId = requestAnimationFrame(frame);
+  }
 
   const img = new Image();
   img.onload = () => {
@@ -81,13 +111,47 @@ export function initDither(canvasId: string, src: string, opts: Opts = {}) {
     maskImg = im;
     buildBuffers();
     resize();
-    if (reduce) draw(); else requestAnimationFrame(frame);
+    draw();
   };
   img.src = src;
 
-  window.addEventListener('resize', resize);
-  window.addEventListener('mousemove', (e) => {
-    const r = canvas!.getBoundingClientRect();
-    hoverTarget = overImg(e.clientX - r.left, e.clientY - r.top) ? 1 : 0;
+  window.addEventListener('resize', () => { resize(); draw(); });
+
+  /**
+   * `pointermove` sobre el canvas y no `mousemove` sobre `window`: antes se
+   * ejecutaba en cada movimiento de ratón en toda la página, y cada vez hacía un
+   * `getBoundingClientRect()` (que fuerza layout) más un escaneo de 25 píxeles
+   * de la máscara. Aquí solo corre encima del canvas, y el rect va cacheado.
+   */
+  let rect: DOMRect | null = null;
+  const invalidateRect = () => { rect = null; };
+  window.addEventListener('resize', invalidateRect);
+  window.addEventListener('scroll', invalidateRect, { passive: true });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!rect) rect = canvas.getBoundingClientRect();
+    const next = overImg(e.clientX - rect.left, e.clientY - rect.top) ? 1 : 0;
+    if (next === hoverTarget) return;   // nada ha cambiado: no despertar el bucle
+    hoverTarget = next;
+    wake();
   });
+
+  canvas.addEventListener('pointerleave', () => {
+    if (hoverTarget === 0) return;
+    hoverTarget = 0;
+    wake();
+  });
+
+  // Fuera de pantalla no se anima. Al volver a entrar, si quedaba crossfade a
+  // medias, se retoma.
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entries) => {
+      visible = entries[0]?.isIntersecting ?? true;
+      if (!visible) {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+      } else if (hover !== hoverTarget) {
+        wake();
+      }
+    }).observe(canvas);
+  }
 }

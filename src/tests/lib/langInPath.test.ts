@@ -23,12 +23,19 @@ const srcDir = resolve(here, '../..');
 /** Ficheros de test aparte: ahí `?lang=` aparece a propósito, como entrada. */
 const isTest = (path: string) => /\.test\.tsx?$/.test(path);
 
+/**
+ * El middleware está exento: es el único sitio que debe conocer el esquema
+ * viejo, porque su trabajo es redirigir 301 a la ruta nueva. No construye
+ * enlaces con `?lang=`, los desmonta.
+ */
+const isMiddleware = (path: string) => /[\\/]middleware\.ts$/.test(path);
+
 function sourceFiles(dir: string, found: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
       sourceFiles(full, found);
-    } else if (/\.(astro|ts|tsx)$/.test(entry) && !isTest(full)) {
+    } else if (/\.(astro|ts|tsx)$/.test(entry) && !isTest(full) && !isMiddleware(full)) {
       found.push(full);
     }
   }

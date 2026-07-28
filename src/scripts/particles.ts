@@ -44,16 +44,47 @@ export function initParticles() {
     }
     ctx!.globalAlpha = 1;
   }
-  function frame() { draw(); requestAnimationFrame(frame); }
+  /**
+   * Opacidad mínima al salir del hero. Antes el bucle seguía pintando las 300
+   * partículas a este 10%, o sea batería a cambio de un movimiento que nadie
+   * puede percibir detrás del contenido: por debajo de este umbral se para.
+   */
+  const MIN_OPACITY = 0.1;
+
+  let rafId = 0;
+  const running = () => rafId !== 0;
+
+  function frame() { draw(); rafId = requestAnimationFrame(frame); }
+
+  function start() {
+    if (running() || reduce) return;
+    rafId = requestAnimationFrame(frame);
+  }
+  function stop() {
+    if (!running()) return;
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
 
   // se desvanecen al salir del hero para no molestar la lectura
   function fade() {
-    const f = Math.max(0.1, 1 - window.scrollY / (window.innerHeight * 0.85));
+    const f = Math.max(MIN_OPACITY, 1 - window.scrollY / (window.innerHeight * 0.85));
     canvas!.style.opacity = String(f);
+    // Parar y arrancar según se sale y se vuelve al hero: el usuario puede
+    // subir otra vez y entonces sí se ven.
+    if (f <= MIN_OPACITY) stop(); else start();
   }
+
   window.addEventListener('scroll', fade, { passive: true });
   window.addEventListener('resize', resize);
+
+  // Fuera de la pestaña activa el navegador ya frena rAF, pero al volver
+  // conviene no reanudar si seguimos con el hero fuera de pantalla.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stop(); else fade();
+  });
+
   resize();
+  if (reduce) { draw(); fade(); return; }
   fade();
-  if (reduce) draw(); else requestAnimationFrame(frame);
 }
