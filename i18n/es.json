@@ -452,7 +452,8 @@
       "openProject": "Abrir {name}",
       "projectsRail": "Proyectos de la comunidad, carrusel horizontal",
       "membersOnly": "{title}, solo para miembros",
-      "gpuDither": "NVIDIA RTX 5090, ilustración con trama"
+      "gpuDither": "NVIDIA RTX 5090, ilustración con trama",
+      "crt404": "Un ordenador CRT antiguo con una pantalla azul, una cara triste y el mensaje NO TOKENS"
     },
     "nav": {
       "models": "Modelos",
