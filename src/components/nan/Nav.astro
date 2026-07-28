@@ -37,7 +37,10 @@ const pathname = Astro.url.pathname;
       <a href={p('/community')}>{tt.community}</a>
       <a href={p('/events')}>{tt.events}</a>
       <a href={p('/projects')}>{tt.projects}</a>
-      <a href={p('/docs')}>{tt.docs}</a>
+      {/* La documentación solo existe en inglés: la colección MDX no está
+          traducida, así que no hay `/es/docs` y prefijar el idioma daría un 404.
+          Va sin prefijo a propósito, en los dos idiomas. */}
+      <a href="/docs">{tt.docs}</a>
 
       <span class="nav__lang" role="group" aria-label={a11y.language}>
         <a href={switchLocalePath(pathname, 'en')} hreflang="en" class:list={['nav__lang-opt', { 'is-active': lang === 'en' }]}>EN</a>
