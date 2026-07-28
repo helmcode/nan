@@ -4,12 +4,9 @@ import {
   isValidEmail,
   isWaitlistRegion,
   parseWaitlistResponse,
-  successMessage,
-  errorMessage,
-  getTranslations,
-} from './waitlistForm.helpers';
-
-const esT = getTranslations('es');
+  waitlistErrorText,
+  waitlistSuccessText,
+} from '../../lib/waitlistClient';
 
 describe('normalizeEmail', () => {
   it('trims and lowercases', () => {
@@ -154,42 +151,66 @@ describe('parseWaitlistResponse', () => {
   });
 });
 
-describe('successMessage', () => {
-  it('uses the registered message for EU signups', () => {
-    const msg = successMessage({
-      ok: true,
-      position: 7,
-      total: 7,
-      status: 'registered',
-      region: 'EU',
-    }, esT);
-    expect(msg).toContain('orden de llegada');
+describe('waitlistErrorText', () => {
+  const m = {
+    okRegistered: 'ok', okInterest: 'interes', okPosition: 'puesto', okText: 'texto',
+    errEmail: 'email mal', errRegion: 'elige region', errRateLimited: 'espera un minuto',
+    errNetwork: 'sin conexion', errGeneric: 'algo se rompio',
+  };
+
+  it('distingue el rate limit del error genérico', () => {
+    // Mostrar "algo se ha roto" para un rate limit es mentira y no dice qué hacer.
+    expect(waitlistErrorText('rate_limited', m).text).toBe('espera un minuto');
+    expect(waitlistErrorText('server_error', m).text).toBe('algo se rompio');
+    expect(waitlistErrorText('rate_limited', m).text).not.toBe(waitlistErrorText('server_error', m).text);
   });
 
-  it('uses an interest message mentioning the region', () => {
-    const msg = successMessage({
-      ok: true,
-      position: 0,
-      total: 0,
-      status: 'interest',
-      region: 'LATAM',
-    }, esT);
-    expect(msg).toContain('LATAM');
+  it('distingue el fallo de red del fallo del servidor', () => {
+    expect(waitlistErrorText('network_error', m).text).toBe('sin conexion');
+  });
+
+  it('solo devuelve el foco al campo cuando el problema es el email', () => {
+    expect(waitlistErrorText('invalid_email', m)).toEqual({ text: 'email mal', focusEmail: true });
+    for (const e of ['invalid_region', 'rate_limited', 'network_error', 'server_error'] as const) {
+      expect(waitlistErrorText(e, m).focusEmail).toBe(false);
+    }
+  });
+
+  it('cada código tiene un texto, ninguno cae en blanco', () => {
+    for (const e of ['invalid_email', 'invalid_region', 'rate_limited', 'network_error', 'server_error'] as const) {
+      expect(waitlistErrorText(e, m).text.length).toBeGreaterThan(0);
+    }
   });
 });
 
-describe('errorMessage', () => {
-  it('returns a distinct message per error', () => {
-    const messages = new Set<string>();
-    for (const err of [
-      'invalid_email',
-      'invalid_region',
-      'rate_limited',
-      'network_error',
-      'server_error',
-    ] as const) {
-      messages.add(errorMessage({ ok: false, error: err }, esT));
-    }
-    expect(messages.size).toBe(5);
+describe('waitlistSuccessText', () => {
+  const m = {
+    okRegistered: 'Estás dentro.', okInterest: 'Aún no abrimos ahí.', okPosition: 'puesto',
+    okText: 'Te aprobamos en unos días.', errEmail: '', errRegion: '', errRateLimited: '',
+    errNetwork: '', errGeneric: '',
+  };
+
+  it('una región sin apertura no enseña puesto: no hay puesto que enseñar', () => {
+    const text = waitlistSuccessText(
+      { ok: true, position: 0, total: 0, status: 'interest', region: 'LATAM' }, m,
+    );
+    expect(text).toBe('Aún no abrimos ahí.');
+    expect(text).not.toContain('puesto');
+  });
+
+  it('un alta en EU enseña la posición, rellenada a tres cifras', () => {
+    const text = waitlistSuccessText(
+      { ok: true, position: 7, total: 450, status: 'registered', region: 'EU' }, m,
+    );
+    expect(text).toContain('puesto 007 / 450');
+    expect(text).toContain('Estás dentro.');
+  });
+
+  it('sin cifras válidas no inventa un puesto', () => {
+    const text = waitlistSuccessText(
+      { ok: true, position: 0, total: 0, status: 'registered', region: 'EU' }, m,
+    );
+    expect(text).not.toContain('puesto');
+    expect(text).toContain('Estás dentro.');
   });
 });

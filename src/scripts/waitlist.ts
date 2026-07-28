@@ -3,7 +3,7 @@
  *   POST /api/waitlist {email, region, _hp} → ver src/pages/api/waitlist.ts
  *
  * La VALIDACIÓN y el PARSEO no viven aquí: se reutilizan los helpers que ya
- * usaba la isla Preact (components/landing/waitlistForm.helpers), para que haya
+ * usaba la isla Preact (lib/waitlistClient), para que haya
  * una sola implementación y la sigan cubriendo sus tests. En particular el
  * espejo de dominios bloqueados, que debe coincidir con el de lib/waitlist.ts
  * (el servidor es la autoridad; el cliente solo evita un viaje de ida y vuelta).
@@ -16,7 +16,9 @@ import {
   isWaitlistRegion,
   normalizeEmail,
   parseWaitlistResponse,
-} from '../components/landing/waitlistForm.helpers';
+  waitlistErrorText,
+  waitlistSuccessText,
+} from '../lib/waitlistClient';
 
 interface Msgs {
   sending: string;
@@ -109,32 +111,16 @@ function wire(form: HTMLFormElement): void {
     const result = parseWaitlistResponse(res.status, body);
 
     if (!result.ok) {
-      // El backend distingue rate limit de error genérico; antes se mostraba
-      // "algo se ha roto" para todo, que es mentira y no dice qué hacer.
-      const map: Record<string, string> = {
-        invalid_email: t.errEmail,
-        invalid_region: t.errRegion,
-        rate_limited: t.errRateLimited,
-        network_error: t.errNetwork,
-        server_error: t.errGeneric,
-      };
-      fail(map[result.error] ?? t.errGeneric, result.error === 'invalid_email' ? email : null);
+      // Qué texto toca y si el foco vuelve al campo se decide en
+      // lib/waitlistClient, que sí tiene tests. Aquí queda el cableado del DOM.
+      const { text, focusEmail } = waitlistErrorText(result.error, t);
+      fail(text, focusEmail ? email : null);
       return;
     }
 
     form.querySelectorAll('input, select, button').forEach((el) => ((el as HTMLInputElement).disabled = true));
 
-    // EU recibe una posición de llegada. LATAM y USA se guardan como interés
-    // con posición 0: ahí no hay puesto que enseñar.
-    if (result.status === 'interest') {
-      status.textContent = t.okInterest;
-      return;
-    }
-    const pos =
-      result.position && result.total
-        ? ` ${t.okPosition} ${String(result.position).padStart(3, '0')} / ${result.total} ·`
-        : '';
-    status.textContent = `${t.okRegistered}${pos} ${t.okText}`;
+    status.textContent = waitlistSuccessText(result, t);
   });
 }
 

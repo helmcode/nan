@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { isValidEmail, isWaitlistRegion } from '../../components/landing/waitlistForm.helpers';
+import { isValidEmail, isWaitlistRegion } from '../../lib/waitlistClient';
 
 /**
  * El formulario del rediseño (scripts/waitlist.ts, vanilla) y la isla Preact
@@ -18,7 +18,7 @@ const source = readFileSync(resolve(here, '../../scripts/waitlist.ts'), 'utf-8')
 describe('waitlist vanilla', () => {
   describe('reutiliza los helpers compartidos', () => {
     test('importa la validación en vez de reimplementarla', () => {
-      expect(source).toContain("from '../components/landing/waitlistForm.helpers'");
+      expect(source).toContain("from '../lib/waitlistClient'");
       expect(source).toContain('isValidEmail');
       expect(source).toContain('isWaitlistRegion');
       expect(source).toContain('parseWaitlistResponse');
@@ -58,16 +58,27 @@ describe('waitlist vanilla', () => {
     });
   });
 
-  describe('distingue los estados que devuelve el backend', () => {
-    test('trata "interest" aparte de "registered"', () => {
-      // LATAM y USA vuelven con posición 0: enseñar "posición 000" sería falso.
-      expect(source).toContain("result.status === 'interest'");
-      expect(source).toContain('okInterest');
+  describe('delega la decisión del mensaje, no la reimplementa', () => {
+    /**
+     * Antes esto comprobaba que el TEXTO del script contuviera
+     * `result.status === 'interest'` y `rate_limited`. Esa lógica se movió a
+     * lib/waitlistClient para poder probarla sin DOM, y los asserts de texto
+     * se rompieron sin que nada estuviera mal: el caso exacto que hace frágiles
+     * las pruebas sobre el fuente.
+     *
+     * El COMPORTAMIENTO (interest sin posición, rate limit con su propio texto,
+     * red aparte del servidor) vive ahora en `tests/lib/waitlistClient.test.ts`.
+     * Aquí solo queda lo que de verdad depende de este fichero: que no se monte
+     * su propia versión.
+     */
+    test('usa los helpers de mensaje en vez de un mapa propio', () => {
+      expect(source).toContain('waitlistErrorText');
+      expect(source).toContain('waitlistSuccessText');
     });
 
-    test('el rate limit tiene su propio mensaje', () => {
-      expect(source).toContain('rate_limited');
-      expect(source).toContain('errRateLimited');
+    test('no reimplementa el mapa de códigos de error', () => {
+      expect(source).not.toContain('rate_limited:');
+      expect(source).not.toContain('const map: Record<string, string>');
     });
   });
 });
