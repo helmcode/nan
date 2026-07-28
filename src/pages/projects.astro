@@ -277,11 +277,31 @@ const rest = proyectos.slice(6);
     set('[data-m-desc]', c.dataset.desc ?? '');
     const cover = modal.querySelector<HTMLElement>('[data-m-cover]');
     if (cover) {
-      if (c.dataset.cover) { cover.style.backgroundImage = `url(${c.dataset.cover})`; cover.style.display = ''; }
+      // encodeURI: la portada es texto que aporta el miembro y aquí entra en una
+      // propiedad CSS. Sin escapar, un paréntesis o una comilla rompen el url().
+      if (c.dataset.cover) { cover.style.backgroundImage = `url("${encodeURI(c.dataset.cover)}")`; cover.style.display = ''; }
       else { cover.style.display = 'none'; }
     }
     const tagsEl = modal.querySelector<HTMLElement>('[data-m-tags]');
-    if (tagsEl) tagsEl.innerHTML = (c.dataset.tagstr ?? '').split(' · ').filter(Boolean).map((t) => `<span>${t}</span>`).join('');
+    if (tagsEl) {
+      // Los tags los escribe el miembro al publicar. Astro escapa `data-tagstr`
+      // al renderizar, pero al leerlo por `dataset` se recupera el texto
+      // original, así que con innerHTML volvería a interpretarse como marcado
+      // (y la CSP permite 'unsafe-inline', o sea que un handler ejecutaría).
+      // createElement + textContent los trata como texto, que es lo que son.
+      // La galería anterior lo tenía cubierto por ser Preact; el port a vanilla
+      // perdió esa garantía.
+      tagsEl.replaceChildren(
+        ...(c.dataset.tagstr ?? '')
+          .split(' · ')
+          .filter(Boolean)
+          .map((t) => {
+            const span = document.createElement('span');
+            span.textContent = t;
+            return span;
+          }),
+      );
+    }
     const app = modal.querySelector<HTMLAnchorElement>('[data-m-app]');
     const repo = modal.querySelector<HTMLAnchorElement>('[data-m-repo]');
     if (app) { if (c.dataset.app) { app.href = c.dataset.app; app.style.display = ''; } else { app.style.display = 'none'; } }
