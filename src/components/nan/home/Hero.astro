@@ -218,7 +218,11 @@ const waitlistMsgs = JSON.stringify({
 
   // control segmentado de región -> input oculto name="region"
   document.querySelectorAll<HTMLElement>('[data-region]').forEach((group) => {
-    const hidden = group.parentElement?.querySelector<HTMLInputElement>('input[name="region"]');
+    // `closest('form')` y no `parentElement`: con el padre directo, envolver el
+    // grupo en un div cualquiera hace que el input deje de encontrarse, y
+    // entonces no se actualiza nunca y el formulario rechaza siempre por región,
+    // sin error visible en consola.
+    const hidden = group.closest('form')?.querySelector<HTMLInputElement>('input[name="region"]');
     group.querySelectorAll('button').forEach((btn) => {
       btn.addEventListener('click', () => {
         group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', 'false'));

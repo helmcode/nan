@@ -18,16 +18,28 @@ const skins = [
   { body: 'var(--color-surface)', label: '#fff', ink: '#0B0B0C' },
 ];
 const s = skins[index % skins.length];
+
+/**
+ * No todos los proyectos traen un destino: si el miembro no publicó appUrl ni
+ * repoUrl válidos (o venían en http, que el filtro descarta), `url` es ''.
+ *
+ * Antes se emitía `<a href="">` igualmente, que recarga la página mientras su
+ * aria-label promete abrir el proyecto. Sin destino esto deja de ser un enlace:
+ * ni etiqueta `a`, ni foco de teclado, ni aria-label que prometa nada. El
+ * disquete sigue viéndose y contando su información, que es lo que aporta.
+ */
+const hasLink = Boolean(p.url);
+const Tag = hasLink ? 'a' : 'div';
 ---
 
 <article class:list={['slide', { 'slide--grid': variant === 'grid' }]}>
   <span class="chip mono" data-scramble-hover>{p.slug}</span>
-  <a
+  <Tag
     class="floppy"
-    href={p.url}
+    href={hasLink ? p.url : undefined}
     draggable={false}
     style={`--body:${s.body};--label:${s.label};--ink:${s.ink}`}
-    aria-label={a11y.openProject.replace('{name}', p.nombre)}
+    aria-label={hasLink ? a11y.openProject.replace('{name}', p.nombre) : undefined}
   >
     <span class="floppy__sheen" aria-hidden="true"></span>
     <span class="floppy__shutter" aria-hidden="true"><span class="floppy__win"></span></span>
@@ -51,7 +63,7 @@ const s = skins[index % skins.length];
         </span>
       </span>
     )}
-  </a>
+  </Tag>
   <p class="slide__foot"><span class="slide__by mono">@{p.autor}</span></p>
 </article>
 
