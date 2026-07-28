@@ -43,9 +43,11 @@ describe('modal de /projects — datos de terceros', () => {
   });
 
   test('los destinos siguen pasando por el filtro de esquema del servidor', () => {
-    // safeUrl/safeImage descartan javascript: y http:; el modal solo asigna lo
-    // que el frontmatter ya validó, así que el filtro no debe desaparecer.
-    expect(source).toContain('const safeUrl');
-    expect(source).toContain('const safeImage');
+    // El modal solo asigna lo que el frontmatter ya validó. Los filtros
+    // (safeUrl/safeImage, que descartan javascript: y http:) viven en
+    // lib/projects y se aplican dentro de fetchProjects, así que la página no
+    // debe dejar de usarlo para montarse los datos a mano.
+    expect(source).toContain("from '../lib/projects'");
+    expect(source).toContain('fetchProjects(env.CLOUD_API_URL)');
   });
 });

@@ -2,6 +2,7 @@
 import NanPage from '../layouts/NanPage.astro';
 import Floppy from '../components/nan/Floppy.astro';
 import { getLang, useT } from '../lib/i18n';
+import { fetchProjects } from '../lib/projects';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
@@ -10,92 +11,9 @@ const lang = getLang(Astro.url);
 const tt = useT(lang).projects;
 const a11y = useT(lang).a11y;
 
-/** Lo que devuelve cloud-api en /api/projects. */
-interface ApiProject {
-  id: number;
-  handle: string;
-  name: string;
-  description: string;
-  imageUrl?: string;
-  appUrl?: string;
-  repoUrl?: string;
-  tags: string[];
-  stars: number;
-}
-
-/** Forma que espera el disquete (heredada de nan-site). */
-interface FloppyProject {
-  slug: string;
-  nombre: string;
-  autor: string;
-  descripcion: string;
-  tags: string[];
-  url: string;
-  thumbnail: string;
-  cover: boolean;
-  stars: number;
-  app: string;
-  repo: string;
-}
-
-/**
- * Solo http(s), mismo criterio que ProjectsGallery: descarta javascript: y
- * cualquier otro esquema que venga en los datos de usuario.
- */
-const safeUrl = (u?: string): string => (u && /^https?:\/\//i.test(u) ? u : '');
-
-/**
- * Para las portadas exigimos https. Hay proyectos con la imagen en http:// y
- * el navegador las bloquea por contenido mixto (y la CSP también), así que se
- * veía el icono de imagen rota. Sin portada válida el disquete cae a su
- * etiqueta editorial, que es un estado de diseño, no un fallo.
- */
-const safeImage = (u?: string): string => (u && /^https:\/\//i.test(u) ? u : '');
-
-const slugify = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-
-// Datos en vivo del backend. Antes esto venía de un JSON scrapeado a mano que
-// se quedaba viejo; la fuente de verdad es cloud-api.
-let proyectos: FloppyProject[] = [];
-try {
-  const base = env.CLOUD_API_URL.replace(/\/$/, '');
-  const res = await fetch(`${base}/api/projects?limit=100`, {
-    headers: { origin: 'https://nan.builders' },
-  });
-  if (res.ok) {
-    const data = (await res.json()) as { projects: ApiProject[] };
-    proyectos = (data.projects ?? [])
-      // El `?? 0` va aquí y no solo en el map de abajo: si la API omite `stars`
-      // el comparador devuelve NaN y el orden queda indefinido.
-      .sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
-      .map((p) => {
-        const thumbnail = safeImage(p.imageUrl);
-        const app = safeUrl(p.appUrl);
-        const repo = safeUrl(p.repoUrl);
-        return {
-          slug: slugify(p.name || p.handle),
-          nombre: p.name,
-          autor: p.handle,
-          descripcion: p.description ?? '',
-          tags: p.tags ?? [],
-          url: app || repo || '',
-          thumbnail,
-          cover: Boolean(thumbnail),
-          stars: p.stars ?? 0,
-          app,
-          repo,
-        };
-      });
-  }
-} catch {
-  // Si el backend no responde, la página se pinta vacía en vez de romper.
-}
+// Datos en vivo del backend. El fetch, los filtros de esquema y el orden viven
+// en lib/projects, que comparten esta página y el carrusel de la home.
+const proyectos = await fetchProjects(env.CLOUD_API_URL);
 
 const tags = ['all', ...Array.from(new Set(proyectos.flatMap((p) => p.tags)))];
 const top = proyectos.slice(0, 6);

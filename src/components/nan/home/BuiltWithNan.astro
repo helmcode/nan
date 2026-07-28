@@ -1,14 +1,28 @@
 ---
-import proyectos from '../../../data/proyectos.json';
 import Floppy from '../Floppy.astro';
 import { getLang, useT } from '../../../lib/i18n';
+import { fetchProjects } from '../../../lib/projects';
+import { env } from 'cloudflare:workers';
 
 const lang = getLang(Astro.url);
 const tt = useT(lang).built;
-const total = proyectos.length;
 const projectsHref = lang === 'es' ? '/es/projects' : '/projects';
+
+/**
+ * Mismos datos que /projects, del mismo sitio. Antes esto venía de un
+ * `data/proyectos.json` scrapeado a mano: la home y /projects mostraban cosas
+ * distintas y el JSON envejecía solo.
+ *
+ * El carrusel se recorre a mano, así que no tiene sentido traer los 100: con los
+ * más estrellados va sobrado. `fetchProjects` no lanza nunca, y si vuelve vacío
+ * la sección entera no se pinta (un carrusel de cero disquetes no es un estado
+ * de diseño, es un hueco).
+ */
+const proyectos = await fetchProjects(env.CLOUD_API_URL, { limit: 16 });
+const total = proyectos.length;
 ---
 
+{total > 0 && (
 <section class="built" id="built_with_nan">
   <div class="container built__head" data-reveal>
     <div class="sechead">
@@ -31,6 +45,7 @@ const projectsHref = lang === 'es' ? '/es/projects' : '/projects';
     </div>
   </div>
 </section>
+)}
 
 <style>
   .built { padding-block: clamp(64px, 9vh, 130px) var(--space-16); }
