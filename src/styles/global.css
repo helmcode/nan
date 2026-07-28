@@ -105,7 +105,10 @@
 }
 
 .docs-content p {
-  font-family: "Inter", system-ui, sans-serif;
+  /* Antes era Inter servida por Google Fonts. La tipografía del sistema es
+     Archivo y va autohospedada, así que el cuerpo de la documentación usa la
+     misma familia que el resto del sitio. */
+  font-family: var(--font-sans);
   font-size: 0.875rem;
   line-height: 1.75;
   color: rgb(203 213 225);

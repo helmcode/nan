@@ -1,5 +1,13 @@
 ---
 import '../styles/global.css';
+
+// Fuentes autohospedadas, igual que NanBase. Antes venían de Google Fonts: eso
+// bloqueaba el render y mandaba la IP de cada visitante a un tercero.
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '@fontsource/jetbrains-mono/700.css';
+
 import { getCollection } from 'astro:content';
 
 interface Props {
@@ -7,9 +15,17 @@ interface Props {
   description?: string;
 }
 
-const { title, description = 'Documentación de NaN — Conecta a nuestros modelos abiertos via API OpenAI-compatible.' } = Astro.props;
+// La documentación existe solo en inglés (la colección MDX no está traducida),
+// así que el idioma de la página, el copy por defecto y la tarjeta social lo son.
+const { title, description = 'NaN docs. Connect to our open models through an OpenAI-compatible API.' } = Astro.props;
 
 const siteUrl = 'https://nan.builders';
+
+// Sin barra final, igual que el canonical que emite NanBase, para que las dos
+// variantes de cada URL no compitan entre sí.
+const canonical = `${siteUrl}${Astro.url.pathname.replace(/\/+$/, '') || '/'}`;
+const ogImage = `${siteUrl}/og/og-en.png`;
+const socialTitle = `${title} — NaN Docs`;
 
 const entries = await getCollection('docs');
 entries.sort((a, b) => a.data.order - b.data.order);
@@ -43,30 +59,33 @@ const breadcrumbSegments = pathParts.map((part, i) => {
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <link rel="icon" type="image/png" href="/nan.jpg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="canonical" href={canonical} />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={`${title} — NaN Docs`} />
+    <meta property="og:site_name" content="NaN" />
+    <meta property="og:title" content={socialTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={`${siteUrl}${Astro.url.pathname}`} />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content={`${title} — NaN Docs`} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={socialTitle} />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={socialTitle} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
     />
-    <title>{title} — NaN Docs</title>
+    <title>{socialTitle}</title>
   </head>
   <body class="bg-[#0a0a0a] text-neutral-300 font-sans antialiased min-h-screen overflow-x-hidden">
     <!-- Mobile header -->
