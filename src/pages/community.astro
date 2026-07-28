@@ -2,6 +2,7 @@
 import NanPage from '../layouts/NanPage.astro';
 import CommunitySignupForm from '../components/landing/CommunitySignupForm.tsx';
 import { getLang, useT, t } from '../lib/i18n';
+import { MEMBERS_NOW, MEMBERS_GOAL, membersPct } from '../lib/members';
 // La isla del formulario sigue escrita con utilidades de Tailwind; el tema de
 // Tailwind está apuntado a nuestros tokens (ver styles/global.css).
 import '../styles/global.css';
@@ -35,7 +36,11 @@ const formStrings = {
 
 const home = lang === 'es' ? '/es' : '/';
 const joinHref = `${home}#pricing`;
-const pct = Math.round((tt.membersNow / tt.membersGoal) * 100);
+
+// La cuenta de miembros se actualiza a mano al alcanzar un hito y NO se
+// traduce, así que vive en lib/members y no en el diccionario, donde estaba
+// duplicada en los dos idiomas y podía divergir.
+const pct = membersPct();
 ---
 
 <NanPage title={tt.metaTitle} description={tt.metaDesc}>
@@ -172,7 +177,7 @@ const pct = Math.round((tt.membersNow / tt.membersGoal) * 100);
           <div class="rterm__bar-row">
             <span class="rterm__k">{tt.membersLabel}</span>
             <span class="rterm__bar"><i style={`width:${pct}%`}></i></span>
-            <span class="rterm__v">{tt.membersNow} / {tt.membersGoal}</span>
+            <span class="rterm__v">{MEMBERS_NOW} / {MEMBERS_GOAL}</span>
           </div>
           <p class="rterm__line"><span class="rterm__p">$</span> nan roadmap --all</p>
 
