@@ -46,7 +46,8 @@ const readonlyRows = existing
   : [];
 ---
 
-<NanPage scale={false} title={`${t('hackaton.submission.title', locale)} — nan.builders`}>
+{/* Detrás de sesión: fuera del sitemap y también fuera del índice. */}
+<NanPage scale={false} noindex title={`${t('hackaton.submission.title', locale)} — nan.builders`}>
   <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
     <a href={withLang('/hackaton/me', locale)} class="font-mono text-xs text-neutral-500 hover:text-violet-400">
       {t('hackaton.backToLanding', locale)}

@@ -23,7 +23,8 @@ try {
   if (ev.ok) status = (await jsonData<{ status?: string }>(ev))?.status ?? 'draft';
 } catch {}
 ---
-<NanPage scale={false} title={`${t('hackaton.me.title', locale)} — nan.builders`}>
+{/* Detrás de sesión: fuera del sitemap y también fuera del índice. */}
+<NanPage scale={false} noindex title={`${t('hackaton.me.title', locale)} — nan.builders`}>
   <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
     <a href={locale === 'en' ? '/hackaton?lang=en' : '/hackaton'}
        class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400">

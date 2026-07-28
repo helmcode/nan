@@ -20,9 +20,10 @@ const BILINGUAL = ['/', '/events', '/projects', '/community', '/privacy', '/term
 
 /**
  * Fuera del sitemap a propósito:
- *   /hackaton/me, /hackaton/submission  -> requieren sesión
- *   /hackaton/leaderboard, /projects    -> contenido de evento, cambia a diario
- *   /api/*                              -> no son páginas
+ *   /hackaton/me, /hackaton/submission     -> requieren sesión (además noindex)
+ *   /hackaton/leaderboard, /hackaton/projects -> contenido de evento, cambia a diario
+ *   /404                                   -> noindex
+ *   /api/*                                 -> no son páginas
  */
 
 // La raíz conserva la barra para que coincida exactamente con el canonical

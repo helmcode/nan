@@ -1,7 +1,7 @@
 ---
 /**
- * Layout del rediseño. Convive con Page.astro y Docs.astro, que siguen en
- * Tailwind: solo las páginas ya migradas usan este.
+ * Layout del rediseño. Lo usan todas las páginas salvo la documentación, que
+ * sigue en Docs.astro con utilidades de Tailwind y su propio shell.
  *
  * Trae el sistema visual de nan-site (tokens + reglas globales), las fuentes
  * autohospedadas y la capa SEO completa.
@@ -55,12 +55,11 @@ const ogLocale = locale === 'es' ? 'es_ES' : 'en_US';
 /**
  * CSP.
  *
- * Diferencias con la de Page.astro, y por qué:
  *  - `img-src` incluye `data:`: el disquete pinta el ruido del plástico con un
  *    SVG en data URI y sin esto el navegador lo bloquea.
- *  - `font-src` se queda en 'self': las fuentes ya no vienen de Google.
- *  - `style-src` pierde fonts.googleapis.com por lo mismo. Mantiene
- *    'unsafe-inline' porque Astro emite estilos scoped en línea.
+ *  - `font-src` se queda en 'self': las fuentes van autohospedadas, no vienen
+ *    de Google. `style-src` no lista fonts.googleapis.com por lo mismo, pero
+ *    mantiene 'unsafe-inline' porque Astro emite estilos scoped en línea.
  *  - `connect-src 'self'` sigue: el formulario de waitlist llama a /api.
  */
 const csp = [
