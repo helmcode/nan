@@ -226,7 +226,8 @@ const breadcrumbSegments = pathParts.map((part, i) => {
 
       // Build TOC from h2/h3 headings
       const tocContainer = document.getElementById('toc');
-      const headings = document.querySelectorAll('.docs-content h2, .docs-content h3');
+      // HTMLElement (no Element) para poder leer dataset.tocText más abajo.
+      const headings = document.querySelectorAll<HTMLElement>('.docs-content h2, .docs-content h3');
 
       if (headings.length > 0 && tocContainer) {
         headings.forEach((heading) => {
