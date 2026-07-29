@@ -80,4 +80,39 @@ describe('middleware — enlaces del esquema ?lang=', () => {
     expect(res.status).toBe(301);
     expect(res.headers.get('location')).toBe('/es/community');
   });
+
+  test('no redirige las rutas de API: un 301 convertiría un POST en GET', async () => {
+    // Hoy ningún cliente llama con `?lang=`; es defensa en profundidad.
+    const { passedThrough, location } = await run('https://nan.builders/api/waitlist?lang=es');
+    expect(passedThrough).toBe(true);
+    expect(location).toBeNull();
+  });
+});
+
+describe('middleware — cabeceras de seguridad', () => {
+  test('las emite en las páginas', async () => {
+    const { res } = await run('https://nan.builders/community');
+    expect(res.headers.get('referrer-policy')).toBe('strict-origin-when-cross-origin');
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(res.headers.get('permissions-policy')).toBe('camera=(), microphone=(), geolocation=()');
+  });
+
+  test("frame-ancestors 'none' va en cabecera, que es donde surte efecto", async () => {
+    // La CSP de NanBase viaja en <meta http-equiv>, y ahí `frame-ancestors` se
+    // ignora por especificación: sin esta cabecera el sitio es enmarcable.
+    const { res } = await run('https://nan.builders/');
+    expect(res.headers.get('content-security-policy')).toContain("frame-ancestors 'none'");
+    expect(res.headers.get('x-frame-options')).toBe('DENY');
+  });
+
+  test('también en el 301, que es una respuesta como otra', async () => {
+    const { res } = await run('https://nan.builders/community?lang=es');
+    expect(res.status).toBe(301);
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+  });
+
+  test('también en las rutas de API', async () => {
+    const { res } = await run('https://nan.builders/api/waitlist');
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+  });
 });
