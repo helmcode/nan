@@ -76,7 +76,12 @@ export function initParticles() {
   }
 
   window.addEventListener('scroll', fade, { passive: true });
-  window.addEventListener('resize', resize);
+
+  // `fade()` además de `resize()`: el umbral depende de `innerHeight`, así que al
+  // rotar el móvil el hero puede volver a estar en pantalla (o dejar de estarlo)
+  // sin que medie un scroll. Sin esto, la decisión de animar se quedaba con la
+  // altura anterior hasta el siguiente scroll.
+  window.addEventListener('resize', () => { resize(); fade(); });
 
   // Fuera de la pestaña activa el navegador ya frena rAF, pero al volver
   // conviene no reanudar si seguimos con el hero fuera de pantalla.
