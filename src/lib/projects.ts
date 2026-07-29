@@ -89,8 +89,16 @@ export function toFloppyProject(p: ApiProject): FloppyProject {
  */
 export const byStars = (a: ApiProject, b: ApiProject): number => (b.stars ?? 0) - (a.stars ?? 0);
 
-/** Cuánto esperamos a cloud-api antes de pintar la página sin proyectos. */
-const TIMEOUT_MS = 4000;
+/**
+ * Cuánto esperamos a cloud-api antes de pintar la página sin proyectos.
+ *
+ * 1,5 s y no 4: esto lo espera la home, que es la página más visitada, y la
+ * galería es una sección secundaria. Con 4 s el peor caso era que el visitante
+ * mirase una pantalla en blanco cuatro segundos por una tira de disquetes.
+ * Cuando la API responde normal ni se acerca a este límite; el número solo
+ * decide cuánto se tarda en rendirse.
+ */
+const TIMEOUT_MS = 1500;
 
 /** Caché de borde. La galería no necesita estar al segundo. */
 const CACHE_TTL_S = 300;
