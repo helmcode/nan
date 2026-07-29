@@ -16,14 +16,21 @@ export const prerender = false;
 const SITE = 'https://nan.builders';
 
 /** Rutas con versión en los dos idiomas. */
-const BILINGUAL = ['/', '/events', '/projects', '/community', '/privacy', '/terms', '/cookies', '/hackaton'];
+const BILINGUAL = ['/', '/events', '/projects', '/community', '/privacy', '/terms', '/cookies'];
 
 /**
  * Fuera del sitemap a propósito:
- *   /hackaton/me, /hackaton/submission     -> requieren sesión (además noindex)
- *   /hackaton/leaderboard, /hackaton/projects -> contenido de evento, cambia a diario
- *   /404                                   -> noindex
- *   /api/*                                 -> no son páginas
+ *   /hackaton y sus 4 pantallas -> el hackatón #1 ya pasó (7-13 jun) y el
+ *                                  registro está cerrado, así que es el
+ *                                  registro de un evento, no contenido vivo.
+ *                                  Ninguna página lo enlaza, y declararlo
+ *                                  indexable sin entrada era pedir que se
+ *                                  indexara algo a lo que solo se llega
+ *                                  escribiendo la URL. Van todas con noindex.
+ *                                  Cuando haya un #2 se rediseñan las cinco
+ *                                  pantallas y se le da entrada, en su PR.
+ *   /404                        -> noindex
+ *   /api/*                      -> no son páginas
  */
 
 // La raíz conserva la barra para que coincida exactamente con el canonical

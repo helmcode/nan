@@ -42,7 +42,7 @@ describe('sitemap.xml', () => {
     const { xml } = await sitemap();
     const urls = locs(xml);
 
-    for (const path of ['/events', '/projects', '/community', '/privacy', '/terms', '/cookies', '/hackaton']) {
+    for (const path of ['/events', '/projects', '/community', '/privacy', '/terms', '/cookies']) {
       expect(urls).toContain(`${SITE}${path}`);
       expect(urls).toContain(`${SITE}/es${path}`);
     }
@@ -50,16 +50,23 @@ describe('sitemap.xml', () => {
     expect(urls).toContain(`${SITE}/es`);
   });
 
-  test('no cuela las pantallas con sesión ni el 404', async () => {
+  test('el hackatón queda fuera entero, en los dos idiomas', async () => {
     const { xml } = await sitemap();
     const urls = locs(xml);
 
-    // Requieren login, y además van con noindex.
-    expect(urls).not.toContain(`${SITE}/hackaton/me`);
-    expect(urls).not.toContain(`${SITE}/hackaton/submission`);
-    // Contenido de evento que cambia a diario.
-    expect(urls).not.toContain(`${SITE}/hackaton/leaderboard`);
-    expect(urls).not.toContain(`${SITE}/hackaton/projects`);
+    // El evento ya pasó y ninguna página lo enlaza: o entrada en la nav, o
+    // fuera del sitemap con noindex. Lo que no vale es declararlo indexable
+    // sin que se pueda llegar. Las cinco pantallas van con noindex.
+    for (const path of ['/hackaton', '/hackaton/me', '/hackaton/submission', '/hackaton/leaderboard', '/hackaton/projects']) {
+      expect(urls).not.toContain(`${SITE}${path}`);
+      expect(urls).not.toContain(`${SITE}/es${path}`);
+    }
+  });
+
+  test('no cuela el 404 ni las rutas de API', async () => {
+    const { xml } = await sitemap();
+    const urls = locs(xml);
+
     // noindex.
     expect(urls.some((u) => u.includes('/404'))).toBe(false);
     // No son páginas.
