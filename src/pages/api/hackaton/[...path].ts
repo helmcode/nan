@@ -14,11 +14,19 @@ const handler: APIRoute = async ({ params, request, url }) => {
   const path = (params.path ?? '').toString();
 
   // No exponer endpoints de operación desde el navegador público (§9.2).
+  // Se mantiene como primera barrera aunque `backendURL` ya acote la ruta: dice
+  // explícitamente qué es lo que no debe atravesar el proxy.
   if (isAdminPath(path)) {
     return json({ ok: false, error: 'not_found' }, 404);
   }
 
+  // `null` = la ruta pedida no es una ruta simple bajo /api/hackaton/. No se
+  // toca el backend: un `..` codificado se resolvía fuera del prefijo.
   const target = backendURL(path, url.search);
+  if (target === null) {
+    return json({ ok: false, error: 'not_found' }, 404);
+  }
+
   const init: RequestInit = {
     method: request.method,
     headers: forwardHeaders(request),

@@ -27,6 +27,53 @@ describe('hackaton proxy lib', () => {
   });
 });
 
+/**
+ * La ruta que sale hacia el backend tiene que quedarse bajo `/api/hackaton/`.
+ *
+ * Comprobar el prefijo sobre la ruta cruda no bastaba: entre la comprobación y
+ * la URL final hay tres decodificaciones (la del filtro, la de Astro al enrutar
+ * y la resolución de dot-segments de `new URL()`), así que un `..` codificado
+ * podía salir del prefijo después de haber pasado el filtro.
+ *
+ * La lista es de formas de escribir `..`, no de rutas concretas: lo que se
+ * comprueba es que ninguna codificación se cuele.
+ */
+describe('backendURL no deja salir del prefijo', () => {
+  const escapes = [
+    ['%2e%2e/admin/x', 'dot-segment codificado'],
+    ['%252e%252e/admin/x', 'doble codificación'],
+    ['../admin/x', 'dot-segment en claro'],
+    ['%2E%2E/admin/x', 'codificado en mayúsculas'],
+    ['.%2e/admin/x', 'mitad y mitad'],
+    // Estos tres se quedaban DENTRO del prefijo pero sin resolver, dejando el
+    // resultado a merced del router del backend. Son los que no cierra validar
+    // solo el pathname resuelto: `%2f` no es un dot-segment para el parser.
+    ['..%2fadmin/x', 'separador codificado'],
+    ['..%5cadmin/x', 'separador codificado, barra invertida'],
+    ['..%252fadmin/x', 'separador con doble codificación'],
+  ] as const;
+
+  for (const [path, why] of escapes) {
+    it(`rechaza ${path} (${why})`, () => {
+      expect(backendURL(path, '')).toBeNull();
+    });
+  }
+
+  it('rechaza la ruta vacía en vez de proxear /api/hackaton/', () => {
+    expect(backendURL('', '')).toBeNull();
+    expect(backendURL('/', '')).toBeNull();
+  });
+
+  it('sigue dejando pasar las rutas que usa el sitio', () => {
+    // Las cinco que llaman los componentes, más una anidada por si el backend
+    // crece: lo que se rechaza es la travesía, no la profundidad.
+    for (const p of ['event', 'register', 'vote', 'submission', 'reassign']) {
+      expect(backendURL(p, '')).toBe(`https://api.test/api/hackaton/${p}`);
+    }
+    expect(backendURL('teams/abc-123', '')).toBe('https://api.test/api/hackaton/teams/abc-123');
+  });
+});
+
 // Construye un contexto mínimo de APIRoute para el handler del proxy.
 function ctx(path: string, init?: { method?: string; cookie?: string; ip?: string; body?: string; search?: string }) {
   const headers = new Headers();
@@ -47,6 +94,15 @@ describe('hackaton proxy handler', () => {
   it('responde 404 a paths admin sin llamar al backend', async () => {
     const spy = vi.spyOn(globalThis, 'fetch');
     const resp = await GET(ctx('admin/state'));
+    expect(resp.status).toBe(404);
+    expect(spy).not.toHaveBeenCalled();
+    expect(await resp.json()).toEqual({ ok: false, error: 'not_found' });
+  });
+
+  it('responde 404 a una ruta fuera del prefijo sin llamar al backend', async () => {
+    const spy = vi.spyOn(globalThis, 'fetch');
+    // Importa que no llegue a llamar: el proxy adjunta la cookie del visitante.
+    const resp = await GET(ctx('%252e%252e/admin/x', { cookie: 'nan_session=xyz' }));
     expect(resp.status).toBe(404);
     expect(spy).not.toHaveBeenCalled();
     expect(await resp.json()).toEqual({ ok: false, error: 'not_found' });
