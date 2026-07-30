@@ -5,7 +5,9 @@ import { fetchProjects } from '../../../lib/projects';
 import { env } from 'cloudflare:workers';
 
 const lang = getLang(Astro.url);
-const tt = useT(lang).built;
+const t = useT(lang);
+const tt = t.built;
+const a11y = t.a11y;
 const projectsHref = lang === 'es' ? '/es/projects' : '/projects';
 
 /**
@@ -37,6 +39,21 @@ const total = proyectos.length;
   </div>
 
   <div class="container built__progress">
+    {/* El carril ya no se mueve con la rueda vertical, así que hacen falta
+        controles visibles: sin ellos, con ratón sin gesto horizontal no había
+        forma de avanzar salvo arrastrando. */}
+    <div class="built__nav">
+      <button class="built__arrow" type="button" data-rail-prev aria-label={a11y.railPrev}>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M15 4 7 12l8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" />
+        </svg>
+      </button>
+      <button class="built__arrow" type="button" data-rail-next aria-label={a11y.railNext}>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M9 4 17 12l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" />
+        </svg>
+      </button>
+    </div>
     <span class="built__count mono" data-rail-count>1/{total}</span>
     <div class="built__bar"><i data-rail-fill></i></div>
     <div class="built__links">
@@ -96,6 +113,28 @@ const total = proyectos.length;
     margin-top: var(--space-6);
     flex-wrap: wrap;
   }
+  /* ---------- flechas ---------- */
+  .built__nav { display: flex; gap: var(--space-2); }
+  .built__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* 40px: por encima del mínimo de 24 de WCAG 2.5.8 y a juego con el
+       selector de idioma de la Nav. Esquina recta como el resto de la UI. */
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-line);
+    background: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+    transition: color var(--dur-micro) var(--ease), border-color var(--dur-micro) var(--ease);
+  }
+  .built__arrow svg { width: 18px; height: 18px; }
+  .built__arrow:hover:not(:disabled) { border-color: var(--color-violet); color: var(--color-link); }
+  /* En el extremo la flecha sigue ahí, apagada: si desapareciera, la tira de
+     controles bailaría al llegar al final. */
+  .built__arrow:disabled { color: var(--color-muted); border-color: var(--color-line); cursor: default; }
+
   .built__count { font-size: 13px; color: var(--color-text); }
   .built__bar { flex: 1; min-width: 120px; height: 2px; background: var(--color-line); position: relative; }
   .built__bar i { position: absolute; inset: 0 auto 0 0; width: 33%; background: var(--color-violet); transition: width var(--dur-micro) ease-out; }
@@ -113,19 +152,44 @@ const total = proyectos.length;
   const rail = document.querySelector<HTMLElement>('[data-rail]');
   const count = document.querySelector<HTMLElement>('[data-rail-count]');
   const fill = document.querySelector<HTMLElement>('[data-rail-fill]');
+  const prev = document.querySelector<HTMLButtonElement>('[data-rail-prev]');
+  const next = document.querySelector<HTMLButtonElement>('[data-rail-next]');
   const slides = rail?.querySelectorAll('.slide') ?? [];
   const total = slides.length;
 
   if (rail && count && fill && total) {
+    const maxScroll = () => rail.scrollWidth - rail.clientWidth;
+
     const update = () => {
-      const max = rail.scrollWidth - rail.clientWidth;
+      const max = maxScroll();
       const p = max > 0 ? rail.scrollLeft / max : 0;
       const idx = Math.min(total, Math.max(1, Math.round(p * (total - 1)) + 1));
       count.textContent = `${idx}/${total}`;
       fill.style.width = `${Math.round((100 / total) + p * (100 - 100 / total))}%`;
+      // 1px de margen: en pantallas con zoom o factor fraccionario scrollLeft no
+      // llega nunca a igualar el máximo exacto y la flecha no se apagaría jamás.
+      if (prev) prev.disabled = rail.scrollLeft <= 1;
+      if (next) next.disabled = rail.scrollLeft >= max - 1;
     };
     rail.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
     update();
+
+    /* Un disquete por pulsación: se mide del DOM (ancho del primero mas el gap
+       real) para no cablear los 348px del componente en dos sitios. */
+    const step = () => {
+      const first = slides[0] as HTMLElement | undefined;
+      if (!first) return rail.clientWidth * 0.8;
+      const gap = parseFloat(getComputedStyle(rail).columnGap || '0') || 0;
+      return first.offsetWidth + gap;
+    };
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const nudge = (dir: 1 | -1) => {
+      rail.scrollBy({ left: dir * step(), behavior: reduce.matches ? 'auto' : 'smooth' });
+    };
+    prev?.addEventListener('click', () => nudge(-1));
+    next?.addEventListener('click', () => nudge(1));
 
     let down = false, dragged = false, startX = 0, startScroll = 0;
     rail.addEventListener('pointerdown', (e) => {
@@ -146,12 +210,15 @@ const total = proyectos.length;
       if (dragged) { e.preventDefault(); e.stopPropagation(); }
     }, true);
 
-    rail.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-      const max = rail.scrollWidth - rail.clientWidth;
-      if ((rail.scrollLeft <= 0 && e.deltaY < 0) || (rail.scrollLeft >= max - 1 && e.deltaY > 0)) return;
-      rail.scrollLeft += e.deltaY;
-      e.preventDefault();
-    }, { passive: false });
+    /* NO hay handler de `wheel`.
+     *
+     * Había uno que convertía la rueda vertical en desplazamiento horizontal y
+     * hacía preventDefault, y solo devolvía el scroll al llegar a un extremo:
+     * con el ratón o el touchpad encima del carril la página se quedaba
+     * atrapada y no se podía seguir bajando. El gesto horizontal del touchpad y
+     * shift+rueda ya mueven un contenedor con overflow-x de forma nativa, así
+     * que el movimiento horizontal no necesita código; el vertical se queda
+     * donde tiene que estar, que es la página. Para el ratón sin gesto
+     * horizontal están las flechas y el arrastre. */
   }
 </script>

@@ -205,6 +205,8 @@
       "projectDetail": "Project detail",
       "openProject": "Open {name}",
       "projectsRail": "Community projects, horizontal carousel",
+      "railPrev": "Previous projects",
+      "railNext": "Next projects",
       "membersOnly": "{title}, members only",
       "gpuDither": "NVIDIA RTX 5090, dithered illustration",
       "crt404": "A retro CRT computer showing a blue screen with a sad face and the message NO TOKENS"

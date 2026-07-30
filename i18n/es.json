@@ -205,6 +205,8 @@
       "projectDetail": "Detalle del proyecto",
       "openProject": "Abrir {name}",
       "projectsRail": "Proyectos de la comunidad, carrusel horizontal",
+      "railPrev": "Proyectos anteriores",
+      "railNext": "Proyectos siguientes",
       "membersOnly": "{title}, solo para miembros",
       "gpuDither": "NVIDIA RTX 5090, ilustración con trama",
       "crt404": "Un ordenador CRT antiguo con una pantalla azul, una cara triste y el mensaje NO TOKENS"
