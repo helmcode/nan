@@ -10,9 +10,10 @@
  * el de `lib/waitlist.ts`. Si divergen, el formulario acepta cosas que el
  * servidor rechaza (o al revés) y el usuario ve un error que no entiende.
  *
- * OJO, deuda conocida: `components/landing/CommunitySignupForm.tsx` tiene su
- * PROPIA copia de `isValidEmail` y `REGIONS`, así que hoy hay tres. Unificarlas
- * es trabajo aparte, pero conviene no añadir una cuarta.
+ * La tercera copia de `isValidEmail` y `REGIONS` vivía en
+ * `components/landing/CommunitySignupForm.tsx` y se fue con el formulario de la
+ * página de comunidad, así que quedan dos: esta y la del servidor. Conviene no
+ * añadir una tercera.
  */
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
