@@ -94,8 +94,12 @@ const csp = [
       </>
     )}
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
+    {/* Isotipo de NaN. El PNG de 32 es el que usan los navegadores; el .ico queda
+        para quien pida /favicon.ico a pelo. El isotipo es un raster con glow, así
+        que no hay versión SVG. */}
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="NaN" />
