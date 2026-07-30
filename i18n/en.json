@@ -346,7 +346,7 @@
         },
         {
           "q": "Is it really unlimited tokens?",
-          "a": "On the cluster models, no counter. The frontier ones (like DeepSeek V4-Flash) come with 500M tokens/month per member so the plan holds up. That limit is published here, not in fine print. The bill is the fixed subscription price and it doesn’t move."
+          "a": "On the cluster models, no counter. The frontier ones come with a monthly allowance per member so the plan holds up: 500M tokens on DeepSeek V4-Flash and 1.0B on MiMo v2.5. Those limits are published here, not in fine print. The bill is the fixed subscription price and it doesn’t move."
         },
         {
           "q": "How are the models chosen?",

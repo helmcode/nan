@@ -346,7 +346,7 @@
         },
         {
           "q": "¿De verdad son tokens ilimitados?",
-          "a": "En los modelos del cluster, sin contador. Los frontier (como DeepSeek V4-Flash) llevan 500M tokens/mes por miembro para que el plan se sostenga. Ese límite está publicado aquí, no en letra pequeña. La factura es el precio fijo de la suscripción y no se mueve."
+          "a": "En los modelos del cluster, sin contador. Los frontier llevan cuota mensual por miembro para que el plan se sostenga: 500M tokens en DeepSeek V4-Flash y 1.0B en MiMo v2.5. Esos límites están publicados aquí, no en letra pequeña. La factura es el precio fijo de la suscripción y no se mueve."
         },
         {
           "q": "¿Cómo se eligen los modelos?",

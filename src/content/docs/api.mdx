@@ -97,7 +97,7 @@ The main chat endpoint. OpenAI Chat Completions compatible. Compatible models: `
     },
     {
       title: 'mimo-v2.5',
-      body: 'Chat, streaming, tool calling, reasoning, vision (image input) and audio (audio input), 1M token context. 500M token monthly quota per member.',
+      body: 'Chat, streaming, tool calling, reasoning, vision (image input) and audio (audio input), 1M token context. 1.0B token monthly quota per member.',
     },
     {
       title: 'qwen3.6',
@@ -884,7 +884,7 @@ La generación de imágenes tiene sus propios límites, independientes de los [r
 | Límite | Valor | Descripción |
 |---|---|---|
 | Rate limit | `1 req/s · burst 3` | 1 request por segundo sostenido, con burst de hasta 3 (puedes disparar hasta 3 generaciones seguidas sin error). Al excederlo returns `429` (`rate_limit_exceeded`). |
-| Cuota mensual | `100 requests / mes` | 100 requests por mes y por usuario (1 request = 1 uso, independientemente del valor de `n`). Al excederla returns `429` (`insufficient_quota`). Esta cuota es independiente del límite de 500M tokens/mes del chat. |
+| Cuota mensual | `100 requests / mes` | 100 requests por mes y por usuario (1 request = 1 uso, independientemente del valor de `n`). Al excederla returns `429` (`insufficient_quota`). Esta cuota es independiente de la cuota mensual de tokens del chat, que depende del modelo. |
 | Tier | `inference` | Requiere membresía de tier inference. Las keys de tier community reciben `403` (`tier_restricted`). |
 
 <h2 id="images-edits">POST /v1/images/edits</h2>
