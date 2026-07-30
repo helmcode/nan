@@ -138,6 +138,49 @@ The site is deployed to Cloudflare Workers under the name `nan-website` (see `wr
 
 All runtime secrets must be set in the Cloudflare dashboard (or via `wrangler secret put`), not in the repository.
 
+### Rollback
+
+Because every `wrangler deploy` publishes a numbered Version, Cloudflare keeps
+the history and a rollback needs no rebuild. It is a code-and-assets rollback
+only: it does **not** revert secrets, `vars`, or anything living in cloud-api.
+
+**Before merging anything large, write down the version that is live:**
+
+```bash
+npx wrangler deployments status     # shows the Version ID currently serving
+npx wrangler versions list          # the 10 most recent Versions
+```
+
+**To roll back:**
+
+```bash
+npx wrangler rollback <version-id>  # omit the id to pick the previous one
+npx wrangler deployments status     # confirm what is serving now
+```
+
+Give it a minute and re-check the site: the Worker flips immediately, but a
+CDN-cached asset can outlive the rollback for a short while.
+
+### Previewing a release before it serves traffic
+
+`wrangler deploy` sends 100% of traffic to the new Version straight away. To see
+a build on real Cloudflare infrastructure first, upload a Version **without**
+deploying it. This is worth doing for releases that replace many pages at once:
+
+```bash
+npm run build
+npx wrangler versions upload         # prints a preview URL, serves no traffic
+```
+
+Once it looks right, either merge as usual or promote that exact Version:
+
+```bash
+npx wrangler versions deploy <version-id>@100
+```
+
+`wrangler versions deploy` also splits traffic (for example `<id>@10` for 10%),
+which is the safer path for a change that touches routing or URLs.
+
 ## CI/CD
 
 Two GitHub Actions workflows live in `.github/workflows/`:

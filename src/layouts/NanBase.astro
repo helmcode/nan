@@ -1,0 +1,135 @@
+---
+/**
+ * Layout del rediseño. Lo usan todas las páginas salvo la documentación, que
+ * sigue en Docs.astro con utilidades de Tailwind y su propio shell.
+ *
+ * Trae el sistema visual de nan-site (tokens + reglas globales), las fuentes
+ * autohospedadas y la capa SEO completa.
+ */
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '@fontsource/jetbrains-mono/700.css';
+import '../styles/nan-system.css';
+
+import { getLocale, switchLocalePath, t, LOCALES } from '../lib/i18n';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Páginas que no deben indexarse. */
+  noindex?: boolean;
+  /**
+   * Escala de titulares del sistema (H1 gigante en mayúsculas). Se apaga en
+   * las pantallas que todavía se escriben con utilidades de Tailwind y
+   * columnas estrechas, donde un H1 de 96px parte las palabras. Esas páginas
+   * conservan sus tamaños hasta que se rediseñen de verdad.
+   */
+  scale?: boolean;
+}
+
+const locale = getLocale(Astro.url);
+const {
+  title = t('nan.meta.title', locale),
+  description = t('nan.meta.description', locale),
+  noindex = false,
+  scale = true,
+} = Astro.props;
+
+// ---- URLs canónicas -------------------------------------------------------
+// Sin barra final salvo la raíz, que es como están escritos los enlaces
+// internos. Canonical, og:url, alternates y sitemap apuntan todos a la misma
+// variante para no competir entre sí.
+const site = Astro.site ?? new URL('https://nan.builders');
+const normalize = (p: string) => p.replace(/\/+$/, '') || '/';
+const path = normalize(Astro.url.pathname);
+const abs = (p: string) => new URL(normalize(p), site).href;
+const absAsset = (p: string) => new URL(p, site).href;
+
+const canonical = abs(path);
+const ogImage = absAsset(`/og/og-${locale}.png`);
+const alternates = LOCALES.map((l) => ({ lang: l, href: abs(switchLocalePath(path, l)) }));
+const xDefault = abs(switchLocalePath(path, 'en'));
+const ogLocale = locale === 'es' ? 'es_ES' : 'en_US';
+
+/**
+ * CSP.
+ *
+ *  - `img-src` incluye `data:`: el disquete pinta el ruido del plástico con un
+ *    SVG en data URI y sin esto el navegador lo bloquea.
+ *  - `font-src` se queda en 'self': las fuentes van autohospedadas, no vienen
+ *    de Google. `style-src` no lista fonts.googleapis.com por lo mismo, pero
+ *    mantiene 'unsafe-inline' porque Astro emite estilos scoped en línea.
+ *  - `connect-src 'self'` sigue: el formulario de waitlist llama a /api.
+ */
+const csp = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self'",
+  "img-src 'self' data: https:",
+  "connect-src 'self'",
+  "frame-src 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta http-equiv="Content-Security-Policy" content={csp} />
+
+    {!noindex && (
+      <>
+        <link rel="canonical" href={canonical} />
+        {alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+        <link rel="alternate" hreflang="x-default" href={xDefault} />
+      </>
+    )}
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="NaN" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:locale:alternate" content={locale === 'es' ? 'en_US' : 'es_ES'} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <slot name="head" />
+
+    <noscript>
+      <!-- sin JS los reveals no se disparan: que el contenido no quede invisible -->
+      <style>
+        [data-reveal], [data-reveal-stagger] > * { opacity: 1 !important; transform: none !important; }
+      </style>
+    </noscript>
+  </head>
+  <body class={scale ? 'nan-scale' : undefined}>
+    <a class="skip-link" href="#main">{t('nan.a11y.skip', locale)}</a>
+    <canvas id="bg-fx" aria-hidden="true"></canvas>
+    <slot name="nav" />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <slot name="footer" />
+  </body>
+</html>

@@ -1,0 +1,43 @@
+---
+/**
+ * NanBase + el shell del rediseño (nav, footer, cookie banner).
+ * Las páginas migradas usan este; NanBase queda para casos que necesiten
+ * montar el shell a mano.
+ */
+import NanBase from './NanBase.astro';
+import Nav from '../components/nan/Nav.astro';
+import Footer from '../components/nan/Footer.astro';
+import CookieBanner from '../components/nan/CookieBanner.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+  scale?: boolean;
+}
+const { title, description, noindex, scale } = Astro.props;
+---
+
+<NanBase title={title} description={description} noindex={noindex} scale={scale}>
+  <slot name="head" slot="head" />
+  <Nav slot="nav" />
+
+  <slot />
+
+  <Fragment slot="footer">
+    <Footer />
+    <CookieBanner />
+  </Fragment>
+</NanBase>
+
+<script>
+  import { initWaitlist } from '../scripts/waitlist';
+  import { initReveal } from '../scripts/reveal';
+  import { initNanGlitch } from '../scripts/nanGlitch';
+
+  // Las partículas NO van aquí: son solo de la home (en el resto estorban a la
+  // lectura). La home las arranca por su cuenta.
+  initWaitlist();
+  initReveal();
+  initNanGlitch();
+</script>

@@ -1,0 +1,168 @@
+---
+// Disquete reutilizable (§7). variant 'rail' = ancho fijo para el carrusel;
+// 'grid' = 100% de la celda. La banda del slug hace scramble (data-scramble-hover).
+import { getLang, useT } from '../../lib/i18n';
+
+interface Props {
+  project: { slug: string; nombre: string; autor: string; descripcion: string; tags: string[]; url: string; thumbnail?: string; cover?: boolean };
+  index?: number;
+  variant?: 'rail' | 'grid';
+}
+const { project: p, index = 0, variant = 'rail' } = Astro.props;
+const a11y = useT(getLang(Astro.url)).a11y;
+
+const skins = [
+  { body: 'var(--color-violet)', label: '#fff', ink: '#0B0B0C' },
+  { body: 'var(--color-bone)', label: 'var(--color-ink)', ink: '#fff' },
+  { body: 'var(--color-violet-2)', label: '#fff', ink: '#0B0B0C' },
+  { body: 'var(--color-surface)', label: '#fff', ink: '#0B0B0C' },
+];
+const s = skins[index % skins.length];
+
+/**
+ * No todos los proyectos traen un destino: si el miembro no publicó appUrl ni
+ * repoUrl válidos (o venían en http, que el filtro descarta), `url` es ''.
+ *
+ * Antes se emitía `<a href="">` igualmente, que recarga la página mientras su
+ * aria-label promete abrir el proyecto. Sin destino esto deja de ser un enlace:
+ * ni etiqueta `a`, ni foco de teclado, ni aria-label que prometa nada. El
+ * disquete sigue viéndose y contando su información, que es lo que aporta.
+ */
+const hasLink = Boolean(p.url);
+const Tag = hasLink ? 'a' : 'div';
+---
+
+<article class:list={['slide', { 'slide--grid': variant === 'grid' }]}>
+  <span class="chip mono" data-scramble-hover>{p.slug}</span>
+  <Tag
+    class="floppy"
+    href={hasLink ? p.url : undefined}
+    draggable={false}
+    style={`--body:${s.body};--label:${s.label};--ink:${s.ink}`}
+    aria-label={hasLink ? a11y.openProject.replace('{name}', p.nombre) : undefined}
+  >
+    <span class="floppy__sheen" aria-hidden="true"></span>
+    <span class="floppy__shutter" aria-hidden="true"><span class="floppy__win"></span></span>
+    <span class="floppy__arrow" aria-hidden="true"></span>
+    <span class="floppy__notch floppy__notch--l" aria-hidden="true"></span>
+    <span class="floppy__notch floppy__notch--r" aria-hidden="true"></span>
+    {p.cover && p.thumbnail ? (
+      <span class="floppy__label floppy__label--cover">
+        <img class="floppy__cover" src={p.thumbnail} alt="" loading="lazy" />
+      </span>
+    ) : (
+      <span class="floppy__label">
+        <span class="floppy__strip"><span>NaN·MF2-HD</span><span>1.44 MB</span></span>
+        <span class="floppy__mid">
+          <span class="floppy__name">{p.nombre}</span>
+          <span class="floppy__desc">{p.descripcion}</span>
+        </span>
+        <span class="floppy__meta">
+          <span>{p.tags.slice(0, 2).join(' · ')}</span>
+          <span class="floppy__barcode" aria-hidden="true"></span>
+        </span>
+      </span>
+    )}
+  </Tag>
+  <p class="slide__foot"><span class="slide__by mono">@{p.autor}</span></p>
+</article>
+
+<style>
+  .slide { flex: 0 0 auto; position: relative; width: min(348px, 82vw); }
+  .slide--grid { width: 100%; }
+
+  .chip {
+    position: absolute; top: -18px; left: 0; z-index: 3;
+    background: #fff; color: #000; font-weight: 700;
+    font-size: clamp(15px, 1.8vw, 20px); padding: 7px 14px; letter-spacing: -0.01em;
+  }
+
+  .slide__foot { margin-top: 16px; }
+  .slide__by { font-size: 13px; color: var(--color-muted); }
+
+  .floppy {
+    display: block; width: 100%; aspect-ratio: 90 / 94; position: relative;
+    border-radius: 12px 12px 14px 14px;
+    background: var(--body, var(--color-violet));
+    transition: transform var(--dur-ui) var(--ease);
+    transform-origin: 50% 90%; -webkit-user-drag: none;
+  }
+  .floppy::after {
+    content: ''; position: absolute; top: -1px; right: -1px; width: 28px; height: 28px;
+    background: var(--color-bg); clip-path: polygon(0 0, 100% 0, 100% 100%);
+  }
+  .slide:hover .floppy { transform: translateY(-10px) rotate(-1.4deg); }
+
+  .floppy__sheen {
+    position: absolute; inset: 0; border-radius: inherit;
+    background:
+      linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 34%),
+      linear-gradient(0deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0) 26%);
+  }
+  .floppy__sheen::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    opacity: 0.9; mix-blend-mode: hard-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 90px 90px;
+  }
+
+  .floppy__shutter {
+    position: absolute; top: 0; left: 50%; transform: translateX(-38%);
+    width: 56%; height: 29%; background: linear-gradient(180deg, #dde1e6, #b9bfc7);
+    border-radius: 0 0 6px 6px; overflow: hidden;
+  }
+  .floppy__win {
+    position: absolute; top: 12%; right: 14%; width: 26%; height: 76%;
+    background: rgba(0, 0, 0, 0.55); border-radius: 2px;
+    transition: transform var(--dur-ui) var(--ease);
+  }
+  .slide:hover .floppy__win { transform: translateX(-105%); }
+
+  .floppy__arrow {
+    position: absolute; top: 12px; left: 16px; width: 0; height: 0;
+    border-left: 8px solid transparent; border-right: 8px solid transparent;
+    border-bottom: 13px solid rgba(0, 0, 0, 0.35);
+  }
+  .floppy__notch {
+    position: absolute; bottom: 10px; width: 12px; height: 12px;
+    background: rgba(0, 0, 0, 0.35); border-radius: 2px;
+  }
+  .floppy__notch--l { left: 12px; }
+  .floppy__notch--r { right: 12px; }
+
+  .floppy__label {
+    position: absolute; left: 7%; right: 7%; top: 38%; bottom: 6.5%;
+    background: var(--label, #fff); color: var(--ink, #000); border-radius: 4px;
+    padding: 12px 14px; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .floppy__strip {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid currentColor; padding-bottom: 7px;
+    font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em;
+  }
+  .floppy__mid { position: relative; flex: 1; min-height: 0; display: flex; align-items: flex-end; margin-top: 8px; }
+  .floppy__name {
+    font-family: var(--font-serif); font-weight: 400; letter-spacing: -0.02em; line-height: 0.98;
+    font-size: clamp(26px, 3.4vw, 38px); transition: opacity var(--dur-micro) var(--ease);
+  }
+  .floppy__desc {
+    position: absolute; inset: 0; overflow: hidden; font-family: var(--font-mono);
+    font-size: 12px; line-height: 1.42; opacity: 0; transition: opacity var(--dur-micro) var(--ease);
+  }
+  .slide:hover .floppy__name { opacity: 0; }
+  .slide:hover .floppy__desc { opacity: 1; }
+  .floppy__meta {
+    font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.04em; margin-top: 8px;
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; text-transform: uppercase;
+  }
+  .floppy__barcode {
+    width: 72px; height: 20px; flex: 0 0 auto;
+    background: repeating-linear-gradient(90deg,
+      currentColor 0 2px, transparent 2px 4px, currentColor 4px 7px,
+      transparent 7px 9px, currentColor 9px 10px, transparent 10px 13px);
+  }
+
+  /* etiqueta en modo portada: solo la imagen del proyecto */
+  .floppy__label--cover { padding: 0; }
+  .floppy__cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+</style>

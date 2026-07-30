@@ -1,0 +1,203 @@
+---
+// Nav del sistema definitivo. Wordmark = logotipo SVG (mask para recolorear a
+// violeta al hover). Enlaces mono con subrayado wipe. Login = botón secundario.
+// En móvil (<=860px) los enlaces pasan a un panel desplegable (hamburguesa).
+import { getLang, useT, switchLocalePath } from '../../lib/i18n';
+
+const lang = getLang(Astro.url);
+const t = useT(lang);
+const tt = t.nav;
+const a11y = t.a11y;
+const home = lang === 'es' ? '/es' : '/';
+const p = (path: string) => (lang === 'es' ? `/es${path}` : path);
+const pathname = Astro.url.pathname;
+---
+
+<header class="nav">
+  <div class="container nav__inner">
+    <a href={home} class="nav__brand" aria-label={a11y.brandHome}>
+      <span class="nav__wm" aria-hidden="true"></span>
+    </a>
+
+    <button
+      class="nav__toggle"
+      data-nav-toggle
+      type="button"
+      aria-controls="nav-links"
+      aria-expanded="false"
+      aria-label={a11y.menuOpen}
+      data-label-open={a11y.menuOpen}
+      data-label-close={a11y.menuClose}
+    >
+      <span class="nav__burger" aria-hidden="true"></span>
+    </button>
+
+    <nav class="nav__links" id="nav-links" data-nav-links aria-label={a11y.navPrimary}>
+      <a href={`${home}#models`}>{tt.models}</a>
+      <a href={p('/community')}>{tt.community}</a>
+      <a href={p('/events')}>{tt.events}</a>
+      <a href={p('/projects')}>{tt.projects}</a>
+      {/* La documentación solo existe en inglés: la colección MDX no está
+          traducida, así que no hay `/es/docs` y prefijar el idioma daría un 404.
+          Va sin prefijo a propósito, en los dos idiomas. */}
+      <a href="/docs">{tt.docs}</a>
+
+      <span class="nav__lang" role="group" aria-label={a11y.language}>
+        <a href={switchLocalePath(pathname, 'en')} hreflang="en" class:list={['nav__lang-opt', { 'is-active': lang === 'en' }]}>EN</a>
+        <span class="nav__lang-sep" aria-hidden="true">/</span>
+        <a href={switchLocalePath(pathname, 'es')} hreflang="es" class:list={['nav__lang-opt', { 'is-active': lang === 'es' }]}>ES</a>
+      </span>
+
+      <a href="https://cloud.nan.builders/" rel="noopener" class="btn btn-secondary">{tt.login}</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const nav = document.querySelector('.nav');
+  const toggle = nav?.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const onScroll = () => nav?.classList.toggle('is-scrolled', window.scrollY > 12);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  const setOpen = (open: boolean) => {
+    if (!nav || !toggle) return;
+    nav.classList.toggle('is-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    const label = open ? toggle.dataset.labelClose : toggle.dataset.labelOpen;
+    if (label) toggle.setAttribute('aria-label', label);
+  };
+
+  toggle?.addEventListener('click', () => setOpen(!nav!.classList.contains('is-open')));
+
+  // cerrar el panel al pulsar un enlace
+  nav?.querySelectorAll('.nav__links a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+
+  // Escape cierra y devuelve el foco al botón (si no, el foco se queda perdido)
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !nav?.classList.contains('is-open')) return;
+    setOpen(false);
+    toggle?.focus();
+  });
+
+  // si se pasa a desktop con el panel abierto, dejarlo en un estado coherente
+  const wide = window.matchMedia('(min-width: 861px)');
+  wide.addEventListener('change', (e) => e.matches && setOpen(false));
+</script>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: transparent;
+    transition: background var(--dur-ui) var(--ease);
+  }
+  /* al hacer scroll (o menú abierto), fondo sutil para que el logo se lea siempre */
+  .nav.is-scrolled,
+  .nav.is-open {
+    background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+    backdrop-filter: blur(12px);
+  }
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--nav-h);
+  }
+  .nav__brand { display: flex; align-items: center; min-height: 28px; }
+
+  /* wordmark tipográfico: SVG recoloreable vía mask (blanco -> violeta al hover) */
+  .nav__wm {
+    display: block;
+    width: 158px;
+    height: 23px;
+    background: var(--color-text);
+    transition: background var(--dur-ui) var(--ease);
+    -webkit-mask: url('/brand/nan-wordmark-white.svg') left center / contain no-repeat;
+            mask: url('/brand/nan-wordmark-white.svg') left center / contain no-repeat;
+  }
+  .nav__brand:hover .nav__wm { background: var(--color-violet); }
+
+  .nav__links { display: flex; align-items: center; gap: 30px; }
+  .nav__links > a:not(.btn) {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    /* 24px es el mínimo de WCAG 2.2 AA (2.5.8); el texto solo daba 22px */
+    min-height: 28px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--color-text);
+    transition: color var(--dur-micro) var(--ease);
+  }
+  .nav__links > a:not(.btn)::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    width: 100%;
+    height: 2px;
+    background: var(--color-violet);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-ui) var(--ease);
+  }
+  .nav__links > a:not(.btn):hover { color: var(--color-link); }
+  .nav__links > a:not(.btn):hover::after { transform: scaleX(1); }
+
+  .nav__lang {
+    display: inline-flex; align-items: center; gap: 2px;
+    font-family: var(--font-mono); font-size: 13px;
+  }
+  /* área táctil: eran 13px de texto pelado y pegados el uno al otro */
+  .nav__lang-opt {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 40px; padding: 0 8px;
+    color: var(--color-muted); transition: color var(--dur-micro) var(--ease);
+  }
+  .nav__lang-opt:hover { color: var(--color-link); }
+  .nav__lang-opt.is-active { color: var(--color-text); font-weight: 700; }
+  .nav__lang-sep { color: var(--color-line); }
+
+  /* ---------- hamburguesa (oculta en desktop) ---------- */
+  .nav__toggle {
+    display: none;
+    width: 40px; height: 40px; padding: 0;
+    align-items: center; justify-content: center;
+    background: transparent; border: 1px solid var(--color-line); cursor: pointer;
+  }
+  .nav__burger, .nav__burger::before, .nav__burger::after {
+    content: ''; display: block; width: 18px; height: 2px; background: var(--color-text);
+    transition: transform var(--dur-ui) var(--ease), opacity var(--dur-micro) var(--ease);
+  }
+  .nav__burger { position: relative; }
+  .nav__burger::before { position: absolute; top: -6px; left: 0; }
+  .nav__burger::after { position: absolute; top: 6px; left: 0; }
+  .nav.is-open .nav__burger { background: transparent; }
+  .nav.is-open .nav__burger::before { transform: translateY(6px) rotate(45deg); }
+  .nav.is-open .nav__burger::after { transform: translateY(-6px) rotate(-45deg); }
+
+  @media (max-width: 860px) {
+    .nav__toggle { display: inline-flex; }
+    .nav__links {
+      position: absolute;
+      top: var(--nav-h);
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-5);
+      padding: var(--space-6) var(--container-pad) var(--space-8);
+      background: color-mix(in srgb, var(--color-bg) 96%, transparent);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid var(--color-line);
+      border-bottom: 1px solid var(--color-line);
+      display: none;
+    }
+    .nav.is-open .nav__links { display: flex; }
+    .nav__links > a:not(.btn) { font-size: 18px; }
+    .nav__lang { font-size: 15px; margin-top: var(--space-2); }
+    .nav__links .btn-secondary { margin-top: var(--space-2); }
+  }
+</style>

@@ -28,3 +28,7 @@ pnpm-debug.log*
 .wrangler/
 .dev.vars
 worker-configuration.d.ts
+
+# caché de fuentes de scripts/gen-og.mjs: los TTF se bajan al generar las
+# tarjetas OG y no se commitea ninguna fuente (tendría que ir con su OFL)
+scripts/.fontcache/

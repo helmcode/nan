@@ -1,0 +1,159 @@
+---
+import modelos from '../../../data/modelos.json';
+import { getLang, useT } from '../../../lib/i18n';
+
+const lang = getLang(Astro.url);
+const tt = useT(lang).models;
+const home = lang === 'es' ? '/es' : '/';
+
+// la data es la fuente de verdad (ES); en EN traducimos la cuota al vuelo
+const quota = (c: string) =>
+  lang === 'es' ? c : c.replace('sin contador', 'unmetered').replace('/mes', ' / mo');
+const total = modelos.categorias.reduce((n, c) => n + c.modelos.length, 0);
+---
+
+<section class="models" id="models">
+  <div class="container">
+    <header class="models__head" data-reveal>
+      <div class="sechead">
+        <span class="sechead__n">03</span><span class="sechead__label">{tt.label}</span>
+      </div>
+      <h2 class="models__title caret-type">{total} {tt.titleSuffix}<br /><span class="hl">{tt.titleLine2}</span></h2>
+      <p class="models__sub">{tt.sub}</p>
+    </header>
+
+    <div class="mtable" data-reveal>
+      {modelos.categorias.map((cat) => (
+        <div class="mgroup">
+          <div class="mgroup__label">// {cat.label}</div>
+          {cat.modelos.map((m) => (
+            <div class="mrow">
+              <div class="mrow__id">
+                <div class="mrow__idline">
+                  <span class="mrow__logo" aria-hidden="true">{m.by.charAt(0)}</span>
+                  <span class="mono">{m.id}</span>
+                  <span class="mrow__badges">
+                    {m.mostUsed && <span class="badge badge--used">most used</span>}
+                    {m.frontier && <span class="badge badge--frontier">frontier</span>}
+                  </span>
+                </div>
+                <span class="mrow__by">{m.by}</span>
+              </div>
+              <div class="mrow__meta">
+                <p class="mrow__specs">{m.specs}</p>
+                <span class:list={['mrow__quota', { 'is-unmetered': m.cuota === 'sin contador' }]}>
+                  {quota(m.cuota)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+
+    <div class="models__foot">
+      <a class="btn btn-primary" href={`${home}#waitlist`}>{tt.cta}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .models { padding-block: clamp(64px, 9vh, 130px); }
+
+  .models__title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    color: var(--color-text);
+    font-size: clamp(40px, 5vw, 76px);
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+    max-width: 16ch;
+  }
+  .models__sub {
+    margin-top: var(--space-6);
+    max-width: 54ch;
+    color: var(--color-text);
+    font-size: clamp(16px, 1.15vw, 18px);
+    line-height: 1.7;
+  }
+
+  /* ---------- tabla de modelos por categoría ---------- */
+  .mtable { margin-top: var(--space-12); }
+  .mgroup + .mgroup { margin-top: var(--space-10); }
+  .mgroup__label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--color-violet-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .mrow {
+    display: grid;
+    grid-template-columns: minmax(200px, 0.85fr) 2fr;
+    gap: clamp(20px, 4vw, 80px);
+    align-items: baseline;
+    padding-block: var(--space-5);
+    border-top: 1px solid var(--color-line);
+    transition: border-color var(--dur-micro) var(--ease);
+  }
+  .mrow:hover { border-top-color: var(--color-violet); }
+  .mrow:hover .mrow__id .mono { color: var(--color-violet-2); }
+
+  .mrow__id { display: flex; flex-direction: column; gap: var(--space-2); }
+  .mrow__idline { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); }
+  .mrow__logo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; flex: 0 0 auto;
+    border: 1px solid var(--color-line);
+    font-family: var(--font-mono); font-size: 12px; color: var(--color-muted);
+  }
+  .mrow__id .mono {
+    font-size: clamp(16px, 1.5vw, 21px);
+    color: var(--color-text);
+    letter-spacing: -0.01em;
+    transition: color var(--dur-micro) var(--ease);
+  }
+  .mrow__by { font-family: var(--font-mono); font-size: 12px; color: var(--color-muted); }
+  .mrow__badges { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+  .badge--used { color: #fff; background: var(--color-violet); }
+  .badge--frontier { color: var(--color-violet-2); border: 1px solid rgba(125, 57, 235, 0.5); }
+
+  .mrow__meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+  }
+  .mrow__specs {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--color-body);
+    max-width: 60ch;
+  }
+  .mrow__quota {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+  .mrow__quota.is-unmetered { color: var(--color-violet-2); }
+
+  .models__foot { display: flex; gap: var(--space-4); margin-top: var(--space-12); flex-wrap: wrap; }
+
+  @media (max-width: 760px) {
+    .models { padding-block: var(--space-16); }
+    .mrow { grid-template-columns: 1fr; gap: var(--space-3); }
+  }
+</style>

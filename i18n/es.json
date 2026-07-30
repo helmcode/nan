@@ -1,233 +1,4 @@
 {
-  "hero": {
-    "subheadline": "GPUs compartidas. Modelos abiertos. Comunidad cerrada.",
-    "description": "Builders compartiendo GPUs para correr los últimos modelos de IA abiertos sin límites de tokens.",
-    "badge": "Plazas limitadas",
-    "cta": "Únete",
-    "docs": "Docs",
-    "scroll": "scroll",
-    "aria": {
-      "join": "Unirse a la lista de espera",
-      "docs": "Leer la documentación",
-      "scroll": "Ir a la siguiente sección"
-    }
-  },
-  "about": {
-    "label": "// what is nan",
-    "heading": "Builders compartiendo GPUs dedicadas para correr modelos abiertos para quemar tokens sin límites.",
-    "p1": "Las APIs de modelos cerrados son cómodas pero caras y limitadas. Los modelos abiertos son gratis pero correrlos en serio requiere hardware que casi nadie tiene en casa.",
-    "p2": "NaN resuelve esto compartiendo GPUs potentes entre builders que las usan de verdad, repartiendo el coste real de la infraestructura.",
-    "p3": "Una comunidad cerrada por diseño, limitada a la capacidad real de las GPUs compartidas. Cuando se llena, se abre lista de espera.",
-    "p4": "La comunidad vive en Discord. El sitio web solo gestiona acceso. Cada miembro paga por estar. Solo están quienes de verdad quieren construir."
-  },
-  "server": {
-    "label": "// inference cluster",
-    "heading": "Cluster de inferencia",
-    "description": "Cluster compartido de inferencia. Modelos elegidos por la comunidad cada trimestre.",
-    "models": "// current models",
-    "comingSoon": "disponible pronto",
-    "guarantees": {
-      "0": "Tu código no entrena ningún modelo",
-      "1": "Datos en EU, sin logs de prompts",
-      "2": "Tokens ilimitados en modelos del cluster",
-      "3": "API key personal para cada miembro"
-    }
-  },
-  "privacy": {
-    "label": "// privacy",
-    "heading": "Pura inferencia. Zero logs.",
-    "p1": "NaN es infraestructura de inferencia. No hay datos de registro de prompts, ni de las respuestas del modelo, nada. Todo vive en tu sesión local, en el cliente que sea, en el agente de turno, o en la app custom que te hagas.",
-    "p2": "La API es pura inferencia. Nada de lo que haces con ella queda registrado salvo métricas del propio servidor (tokens/s, RPM, etc.) por puro mantenimiento y medición del cluster.",
-    "p3": "Tu código no entrena ningún modelo. Tus prompts no se guardan. Tus datos no salen de tu sesión.",
-    "points": {
-      "noLogs": "Zero logs: no hay registro de prompts ni respuestas",
-      "localData": "Todo vive en tu sesión local del cliente o agente",
-      "euProcessing": "Procesamiento en la Unión Europea",
-      "noTraining": "Tu código no entrena ningún modelo",
-      "metrics": "Métricas de servidor solo para mantenimiento del cluster (tokens/s, RPM)"
-    }
-  },
-  "modelVoting": {
-    "label": "// how models are chosen",
-    "heading": "Modelos elegidos por la comunidad. Renovados cada trimestre.",
-    "rules": {
-      "0": "Cada 3 meses, los miembros votan los nuevos modelos que correrán en el cluster.",
-      "1": "Los candidatos se preseleccionan técnicamente: tienen que caber en la capacidad del cluster.",
-      "2": "La votación se hace en Discord, abierta a todos los miembros.",
-      "3": "El ecosistema de modelos abiertos se mueve rápido. NaN también."
-    },
-    "models": "// current models"
-  },
-  "founder": {
-    "label": "// who's behind",
-    "heading": "La comunidad NaN la dirigen Cristian Córdova y Borja Perez.",
-    "bio": {
-      "0": "Founder de <a href=\"https://helmcode.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-violet-400 hover:text-violet-300 transition-colors\">Helmcode</a>, trabajando con startups en infraestructura cloud, AI tooling y software abierto.",
-      "1": "Gracias a <a href=\"https://helmcode.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-violet-400 hover:text-violet-300 transition-colors\">Helmcode</a> ofrecemos inferencia de modelos abiertos con planes sin límites de tokens para empresas, publico mis experimentos en redes sociales y estudios con IA."
-    },
-    "quote": "Monté NaN porque quería poder correr modelos abiertos de los buenos sin límites de uso y además compartir y aprender con gente que está en la misma: builders que queman tokens de verdad.",
-    "links": {
-      "twitter": "Twitter",
-      "linkedin": "LinkedIn",
-      "github": "GitHub"
-    },
-    "companyIntro": "La comunidad NaN existe gracias a <a href=\"https://helmcode.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-violet-400 hover:text-violet-300 transition-colors\">Helmcode</a>, la empresa detrás de toda la infraestructura de inferencia que alimenta la comunidad."
-  },
-  "pricing": {
-    "label": "// pricing",
-    "subheading": "Un tier por región. Sin upsells. Sin trial.",
-    "plan1": {
-      "name": "NaN Member EU",
-      "flagLabel": "Europa",
-      "price": "70€",
-      "period": "/mes",
-      "taxNote": "IVA incluido"
-    },
-    "plan2": {
-      "name": "NaN Member USA/Latam",
-      "flagLabel": "USA / Latam",
-      "price": "$75",
-      "period": "/mo",
-      "taxNote": "Impuestos incluidos"
-    },
-    "plan3": {
-      "name": "NaN Community",
-      "flagLabel": "Comunidad",
-      "price": "$14.99",
-      "period": "/mes",
-      "taxNote": "Impuestos incluidos",
-      "badge": "// comunidad",
-      "noGpuTag": "Sin acceso a GPU · solo Discord"
-    },
-    "limited": "Plazas limitadas",
-    "features": {
-      "0": "Acceso al cluster compartido — modelos abiertos sin caps de tokens",
-      "1": "DeepSeek V4-Flash (frontier 284B, contexto 1M, razonamiento avanzado) — 500M tokens/mes",
-      "2": "Modelos abiertos elegidos por la comunidad",
-      "3": "API key personal compatible con OpenAI",
-      "4": "Canales privados en Discord solo para miembros",
-      "5": "Voz en la votación trimestral de modelos",
-      "6": "Mes a mes, sin permanencia"
-    },
-    "communityFeatures": {
-      "0": "Acceso a Discord",
-      "1": "Canales privados solo para miembros",
-      "2": "Charlas en directo, builds y AMAs",
-      "3": "Plaza reservada para acceso a inferencia"
-    },
-    "cta": "Únete",
-    "communityCta": "Únete a la comunidad",
-    "footerNote": "Plazas limitadas. Cuando se llena, lista de espera.",
-    "communityFooterNote": "Sin permanencia. Cancela cuando quieras."
-  },
-  "cta": {
-    "label": "// join",
-    "heading": "Una comunidad de builders. Plazas limitadas. GPUs compartidas sin límites de uso.",
-    "description": "Compartimos GPUs dedicadas para correr modelos abiertos y quemar tokens sin límites. Déjanos tu email y te escribimos cuando abramos pagos."
-  },
-  "faq": {
-    "label": "// faq",
-    "heading": "Lo que probablemente vas a preguntar.",
-    "items": {
-      "0": {
-        "id": "what-is-nan",
-        "question": "¿Qué es NaN?",
-        "answer": "NaN es una comunidad cerrada de builders que comparten acceso a GPUs dedicadas para correr modelos de IA de código abierto. Cada miembro paga por estar, y solo hay espacio para los que realmente van a construir."
-      },
-      "1": {
-        "id": "how-it-works",
-        "question": "¿Cómo funciona el cluster?",
-        "answer": "Cada miembro de la comunidad comparte un cluster de inferencia dedicado. Los modelos del cluster corren 24/7 y cada miembro recibe una API key personal compatible con OpenAI para usar los modelos a su gusto, sin caps de tokens."
-      },
-      "2": {
-        "id": "token-limits",
-        "question": "¿Realmente no hay límites de tokens?",
-        "answer": "Puedes quemar tokens sin límites en los modelos más pequeños del cluster. Los modelos frontier (como DeepSeek V4-Flash) tienen una cuota mensual generosa por miembro para mantener el plan sostenible. No hay sorpresas en la factura: el precio fijo de la suscripción es lo único que pagas."
-      },
-      "3": {
-        "id": "model-voting",
-        "question": "¿Cómo se eligen los modelos?",
-        "answer": "Cada trimestre, los miembros de la comunidad votan qué nuevos modelos correrán en el cluster. Los candidatos se preseleccionan técnicamente para asegurar que caben en la capacidad del cluster. La votación se hace en Discord, abierta a todos los miembros."
-      },
-      "4": {
-        "id": "where-does-data-go",
-        "question": "¿Dónde van mis datos?",
-        "answer": "Los datos se procesan en la Unión Europea, sin logs de prompts. Tu API key es personal e intransferible. No compartimos datos entre miembros ni vendemos información a terceros. Tu código no entrena ningún modelo."
-      },
-      "5": {
-        "id": "who-is-this-for",
-        "question": "¿Para quién es NaN?",
-        "answer": "Para builders que quieren correr modelos de IA en serio sin la sobrecarga de gestionar infraestructura. Si eres startup, investigador o maker y necesitas inferencia a escala sin límites de tokens, NaN es para ti. No es para quien solo quiere experimentar un par de veces."
-      },
-      "6": {
-        "id": "why-open-models",
-        "question": "¿Por qué solo modelos abiertos?",
-        "answer": "Porque creemos que la innovación real viene de herramientas que puedes auditar, modificar y usar sin restricciones. Los modelos cerrados son cómodos pero crean dependencia. Con los abiertos tienes control total sobre tu stack."
-      },
-      "7": {
-        "id": "can-i-train",
-        "question": "¿Puedo entrenar modelos?",
-        "answer": "No. NaN es para inferencia, no para entrenamiento. Las GPUs están optimizadas para correr modelos existentes a alta velocidad, no para fine-tuning. Si necesitas entrenamiento, hay otras plataformas para eso."
-      },
-      "8": {
-        "id": "payment-methods",
-        "question": "¿Qué métodos de pago aceptan?",
-        "answer": "Actualmente aceptamos pagos por tarjeta de crédito/débito. Los precios incluyen impuestos (IVA para EU, taxes para USA/Latam). Puedes cancelar en cualquier momento, sin permanencia."
-      },
-      "9": {
-        "id": "join-community",
-        "question": "¿Cómo entro a la comunidad?",
-        "answer": "Deja tu email en la lista de espera y te escribimos cuando abramos pagos. La comunidad vive en Discord — una vez que te unes, tienes acceso a todos los canales privados, votaciones trimestrales y soporte directo del equipo."
-      }
-    }
-  },
-  "footer": {
-    "brand": "nan.builders"
-  },
-  "waitlist": {
-    "registered": "// registered",
-    "interest": "// interest registered",
-    "followUp": "No enviamos newsletters. Solo escribiremos cuando abramos pagos.",
-    "confirmation": {
-      "label": "// confirmación",
-      "heading": "¿Seguro que quieres apuntarte?",
-      "p1": "Te estás apuntando a la waitlist de una comunidad privada de pago. Cuando abramos pagos, se requerirá una suscripción mensual para tener acceso a las GPUs compartidas y a los modelos que elija la comunidad.",
-      "p2": "Solo queremos que se apunten personas con intención real de pagar. Si solo tienes curiosidad, mejor no te apuntes.",
-      "cancel": "Cancelar",
-      "confirm": "Sí, apuntarme",
-      "submitting": "Enviando…"
-    },
-    "honeypot": "Do not fill this field",
-    "email": {
-      "label": "email",
-      "placeholder": "tu@email.com"
-    },
-    "region": {
-      "label": "región",
-      "default": "Selecciona tu región"
-    },
-    "submit": {
-      "idle": "Únete a la waitlist",
-      "submitting": "Enviando…"
-    },
-    "footer": "Sin spam. Sin newsletters. Solo te escribimos cuando abramos pagos."
-  },
-  "waitlistHelpers": {
-    "regions": {
-      "europa": "Europa",
-      "latam": "LATAM",
-      "usa": "USA"
-    },
-    "successInterest": "Anotado. Estamos disponibles para ${regionLabel}. Te avisamos en cuanto abramos pagos.",
-    "successRegistered": "Estás en la lista. Iremos aceptando miembros por orden de llegada cuando abramos pagos.",
-    "errors": {
-      "invalidEmail": "Email inválido. Revisa el formato.",
-      "invalidRegion": "Selecciona una región.",
-      "rateLimited": "Demasiados intentos. Espera un minuto.",
-      "networkError": "Sin conexión. Vuelve a intentarlo.",
-      "serverError": "Algo falló en el server. Vuelve a intentarlo en un momento."
-    }
-  },
   "community": {
     "label": "// community",
     "pageTitle": "Comunidad NaN",
@@ -426,6 +197,429 @@
       "auto": "Auto",
       "total": "Total",
       "winner": "🏆 Ganador"
+    }
+  },
+  "nan": {
+    "meta": {
+      "title": "NaN — Construye sin límites",
+      "siteName": "NaN",
+      "ogLocale": "es_ES",
+      "description": "Una comunidad de builders que comparten GPUs para correr modelos abiertos a tarifa fija. API compatible con OpenAI, cero logs, plazas limitadas por cómputo."
+    },
+    "a11y": {
+      "skip": "Saltar al contenido",
+      "brandHome": "NaN, inicio",
+      "menuOpen": "Abrir menú",
+      "menuClose": "Cerrar menú",
+      "navPrimary": "Principal",
+      "navLegal": "Legal",
+      "navDocs": "Secciones de la documentación",
+      "language": "Idioma",
+      "email": "Email",
+      "region": "Región",
+      "close": "Cerrar",
+      "cookies": "Aviso de cookies",
+      "projectDetail": "Detalle del proyecto",
+      "openProject": "Abrir {name}",
+      "projectsRail": "Proyectos de la comunidad, carrusel horizontal",
+      "membersOnly": "{title}, solo para miembros",
+      "gpuDither": "NVIDIA RTX 5090, ilustración con trama",
+      "crt404": "Un ordenador CRT antiguo con una pantalla azul, una cara triste y el mensaje NO TOKENS"
+    },
+    "nav": {
+      "models": "Modelos",
+      "community": "Comunidad",
+      "events": "Eventos",
+      "projects": "Proyectos",
+      "docs": "Docs",
+      "login": "Entrar"
+    },
+    "hero": {
+      "line1": "Construye sin",
+      "line2": "límites.",
+      "sub": "No te quedes sin tokens. Nunca.",
+      "body": "NaN es la comunidad de builders que comparten GPUs para correr modelos de IA abiertos. Construye lo que necesites, sin límite de tokens. You can just do things.",
+      "spots": "Plazas limitadas",
+      "waitline": "Únete a la waitlist para activar tu suscripción. Solo deja tu email.",
+      "emailPlaceholder": "tu@email.dev",
+      "regionLabel": "Elige tu región",
+      "submit": "Únete a la waitlist",
+      "sending": "Enviando…",
+      "okRegistered": "Ya estás en la waitlist.",
+      "okPosition": "posición",
+      "okText": "Aprobaremos tu plaza en los próximos días. No pierdas de vista tu bandeja ^__^",
+      "errEmail": "Ese email no parece válido.",
+      "errRegion": "Elige una región.",
+      "errNetwork": "Ha fallado la red, no tú. Prueba otra vez.",
+      "errGeneric": "Algo se ha roto por nuestro lado. Prueba en un rato.",
+      "okInterest": "Anotado. Todavía no estamos abiertos en tu región, pero te escribimos en cuanto lo estemos.",
+      "errRateLimited": "Demasiados intentos. Espera un minuto."
+    },
+    "why": {
+      "label": "qué es nan",
+      "title1": "Qué es NaN.",
+      "title2": "La comunidad de builders",
+      "lead": "Builders compartiendo GPUs dedicadas para correr modelos abiertos y quemar tokens sin límites.",
+      "p": [
+        "Las APIs de modelos cerrados son cómodas, pero caras y limitadas. Los modelos abiertos son libres, pero correrlos en serio exige un hardware que casi nadie tiene en casa.",
+        "NaN lo resuelve compartiendo GPUs potentes entre builders que de verdad las usan, repartiendo el coste real de la infraestructura.",
+        "Una comunidad cerrada por diseño, limitada a la capacidad real de las GPUs compartidas. Cuando se llena, abrimos waitlist.",
+        "La comunidad vive en Discord. La web solo gestiona el acceso. Cada miembro paga por estar aquí. Solo entra quien de verdad quiere construir."
+      ]
+    },
+    "built": {
+      "label": "hecho con nan",
+      "title1": "No quemamos tokens.",
+      "title2": "Construimos.",
+      "sub": "Proyectos reales hechos por miembros de NaN sobre el cluster de inferencia compartido. Esto es lo que pasa cuando los builders tienen hardware de verdad.",
+      "railLabel": "proyectos de la comunidad",
+      "seeAll": "Ver todos los proyectos",
+      "addYours": "Añade el tuyo"
+    },
+    "models": {
+      "label": "el cluster",
+      "titleSuffix": "modelos.",
+      "titleLine2": "Una API.",
+      "sub": "Todo el stack de inferencia de modelos abiertos, votado por la comunidad cada trimestre. Los datos se quedan en la UE, sin registrar nada.",
+      "unmetered": "sin contador",
+      "cta": "Únete a la waitlist"
+    },
+    "privacy": {
+      "label": "privacidad",
+      "title1": "Pura inferencia.",
+      "title2": "Cero logs.",
+      "intro": "NaN es infraestructura de inferencia. No se registran prompts, ni respuestas del modelo, nada. Todo vive en tu sesión local, en el cliente, agente o app que uses.",
+      "guarantees": [
+        "Cero logs. Ni prompts ni respuestas quedan registrados.",
+        "Todo vive en tu cliente local o en la sesión de tu agente.",
+        "Procesado en la Unión Europea.",
+        "Tu código no entrena ningún modelo.",
+        "Solo métricas de servidor, para mantenimiento del cluster (tokens/s, RPM)."
+      ],
+      "termNote": "# 0 bytes. 0 filas. nada almacenado, por diseño.",
+      "termFoot": "saliendo del servidor: tokens/s · RPM · métricas del cluster"
+    },
+    "pricing": {
+      "label": "membresía",
+      "title1": "Una comunidad.",
+      "title2": "Dos tiers.",
+      "sub": "La comunidad es el producto. La inferencia es el superpoder que le añades. Sin upsells, sin trial.",
+      "perVat": "/mes · IVA incluido",
+      "perTaxes": "/mes · impuestos incluidos",
+      "inferenceIncluded": "inferencia incluida",
+      "memberIncludes": [
+        "Acceso al cluster compartido. Modelos abiertos, sin límite de tokens.",
+        "DeepSeek V4-Flash (frontier 284B, contexto 1M, razonamiento). 500M tokens/mes.",
+        "Modelos abiertos elegidos por la comunidad",
+        "API key personal compatible con OpenAI",
+        "Canales privados de Discord solo para miembros",
+        "Eventos, workshops y hackathons",
+        "Voto en la votación trimestral de modelos"
+      ],
+      "memberCond": "Mes a mes, sin compromiso. Plazas limitadas: cuando se llena, waitlist.",
+      "memberCta": "Únete a la waitlist",
+      "communityIncludes": [
+        "Acceso a Discord",
+        "Canales solo para miembros",
+        "Charlas en directo, builds, AMAs",
+        "Eventos, workshops y hackathons",
+        "Un sitio reservado en la cola de inferencia"
+      ],
+      "communityCond": "Sin compromiso. Cancela cuando quieras.",
+      "communityCta": "Únete a la comunidad"
+    },
+    "who": {
+      "label": "quién está detrás",
+      "title": "La comunidad NaN la lideran Cristian Córdova y Borja Perez.",
+      "quote": "Monté NaN porque quería correr modelos abiertos de los buenos sin límites de uso, y compartir y aprender con gente que está en la misma: builders que queman tokens de verdad.",
+      "quoteBy": "Cristian Córdova",
+      "cristianRole": "Founder de Helmcode",
+      "cristianLoc": "Tenerife, Islas Canarias",
+      "cristianBio": [
+        "Founder de Helmcode, trabajando con startups en infraestructura cloud, AI tooling y open source.",
+        "Gracias a Helmcode ofrecemos inferencia de modelos abiertos con planes de tokens ilimitados para empresas. Comparto mis experimentos en redes y mi research de IA."
+      ],
+      "borjaRole": "Marketing Lead",
+      "borjaLoc": "Valencia, España",
+      "borjaBio": [
+        "Builder con habilidades de marketing. Ayudo a Cristian con la comunicación y la comunidad.",
+        "Nuestra meta es crear la mejor comunidad de modelos abiertos del mundo, ayudando a la gente a crear y lanzar productos con IA abierta."
+      ]
+    },
+    "faq": {
+      "label": "faq",
+      "title": "Lo que probablemente vas a preguntar.",
+      "items": [
+        {
+          "q": "¿Qué es NaN?",
+          "a": "Una comunidad cerrada de builders que comparten GPUs dedicadas para correr modelos abiertos. Cada miembro paga por estar aquí, y solo hay sitio para gente que de verdad construye."
+        },
+        {
+          "q": "¿Cómo funciona el cluster?",
+          "a": "Los modelos corren 24/7 en un cluster de inferencia compartido. Cada miembro recibe una API key personal compatible con OpenAI: cambias el base_url y ya estás dentro."
+        },
+        {
+          "q": "¿De verdad son tokens ilimitados?",
+          "a": "En los modelos del cluster, sin contador. Los frontier (como DeepSeek V4-Flash) llevan 500M tokens/mes por miembro para que el plan se sostenga. Ese límite está publicado aquí, no en letra pequeña. La factura es el precio fijo de la suscripción y no se mueve."
+        },
+        {
+          "q": "¿Cómo se eligen los modelos?",
+          "a": "Cada trimestre los miembros votan en Discord qué modelos nuevos entran al cluster. Los candidatos se preseleccionan técnicamente: tienen que caber en la capacidad real. El ecosistema abierto se mueve rápido, y el cluster también."
+        },
+        {
+          "q": "¿A dónde van mis datos?",
+          "a": "Se procesan en la Unión Europea, sin registrar prompts ni respuestas. Tu API key es personal e intransferible. Tu código no entrena ningún modelo y tus datos nunca salen de tu sesión."
+        },
+        {
+          "q": "¿Para quién es NaN?",
+          "a": "Para builders que quieren correr modelos abiertos en serio sin montar la infraestructura: indie hackers, makers, gente con agentes y side projects en producción. No es para quien solo quiere probar un par de prompts."
+        },
+        {
+          "q": "¿Por qué solo modelos abiertos?",
+          "a": "Porque se pueden auditar, modificar y usar sin pedir permiso. Los cerrados son cómodos pero crean dependencia. Con modelos abiertos, el stack es tuyo."
+        },
+        {
+          "q": "¿Puedo entrenar modelos?",
+          "a": "No. NaN es inferencia, no entrenamiento. Las GPUs están optimizadas para correr modelos existentes a alta velocidad, no para fine-tuning."
+        },
+        {
+          "q": "¿Qué métodos de pago aceptáis?",
+          "a": "Tarjeta de crédito o débito. Los precios incluyen impuestos (IVA en la UE, impuestos en USA/Latam). Sin compromiso: cancela cuando quieras."
+        },
+        {
+          "q": "¿Cómo entro?",
+          "a": "Deja tu email en la waitlist y te escribimos cuando se abra una plaza. Hay waitlist porque no hay más GPUs: cuando entra cómputo, entra gente."
+        }
+      ]
+    },
+    "footer": {
+      "cta1": "Empieza a construir.",
+      "cta2": "Empieza a quemar tokens.",
+      "go": "Únete a la waitlist",
+      "privacy": "Privacidad",
+      "terms": "Términos",
+      "cookies": "Cookies",
+      "community": "Comunidad",
+      "notice": "Usamos solo cookies estrictamente necesarias para que la web funcione. Sin analytics, sin publicidad, sin tracking entre sitios, nunca.",
+      "copyPre": "NaN es la comunidad de inferencia de",
+      "copyRights": "Todos los derechos reservados.",
+      "copyFrom": "Desde Canarias hasta 🌎",
+      "colExplore": "explora",
+      "colLegal": "legal",
+      "colConnect": "conecta"
+    },
+    "cookie": {
+      "title": "Purrr",
+      "line1": "No rastreamos cookies, pero...",
+      "q": "¿Te gustan los gatos?",
+      "yes": "Sí",
+      "yesIDo": "Sí, me encantan"
+    },
+    "notFound": {
+      "metaTitle": "404 — NaN",
+      "eyebrow": "error 404 // sin tokens",
+      "title1": "Esta página se quedó",
+      "title2": "sin tokens.",
+      "body": "La dirección que escribiste no existe, o nunca existió. En cualquier caso, aquí no hay nada que renderizar. Tú, en cambio, sí encajas aquí.",
+      "back": "Volver al inicio",
+      "join": "Únete a la waitlist"
+    },
+    "projects": {
+      "metaTitle": "Proyectos — NaN",
+      "metaDesc": "Lo que está construyendo la comunidad NaN.",
+      "eyebrow": "// proyectos",
+      "title": "Proyectos de la comunidad.",
+      "subPre": "Lo que está construyendo la comunidad NaN. Marca tus favoritos con una estrella en",
+      "filterAll": "todos",
+      "groupTop": "top proyectos",
+      "groupAll": "// todos los proyectos",
+      "openApp": "Abrir app ↗",
+      "viewRepo": "Ver repo ↗"
+    },
+    "docs": {
+      "metaTitle": "Docs — NaN",
+      "metaDesc": "Conecta tus herramientas al cluster de NaN. API compatible con OpenAI.",
+      "eyebrow": "// docs",
+      "navIntro": "Introducción",
+      "navGetting": "Primeros pasos",
+      "navModels": "Modelos",
+      "navExamples": "Ejemplos",
+      "navSupport": "Soporte",
+      "title": "Bienvenido a NaN.",
+      "leadA": "Esta doc explica cómo conectar tus herramientas a nuestras GPUs. El cluster corre modelos abiertos con una API compatible con OpenAI. Si algo acepta un ",
+      "leadB": ", funciona con NaN.",
+      "apiKeyH": "Tu API key",
+      "apiKeyP1": "Para conseguir tu API key tienes que ser miembro de la comunidad NaN. Genérala desde los ajustes de tu usuario, en ",
+      "apiKeyStrong": "API Keys",
+      "apiKeyP2": ", en ",
+      "apiKeyP3": ". Es personal e intransferible.",
+      "rateLimitsH": "Rate limits",
+      "rpmK": "peticiones por minuto",
+      "parK": "máx. en paralelo",
+      "nextH": "Qué hacer ahora",
+      "next": [
+        {
+          "t": "Primeros pasos",
+          "d": "Endpoint, auth y setup. Apunta cualquier cliente compatible con OpenAI al cluster."
+        },
+        {
+          "t": "Modelos",
+          "d": "El catálogo completo, capacidades y límites."
+        },
+        {
+          "t": "Ejemplos",
+          "d": "Snippets en Python, Node.js y curl."
+        },
+        {
+          "t": "Soporte",
+          "d": "Pregunta en el canal #support de Discord."
+        }
+      ]
+    },
+    "events": {
+      "metaTitle": "Eventos — NaN",
+      "metaDesc": "Workshops, eventos y hackathons dentro de la comunidad NaN.",
+      "heroEyebrow": "// eventos",
+      "heroTitle1": "Vive dentro",
+      "heroTitle2": "de la comunidad.",
+      "heroSub": "Los workshops, eventos y hackathons pasan dentro de NaN. Las grabaciones viven en la comunidad. Entras para verlas.",
+      "membersOnly": "solo miembros",
+      "loginToSee": "Entra para verlo",
+      "monthLabel": "este mes en nan",
+      "monthTitle": "Este mes en NaN.",
+      "monthSub": "Los próximos 30 días. La comunidad propone y vota la agenda en Discord.",
+      "monthLockTitle": "solo miembros",
+      "monthLockBody": "La agenda completa vive dentro de la comunidad.",
+      "weekdays": [
+        "lun",
+        "mar",
+        "mié",
+        "jue",
+        "vie",
+        "sáb",
+        "dom"
+      ],
+      "monthEmpty": "Nada programado en los próximos 30 días todavía. La comunidad propone la agenda en Discord.",
+      "types": {
+        "workshop": "workshop",
+        "event": "evento",
+        "hackathon": "hackathon"
+      },
+      "workshopsLabel": "workshops",
+      "workshopsTitle": "Workshops.",
+      "workshopsSub": "Sesiones prácticas sobre agentes, tooling y lanzar con modelos abiertos. Grabadas para miembros.",
+      "eventsLabel": "eventos",
+      "eventsTitle": "Eventos.",
+      "eventsSub": "Momentos de la comunidad: hitos, AMAs y quedadas.",
+      "hackathonsLabel": "hackathons",
+      "hackathonsTitle": "Hackathons.",
+      "hackathonsSub": "Semanas de build sobre el cluster. Equipos, un tema y un demo day.",
+      "watchNote": "entra para verlo",
+      "hackathon": {
+        "blurb": "7 días para construir con los modelos open source del cluster. Equipos de 4, equilibrados. Premio: 1 mes de NaN gratis.",
+        "when": "7-13 de junio · semana de build · domingo 14: Demo Day",
+        "allowed": "Modelos permitidos: Qwen 3.6 o Gemma 4. El proyecto tiene que ser open source. Tema libre.",
+        "statusLabel": "inscripción cerrada",
+        "statusBody": "La ventana de inscripción se ha cerrado. ¡Esperamos verte en el próximo hackathon de NaN!"
+      }
+    },
+    "community": {
+      "metaTitle": "Comunidad — NaN",
+      "metaDesc": "NaN es el trampolín para builders que construyen con IA abierta. Build in public, en comunidad.",
+      "heroEyebrow": "// la comunidad de NaN",
+      "heroTitle": "Crear. Compartir. Ayudar.",
+      "heroSub": "NaN es el trampolín para builders que construyen con IA abierta. Aquí hacemos Build in Public: enseñas lo que haces, aprendes de los demás y lanzas acompañado.",
+      "ctaPrimary": "Únete a la comunidad",
+      "ctaSecondary": "Ver el roadmap",
+      "whatLabel": "qué pasa aquí",
+      "whatTitle": "Una comunidad para construir, no solo para quemar tokens",
+      "whatIntro": "Todo lo que montamos en la comunidad de NaN tiene un objetivo: que salgas con algo aprendido, algo construido o alguien nuevo con quien construir.",
+      "pillars": [
+        {
+          "name": "Discord",
+          "body": "Donde vive la comunidad. Aquí pasan los eventos, los anuncios y las conversaciones de cada día: discusiones sobre modelos, papers que merecen la pena, dudas de despliegue y lo que estés construyendo.",
+          "freq": "siempre abierto · el punto de encuentro"
+        },
+        {
+          "name": "Eventos, workshops y hackatones",
+          "body": "Formación práctica cada mes. Traemos a gente que sabe a dar sesiones sobre IA, open source y todo lo que rodea a construir con modelos abiertos. Y montamos hackatones para ponernos retos de construir productos.",
+          "freq": "1x mes formativos · 1x trimestre hackatón"
+        },
+        {
+          "name": "Built with NaN",
+          "body": "La sección de proyectos de la comunidad. Ayudamos a los builders a dar visibilidad a lo que construyen: los mejores proyectos los potenciamos en redes con el altavoz de NaN y Helmcode.",
+          "freq": "tu proyecto, delante de más gente"
+        },
+        {
+          "name": "Café Helmcode",
+          "body": "El evento en persona. Un café por diferentes ciudades para ponernos cara, hablar sin prisa y construir en comunidad. Porque hay conversaciones que solo pasan fuera de una pantalla.",
+          "freq": "ciudad a ciudad · nos vemos pronto"
+        }
+      ],
+      "progressLabel": "en marcha",
+      "progressTitle": "Lo que estamos cocinando",
+      "progressIntro": "Tres iniciativas que ya están en construcción.",
+      "inProgressTag": "in progress",
+      "initiatives": [
+        {
+          "name": "NaN Combinator",
+          "body": "Nuestra incubadora para builders. Queremos que nazcan empresas de producto desde NaN, y vamos a ayudarles en todo lo posible: formaciones de ventas, producto, marketing y escalado. Cada 6 meses montaremos una pequeña cohorte para ayudar a construir y escalar sus ideas, con su Demo Day al final. El objetivo: que dentro de poco puedas decir que ese producto tan guay que usas se construyó en la comunidad."
+        },
+        {
+          "name": "Ambassador Plan",
+          "body": "El plan de embajadores de NaN. Nuestra manera de recompensar a quienes difunden la palabra: te ayudamos a montar y alojar eventos en nombre de NaN. Los embajadores se seleccionan de entre la comunidad, por méritos. Si ya estás moviendo NaN por tu cuenta, esto va de darte gasolina."
+        },
+        {
+          "name": "Proyecto colaborativo open source",
+          "body": "Un repo de NaN mantenido entre todos. Puede ser una librería útil, un benchmark en español de modelos abiertos o un dataset. Lo importante: que sea de la comunidad, que sirva al ecosistema y que tu nombre esté en los commits."
+        }
+      ],
+      "roadmapLabel": "roadmap",
+      "roadmapTitle": "Lo que viene",
+      "roadmapIntro": "Tenemos muchos planes, pero no todo se puede atacar a la vez. Así que vamos paso a paso, y en abierto.",
+      "membersLabel": "nan_members",
+      "roadmapColInitiative": "iniciativa",
+      "roadmapColStatus": "estado",
+      "roadmap": [
+        {
+          "initiative": "1.000 miembros",
+          "detail": "el objetivo de este año",
+          "status": "in_progress"
+        },
+        {
+          "initiative": "Ambassador program",
+          "detail": "piloto con alguien de la comunidad",
+          "status": "next"
+        },
+        {
+          "initiative": "Eventos online periódicos",
+          "detail": "workshops, webinars, charlas; embajadores destripando el repo del momento, o AMAs con invitados externos (gente de Hugging Face, por ejemplo)",
+          "status": "in_progress"
+        },
+        {
+          "initiative": "Evento presencial",
+          "detail": "si juntamos suficiente gente",
+          "status": "soon"
+        },
+        {
+          "initiative": "Hackatones",
+          "detail": "1 por trimestre; algunos con partner y premios guays",
+          "status": "planned"
+        },
+        {
+          "initiative": "Proyectos de la comunidad",
+          "detail": "destacar y lanzar proyectos por los canales de Helmcode; quizás incluso un Demo Day trimestral",
+          "status": "planned"
+        },
+        {
+          "initiative": "Mini-retos",
+          "detail": "retos de fin de semana, batallas de modelos, rondas de 'kill the wrapper' clonando productos",
+          "status": "planned"
+        }
+      ],
+      "closeTitle": "Construye acompañado",
+      "closeText": "Si estás construyendo con IA abierta, o quieres empezar, este es tu sitio. Entra, preséntate y enséñanos lo que traes entre manos.",
+      "closeCta": "Únete a la comunidad"
     }
   }
 }

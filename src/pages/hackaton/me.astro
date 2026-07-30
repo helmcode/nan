@@ -1,12 +1,15 @@
 ---
-import Page from '../../layouts/Page.astro';
+// El marcado de estas pantallas sigue escrito con utilidades de Tailwind.
+// El tema de Tailwind apunta a nuestros tokens (ver styles/global.css).
+import '../../styles/global.css';
+import NanPage from '../../layouts/NanPage.astro';
 import ReassignForm from '../../components/hackaton/ReassignForm.tsx';
-import { t, tObj, withLang } from '../../lib/i18n';
+import { getLocale, t, tObj, withLang } from '../../lib/i18n';
 import { jsonData, type MeData, type Team } from '../../lib/hackaton';
 import { env } from 'cloudflare:workers';
 
 export const prerender = false;
-const locale = Astro.url.searchParams.get('lang') === 'es' ? 'es' : 'en';
+const locale = getLocale(Astro.url);
 
 const base = env.CLOUD_API_URL.replace(/\/$/, '');
 let team: Team | null = null, status = 'draft';
@@ -20,9 +23,10 @@ try {
   if (ev.ok) status = (await jsonData<{ status?: string }>(ev))?.status ?? 'draft';
 } catch {}
 ---
-<Page title={`${t('hackaton.me.title', locale)} — nan.builders`}>
+{/* Detrás de sesión: fuera del sitemap y también fuera del índice. */}
+<NanPage scale={false} noindex title={`${t('hackaton.me.title', locale)} — nan.builders`}>
   <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
-    <a href={locale === 'en' ? '/hackaton?lang=en' : '/hackaton'}
+    <a href={withLang('/hackaton', locale)}
        class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400">
       {t('hackaton.backToLanding', locale)}
     </a>
@@ -52,4 +56,4 @@ try {
       </section>
     )}
   </main>
-</Page>
+</NanPage>

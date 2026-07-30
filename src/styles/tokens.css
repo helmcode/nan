@@ -1,0 +1,88 @@
+/* ============================================
+   NaN — Design tokens (fuente de verdad)
+   Sistema vigente: off-black + monoacento violeta,
+   Archivo (display y cuerpo, variable con ejes wdth+wght) + JetBrains Mono
+   (técnico). Ojo con los nombres: --font-serif NO es una serif, es la misma
+   Archivo que --font-sans; el nombre viene de una iteración con Inria Serif y
+   se conserva para no tocar todos los componentes de golpe.
+   Solo modo oscuro. Esquina recta (radio 0). Regla: interactivo -> violeta.
+   Hex sueltos en código = prohibido: todo color pasa por aquí.
+   ============================================ */
+:root {
+  /* ---------- color ---------- */
+  --color-bg:            #0B0B0C;   /* off-black — base de todo */
+  --color-surface:       #121214;   /* cards/paneles sobre el negro */
+  --color-text:          #FFFFFF;
+  --color-body:          #C9C9CC;   /* cuerpo de texto secundario */
+  --color-muted:         #9A9A9E;   /* labels, captions */
+
+  --color-black:         #000000;   /* negro puro (base brandbook): footer, contraste duro */
+
+  /* REGLA DE CONTRASTE (WCAG AA sobre --color-bg):
+     --color-violet     = 3.43:1 -> SOLO rellenos, bordes, puntos, barras y
+                          titulares grandes. Nunca texto pequeño.
+     --color-violet-2   = 5.39:1 -> todo el texto violeta (eyebrows, labels,
+                          metadatos, hovers) y el anillo de foco. */
+  --color-violet:        #7D39EB;   /* EL acento — único */
+  --color-violet-2:      #9B6BF0;   /* violeta claro: texto violeta y hovers */
+  --color-violet-dim:    rgba(125, 57, 235, 0.14);
+  --color-link:          #9B6BF0;   /* violeta para texto/enlaces: AA sobre off-black (~5.4:1) */
+  --color-link-line:     rgba(155, 107, 240, 0.5);  /* subrayado de enlaces de texto */
+
+  /* tamaños canónicos de titular: TODOS los h1 iguales, TODOS los h2 iguales */
+  /* El suelo del H1 tiene que caber en un móvil de 320px. Con la Archivo
+     expandida a 850, "Community" mide ~355px a 46px de cuerpo y solo hay 272px
+     útiles: por eso desbordaba en /projects, /events y el CTA del footer.
+     A 34px entra con holgura y la curva 8.5vw es la misma de siempre. */
+  --fs-h1: clamp(34px, 8.5vw, 96px);
+  --fs-h2: clamp(28px, 4.5vw, 46px);
+  --fs-h3: 22px;
+
+  --color-line:          rgba(255, 255, 255, 0.16);  /* hairlines */
+  --pulse:               rgba(125, 57, 235, 0.55);
+
+  /* ---------- tipografía ---------- */
+  /* Archivo variable (wdth+wght) para display y cuerpo; mono para lo de siempre. */
+  /* 'Archivo Variable' es el nombre que declara @fontsource-variable/archivo */
+  --font-serif:  'Archivo Variable', 'Archivo', system-ui, sans-serif;  /* titulares/display */
+  --font-sans:   'Archivo Variable', 'Archivo', system-ui, sans-serif;  /* cuerpo + UI */
+  --font-mono:   'JetBrains Mono', ui-monospace, monospace;             /* nav, botones, labels, datos */
+
+  /* ---------- spacing (base 8) ---------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* ---------- layout ---------- */
+  --container-max: 1560px;
+  --container-pad: clamp(24px, 4vw, 72px);
+  --nav-h: 5rem;
+
+  /* ---------- radios / motion ---------- */
+  --radius-ui: 0;                          /* esquina recta en toda la UI */
+  --ease: cubic-bezier(.22, .9, .24, 1);
+  --dur-micro: .2s;                        /* hovers */
+  --dur-ui:    .28s;                       /* transiciones interactivo->violeta */
+
+  /* ---------- alias legacy (secciones aún no migradas) ---------- */
+  --color-text-dim:      var(--color-body);
+  --color-hairline:      var(--color-line);
+  --font-display:        var(--font-sans);
+  --w-display:           400;
+  --color-snow:          #EFEEEB;
+  --color-snow-2:        #E3E1DC;
+  --color-snow-ink:      #101010;
+  --color-snow-dim:      rgba(16, 16, 16, 0.62);
+  --color-snow-hairline: rgba(16, 16, 16, 0.16);
+  --color-bone:          #E8E6E1;
+  --color-ink:           #141414;
+}

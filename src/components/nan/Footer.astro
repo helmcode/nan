@@ -1,0 +1,119 @@
+---
+import { getLang, useT } from '../../lib/i18n';
+
+const lang = getLang(Astro.url);
+const t = useT(lang);
+const tt = t.footer;
+const home = lang === 'es' ? '/es' : '/';
+const p = (path: string) => (lang === 'es' ? `/es${path}` : path);
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__cta">
+      <h2 class="footer__title">
+        {tt.cta1}<br />
+        <span class="footer__title-2">{tt.cta2}</span>
+      </h2>
+      <a href={`${home}#waitlist`} class="footer__go">{tt.go} →</a>
+    </div>
+  </div>
+
+  <!-- banda inferior: logotipo gigante a sangre (izq) + legales a la derecha -->
+  <div class="footer__base">
+    <a href={home} class="footer__brand" aria-label={t.a11y.brandHome}>
+      <span class="footer__wm" aria-hidden="true"></span>
+    </a>
+    <div class="footer__fine">
+      <nav class="footer__legal" aria-label={t.a11y.navLegal}>
+        <a href={p('/privacy')}>{tt.privacy}</a>
+        <a href={p('/terms')}>{tt.terms}</a>
+        <a href={p('/cookies')}>{tt.cookies}</a>
+      </nav>
+      <p class="footer__copy">
+        {tt.copyPre} <a href="https://helmcode.com" rel="noopener">Helmcode</a>.
+        © Helmcode {year}. {tt.copyRights} · <span class="footer__nowrap">{tt.copyFrom}</span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    margin-top: var(--space-16);
+    padding-top: var(--space-24);
+    padding-bottom: clamp(20px, 3vw, 40px);
+    background: var(--color-black);
+    color: var(--color-text);
+    overflow: hidden;
+  }
+
+  /* ---------- CTA centrado ---------- */
+  .footer__cta { text-align: center; }
+  /* El footer es parte del shell y sale también en páginas montadas con
+     scale={false} (el hackatón), donde no hay .nan-scale que aplique la escala
+     de titulares. Por eso se declara aquí entera en vez de heredarla. */
+  .footer__title {
+    font-family: var(--font-serif); font-weight: 400;
+    font-size: var(--fs-h1) !important; /* tamaño H1 */
+    font-variation-settings: 'wdth' 118, 'wght' 850;
+    text-transform: uppercase;
+    line-height: 0.96; letter-spacing: -0.02em; color: var(--color-text);
+  }
+  .footer__title-2 { color: var(--color-violet-2); }
+  .footer__go {
+    display: inline-block; position: relative; margin-top: var(--space-8);
+    font-family: var(--font-serif); font-size: clamp(20px, 2.4vw, 32px);
+    letter-spacing: -0.01em; color: var(--color-text); padding-bottom: 6px;
+    transition: color var(--dur-micro) var(--ease);
+  }
+  .footer__go::after {
+    content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 2px;
+    background: currentColor; transition: background var(--dur-ui) var(--ease);
+  }
+  .footer__go:hover { color: var(--color-link); }
+
+  /* ---------- banda inferior: logo + legales ---------- */
+  .footer__base {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: clamp(24px, 4vw, 72px);
+    margin-top: clamp(64px, 10vw, 140px);
+    padding-right: var(--container-pad);
+  }
+  /* logotipo flush a la esquina inferior izquierda de la ventana (fuera del container) */
+  .footer__brand { flex: 0 0 auto; display: block; line-height: 0; }
+  .footer__wm {
+    display: block;
+    width: clamp(320px, 82vw, 1240px);
+    height: clamp(48px, 12vw, 178px);
+    background: var(--color-text);
+    transition: background var(--dur-ui) var(--ease);
+    -webkit-mask: url('/brand/nan-wordmark-white.svg') left bottom / contain no-repeat;
+            mask: url('/brand/nan-wordmark-white.svg') left bottom / contain no-repeat;
+  }
+  .footer__brand:hover .footer__wm { background: var(--color-violet-2); }
+
+  .footer__fine { flex: 0 1 auto; text-align: right; padding-bottom: clamp(6px, 1.2vw, 16px); }
+  /* enlaces legales = misma tipografía, tamaño y espaciado que el menú (nav) */
+  .footer__legal { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 30px; }
+  .footer__legal a {
+    display: inline-flex; align-items: center; min-height: 28px; /* mínimo táctil */
+    font-family: var(--font-mono); font-size: 14px; color: var(--color-text);
+    transition: color var(--dur-micro) var(--ease);
+  }
+  .footer__legal a:hover { color: var(--color-link); }
+  .footer__copy {
+    font-family: var(--font-mono); font-size: 11.5px; line-height: 1.7;
+    color: var(--color-muted); margin-top: var(--space-5);
+  }
+  .footer__nowrap { white-space: nowrap; }
+  .footer__copy a { color: var(--color-text); border-bottom: 1px solid var(--color-link-line); }
+  .footer__copy a:hover { color: var(--color-link); }
+
+  @media (max-width: 860px) {
+    .footer__base { flex-direction: column; align-items: flex-start; gap: var(--space-8); }
+    .footer__fine { order: -1; text-align: left; padding-left: var(--container-pad); }
+    .footer__legal { justify-content: flex-start; }
+  }
+</style>

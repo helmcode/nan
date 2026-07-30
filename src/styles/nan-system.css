@@ -1,0 +1,292 @@
+/*
+ * NaN — sistema visual del rediseño.
+ * Archivo (display y cuerpo) · JetBrains Mono (técnico).
+ *
+ * OJO: esto NO se carga globalmente. Lo importa src/layouts/NanBase.astro, así
+ * que solo afecta a las páginas ya migradas. Las que siguen en Tailwind (docs,
+ * hackaton) usan styles/global.css y no lo ven. Cuando estén todas migradas se
+ * puede unificar y borrar esta separación.
+ *
+ * Off-black, monoacento violeta, esquina recta, solo dark.
+ * Textura de la casa = campo de partículas (canvas #bg-fx en Base), no grano.
+ * Regla de motion: interactivo -> violeta con transición.
+ */
+@import './tokens.css';
+
+/* BREAKPOINTS (convención). El CSS es scoped por componente, así que no hay un
+   token compartido posible: usa estos tres y no inventes valores nuevos.
+     620px  -> móvil: una columna, todo apilado
+     860px  -> tablet: cae la nav a hamburguesa y los grids a 1-2 columnas
+     1100px -> desktop estrecho: ajustes finos
+   Quedan sueltos algunos 520/720/760/900 de la primera iteración; migrarlos
+   pide un repaso visual ancho a ancho, no un buscar-y-reemplazar. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  border-radius: var(--radius-ui);
+}
+
+html {
+  color-scheme: dark;
+  overflow-x: clip;
+  scroll-behavior: smooth;
+  /* deja aire bajo la nav sticky al saltar a un ancla */
+  scroll-padding-top: calc(var(--nav-h) + 20px);
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  background:
+    radial-gradient(1100px 800px at 72% 28%, rgba(125, 57, 235, 0.22), rgba(125, 57, 235, 0) 62%),
+    radial-gradient(900px 720px at 10% 98%, rgba(125, 57, 235, 0.12), rgba(125, 57, 235, 0) 60%),
+    var(--color-bg);
+  background-attachment: fixed;
+  color: var(--color-text);
+  /* el fondo fijo se resuelve abajo: en móvil sale caro repintarlo */
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* campo de partículas violeta (pintado por scripts/particles.ts) */
+#bg-fx {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+main, footer { position: relative; z-index: 1; }
+
+/* Titulares: Archivo variable EXPANDIDO (wdth+wght) y en mayúsculas.
+   Sistema UNIFORME en toda la web (mismos tamaños). El !important gana a los
+   estilos scoped de cada componente (clase + atributo de Astro > h1 pelado). */
+/* ESCALA DE TITULARES — solo bajo .nan-scale (lo pone NanBase salvo que la
+   página pida lo contrario). Va con !important para ganar a los estilos scoped
+   de cada componente, y por eso mismo aplastaría las pantallas que aún se
+   escriben con utilidades de Tailwind y columnas estrechas: allí un H1 de 96px
+   parte las palabras. Esas páginas montan el shell con scale={false}. */
+.nan-scale h1,
+.nan-scale h2,
+.nan-scale h3,
+.nan-scale h4 {
+  font-family: var(--font-serif);
+  text-transform: uppercase !important;
+  /* red de seguridad: si algún día entra una palabra más larga que la caja,
+     que parta en vez de salirse y provocar scroll horizontal */
+  overflow-wrap: break-word;
+}
+.nan-scale h1 {
+  font-variation-settings: 'wdth' 118, 'wght' 850 !important;
+  font-size: var(--fs-h1) !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.02em !important;
+}
+.nan-scale h2 {
+  font-variation-settings: 'wdth' 115, 'wght' 800 !important;
+  font-size: var(--fs-h2) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.01em !important;
+}
+.nan-scale h3 {
+  font-variation-settings: 'wdth' 110, 'wght' 750 !important;
+  font-size: var(--fs-h3) !important;
+  line-height: 1.2 !important;
+}
+
+/* segunda línea de un titular en violeta (como "Start burning tokens") */
+.hl { color: var(--color-violet-2); }
+
+strong, b { font-weight: 700; }
+/* párrafo de la casa: Archivo, anchura por defecto, blanco */
+p { color: var(--color-text); font-family: var(--font-serif); font-variation-settings: normal; }
+
+a { color: inherit; text-decoration: none; transition: color var(--dur-micro) var(--ease); }
+
+code, pre, kbd { font-family: var(--font-mono); font-size: 0.9em; }
+img, svg { max-width: 100%; display: block; }
+button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+::selection { background: var(--color-violet); color: #fff; }
+/* Anillo de foco en violeta CLARO: el violeta base sobre off-black se queda en
+   3.4:1 y encima desaparece sobre los paneles con tinte violeta. */
+:focus-visible {
+  outline: 2px solid var(--color-violet-2);
+  outline-offset: 3px;
+}
+
+/* Saltar al contenido: fuera de pantalla hasta que recibe foco. */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 500;
+  transform: translateY(-120%);
+  padding: 12px 20px;
+  background: var(--color-violet);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  transition: transform var(--dur-ui) var(--ease);
+}
+.skip-link:focus-visible { transform: none; }
+main:focus { outline: none; }
+
+/* ---------------- utilidades ---------------- */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+.mono { font-family: var(--font-mono); }
+.meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+.serif { font-family: var(--font-serif); }
+
+/* eyebrow de sección — mono, violeta, tamaño de la casa */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  color: var(--color-violet-2); /* texto pequeño -> violeta claro (AA) */
+  margin-bottom: var(--space-6);
+}
+
+.hairline-top    { border-top: 1px solid var(--color-line); }
+.hairline-bottom { border-bottom: 1px solid var(--color-line); }
+
+/* índice de sección: hairline superior + número violeta + etiqueta mono */
+.sechead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  border-top: 1px solid var(--color-line);
+  padding-top: var(--space-4);
+  margin-bottom: var(--space-10);
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+.sechead__n { color: var(--color-violet-2); font-weight: 700; }
+.sechead__label { color: var(--color-muted); }
+
+/* cursor de escritura parpadeante al final de los H2 */
+.caret-type::after {
+  content: '_';
+  font-family: var(--font-mono);
+  color: var(--color-violet);
+  font-weight: 400;
+  margin-left: 0.08em;
+  animation: caret-blink 1.05s steps(1) infinite;
+}
+@keyframes caret-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .caret-type::after { animation: none; } }
+
+/* reveal al scroll */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+}
+[data-reveal].is-in { opacity: 1; transform: none; }
+[data-reveal-stagger] > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+}
+[data-reveal-stagger] > *.is-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal], [data-reveal-stagger] > * { opacity: 1; transform: none; }
+}
+
+/* ---------------- sistema de botones ---------------- */
+/* cuadrados (radio 0), 46px, JetBrains Mono. interactivo -> violeta. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
+  padding: 0 28px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  transition: background var(--dur-micro) var(--ease),
+    color var(--dur-micro) var(--ease), border-color var(--dur-micro) var(--ease);
+}
+/* primario: relleno violeta -> hover/active blanco */
+.btn-primary, .btn--primary {
+  background: var(--color-violet);
+  border-color: var(--color-violet);
+  color: #fff;
+}
+.btn-primary:hover, .btn-primary:active,
+.btn--primary:hover, .btn--primary:active {
+  background: #fff; border-color: #fff; color: var(--color-bg);
+}
+/* secundario: relleno blanco -> hover/active violeta */
+.btn-secondary {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: var(--color-bg);
+}
+.btn-secondary:hover, .btn-secondary:active {
+  background: var(--color-violet); border-color: var(--color-violet); color: #fff;
+}
+/* fantasma: solo borde -> hover violeta */
+.btn-ghost {
+  background: transparent;
+  border-color: var(--color-line);
+  color: var(--color-text);
+}
+.btn-ghost:hover, .btn-ghost:active {
+  border-color: var(--color-violet); color: var(--color-violet-2);
+}
+
+/* ---------------- campos de formulario ---------------- */
+.field {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  background: rgba(125, 125, 125, 0.04);
+  border: 1px solid var(--color-line);
+  color: var(--color-text);
+  padding: 0 16px;
+  height: 46px;
+  transition: border-color var(--dur-micro) var(--ease);
+}
+.field:focus, .field:focus-within { outline: none; border-color: var(--color-violet); }
+.field::placeholder { color: #6a6a6e; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+@media (max-width: 720px) { body { font-size: 16px; } }
+
+/* En móvil, `background-attachment: fixed` obliga al navegador a repintar los
+   dos radiales en cada frame de scroll (en iOS ni siquiera se comporta como
+   fixed). Se pasa a scroll: visualmente casi idéntico, sin el coste. */
+@media (max-width: 860px) {
+  body { background-attachment: scroll; }
+}

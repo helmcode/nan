@@ -1,0 +1,80 @@
+---
+// "What is NaN" — editorial. Eyebrow encima; debajo, dos columnas que arrancan
+// a la misma altura: H2 + tarjeta dithered (izq) y texto (der).
+import { getLang, useT } from '../../../lib/i18n';
+
+const lang = getLang(Astro.url);
+const tt = useT(lang).why;
+const a11y = useT(lang).a11y;
+---
+
+<section class="why">
+  <div class="container">
+    <div class="sechead" data-reveal>
+      <span class="sechead__n">01</span><span class="sechead__label">{tt.label}</span>
+    </div>
+
+    <div class="why__cols" data-reveal>
+      <div class="why__left">
+        <h2 class="why__title caret-type">{tt.title1}<br /><span class="hl">{tt.title2}</span></h2>
+        <div class="why__dither">
+          <canvas id="why-fx" role="img" aria-label={a11y.gpuDither}></canvas>
+        </div>
+      </div>
+
+      <div class="why__body">
+        <p class="why__lead">{tt.lead}</p>
+        {tt.p.map((para) => <p>{para}</p>)}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .why { padding-block: clamp(48px, 7vh, 96px) clamp(80px, 12vh, 160px); }
+
+  /* dos columnas que arrancan a la misma altura */
+  .why__cols {
+    display: grid;
+    grid-template-columns: 0.85fr 1fr;
+    column-gap: clamp(40px, 6vw, 120px);
+    align-items: start;
+  }
+
+  .why__title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    color: var(--color-text);
+    font-size: clamp(40px, 5vw, 76px);
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+  }
+  .why__dither { margin-top: var(--space-12); width: 100%; max-width: 300px; aspect-ratio: 2 / 3; }
+  .why__dither canvas { width: 100%; height: 100%; display: block; }
+
+  .why__body { max-width: 54ch; }
+  .why__lead {
+    color: var(--color-text);
+    font-size: clamp(22px, 2.1vw, 30px);
+    line-height: 1.2;
+    margin-bottom: var(--space-10);
+  }
+  .why__body p:not(.why__lead) {
+    color: var(--color-text);
+    font-size: clamp(16px, 1.15vw, 18px);
+    line-height: 1.7;
+  }
+  .why__body p + p { margin-top: var(--space-10); }
+
+  @media (max-width: 860px) {
+    .why { padding-block: var(--space-16) var(--space-24); }
+    .why__cols { grid-template-columns: 1fr; }
+    .why__body { margin-top: var(--space-10); }
+    .why__dither { max-width: 260px; }
+  }
+</style>
+
+<script>
+  import { initDither } from '../../../scripts/initDither';
+  initDither('why-fx', '/img/why-gpu-card.png', { threshold: 128, pad: 0.98 });
+</script>
