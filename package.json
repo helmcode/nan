@@ -10,12 +10,13 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check --quiet 2>&1 || true && astro build && cp public/_routes.json dist/client/",
+    "build": "astro build && node scripts/copy-routes.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "generate-types": "wrangler types",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check": "astro check"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.1.3",
