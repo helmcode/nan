@@ -211,6 +211,7 @@
     },
     "nav": {
       "models": "Models",
+      "pricing": "Pricing",
       "community": "Community",
       "events": "Events",
       "projects": "Projects",

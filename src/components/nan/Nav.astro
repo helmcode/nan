@@ -34,6 +34,9 @@ const pathname = Astro.url.pathname;
 
     <nav class="nav__links" id="nav-links" data-nav-links aria-label={a11y.navPrimary}>
       <a href={`${home}#models`}>{tt.models}</a>
+      {/* Precios no tiene página: es una sección de la home, así que el ancla va
+          contra la home del idioma en curso y no contra la página actual. */}
+      <a href={`${home}#pricing`}>{tt.pricing}</a>
       <a href={p('/community')}>{tt.community}</a>
       <a href={p('/events')}>{tt.events}</a>
       <a href={p('/projects')}>{tt.projects}</a>
@@ -177,6 +180,18 @@ const pathname = Astro.url.pathname;
   .nav.is-open .nav__burger { background: transparent; }
   .nav.is-open .nav__burger::before { transform: translateY(6px) rotate(45deg); }
   .nav.is-open .nav__burger::after { transform: translateY(-6px) rotate(-45deg); }
+
+  /* Con seis enlaces la barra horizontal ya no cabe en la franja estrecha de
+     escritorio: en español desbordaba 87px a 861 y 50px a 900 (el inglés, 53 y
+     16). Se aprieta el espaciado y el cuerpo solo en esa franja; el min-height
+     de 28px mantiene el área táctil por encima del mínimo de 24. Query acotada
+     a propósito, para no filtrar nada al panel de móvil. */
+  @media (min-width: 861px) and (max-width: 1100px) {
+    .nav__links { gap: 18px; }
+    .nav__links > a:not(.btn) { font-size: 13px; }
+    .nav__lang { font-size: 12px; }
+    .nav__lang-opt { padding: 0 5px; }
+  }
 
   @media (max-width: 860px) {
     .nav__toggle { display: inline-flex; }
