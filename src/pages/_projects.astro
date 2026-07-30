@@ -1,0 +1,260 @@
+---
+import NanPage from '../layouts/NanPage.astro';
+import Floppy from '../components/nan/Floppy.astro';
+import { getLang, useT } from '../lib/i18n';
+import { fetchProjects } from '../lib/projects';
+import { env } from 'cloudflare:workers';
+
+const lang = getLang(Astro.url);
+const tt = useT(lang).projects;
+const a11y = useT(lang).a11y;
+
+// Datos en vivo del backend. El fetch, los filtros de esquema y el orden viven
+// en lib/projects, que comparten esta página y el carrusel de la home.
+const proyectos = await fetchProjects(env.CLOUD_API_URL);
+
+const tags = ['all', ...Array.from(new Set(proyectos.flatMap((p) => p.tags)))];
+const top = proyectos.slice(0, 6);
+const rest = proyectos.slice(6);
+---
+
+<NanPage title={tt.metaTitle} description={tt.metaDesc}>
+  <section class="projects">
+    <div class="container">
+      <p class="eyebrow">{tt.eyebrow}</p>
+      <h1 class="projects__title caret-type">{tt.title}</h1>
+      <p class="projects__sub">
+        {tt.subPre}{' '}
+        <a href="https://cloud.nan.builders/" rel="noopener">cloud.nan.builders</a>.
+      </p>
+
+      <div class="filters" data-filters>
+        {tags.map((t) => (
+          <button class="filter" type="button" data-filter={t} aria-pressed={t === 'all' ? 'true' : 'false'}>{t === 'all' ? tt.filterAll : t}</button>
+        ))}
+      </div>
+
+      <p class="pgroup"><span class="pgroup__n">★</span> {tt.groupTop}</p>
+      <div class="pgrid" data-pgrid>
+        {top.map((p, i) => (
+          <div class="pcell" data-tags={p.tags.join(' ')} data-name={p.nombre} data-by={p.autor}
+            data-desc={p.descripcion} data-tagstr={p.tags.join(' · ')} data-stars={p.stars}
+            data-app={p.app} data-repo={p.repo} data-cover={p.cover ? p.thumbnail : ''}>
+            <Floppy project={p} index={i} variant="grid" />
+            <div class="pmeta">
+              <div class="pmeta__tags">{p.tags.map((t) => <span class="ptag">{t}</span>)}</div>
+              <span class="pmeta__star">★ {p.stars}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p class="pgroup">{tt.groupAll}</p>
+      <div class="pgrid" data-pgrid>
+        {rest.map((p, i) => (
+          <div class="pcell" data-tags={p.tags.join(' ')} data-name={p.nombre} data-by={p.autor}
+            data-desc={p.descripcion} data-tagstr={p.tags.join(' · ')} data-stars={p.stars}
+            data-app={p.app} data-repo={p.repo} data-cover={p.cover ? p.thumbnail : ''}>
+            <Floppy project={p} index={i + 6} variant="grid" />
+            <div class="pmeta">
+              <div class="pmeta__tags">{p.tags.map((t) => <span class="ptag">{t}</span>)}</div>
+              <span class="pmeta__star">★ {p.stars}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <div class="pmodal" data-modal hidden>
+    <div class="pmodal__overlay" data-close></div>
+    <div class="pmodal__panel" role="dialog" aria-modal="true" aria-labelledby="pmodal-name" tabindex="-1">
+      <button class="pmodal__close" data-close aria-label={a11y.close}>×</button>
+      <div class="pmodal__cover" data-m-cover></div>
+      <p class="pmodal__by mono" data-m-by></p>
+      <h3 class="pmodal__name" id="pmodal-name" data-m-name></h3>
+      <div class="pmodal__tags" data-m-tags></div>
+      <p class="pmodal__desc" data-m-desc></p>
+      <div class="pmodal__actions">
+        <a class="btn btn-primary" data-m-app target="_blank" rel="noopener">{tt.openApp}</a>
+        <a class="btn btn-ghost" data-m-repo target="_blank" rel="noopener">{tt.viewRepo}</a>
+      </div>
+    </div>
+  </div>
+</NanPage>
+
+<style>
+  .projects { padding-block: clamp(56px, 8vh, 100px) clamp(80px, 12vh, 160px); }
+  .projects__title {
+    font-family: var(--font-serif); font-weight: 400; color: var(--color-text);
+    font-size: clamp(40px, 5vw, 76px); line-height: 1.0; letter-spacing: -0.01em;
+  }
+  .projects__sub {
+    margin-top: var(--space-5); max-width: 54ch; color: var(--color-text);
+    font-size: clamp(16px, 1.15vw, 18px); line-height: 1.7;
+  }
+  .projects__sub a { color: var(--color-link); border-bottom: 1px solid var(--color-link-line); }
+  .projects__sub a:hover { color: var(--color-violet-2); }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-8); }
+  .filter {
+    font-family: var(--font-mono); font-size: 13px;
+    min-height: 38px; padding: 8px 16px;
+    border: 1px solid var(--color-line); background: transparent; color: var(--color-muted);
+    cursor: pointer; transition: border-color var(--dur-micro) var(--ease), color var(--dur-micro) var(--ease), background var(--dur-micro) var(--ease);
+  }
+  .filter:hover { border-color: var(--color-violet); color: var(--color-text); }
+  .filter[aria-pressed='true'] { background: var(--color-violet); border-color: var(--color-violet); color: #fff; }
+
+  .pgroup {
+    display: flex; align-items: center; gap: var(--space-3);
+    border-top: 1px solid var(--color-line); padding-top: var(--space-4);
+    margin-top: var(--space-16); margin-bottom: 0;
+    font-family: var(--font-mono); font-size: 15px; color: var(--color-muted);
+  }
+  .pgroup__n { color: var(--color-violet-2); }
+
+  .pgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+    gap: 56px clamp(28px, 4vw, 52px);
+    margin-top: var(--space-12);
+    padding-top: 22px;
+  }
+  .pcell { position: relative; cursor: pointer; }
+
+  .pmeta { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-3); }
+  .pmeta__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ptag {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em;
+    color: var(--color-muted); border: 1px solid var(--color-line); padding: 3px 8px;
+  }
+  .pmeta__star { font-family: var(--font-mono); font-size: 13px; color: var(--color-violet-2); flex: 0 0 auto; }
+
+  @media (max-width: 520px) { .pgrid { grid-template-columns: 1fr; } }
+
+  /* ---------- modal ---------- */
+  .pmodal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: var(--space-6); }
+  .pmodal[hidden] { display: none; }
+  .pmodal__overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
+  .pmodal__panel {
+    position: relative; z-index: 1; width: min(560px, 100%); max-height: 88vh; overflow-y: auto;
+    background: var(--color-surface); border: 1px solid var(--color-line); padding: var(--space-8);
+  }
+  .pmodal__close {
+    position: absolute; top: 10px; right: 12px; font-family: var(--font-mono); font-size: 22px;
+    color: var(--color-muted); line-height: 1;
+  }
+  .pmodal__close:hover { color: var(--color-violet-2); }
+  .pmodal__cover { width: 100%; aspect-ratio: 16 / 9; background: var(--color-bg) center/cover no-repeat; margin-bottom: var(--space-6); border: 1px solid var(--color-line); }
+  .pmodal__by { font-size: 13px; color: var(--color-violet-2); }
+  .pmodal__name { font-family: var(--font-serif); font-weight: 400; font-size: clamp(26px, 3vw, 38px); line-height: 1.05; margin-top: var(--space-2); }
+  .pmodal__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--space-4); }
+  .pmodal__tags span { font-family: var(--font-mono); font-size: 11px; color: var(--color-muted); border: 1px solid var(--color-line); padding: 3px 8px; }
+  .pmodal__desc { margin-top: var(--space-5); color: var(--color-text); font-size: 16px; line-height: 1.7; }
+  .pmodal__actions { display: flex; gap: var(--space-3); margin-top: var(--space-8); flex-wrap: wrap; }
+</style>
+
+<script>
+  import { initScramble } from '../scripts/scramble';
+  initScramble();
+
+  const cells = Array.from(document.querySelectorAll<HTMLElement>('.pcell'));
+
+  document.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      const f = btn.dataset.filter ?? 'all';
+      cells.forEach((c) => {
+        const t = (c.dataset.tags ?? '').split(' ');
+        c.style.display = f === 'all' || t.includes(f) ? '' : 'none';
+      });
+    });
+  });
+
+  const modal = document.querySelector<HTMLElement>('[data-modal]');
+  const panel = modal?.querySelector<HTMLElement>('.pmodal__panel');
+  const set = (sel: string, v: string) => { const el = modal!.querySelector<HTMLElement>(sel); if (el) el.textContent = v; };
+
+  // quién tenía el foco antes de abrir, para devolvérselo al cerrar
+  let lastFocused: HTMLElement | null = null;
+  const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const focusables = () =>
+    Array.from(panel?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []).filter(
+      (el) => el.offsetParent !== null || el === document.activeElement
+    );
+
+  const open = (c: HTMLElement) => {
+    if (!modal) return;
+    lastFocused = document.activeElement as HTMLElement | null;
+    set('[data-m-by]', '@' + (c.dataset.by ?? '') + '  ·  ★ ' + (c.dataset.stars ?? '0'));
+    set('[data-m-name]', c.dataset.name ?? '');
+    set('[data-m-desc]', c.dataset.desc ?? '');
+    const cover = modal.querySelector<HTMLElement>('[data-m-cover]');
+    if (cover) {
+      // encodeURI: la portada es texto que aporta el miembro y aquí entra en una
+      // propiedad CSS. Sin escapar, un paréntesis o una comilla rompen el url().
+      if (c.dataset.cover) { cover.style.backgroundImage = `url("${encodeURI(c.dataset.cover)}")`; cover.style.display = ''; }
+      else { cover.style.display = 'none'; }
+    }
+    const tagsEl = modal.querySelector<HTMLElement>('[data-m-tags]');
+    if (tagsEl) {
+      // Los tags los escribe el miembro al publicar. Astro escapa `data-tagstr`
+      // al renderizar, pero al leerlo por `dataset` se recupera el texto
+      // original, así que con innerHTML volvería a interpretarse como marcado
+      // (y la CSP permite 'unsafe-inline', o sea que un handler ejecutaría).
+      // createElement + textContent los trata como texto, que es lo que son.
+      // La galería anterior lo tenía cubierto por ser Preact; el port a vanilla
+      // perdió esa garantía.
+      tagsEl.replaceChildren(
+        ...(c.dataset.tagstr ?? '')
+          .split(' · ')
+          .filter(Boolean)
+          .map((t) => {
+            const span = document.createElement('span');
+            span.textContent = t;
+            return span;
+          }),
+      );
+    }
+    const app = modal.querySelector<HTMLAnchorElement>('[data-m-app]');
+    const repo = modal.querySelector<HTMLAnchorElement>('[data-m-repo]');
+    if (app) { if (c.dataset.app) { app.href = c.dataset.app; app.style.display = ''; } else { app.style.display = 'none'; } }
+    if (repo) { if (c.dataset.repo) { repo.href = c.dataset.repo; repo.style.display = ''; } else { repo.style.display = 'none'; } }
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    // el foco entra en el diálogo; si no, el teclado se queda navegando el fondo
+    panel?.focus();
+  };
+
+  const close = () => {
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
+    lastFocused?.focus();
+    lastFocused = null;
+  };
+
+  cells.forEach((c) => c.addEventListener('click', (e) => { e.preventDefault(); open(c); }));
+  modal?.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', close));
+
+  document.addEventListener('keydown', (e) => {
+    if (!modal || modal.hidden) return;
+    if (e.key === 'Escape') { close(); return; }
+    // trampa de foco: el tabulador no debe escaparse al fondo
+    if (e.key !== 'Tab') return;
+    const items = focusables();
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || active === panel)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+</script>

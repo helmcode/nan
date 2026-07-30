@@ -18,7 +18,7 @@ import { dirname, resolve } from 'node:path';
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
-const source = readFileSync(resolve(here, '../../pages/projects.astro'), 'utf-8');
+const source = readFileSync(resolve(here, '../../pages/_projects.astro'), 'utf-8');
 
 /** Solo el bloque del script del cliente, no el marcado del componente. */
 const clientScript = source.slice(source.indexOf('<script>'));

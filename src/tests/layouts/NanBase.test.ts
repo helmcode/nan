@@ -25,7 +25,7 @@ const read = (p: string) => readFileSync(resolve(here, p), 'utf-8');
 
 const nanBase = read('../../layouts/NanBase.astro');
 const nanPage = read('../../layouts/NanPage.astro');
-const index = read('../../pages/index.astro');
+const index = read('../../pages/_home.astro');
 
 describe('NanBase — fondo de partículas', () => {
   it('monta el canvas del fondo dentro del <body>', () => {
