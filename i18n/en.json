@@ -5,7 +5,7 @@
     "title": "Join the community while you wait for an inference seat.",
     "subtitle": "Discord access, conversations with builders, and a reserved spot in line for GPU access when capacity frees up.",
     "priceLabel": "$14.99 / month",
-    "priceTaxNote": "Taxes included",
+    "priceTaxNote": "Taxes included · billed in euros (€14.99) in the EU",
     "includesLabel": "What's included",
     "notIncludedLabel": "Not included",
     "notIncluded": {
@@ -311,7 +311,7 @@
         "Events, workshops and hackathons",
         "A reserved spot in line for inference"
       ],
-      "communityCond": "No commitment. Cancel anytime.",
+      "communityCond": "No commitment. Cancel anytime. Billed in euros (€14.99) in the EU.",
       "communityCta": "Join the community"
     },
     "who": {

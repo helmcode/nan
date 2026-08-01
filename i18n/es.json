@@ -5,7 +5,7 @@
     "title": "Únete a la comunidad mientras esperas tu plaza de inferencia.",
     "subtitle": "Acceso al Discord, charlas con builders y plaza reservada en la cola para acceso a las GPUs cuando se libere capacidad.",
     "priceLabel": "$14.99 / mes",
-    "priceTaxNote": "Impuestos incluidos",
+    "priceTaxNote": "Impuestos incluidos · en EU se factura en euros (14,99€)",
     "includesLabel": "Qué incluye",
     "notIncludedLabel": "Qué NO incluye",
     "notIncluded": {
@@ -311,7 +311,7 @@
         "Eventos, workshops y hackathons",
         "Un sitio reservado en la cola de inferencia"
       ],
-      "communityCond": "Sin compromiso. Cancela cuando quieras.",
+      "communityCond": "Sin compromiso. Cancela cuando quieras. En EU se factura en euros (14,99€).",
       "communityCta": "Únete a la comunidad"
     },
     "who": {

@@ -151,7 +151,10 @@ Accepts waitlist signups.
 
 #### `POST /api/community-signup`
 
-Accepts community-tier signups ($14.99/mes) and returns a Stripe Checkout URL.
+Accepts community-tier signups ($14.99/mes, billed as 14,99€ for `region=EU`)
+and returns a Stripe Checkout URL. The currency split exists so an EU member's
+Stripe customer isn't locked to USD, which would block a later upgrade to the
+EUR-priced inference tier.
 
 - **Input:** `{ email, region, _hp }` (JSON)
 - **Validation:** email format, blocked domains/TLDs, region enum (`EU` | `LATAM` | `USA`)
