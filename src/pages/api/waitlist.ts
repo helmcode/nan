@@ -48,6 +48,10 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const { email, region, honeypot } = validation.input;
+    // GLM 5.2 premium interest: signups from the premium pricing card
+    // (?premium=1) carry the flag through to the member row so the admin
+    // panel can distinguish and invite them for the premium tier.
+    const wantsPremium = raw && typeof raw === 'object' && (raw as Record<string, unknown>).wantsPremium === true;
 
     // Honeypot trap: reply 200 OK without persisting so bots get no signal.
     if (honeypot) {
@@ -65,7 +69,7 @@ export const POST: APIRoute = async ({ request }) => {
       return errorResponse('rate_limited', 429);
     }
 
-    const result = await registerViaBackend(env.CLOUD_API_URL, env.CLOUD_API_WAITLIST_KEY, { email, region });
+    const result = await registerViaBackend(env.CLOUD_API_URL, env.CLOUD_API_WAITLIST_KEY, { email, region, wantsPremium });
 
     // Send confirmation email (best-effort — don't fail the signup if email fails).
     // Must await: Workers terminate after the response, killing in-flight fetches.

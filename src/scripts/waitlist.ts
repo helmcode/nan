@@ -97,10 +97,14 @@ function wire(form: HTMLFormElement): void {
 
     let res: Response;
     try {
+      // Premium pricing card lands here with ?premium=1: carry the interest
+      // flag so the member row is marked glm52_interested (the admin panel
+      // distinguishes and invites them for the GLM 5.2 tier).
+      const wantsPremium = new URLSearchParams(window.location.search).get('premium') === '1';
       res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: value, region, _hp: hp }),
+        body: JSON.stringify({ email: value, region, _hp: hp, wantsPremium }),
       });
     } catch {
       fail(t.errNetwork);

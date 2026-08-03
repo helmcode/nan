@@ -319,8 +319,8 @@
         "Everything in nan_member · eu",
         "Access granted immediately after billing"
       ],
-      "premiumCond": "Requires nan_member · eu (70€). EUR only. Billed immediately; allowance prorated by days remaining.",
-      "premiumCta": "Upgrade in the portal",
+      "premiumCond": "GLM 5.2 premium (200€/mo) is offered to members as seats open. Join the waitlist and we will flag you for this tier.",
+      "premiumCta": "Join the waitlist",
       "premiumBadge": "glm 5.2 · premium"
     },
     "who": {

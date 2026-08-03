@@ -166,7 +166,7 @@ export function checkRateLimit(ip: string): boolean {
 export async function registerViaBackend(
   apiURL: string,
   apiKey: string,
-  input: { email: string; region: WaitlistRegion },
+  input: { email: string; region: WaitlistRegion; wantsPremium?: boolean },
 ): Promise<JoinResult> {
   const response = await fetch(`${apiURL}/api/waitlist/register`, {
     method: 'POST',
@@ -175,7 +175,7 @@ export async function registerViaBackend(
       'X-API-Key': apiKey,
       'Origin': 'https://nan.builders',
     },
-    body: JSON.stringify({ email: input.email, region: input.region }),
+    body: JSON.stringify({ email: input.email, region: input.region, wantsPremium: input.wantsPremium ?? false }),
   });
 
   if (response.status === 409) {
