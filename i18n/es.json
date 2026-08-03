@@ -288,8 +288,8 @@
     "pricing": {
       "label": "membresía",
       "title1": "Una comunidad.",
-      "title2": "Dos tiers.",
-      "sub": "La comunidad es el producto. La inferencia es el superpoder que le añades. Sin upsells, sin trial.",
+      "title2": "Dos tiers. Un camino premium.",
+      "sub": "La comunidad es el producto. La inferencia es el superpoder que le añades; GLM 5.2 es la opción frontier para miembros.",
       "perVat": "/mes · IVA incluido",
       "perTaxes": "/mes · impuestos incluidos",
       "inferenceIncluded": "inferencia incluida",

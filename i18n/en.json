@@ -288,8 +288,8 @@
     "pricing": {
       "label": "membership",
       "title1": "One community.",
-      "title2": "Two tiers.",
-      "sub": "The community is the product. Inference is the superpower you add. No upsells, no trial.",
+      "title2": "Two tiers. One premium path.",
+      "sub": "The community is the product. Inference is the superpower you add; GLM 5.2 is the frontier option for members.",
       "perVat": "/mo · VAT included",
       "perTaxes": "/mo · taxes included",
       "inferenceIncluded": "inference included",
