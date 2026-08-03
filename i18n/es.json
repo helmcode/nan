@@ -312,7 +312,16 @@
         "Un sitio reservado en la cola de inferencia"
       ],
       "communityCond": "Sin compromiso. Cancela cuando quieras. En EU se factura en euros (14,99€).",
-      "communityCta": "Únete a la comunidad"
+      "communityCta": "Únete a la comunidad",
+      "premiumIncludes": [
+        "GLM 5.2 — modelo abierto frontier con razonamiento",
+        "Asignación mensual de 1.000M de tokens",
+        "Todo lo incluido en nan_member · eu",
+        "Acceso activado justo después del cobro"
+      ],
+      "premiumCond": "Requiere nan_member · eu (70€). Solo EUR. Cobro inmediato; asignación prorrateada por días restantes.",
+      "premiumCta": "Mejora en el portal",
+      "premiumBadge": "glm 5.2 · premium"
     },
     "who": {
       "label": "quién está detrás",

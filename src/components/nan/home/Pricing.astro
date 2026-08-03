@@ -43,6 +43,22 @@ const tiers = [
     href: 'https://cloud.nan.builders/',
     primary: false,
   },
+  // GLM 5.2 premium — a price swap on the existing nan_member · eu
+  // subscription (200€/mo, EUR only). Only reachable by existing
+  // members: the portal (Membership page) gates on tier + region and
+  // bills immediately (always_invoice). Non-members start at #waitlist.
+  {
+    name: 'nan_member · glm 5.2 premium',
+    amount: '200€',
+    per: tt.perVat,
+    badge: tt.premiumBadge,
+    ref: false,
+    includes: tt.premiumIncludes,
+    cond: tt.premiumCond,
+    cta: tt.premiumCta,
+    href: 'https://cloud.nan.builders/membership',
+    primary: false,
+  },
 ];
 ---
 
