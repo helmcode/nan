@@ -7,6 +7,20 @@ const tt = useT(lang).pricing;
 const home = lang === 'es' ? '/es' : '/';
 
 const tiers = [
+  // GLM 5.2 premium — price swap on the existing nan_member · eu
+  // subscription (200€/mo, EUR only). Shown first as the flagship tier.
+  {
+    name: 'nan_member · glm 5.2 premium',
+    amount: '200€',
+    per: tt.perVat,
+    badge: tt.premiumBadge,
+    ref: true,
+    includes: tt.premiumIncludes,
+    cond: tt.premiumCond,
+    cta: tt.premiumCta,
+    href: `${home}?premium=1#waitlist`,
+    primary: true,
+  },
   {
     name: 'nan_member · eu',
     amount: '70€',
@@ -41,22 +55,6 @@ const tiers = [
     cond: tt.communityCond,
     cta: tt.communityCta,
     href: 'https://cloud.nan.builders/',
-    primary: false,
-  },
-  // GLM 5.2 premium — a price swap on the existing nan_member · eu
-  // subscription (200€/mo, EUR only). Only reachable by existing
-  // members: the portal (Membership page) gates on tier + region and
-  // bills immediately (always_invoice). Non-members start at #waitlist.
-  {
-    name: 'nan_member · glm 5.2 premium',
-    amount: '200€',
-    per: tt.perVat,
-    badge: tt.premiumBadge,
-    ref: true,
-    includes: tt.premiumIncludes,
-    cond: tt.premiumCond,
-    cta: tt.premiumCta,
-    href: `${home}?premium=1#waitlist`,
     primary: false,
   },
 ];
