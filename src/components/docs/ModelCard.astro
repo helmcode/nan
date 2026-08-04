@@ -13,30 +13,15 @@ interface Props {
   description: string;
   specs: Spec[];
   items: string[];
-  soon?: boolean;
 }
 
-const { id, name, tag, leftLabel, rightLabel, description, specs, items, soon } = Astro.props;
+const { id, name, tag, leftLabel, rightLabel, description, specs, items } = Astro.props;
 const heading = tag ? `${name} - ${tag}` : name;
 ---
 
-<h2 id={id} data-toc-text={heading}>
-  {heading}
-  {
-    soon && (
-      <span class="align-middle ml-3 font-mono text-[10px] font-normal uppercase tracking-wider text-amber-300/90 border border-amber-400/30 bg-amber-400/5 rounded-full px-2 py-0.5">
-        coming soon
-      </span>
-    )
-  }
-</h2>
+<h2 id={id} data-toc-text={heading}>{heading}</h2>
 
-<div
-  class:list={[
-    'grid gap-4 sm:grid-cols-2 mb-14 not-prose',
-    soon && 'opacity-70',
-  ]}
->
+<div class="grid gap-4 sm:grid-cols-2 mb-14 not-prose">
   <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6">
     <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
       {leftLabel}

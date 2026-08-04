@@ -49,7 +49,7 @@ curl https://api.nan.builders/v1/models \
 
 <h2 id="models">GET /v1/models</h2>
 
-Returns the list of available models for your key. Published models: `deepseek-v4-flash`, `mimo-v2.5`, `qwen3.6`, `gemma4`, `qwen3-embedding`, `rerank`, `kokoro`, `whisper`, `flux-2-klein` (includes the `flux-2-klein` image model).
+Returns the list of available models for your key. Published models: `deepseek-v4-flash`, `mimo-v2.5`, `qwen3.6`, `gemma4`, `qwen3-embedding`, `rerank`, `kokoro`, `whisper`, `flux-2-klein` (includes the `flux-2-klein` image model). `glm5.2` is served too, and is callable only with a key on the GLM 5.2 premium tier.
 
 ### Request
 
@@ -86,7 +86,7 @@ curl https://api.nan.builders/v1/models \
 
 <h2 id="chat-completions">POST /v1/chat/completions</h2>
 
-The main chat endpoint. OpenAI Chat Completions compatible. Compatible models: `deepseek-v4-flash`, `mimo-v2.5`, `qwen3.6`, and `gemma4`. `glm5.2` is coming soon and is not callable yet.
+The main chat endpoint. OpenAI Chat Completions compatible. Compatible models: `deepseek-v4-flash`, `mimo-v2.5`, `qwen3.6`, `gemma4`, and `glm5.2`. `glm5.2` needs a key on the GLM 5.2 premium tier; the other models are available to every inference member.
 
 <LimitationsCard
   title="capabilities by model"
@@ -107,6 +107,10 @@ The main chat endpoint. OpenAI Chat Completions compatible. Compatible models: `
       title: 'gemma4',
       body: 'Chat, streaming, vision (image input), reasoning (opt-in).',
     },
+    {
+      title: 'glm5.2 · premium tier',
+      body: 'Chat, streaming, tool calling, reasoning trace, 500K token context. Coding and long-horizon agentic tasks. 3,000M token quota per member, reset when your billing period starts, and 400M tokens per rolling 4h window. Requires a key on the GLM 5.2 premium tier.',
+    },
   ]}
 />
 
@@ -114,7 +118,7 @@ The main chat endpoint. OpenAI Chat Completions compatible. Compatible models: `
 
 | Field | Type | Description |
 |---|---|---|
-| `model` | string · required | `deepseek-v4-flash`, `mimo-v2.5`, `qwen3.6` or `gemma4`. |
+| `model` | string · required | `deepseek-v4-flash`, `mimo-v2.5`, `qwen3.6`, `gemma4` or `glm5.2` (premium tier). |
 | `messages` | array · required | List of messages `{ role, content }`. `content` can be a string or an array of parts `[{type:"text",text}, {type:"image_url",image_url:{url}}]` for multimodal input. |
 | `max_tokens` | integer · optional | Maximum tokens to generate. |
 | `stream` | boolean · optional | Default `false`. If `true`, the response arrives as SSE. |
@@ -325,7 +329,7 @@ print(data["name"], data["age"])
 
 ### Reasoning
 
-All four LLMs generate reasoning and return it in `choices[0].message.reasoning_content`. The control mechanism varies by model:
+Every chat LLM generates reasoning and returns it in `choices[0].message.reasoning_content`. The control mechanism varies by model:
 
 | Model | Control |
 |---|---|
@@ -333,6 +337,7 @@ All four LLMs generate reasoning and return it in `choices[0].message.reasoning_
 | `gemma4` | `chat_template_kwargs.enable_thinking` · desactivado por defecto |
 | `deepseek-v4-flash` | `reasoning_effort`: `low` \| `medium` \| `high` · default `medium` |
 | `mimo-v2.5` | siempre activo · no configurable por API hoy |
+| `glm5.2` | razonamiento activo · sin parámetro publicado para controlarlo |
 
 #### enable_thinking (qwen3.6, gemma4)
 
@@ -1137,9 +1142,10 @@ Errors follow the standard OpenAI format: HTTP non-2xx status with a JSON body d
 |---|---|
 | 400 | Parámetro inválido — the body includes `param` with the field that failed (e.g. `prompt`, `n`, `size`, `stream`, `mask` o `image` en los endpoints de imágenes). El filtro de seguridad returns `content_policy_violation`. |
 | 401 | `Authorization` header invalid or missing (`invalid_api_key`). |
+| 402 | Token allowance for the billing period exhausted on a model that carries one (`monthly_cap_reached`), such as `glm5.2`. Not retryable: the counter goes back to zero when your billing period starts. |
 | 403 | Your tier does not have access to the endpoint (`tier_restricted`). Image generation requires inference membership. |
 | 404 | Model does not exist (campo `model`, `model_not_found`). |
-| 429 | Rate limit exceeded — `rpm_limit` o `max_parallel_requests` (`rate_limit_exceeded`), or monthly quota exhausted (`quota_exceeded` / `insufficient_quota`, como la de 100 requests de imágenes). |
+| 429 | Rate limit exceeded — `rpm_limit` o `max_parallel_requests` (`rate_limit_exceeded`), the rolling 4h token budget of `glm5.2` (the body says how much frees up and when), or monthly quota exhausted (`quota_exceeded` / `insufficient_quota`, como la de 100 requests de imágenes). |
 | 500 | Internal error (includes upstream model errors). |
 | 524 | Timeout (typical with large audios on [/v1/audio/transcriptions](#audio-transcriptions)). |
 

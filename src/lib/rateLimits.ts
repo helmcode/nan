@@ -20,10 +20,26 @@ export interface ModelRate {
   label: string;
 }
 
+/**
+ * Limits for a model that is not gated by a per-minute rate but by a sliding
+ * window plus an allowance per billing period. Those are the two numbers a
+ * member has to plan against, so they are published as first-class rows
+ * instead of a footnote.
+ */
+export interface WindowedModelLimits {
+  model: string;
+  contextTokens: number;
+  maxParallel: number;
+  windowHours: number;
+  windowTokens: number;
+  periodCapTokens: number;
+}
+
 export interface RateLimitsConfig {
   perKey: PerKeyRateLimits;
   tokensPerMinuteByModel: ModelRate[];
   requestsPerMinuteByModel: ModelRate[];
+  windowedModels: WindowedModelLimits[];
 }
 
 export interface RateLimitsEnv {
@@ -44,7 +60,61 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
     { model: 'gemma4', label: '1.5M tpm' },
   ],
   requestsPerMinuteByModel: [{ model: 'rerank', label: '1000 rpm' }],
+  // glm5.2 (premium tier) is absent from the per-minute tables on purpose: its
+  // gate is the 4h sliding window plus the allowance per billing period. These
+  // mirror the backend policy (cloud-api modelRateLimits + the token cap for
+  // glm5.2) and the usage hook's window budget, which is the same set of
+  // numbers the member portal publishes.
+  windowedModels: [
+    {
+      model: 'glm5.2',
+      contextTokens: 500_000,
+      maxParallel: 5,
+      windowHours: 4,
+      windowTokens: 400_000_000,
+      periodCapTokens: 3_000_000_000,
+    },
+  ],
 };
+
+/**
+ * Formats a token count the way every published surface writes it: 500K,
+ * 400M, 3,000M. Lives here so the docs page and /api/docs cannot drift from
+ * each other, which is the whole reason this module exists.
+ */
+export function formatTokens(tokens: number): string {
+  if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toLocaleString('en-US')}M`;
+  if (tokens >= 1_000) return `${(tokens / 1_000).toLocaleString('en-US')}K`;
+  return String(tokens);
+}
+
+/**
+ * The window wording, written once.
+ *
+ * <RateLimits /> emphasizes the headline clause and /api/docs serves plain
+ * text, so the sentence is split in two halves instead of being retyped on
+ * each surface: the page and the Discord bot were already caught disagreeing
+ * about rpm, and this is the number a premium member plans against.
+ */
+export function windowedModelHeadline(m: WindowedModelLimits): string {
+  return `${formatTokens(m.windowTokens)} tokens per rolling ${m.windowHours} hours`;
+}
+
+/** The rest of the sentence started by windowedModelHeadline(). */
+export function windowedModelBody(m: WindowedModelLimits): string {
+  return (
+    `is the limit a heavy coding-agent run reaches first, well before the allowance. ` +
+    `Once you hit it, ${m.model} requests are rejected until the window slides forward: ` +
+    `it is a rolling window, not a daily reset. The allowance counter goes back to zero ` +
+    `when your billing period starts, and if you upgrade part-way into a period that ` +
+    `first allowance is prorated to the share of the period you paid for.`
+  );
+}
+
+/** Headline plus body, for the surfaces that publish it as one paragraph. */
+export function windowedModelNote(m: WindowedModelLimits): string {
+  return `${windowedModelHeadline(m)} ${windowedModelBody(m)}`;
+}
 
 function parsePositiveInt(raw: string | undefined, fallback: number, varName: string): number {
   if (raw === undefined || raw.trim() === '') return fallback;

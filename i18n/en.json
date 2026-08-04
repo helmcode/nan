@@ -302,7 +302,7 @@
         "Events, workshops and hackathons",
         "Voice in the quarterly model vote"
       ],
-      "memberCond": "Month to month, no commitment. Limited spots: when it fills up, waitlist.",
+      "memberCond": "Month to month, no commitment. Billed in euros from any region. Limited spots: when it fills up, waitlist.",
       "memberCta": "Join the waitlist",
       "communityIncludes": [
         "Discord access",
@@ -314,10 +314,12 @@
       "communityCond": "No commitment. Cancel anytime. Billed in euros (€14.99) in the EU.",
       "communityCta": "Join the community",
       "premiumIncludes": [
-        "GLM 5.2 — frontier open model with reasoning",
-        "1,000M token monthly allowance",
-        "Everything in nan_member · eu",
-        "Access granted immediately after billing"
+        "GLM 5.2, frontier open model with reasoning",
+        "3,000M token allowance per billing period",
+        "400M tokens per rolling 4h window: the limit a coding agent reaches first",
+        "500K context · 5 concurrent requests",
+        "Everything in nan_member",
+        "Access switches on a few minutes after payment"
       ],
       "premiumCond": "GLM 5.2 premium (200€/mo) is offered to members as seats open. Join the waitlist and we will flag you for this tier.",
       "premiumCta": "Join the waitlist",
@@ -355,7 +357,7 @@
         },
         {
           "q": "Is it really unlimited tokens?",
-          "a": "On the cluster models, no counter. The frontier ones come with a monthly allowance per member so the plan holds up: 500M tokens on DeepSeek V4-Flash and 1.0B on MiMo v2.5. Those limits are published here, not in fine print. The bill is the fixed subscription price and it doesn’t move."
+          "a": "On the cluster models, no counter. The frontier ones come with a monthly allowance per member so the plan holds up: 500M tokens on DeepSeek V4-Flash, 1.0B on MiMo v2.5, and 3,000M on GLM 5.2 for members on the premium tier. Those limits are published here, not in fine print. The bill is the fixed subscription price and it doesn’t move."
         },
         {
           "q": "How are the models chosen?",
@@ -379,7 +381,7 @@
         },
         {
           "q": "What payment methods do you accept?",
-          "a": "Credit or debit card. Prices include taxes (VAT in the EU, taxes in USA/Latam). No commitment: cancel anytime."
+          "a": "Credit or debit card. New memberships are billed in euros from any region, taxes included; subscriptions opened earlier in US dollars keep their original price. No commitment: cancel anytime."
         },
         {
           "q": "How do I get in?",
