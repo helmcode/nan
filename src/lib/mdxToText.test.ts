@@ -85,17 +85,36 @@ describe('mdxToText rate limits', () => {
       perKey: { requestsPerMinute: 120, maxParallel: 8 },
       tokensPerMinuteByModel: [{ model: 'foo', label: '2M tpm' }],
       requestsPerMinuteByModel: [{ model: 'bar', label: '500 rpm' }],
+      windowedModels: [
+        {
+          model: 'baz',
+          contextTokens: 128_000,
+          maxParallel: 2,
+          windowHours: 6,
+          windowTokens: 7_000_000,
+          periodCapTokens: 9_000_000,
+        },
+      ],
     });
     expect(out).toContain('- Requests / min: 120 rpm');
     expect(out).toContain('- Paralelo máximo: 8 concurrentes');
     expect(out).toContain('- foo: 2M tpm');
     expect(out).toContain('- bar: 500 rpm');
+    expect(out).toContain('**baz · premium tier limits**');
+    expect(out).toContain('- Rolling 6h window: 7M tokens');
+    expect(out).toContain('- Allowance / billing period: 9M tokens');
+    expect(out).toContain('- Context window: 128K tokens');
+    expect(out).toContain('- Concurrent requests: 2');
   });
 
   it('defaults to the same numbers <RateLimits /> renders', async () => {
     const out = await mdxToText(input);
     expect(out).toContain('- Requests / min: 60 rpm');
     expect(out).toContain('- Paralelo máximo: 5 concurrentes');
+    // glm5.2 is gated by the window, not by a per-minute rate, and the docs
+    // had no row for it at all while the model was already being served.
+    expect(out).toContain('- Rolling 4h window: 400M tokens');
+    expect(out).toContain('- Allowance / billing period: 3,000M tokens');
   });
 
   it('omits the per-model blocks when they are empty', async () => {
@@ -103,9 +122,11 @@ describe('mdxToText rate limits', () => {
       perKey: { requestsPerMinute: 60, maxParallel: 5 },
       tokensPerMinuteByModel: [],
       requestsPerMinuteByModel: [],
+      windowedModels: [],
     });
     expect(out).not.toContain('tokens / min por modelo');
     expect(out).not.toContain('requests / min por modelo');
+    expect(out).not.toContain('premium tier limits');
   });
 });
 

@@ -4,8 +4,8 @@
     "pageTitle": "Comunidad NaN",
     "title": "Únete a la comunidad mientras esperas tu plaza de inferencia.",
     "subtitle": "Acceso al Discord, charlas con builders y plaza reservada en la cola para acceso a las GPUs cuando se libere capacidad.",
-    "priceLabel": "$14.99 / mes",
-    "priceTaxNote": "Impuestos incluidos · en EU se factura en euros (14,99€)",
+    "priceLabel": "14,99€ / mes",
+    "priceTaxNote": "Impuestos incluidos · se factura en euros desde cualquier región",
     "includesLabel": "Qué incluye",
     "notIncludedLabel": "Qué NO incluye",
     "notIncluded": {
@@ -302,7 +302,7 @@
         "Eventos, workshops y hackathons",
         "Voto en la votación trimestral de modelos"
       ],
-      "memberCond": "Mes a mes, sin compromiso. Plazas limitadas: cuando se llena, waitlist.",
+      "memberCond": "Mes a mes, sin compromiso. Se factura en euros desde cualquier región. Plazas limitadas: cuando se llena, waitlist.",
       "memberCta": "Únete a la waitlist",
       "communityIncludes": [
         "Acceso a Discord",
@@ -311,13 +311,15 @@
         "Eventos, workshops y hackathons",
         "Un sitio reservado en la cola de inferencia"
       ],
-      "communityCond": "Sin compromiso. Cancela cuando quieras. En EU se factura en euros (14,99€).",
+      "communityCond": "Sin compromiso. Cancela cuando quieras. Se factura en euros desde cualquier región.",
       "communityCta": "Únete a la comunidad",
       "premiumIncludes": [
-        "GLM 5.2 — modelo abierto frontier con razonamiento",
-        "Asignación mensual de 1.000M de tokens",
-        "Todo lo incluido en nan_member · eu",
-        "Acceso activado justo después del cobro"
+        "GLM 5.2, modelo abierto frontier con razonamiento",
+        "Asignación de 3.000M de tokens por periodo de facturación",
+        "400M de tokens por ventana deslizante de 4h: el límite que un agente de código alcanza primero",
+        "Contexto de 500K · 5 peticiones en paralelo",
+        "Todo lo incluido en nan_member",
+        "El acceso se activa pocos minutos después del pago"
       ],
       "premiumCond": "GLM 5.2 premium (200€/mes) se ofrece a miembros según haya plazas. Únete a la waitlist y te marcaremos para este tier.",
       "premiumCta": "Únete a la waitlist",
@@ -355,7 +357,7 @@
         },
         {
           "q": "¿De verdad son tokens ilimitados?",
-          "a": "En los modelos del cluster, sin contador. Los frontier llevan cuota mensual por miembro para que el plan se sostenga: 500M tokens en DeepSeek V4-Flash y 1.0B en MiMo v2.5. Esos límites están publicados aquí, no en letra pequeña. La factura es el precio fijo de la suscripción y no se mueve."
+          "a": "En los modelos del cluster, sin contador. Los frontier llevan cuota de tokens por miembro para que el plan se sostenga: 500M tokens al mes en DeepSeek V4-Flash, 1.0B al mes en MiMo v2.5 y 3.000M por periodo de facturación en GLM 5.2 para los miembros del tier premium. Esos límites están publicados aquí, no en letra pequeña. La factura es el precio fijo de la suscripción y no se mueve."
         },
         {
           "q": "¿Cómo se eligen los modelos?",
@@ -379,7 +381,7 @@
         },
         {
           "q": "¿Qué métodos de pago aceptáis?",
-          "a": "Tarjeta de crédito o débito. Los precios incluyen impuestos (IVA en la UE, impuestos en USA/Latam). Sin compromiso: cancela cuando quieras."
+          "a": "Tarjeta de crédito o débito. Las altas nuevas se facturan en euros desde cualquier región, impuestos incluidos; las suscripciones abiertas antes en dólares mantienen su precio original. Sin compromiso: cancela cuando quieras."
         },
         {
           "q": "¿Cómo entro?",

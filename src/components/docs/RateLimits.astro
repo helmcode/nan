@@ -1,8 +1,14 @@
 ---
 import { env } from 'cloudflare:workers';
-import { getRateLimitsConfig } from '../../lib/rateLimits';
+import {
+  formatTokens,
+  getRateLimitsConfig,
+  windowedModelBody,
+  windowedModelHeadline,
+} from '../../lib/rateLimits';
 
-const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel } = getRateLimitsConfig(env);
+const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel, windowedModels } =
+  getRateLimitsConfig(env);
 ---
 
 <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
@@ -20,6 +26,44 @@ const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel } = getRateLimi
     </div>
   </dl>
 </div>
+
+{
+  /* The premium models are gated by a sliding window, not by a per-minute
+     rate. The window is the limit an intensive coding-agent session reaches
+     first, so it gets its own highlighted block above the per-minute tables
+     instead of a line of small print underneath them. */
+}
+{
+  windowedModels.map((m) => (
+    <div class="rounded-xl border border-violet-500/30 bg-violet-500/[0.06] p-6 mb-6">
+      <p class="font-mono text-[10px] text-violet-300 uppercase tracking-widest mb-4">
+        {m.model} · premium tier limits
+      </p>
+      <dl class="grid gap-3 sm:grid-cols-2">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Rolling {m.windowHours}h window</dt>
+          <dd class="text-neutral-200 text-right">{formatTokens(m.windowTokens)} tokens</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Allowance / billing period</dt>
+          <dd class="text-neutral-200 text-right">{formatTokens(m.periodCapTokens)} tokens</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Context window</dt>
+          <dd class="text-neutral-200 text-right">{formatTokens(m.contextTokens)} tokens</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">Concurrent requests</dt>
+          <dd class="text-neutral-200 text-right">{m.maxParallel}</dd>
+        </div>
+      </dl>
+      <p class="mt-4 font-mono text-[11px] leading-relaxed text-neutral-400">
+        <span class="text-violet-200">{windowedModelHeadline(m)}</span>{' '}
+        {windowedModelBody(m)}
+      </p>
+    </div>
+  ))
+}
 
 <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
   <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">

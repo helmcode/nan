@@ -3,7 +3,12 @@ import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
 import remarkStringify from 'remark-stringify';
-import { DEFAULT_RATE_LIMITS, type RateLimitsConfig } from './rateLimits';
+import {
+  DEFAULT_RATE_LIMITS,
+  formatTokens,
+  windowedModelNote,
+  type RateLimitsConfig,
+} from './rateLimits';
 
 const KNOWN_COMPONENTS = new Set([
   'ModelCard',
@@ -347,6 +352,19 @@ function rateLimitsToMd(config: RateLimitsConfig): string {
     `- Paralelo máximo: ${config.perKey.maxParallel} concurrentes`,
     '',
   ];
+  for (const m of config.windowedModels) {
+    lines.push(
+      `**${m.model} · premium tier limits**`,
+      '',
+      `- Rolling ${m.windowHours}h window: ${formatTokens(m.windowTokens)} tokens`,
+      `- Allowance / billing period: ${formatTokens(m.periodCapTokens)} tokens`,
+      `- Context window: ${formatTokens(m.contextTokens)} tokens`,
+      `- Concurrent requests: ${m.maxParallel}`,
+      '',
+      windowedModelNote(m),
+      '',
+    );
+  }
   if (config.tokensPerMinuteByModel.length) {
     lines.push('**tokens / min por modelo**', '');
     for (const m of config.tokensPerMinuteByModel) lines.push(`- ${m.model}: ${m.label}`);

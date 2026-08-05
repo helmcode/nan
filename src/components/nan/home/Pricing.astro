@@ -1,5 +1,15 @@
 ---
-// Datos verificados contra nan.builders: Member EU 70€ · Member USA/Latam $75 · Community $14.99.
+// Prices verified against nan.builders: Member 70€ · GLM 5.2 premium 200€ · Community 14,99€.
+//
+// There is no per-region tier and no per-region currency any more. Every new
+// signup is charged in EUR from any region, on BOTH funnels: cloud-api's
+// inferencePriceForNewCustomer and communityPriceForNewCustomer each always
+// return the EU price. So the `nan_member · usa / latam — $75` tier was removed
+// AND community is published in euros here, for the same reason: a prospect
+// from outside the EU read a $ amount and landed on a EUR Checkout, a different
+// price in a different currency, at the payment step. Legacy USD subscriptions
+// still exist and keep their price; that is explained in the payment-methods
+// FAQ entry, not here.
 import { getLang, useT } from '../../../lib/i18n';
 
 const lang = getLang(Astro.url);
@@ -7,7 +17,7 @@ const tt = useT(lang).pricing;
 const home = lang === 'es' ? '/es' : '/';
 
 const tiers = [
-  // GLM 5.2 premium — price swap on the existing nan_member · eu
+  // GLM 5.2 premium — price swap on the existing nan_member
   // subscription (200€/mo, EUR only). Shown first as the flagship tier.
   {
     name: 'nan_member · glm 5.2 premium',
@@ -22,7 +32,7 @@ const tiers = [
     primary: true,
   },
   {
-    name: 'nan_member · eu',
+    name: 'nan_member',
     amount: '70€',
     per: tt.perVat,
     badge: tt.inferenceIncluded,
@@ -34,20 +44,8 @@ const tiers = [
     primary: true,
   },
   {
-    name: 'nan_member · usa / latam',
-    amount: '$75',
-    per: tt.perTaxes,
-    badge: tt.inferenceIncluded,
-    ref: true,
-    includes: tt.memberIncludes,
-    cond: tt.memberCond,
-    cta: tt.memberCta,
-    href: `${home}#waitlist`,
-    primary: true,
-  },
-  {
     name: 'nan_community',
-    amount: '$14.99',
+    amount: '14,99€',
     per: tt.perTaxes,
     badge: null,
     ref: false,
