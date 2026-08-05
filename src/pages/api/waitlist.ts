@@ -51,7 +51,7 @@ export const POST: APIRoute = async ({ request }) => {
     // GLM 5.2 premium interest: signups from the premium pricing card
     // (?premium=1) carry the flag through to the member row so the admin
     // panel can distinguish and invite them for the premium tier.
-    const wantsPremium = raw && typeof raw === 'object' && (raw as Record<string, unknown>).wantsPremium === true;
+    const wantsPremium: boolean = !!(raw && typeof raw === 'object' && (raw as Record<string, unknown>).wantsPremium === true);
 
     // Honeypot trap: reply 200 OK without persisting so bots get no signal.
     if (honeypot) {
