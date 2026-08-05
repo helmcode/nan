@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { t, tArr, tObj } from '../../lib/i18n';
+import enData from '../../../i18n/en.json' with { type: 'json' };
+import esData from '../../../i18n/es.json' with { type: 'json' };
 
 /**
  * The pricing section is the surface a prospect reads BEFORE paying, so its
@@ -67,6 +69,54 @@ describe('Pricing — no per-region tier', () => {
         expect(t(`nan.pricing.${key}`, locale), `${locale}.${key}`).not.toMatch(/\$|USD/);
       }
     }
+  });
+});
+
+/** Every string of a dictionary, keyed by its dotted path. */
+function flatten(node: unknown, path: string[] = [], out = new Map<string, string>()) {
+  if (typeof node === 'string') out.set(path.join('.'), node);
+  else if (Array.isArray(node)) node.forEach((v, i) => flatten(v, [...path, String(i)], out));
+  else if (node && typeof node === 'object') {
+    for (const [k, v] of Object.entries(node)) flatten(v, [...path, k], out);
+  }
+  return out;
+}
+
+const dictionaries = { en: flatten(enData), es: flatten(esData) };
+
+/**
+ * The two fixes this file guards were both "a price card kept a currency the
+ * Checkout had stopped using", found one tier at a time by a reviewer reading
+ * the pages. So the sweep is on the whole dictionary, not on the keys that
+ * happened to be reported: any NEW surface that quotes a dollar amount fails
+ * here without anyone remembering to add an assert for it.
+ *
+ * The word "dollars" in prose stays legal, because the legacy USD subscriptions
+ * are real and the payment-methods FAQ has to keep saying so. What cannot
+ * appear is an AMOUNT in dollars: every Checkout is created in EUR now.
+ */
+describe('i18n — no price is quoted in a currency we do not charge', () => {
+  test.each(locales)('%s quotes no dollar amount anywhere', (locale) => {
+    const offenders = [...dictionaries[locale]]
+      .filter(([, value]) => /\$\s?\d/.test(value))
+      .map(([key, value]) => `${key}: ${value}`);
+    expect(offenders).toEqual([]);
+  });
+
+  /**
+   * The top-level `community` dictionary has no consumer left: /community
+   * hardcodes its copy and links to the home `#pricing` section instead of
+   * printing an amount. These two keys still carried `$14.99` and the
+   * "(€14.99) in the EU" caveat, so they are fixed and asserted rather than
+   * left to ship stale the day that page grows a price card again.
+   */
+  test.each(locales)('%s community price card is in euros, for every region', (locale) => {
+    expect(t('community.priceLabel', locale)).toMatch(/14,99€/);
+    expect(t('community.priceLabel', locale)).not.toMatch(/\$/);
+    const note = t('community.priceTaxNote', locale);
+    expect(note).toMatch(/euros/);
+    expect(note).toMatch(/any region|cualquier región/);
+    expect(note).not.toMatch(/in the EU|en EU/);
   });
 });
 
