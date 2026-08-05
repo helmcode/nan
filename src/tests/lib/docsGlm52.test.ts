@@ -55,9 +55,17 @@ describe('docs/models — the glm5.2 card', () => {
     expect(section).not.toContain('256K');
   });
 
-  test('documents the allowance, like every other model that carries one', () => {
+  /**
+   * The spec label named the wrong window: `Monthly quota` sat two lines under a
+   * description saying the counter goes back to zero when the BILLING PERIOD
+   * starts. glm5.2 is the one model whose cap is not the calendar month
+   * (usage_quota.go clears the month default and stamps the Stripe period), so
+   * it uses the label RateLimits.astro already publishes for it.
+   */
+  test('documents the allowance with the window it actually resets on', () => {
     const section = glmSection(models);
-    expect(section).toContain('Monthly quota: 3,000M tokens / member');
+    expect(section).toContain('Allowance / billing period: 3,000M tokens / member');
+    expect(section).not.toMatch(/Monthly quota/);
     expect(section).toMatch(/billing period starts/);
   });
 
