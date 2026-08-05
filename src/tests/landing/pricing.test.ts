@@ -16,6 +16,12 @@ import { t, tArr, tObj } from '../../lib/i18n';
  *   - a `nan_member · usa / latam — $75` tier, while every new signup is
  *     charged 70€ in any region, so the price and the currency changed between
  *     the card and the Checkout.
+ *
+ * That last one shipped TWICE because the currency asserts covered `memberCond`
+ * only: community kept publishing `$14.99` after cloud-api's
+ * communityPriceForNewCustomer started charging 14,99€ from every region. Every
+ * paid tier of the section is asserted here now, amount and condition, so a
+ * currency that only moves on one funnel cannot pass again.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -42,6 +48,25 @@ describe('Pricing — no per-region tier', () => {
     expect(first).toBeGreaterThan(-1);
     expect(first).toBeLessThan(member);
     expect(tiers).toMatch(/amount:\s*'200€'/);
+  });
+
+  test('the community tier is priced in euros too, like the Checkout charges', () => {
+    expect(tiers).toMatch(/name:\s*'nan_community',/);
+    expect(tiers).toMatch(/amount:\s*'14,99€'/);
+  });
+
+  /**
+   * Nothing in the section may quote a dollar amount: all three Checkouts are
+   * created in EUR for every region. The legacy USD subscriptions are true and
+   * stay explained in the payment-methods FAQ, which is not this file.
+   */
+  test('no tier quotes a price in dollars', () => {
+    expect(tiers).not.toMatch(/amount:\s*'\$/);
+    for (const locale of locales) {
+      for (const key of ['premiumCond', 'memberCond', 'communityCond']) {
+        expect(t(`nan.pricing.${key}`, locale), `${locale}.${key}`).not.toMatch(/\$|USD/);
+      }
+    }
   });
 });
 
@@ -96,10 +121,17 @@ describe.each(locales)('Pricing copy — %s', (locale) => {
     for (const item of premium()) expect(item).not.toContain('—');
   });
 
-  test('the member condition states the billing currency', () => {
-    const cond = t('nan.pricing.memberCond', locale);
+  /**
+   * Both paid funnels charge EUR from every region, so both conditions have to
+   * say so. Asserting `memberCond` alone is what let community keep the "in the
+   * EU" caveat, which told a prospect from outside the EU that the euro did not
+   * apply to them right before a EUR Checkout.
+   */
+  test.each(['memberCond', 'communityCond'])('%s states the billing currency', (key) => {
+    const cond = t(`nan.pricing.${key}`, locale);
     expect(cond).toMatch(/euros/);
     expect(cond).toMatch(/any region|cualquier región/);
+    expect(cond).not.toMatch(/in the EU|en EU/);
   });
 
   test('the payment-methods answer no longer prices by region, and keeps legacy USD true', () => {
@@ -111,6 +143,20 @@ describe.each(locales)('Pricing copy — %s', (locale) => {
 
   test('the allowance FAQ lists the premium quota alongside the other frontier models', () => {
     expect(faqAnswers(locale)).toMatch(/3[.,]000M/);
+  });
+
+  /**
+   * glm5.2's 3,000M is the one allowance that is NOT a calendar month: it resets
+   * with the Stripe billing period, which is why the portal and the docs stopped
+   * saying "monthly". The answer used to lump it in with DeepSeek's and MiMo's
+   * genuinely monthly quotas under a single "monthly allowance".
+   */
+  test('the allowance FAQ names the billing period for the premium quota', () => {
+    const faq = tObj<{ items?: FaqItem[] }>('nan.faq', locale);
+    const answer = (faq.items ?? []).map((item) => item.a).find((a) => /3[.,]000M/.test(a));
+    expect(answer).toBeDefined();
+    expect(answer).toMatch(/per billing period|por periodo de facturación/);
+    expect(answer).not.toMatch(/monthly allowance|cuota mensual/);
   });
 });
 
