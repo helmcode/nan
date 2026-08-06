@@ -2,44 +2,40 @@
 import NanPage from '../layouts/NanPage.astro';
 import eventos from '../data/eventos.json';
 import { getLang, useT } from '../lib/i18n';
+import {
+  calendarDays,
+  loc as resolve,
+  spanLabel,
+  upcomingIn,
+  type AgendaItem,
+  type Localized,
+} from '../lib/agenda';
 
 const lang = getLang(Astro.url);
 const tt = useT(lang).events;
 const a11y = useT(lang).a11y;
+const loc = (v: Localized) => resolve(v, lang);
+
+type VideoCard = {
+  title: Localized;
+  desc?: Localized;
+  date: string;
+  duration: string;
+  thumb: string;
+  tags: string[];
+};
+const workshops: VideoCard[] = eventos.workshops;
+const events: VideoCard[] = eventos.events;
 
 // Calendario real de los próximos 30 días. La página NO está prerenderizada,
 // así que esto se recalcula en cada petición, con el reloj del Worker (UTC):
 // para quien esté en Canarias o LATAM cerca de medianoche, "hoy" puede ir un
 // día adelantado. Si algún día se prerenderiza, el calendario sí se congelaría
 // en el build y habría que moverlo a cliente o a una isla.
-const agenda = eventos.agenda ?? [];
-const fmtISO = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const dateLabel = (iso: string) => {
-  const [y, m, dd] = iso.split('-').map(Number);
-  return new Date(y, m - 1, dd).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', {
-    day: 'numeric',
-    month: 'short',
-  });
-};
+const agenda: AgendaItem[] = eventos.agenda ?? [];
 const today = new Date();
-const days = Array.from({ length: 30 }, (_, i) => {
-  const d = new Date(today);
-  d.setDate(today.getDate() + i);
-  const iso = fmtISO(d);
-  return {
-    day: d.getDate(),
-    wd: tt.weekdays[(d.getDay() + 6) % 7],
-    isToday: i === 0,
-    hasEvent: agenda.some((a) => a.date === iso),
-  };
-});
-const isoSet = new Set(days.map((_, i) => {
-  const d = new Date(today); d.setDate(today.getDate() + i); return fmtISO(d);
-}));
-const upcoming = agenda
-  .filter((a) => isoSet.has(a.date))
-  .sort((a, b) => (a.date < b.date ? -1 : 1));
+const days = calendarDays(agenda, today);
+const upcoming = upcomingIn(agenda, today);
 
 const hack = eventos.hackathons[0];
 ---
@@ -69,7 +65,7 @@ const hack = eventos.hackathons[0];
         <div class="cal__strip">
           {days.map((d) => (
             <div class:list={['cal__cell', { 'is-today': d.isToday, 'has-event': d.hasEvent }]}>
-              <span class="cal__wd">{d.wd}</span>
+              <span class="cal__wd">{tt.weekdays[d.weekday]}</span>
               <span class="cal__day">{d.day}</span>
               <span class="cal__dot" aria-hidden="true"></span>
             </div>
@@ -81,9 +77,9 @@ const hack = eventos.hackathons[0];
         <ul class="agenda" data-reveal-stagger>
           {upcoming.map((a) => (
             <li class="agenda__row">
-              <span class="agenda__date mono">{dateLabel(a.date)}</span>
+              <span class="agenda__date mono">{spanLabel(a, lang)}</span>
               <span class="agenda__type mono">{tt.types[a.type as keyof typeof tt.types]}</span>
-              <span class="agenda__title">{typeof a.title === 'string' ? a.title : a.title[lang]}</span>
+              <span class="agenda__title">{loc(a.title)}</span>
               <span class="agenda__by mono">{a.by}</span>
             </li>
           ))}
@@ -104,8 +100,8 @@ const hack = eventos.hackathons[0];
       <p class="esec__sub" data-reveal>{tt.workshopsSub}</p>
 
       <div class="vgrid" data-reveal-stagger>
-        {eventos.workshops.map((v) => (
-          <article class="vcard" aria-label={a11y.membersOnly.replace("{title}", v.title)}>
+        {workshops.map((v) => (
+          <article class="vcard" aria-label={a11y.membersOnly.replace("{title}", loc(v.title))}>
             <div class="vcard__screen">
               <img class="vcard__thumb" src={v.thumb} alt="" loading="lazy" />
               <span class="vcard__scan" aria-hidden="true"></span>
@@ -114,7 +110,8 @@ const hack = eventos.hackathons[0];
               <span class="vcard__badge mono">{tt.workshopsLabel}</span>
             </div>
             <p class="vcard__date mono">{v.date}</p>
-            <h3 class="vcard__title">{v.title}</h3>
+            <h3 class="vcard__title">{loc(v.title)}</h3>
+            {v.desc && <p class="vcard__desc">{loc(v.desc)}</p>}
             <div class="vcard__tags">{v.tags.map((t) => <span class="vtag mono">{t}</span>)}</div>
             <span class="vcard__watch mono"><span class="lock" aria-hidden="true"></span>{tt.watchNote}</span>
           </article>
@@ -133,8 +130,8 @@ const hack = eventos.hackathons[0];
       <p class="esec__sub" data-reveal>{tt.eventsSub}</p>
 
       <div class="vgrid" data-reveal-stagger>
-        {eventos.events.map((v) => (
-          <article class="vcard" aria-label={a11y.membersOnly.replace("{title}", v.title)}>
+        {events.map((v) => (
+          <article class="vcard" aria-label={a11y.membersOnly.replace("{title}", loc(v.title))}>
             <div class="vcard__screen">
               <img class="vcard__thumb" src={v.thumb} alt="" loading="lazy" />
               <span class="vcard__scan" aria-hidden="true"></span>
@@ -143,7 +140,8 @@ const hack = eventos.hackathons[0];
               <span class="vcard__badge mono">{tt.eventsLabel}</span>
             </div>
             <p class="vcard__date mono">{v.date}</p>
-            <h3 class="vcard__title">{v.title}</h3>
+            <h3 class="vcard__title">{loc(v.title)}</h3>
+            {v.desc && <p class="vcard__desc">{loc(v.desc)}</p>}
             <div class="vcard__tags">{v.tags.map((t) => <span class="vtag mono">{t}</span>)}</div>
             <span class="vcard__watch mono"><span class="lock" aria-hidden="true"></span>{tt.watchNote}</span>
           </article>
@@ -161,7 +159,7 @@ const hack = eventos.hackathons[0];
       <h2 class="esec__title caret-type" data-reveal>{tt.hackathonsTitle}</h2>
       <p class="esec__sub" data-reveal>{tt.hackathonsSub}</p>
 
-      <article class="hack" data-reveal aria-label={a11y.membersOnly.replace('{title}', `${hack.n} ${hack.title}`)}>
+      <article class="hack" data-reveal aria-label={a11y.membersOnly.replace('{title}', `${hack.n} ${loc(hack.title)}`)}>
         <div class="hack__screen">
           <img class="vcard__thumb" src={hack.thumb} alt="" loading="lazy" />
           <span class="vcard__scan" aria-hidden="true"></span>
@@ -170,7 +168,7 @@ const hack = eventos.hackathons[0];
           <span class="vcard__badge mono">{tt.hackathonsLabel}</span>
         </div>
         <span class="hack__badge mono">{tt.hackathonsLabel}</span>
-        <h3 class="hack__title">{hack.n} {hack.title}</h3>
+        <h3 class="hack__title">{hack.n} {loc(hack.title)}</h3>
         <p class="hack__blurb">{tt.hackathon.blurb}</p>
         <p class="hack__when mono"><span class="hack__cal" aria-hidden="true"></span>{tt.hackathon.when}</p>
         <p class="hack__allowed mono">{tt.hackathon.allowed}</p>
@@ -338,6 +336,10 @@ const hack = eventos.hackathons[0];
   .vcard__title {
     margin-top: var(--space-2); font-family: var(--font-serif); font-weight: 400;
     color: var(--color-text); font-size: clamp(20px, 1.8vw, 26px); line-height: 1.1;
+  }
+  .vcard__desc {
+    margin-top: var(--space-3); color: var(--color-muted);
+    font-size: 15px; line-height: 1.55;
   }
   .vcard__tags { margin-top: var(--space-3); display: flex; flex-wrap: wrap; gap: 6px; }
   .vtag {

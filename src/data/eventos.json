@@ -1,8 +1,11 @@
 {
   "agenda": [
-    { "date": "2026-07-31", "type": "workshop", "title": { "en": "Agent evaluation and tracing", "es": "Evaluación y trazabilidad de agentes" }, "by": "@Jasonjimnz" }
+    { "date": "2026-07-31", "type": "workshop", "title": { "en": "Agent evaluation and tracing", "es": "Evaluación y trazabilidad de agentes" }, "by": "@Jasonjimnz" },
+    { "date": "2026-08-07", "type": "workshop", "title": { "en": "#5 NaN Workshop: Gauntlet Loop", "es": "#5 Workshop de NaN: Gauntlet Loop" }, "by": "@sahul_125" },
+    { "date": "2026-08-08", "until": "2026-08-31", "type": "event", "title": "Gauntlet Challenge" }
   ],
   "workshops": [
+    { "title": { "en": "Workshop: AI Agent Observability", "es": "Workshop: Observabilidad en Agentes de IA" }, "desc": { "en": "How to instrument AI agents so you can trace every decision, measure what is going on in production and debug when something breaks.", "es": "Cómo instrumentar agentes de IA para poder trazar cada decisión, medir qué está pasando en producción y depurar cuando algo se rompe." }, "date": "31 jul 2026", "duration": "1:33:28", "thumb": "/img/events/observabilidad-agentes.webp", "tags": ["agents", "observability", "IA"] },
     { "title": "Workshop: Opencode", "date": "24 jul 2026", "duration": "1:03:11", "thumb": "/img/events/opencode.webp", "tags": ["opencode", "coding agent", "dev tools"] },
     { "title": "Workshop: Pi Agent", "date": "15 jun 2026", "duration": "1:00:00", "thumb": "/img/events/pi-agent.webp", "tags": ["agents", "workshop"] },
     { "title": "Workshop: Hermes", "date": "12 may 2026", "duration": "1:31:27", "thumb": "/img/events/hermes.webp", "tags": ["agents"] }
