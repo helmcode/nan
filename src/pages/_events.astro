@@ -1,7 +1,7 @@
 ---
 import NanPage from '../layouts/NanPage.astro';
 import eventos from '../data/eventos.json';
-import { getLang, useT } from '../lib/i18n';
+import { getLang, useT, withLang } from '../lib/i18n';
 import {
   calendarDays,
   loc as resolve,
@@ -79,7 +79,13 @@ const hack = eventos.hackathons[0];
             <li class="agenda__row">
               <span class="agenda__date mono">{spanLabel(a, lang)}</span>
               <span class="agenda__type mono">{tt.types[a.type as keyof typeof tt.types]}</span>
-              <span class="agenda__title">{loc(a.title)}</span>
+              {/* Solo las entradas con landing propia son clicables; el resto
+                  sigue siendo texto, para no prometer una página que no existe. */}
+              <span class="agenda__title">
+                {a.href
+                  ? <a class="agenda__link" href={withLang(a.href, lang)}>{loc(a.title)}</a>
+                  : loc(a.title)}
+              </span>
               <span class="agenda__by mono">{a.by}</span>
             </li>
           ))}
@@ -263,6 +269,12 @@ const hack = eventos.hackathons[0];
     background: var(--color-violet); padding: 3px 8px; justify-self: start; align-self: center;
   }
   .agenda__title { font-family: var(--font-serif); font-size: clamp(17px, 1.5vw, 21px); color: var(--color-text); line-height: 1.2; }
+  .agenda__link {
+    color: inherit; text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-violet) 55%, transparent);
+    transition: color var(--dur-micro) var(--ease), border-color var(--dur-micro) var(--ease);
+  }
+  .agenda__link:hover { color: var(--color-link); border-bottom-color: var(--color-link); }
   .agenda__by { font-size: 13px; color: var(--color-muted); }
   .agenda__empty { margin-top: var(--space-6); color: var(--color-muted); font-family: var(--font-serif); font-size: 17px; }
 
