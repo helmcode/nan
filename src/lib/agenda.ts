@@ -21,6 +21,12 @@ export type AgendaItem = {
   type: string;
   title: Localized;
   by?: string;
+  /**
+   * Ruta interna con la landing del evento, sin prefijo de idioma: la fila la
+   * pinta con `withLang`. Opcional a propósito — la mayoría de entradas no
+   * tienen página propia y siguen siendo texto.
+   */
+  href?: string;
 };
 
 export const loc = (v: Localized, lang: Locale): string => (typeof v === 'string' ? v : v[lang]);
