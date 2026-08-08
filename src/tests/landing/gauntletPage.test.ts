@@ -96,6 +96,19 @@ describe('copy del gauntlet', () => {
   }
 });
 
+describe('la numeración de las secciones', () => {
+  const numbers = [...page.matchAll(/class="sechead__n">(\d\d)</g)].map((m) => m[1]);
+
+  test('van seguidas desde 01, sin saltos ni repetidos', () => {
+    // Los números están escritos a mano en la plantilla, así que meter una
+    // sección por el medio obliga a renumerar todas las de abajo. Un 02
+    // repetido no rompe nada —la página se pinta igual— y no lo ve nadie
+    // hasta que está en producción.
+    expect(numbers.length).toBeGreaterThan(0);
+    expect(numbers).toEqual(numbers.map((_, i) => String(i + 1).padStart(2, '0')));
+  });
+});
+
 describe('rutas', () => {
   test('existen los dos envoltorios', () => {
     expect(existsSync(resolve(pagesDir, 'gauntlet.astro'))).toBe(true);

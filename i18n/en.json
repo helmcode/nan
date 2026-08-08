@@ -548,6 +548,26 @@
         "soonTitle": "signup opens at the kickoff",
         "soon": "The form goes live with the workshop on August 7. We announce the link on NaN's Discord."
       },
+      "context": {
+        "label": "where this comes from",
+        "title": "Someone asked an agent for a Call of Duty.",
+        "lead": "Not once. They built a loop: sub-agents each owning one piece, and a critic comparing the result against the real game that refused to sign off until you couldn't tell them apart. That is a Gauntlet Loop, and it's what the workshop opening August takes apart. The challenge is that everyone builds their own.",
+        "cards": [
+          {
+            "q": "What do I build?",
+            "a": "Whatever you want. The theme is open — the shooter was the experiment, not the assignment. What gets shown is your loop and what came out of it."
+          },
+          {
+            "q": "Who runs it?",
+            "a": "NaN, the springboard for builders shipping with open AI. Taking part means being a member.",
+            "link": "How to join"
+          },
+          {
+            "q": "What do I get?",
+            "a": "A finished project, in front of people. No jury: the community votes on what was submitted and the most voted present it live."
+          }
+        ]
+      },
       "idea": {
         "label": "the key idea",
         "title": "A prompt doesn't do the work.",

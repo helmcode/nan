@@ -98,11 +98,38 @@ const cta =
     </div>
   </header>
 
-  <!-- 01 LA IDEA -->
+  <!-- 01 DE DÓNDE SALE ESTO -->
+  {/* Lo primero después del hero, y lo único escrito para quien no sabe nada:
+      de dónde viene el nombre y las tres preguntas que hace cualquiera antes
+      de decidir si esto va con él. Todo lo que viene detrás da por sabido lo
+      que se cuenta aquí. */}
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">01</span><span class="sechead__label">{tt.idea.label}</span>
+        <span class="sechead__n">01</span><span class="sechead__label">{tt.context.label}</span>
+      </div>
+      <h2 class="gsec__title caret-type" data-reveal>{tt.context.title}</h2>
+      <p class="gsec__sub" data-reveal>{tt.context.lead}</p>
+
+      <div class="qa" data-reveal-stagger>
+        {tt.context.cards.map((c) => (
+          <div class="qa__card">
+            <h3 class="qa__q">{c.q}</h3>
+            <p class="qa__a">{c.a}</p>
+            {/* Solo la tarjeta de la comunidad tiene a dónde ir. Las otras dos
+                se responden aquí mismo y no mandan a nadie a ningún sitio. */}
+            {'link' in c && <a class="qa__link mono" href={communityHref}>{c.link} →</a>}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 LA IDEA -->
+  <section class="gsec">
+    <div class="container">
+      <div class="sechead" data-reveal>
+        <span class="sechead__n">02</span><span class="sechead__label">{tt.idea.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.idea.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.idea.sub}</p>
@@ -122,11 +149,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 02 EL PROMPT -->
+  <!-- 03 EL PROMPT -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">02</span><span class="sechead__label">{tt.prompt.label}</span>
+        <span class="sechead__n">03</span><span class="sechead__label">{tt.prompt.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.prompt.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.prompt.lead}</p>
@@ -190,11 +217,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 03 CÓMO SE DISEÑA -->
+  <!-- 04 CÓMO SE DISEÑA -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">03</span><span class="sechead__label">{tt.design.label}</span>
+        <span class="sechead__n">04</span><span class="sechead__label">{tt.design.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.design.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.design.sub}</p>
@@ -220,11 +247,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 04 CALENDARIO -->
+  <!-- 05 CALENDARIO -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">04</span><span class="sechead__label">{tt.calendar.label}</span>
+        <span class="sechead__n">05</span><span class="sechead__label">{tt.calendar.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.calendar.title}</h2>
 
@@ -252,11 +279,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 05 CÓMO PARTICIPAR -->
+  <!-- 06 CÓMO PARTICIPAR -->
   <section class="gsec" id="join">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">05</span><span class="sechead__label">{tt.join.label}</span>
+        <span class="sechead__n">06</span><span class="sechead__label">{tt.join.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.join.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.join.sub}</p>
@@ -295,11 +322,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 06 LA ENTREGA -->
+  <!-- 07 LA ENTREGA -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">06</span><span class="sechead__label">{tt.submit.label}</span>
+        <span class="sechead__n">07</span><span class="sechead__label">{tt.submit.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.submit.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.submit.sub}</p>
@@ -337,11 +364,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 07 DESPUÉS DEL CIERRE -->
+  <!-- 08 DESPUÉS DEL CIERRE -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">07</span><span class="sechead__label">{tt.after.label}</span>
+        <span class="sechead__n">08</span><span class="sechead__label">{tt.after.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.after.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.after.sub}</p>
@@ -444,7 +471,35 @@ const cta =
   }
   .glink:hover { color: var(--color-text); border-bottom-color: var(--color-text); }
 
-  /* ---------- 01 el loop: tira de 5 celdas, como la del calendario ---------- */
+  /* ---------- 01 las tres preguntas ----------
+     Misma rejilla de hairlines que el resto: tres celdas para las tres cosas
+     que hay que saber antes de seguir leyendo. */
+  .qa {
+    margin-top: var(--space-10);
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--color-line); border: 1px solid var(--color-line);
+  }
+  .qa__card {
+    background: var(--color-bg); padding: clamp(20px, 2.4vw, 32px);
+    display: flex; flex-direction: column;
+    transition: background var(--dur-ui) var(--ease);
+  }
+  .qa__card:hover { background: var(--color-surface); }
+  .qa__q {
+    font-family: var(--font-serif); font-weight: 400; color: var(--color-violet-2);
+    font-size: clamp(18px, 1.7vw, 23px); line-height: 1.15;
+  }
+  .qa__a { margin-top: var(--space-4); color: var(--color-text); font-size: 15px; line-height: 1.65; }
+  /* Anclado abajo: con respuestas de distinto largo, el enlace de la tercera
+     tarjeta se quedaba a media altura y parecía de otra fila. */
+  .qa__link {
+    margin-top: auto; padding-top: var(--space-5); align-self: flex-start;
+    font-size: 12px; color: var(--color-link);
+    transition: color var(--dur-micro) var(--ease);
+  }
+  .qa__link:hover { color: var(--color-text); }
+
+  /* ---------- 02 el loop: tira de 5 celdas, como la del calendario ---------- */
   .loop {
     list-style: none; margin: var(--space-10) 0 0; padding: 0;
     display: grid; grid-template-columns: repeat(5, 1fr);
@@ -462,7 +517,7 @@ const cta =
   }
   .loop__body { margin-top: var(--space-3); color: var(--color-muted); font-size: 14px; line-height: 1.6; }
 
-  /* ---------- 02 dos columnas enfrentadas ---------- */
+  /* ---------- 04 dos columnas enfrentadas ---------- */
   .split {
     margin-top: var(--space-10); display: grid; grid-template-columns: 1fr 1fr;
     gap: 1px; background: var(--color-line); border: 1px solid var(--color-line);
@@ -480,7 +535,7 @@ const cta =
   }
   .split__body { margin-top: var(--space-5); color: var(--color-muted); font-size: 15px; line-height: 1.65; }
 
-  /* ---------- 02 el prompt anotado ----------
+  /* ---------- 03 el prompt anotado ----------
      Una hoja con anotaciones al margen. Los seis colores de tinta son locales a
      esta sección a propósito: el sistema es violeta de arriba abajo, y aquí lo
      que se está reproduciendo es una captura llena de rotulador. Fuera de este
@@ -555,7 +610,7 @@ const cta =
   .copy[data-state='done'] { background: var(--color-violet); color: #fff; }
   .copy__note { font-size: 12px; color: var(--color-muted); max-width: 46ch; }
 
-  /* ---------- 04 calendario del mes ----------
+  /* ---------- 05 calendario del mes ----------
      Rejilla de 7 columnas con las hairlines de 1px del sistema: el fondo del
      contenedor se ve a través de los huecos del `gap`, que es como está hecha
      la tira del loop y la rejilla de campos.
@@ -613,7 +668,7 @@ const cta =
   .cal__day.is-voting { background: color-mix(in srgb, var(--color-violet) 22%, transparent); }
   .cal__day.is-voting .cal__n { color: var(--color-text); }
 
-  /* ---------- 04 pasos + paneles ---------- */
+  /* ---------- 06 pasos + paneles ---------- */
   .steps {
     list-style: none; margin: var(--space-10) 0 0; padding: 0;
     display: grid; grid-template-columns: repeat(5, 1fr);
@@ -646,7 +701,7 @@ const cta =
     width: 7px; height: 7px; background: var(--color-violet);
   }
 
-  /* ---------- 06 entrega ---------- */
+  /* ---------- 07 entrega ---------- */
   .fields {
     list-style: none; margin: var(--space-5) 0 0; padding: 0;
     display: grid; grid-template-columns: 1fr 1fr;
@@ -675,7 +730,7 @@ const cta =
   }
   .fine li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 8px; height: 1px; background: var(--color-muted); }
 
-  /* ---------- 06 después del cierre ---------- */
+  /* ---------- 08 después del cierre ---------- */
   .after {
     list-style: none; margin: var(--space-10) 0 0; padding: 0;
     display: grid; grid-template-columns: repeat(3, 1fr);
@@ -709,6 +764,9 @@ const cta =
   }
   @media (max-width: 900px) {
     .after { grid-template-columns: 1fr; }
+    /* Con dos columnas la tercera pregunta se queda sola en su fila y la
+       rejilla se lee rota; apiladas siguen siendo tres respuestas seguidas. */
+    .qa { grid-template-columns: 1fr; }
     .split { grid-template-columns: 1fr; }
     .recs__row { grid-template-columns: 160px 1fr; }
     /* Sin márgenes que den para una nota, cada anotación baja debajo del
