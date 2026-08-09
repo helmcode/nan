@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import eventos from '../../data/eventos.json';
+import { GAUNTLET_SHOWCASE } from '../../data/gauntletShowcase';
 import { tObj } from '../../lib/i18n';
 
 /**
@@ -92,6 +93,52 @@ describe('copy del gauntlet', () => {
     test(`la entrega en ${lang} lista los 8 campos obligatorios`, () => {
       const submit = tObj<{ required: string[] }>('nan.gauntlet.submit', lang);
       expect(submit.required).toHaveLength(8);
+    });
+  }
+});
+
+describe('los ejemplos de la 01', () => {
+  const publicDir = resolve(here, '../../../public');
+
+  test('cada ejemplo enlaza a la publicación original en x.com', () => {
+    // Son obra de terceros. El enlace al post es lo que convierte la miniatura
+    // en una cita y no en material apropiado, así que no puede faltar ni
+    // apuntar a otro sitio.
+    for (const s of GAUNTLET_SHOWCASE) {
+      expect(s.href).toMatch(/^https:\/\/x\.com\/[^/]+\/status\/\d+$/);
+      expect(s.href.toLowerCase()).toContain(`/${s.author.toLowerCase()}/`);
+    }
+  });
+
+  test('la miniatura de cada ejemplo está servida desde el repo', () => {
+    // Si se colase una URL de pbs.twimg.com, abrir la landing pasaría a mandar
+    // a cada visitante a los servidores de X sin que haya tocado nada.
+    for (const s of GAUNTLET_SHOWCASE) {
+      expect(s.img.startsWith('/img/gauntlet/')).toBe(true);
+      expect(existsSync(resolve(publicDir, s.img.slice(1)))).toBe(true);
+    }
+  });
+
+  test('solo lleva la etiqueta del bucle quien lo cita', () => {
+    // Cuatro de los cinco autores no nombran el Gauntlet Loop. Marcar uno de
+    // más es ponerle a alguien una frase que no ha dicho.
+    expect(GAUNTLET_SHOWCASE.filter((s) => s.credits)).toHaveLength(1);
+    expect(GAUNTLET_SHOWCASE[0].credits).toBe(true);
+  });
+
+  for (const lang of ['en', 'es'] as const) {
+    test(`en ${lang} cada ejemplo tiene título y descripción`, () => {
+      // El emparejamiento es por id y no lo comprueba el tipado: un id mal
+      // escrito en i18n deja la tarjeta con el texto en blanco.
+      const copy = tObj<Record<string, { title: string; desc: string }>>(
+        'nan.gauntlet.showcase.items',
+        lang,
+      );
+      expect(Object.keys(copy)).toHaveLength(GAUNTLET_SHOWCASE.length);
+      for (const s of GAUNTLET_SHOWCASE) {
+        expect(copy[s.id]?.title?.length).toBeGreaterThan(0);
+        expect(copy[s.id]?.desc?.length).toBeGreaterThan(0);
+      }
     });
   }
 });

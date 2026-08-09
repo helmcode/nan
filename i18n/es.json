@@ -521,7 +521,7 @@
       }
     },
     "gauntlet": {
-      "metaTitle": "Gauntlet Challenge — NaN",
+      "metaTitle": "Gauntlet Challenge · NaN",
       "metaDesc": "Agosto en NaN: un prompt activa un sistema que construye, critica y se corrige solo. Construye hasta el 28 de agosto y después vota la comunidad.",
       "heroEyebrow": "// gauntlet challenge",
       "heroTitle1": "Gauntlet",
@@ -548,6 +548,35 @@
         "soonTitle": "la inscripción abre en el kickoff",
         "soon": "El formulario se publica con el workshop del 7 de agosto. El enlace se anuncia en el Discord de NaN."
       },
+      "showcase": {
+        "label": "lo que ya está saliendo",
+        "title": "Esto es lo que está saliendo de construir así.",
+        "lead": "Nada de esto es nuestro. Son proyectos que ha publicado otra gente en las últimas semanas: cada tarjeta lleva a la publicación original, que es donde está el vídeo.",
+        "credits": "cita el Gauntlet Loop",
+        "foot": "Todos publicados entre el 25 de julio y el 8 de agosto de 2026.",
+        "items": {
+          "claudefare": {
+            "title": "Modern Claudefare",
+            "desc": "Un remake de Call of Duty con cuatro mapas, modo solo y multijugador, y 84.100 líneas de código. Su autor cuenta que lo levantó en unos días aplicando los principios del Gauntlet Loop."
+          },
+          "original": {
+            "title": "El original",
+            "desc": "El shooter que empezó todo. Ni un solo asset externo: todo el código es propio."
+          },
+          "museum": {
+            "title": "The Neural Museum",
+            "desc": "Un museo que se recorre y en el que cada cuadro es un paper de IA."
+          },
+          "anatomy": {
+            "title": "Anatomy Atelier",
+            "desc": "Anatomía humana en 3D, órgano a órgano, dentro del navegador."
+          },
+          "ironveil": {
+            "title": "Ironveil Range",
+            "desc": "Un simulador de defensa antimisiles, jugable."
+          }
+        }
+      },
       "context": {
         "label": "de dónde sale esto",
         "title": "Alguien le pidió a un agente un Call of Duty.",
@@ -555,7 +584,7 @@
         "cards": [
           {
             "q": "¿Qué construyo?",
-            "a": "Lo que quieras. El tema es libre — el shooter era el experimento, no el encargo. Lo que se enseña es tu bucle y lo que salió de él."
+            "a": "Lo que quieras. El tema es libre: el shooter era el experimento, no el encargo. Lo que se enseña es tu bucle y lo que salió de él."
           },
           {
             "q": "¿Quién lo organiza?",
@@ -567,6 +596,24 @@
             "a": "Un proyecto terminado y delante de gente. Sin jurado: la comunidad vota lo entregado y los más votados lo presentan en directo."
           }
         ]
+      },
+      "prompt": {
+        "label": "el prompt",
+        "title": "Este es el prompt entero. Cópialo y adáptalo.",
+        "lead": "Aquí está entero, con las anotaciones de lo que hace cada trozo. Cópialo y cámbialo por lo tuyo: lo que se aprovecha no es el shooter, es la forma.",
+        "frame": "Gauntlet Prompt",
+        "copy": "Copiar el prompt",
+        "copied": "Copiado",
+        "copyFail": "Selecciónalo y cópialo a mano",
+        "foot": "Se copia tal cual, en inglés: es el original. El tuyo no tiene por qué ser un shooter. El tema es libre.",
+        "notes": {
+          "ref": "Referencia",
+          "fanout": "Despliega subagentes que se encarguen individualmente de cada elemento para que quede perfecto",
+          "loop": "Cada subagente dentro de un loop",
+          "critic": "Un subagente crítico por cada agente constructor",
+          "harsh": "Sé muy crítico y no pares hasta que no se distinga la versión original",
+          "ultra": "Super saiyan 4, ultrainstinto, sharingan, encuentra el one piece"
+        }
       },
       "idea": {
         "label": "la idea clave",
@@ -601,24 +648,6 @@
         ],
         "quote": "La ventaja no está en pensar más, sino en cerrar el bucle con feedback observable.",
         "note": "«Un prompt» es una instrucción humana inicial, no una sola llamada ni un único agente."
-      },
-      "prompt": {
-        "label": "el prompt",
-        "title": "Este es el prompt entero. Cópialo y adáptalo.",
-        "lead": "El del experimento que dio pie a todo esto. Debajo no hay más truco: una instrucción, subagentes que se llevan una pieza cada uno y un crítico que no da el visto bueno hasta que la cosa aguanta la comparación.",
-        "frame": "Gauntlet Prompt",
-        "copy": "Copiar el prompt",
-        "copied": "Copiado",
-        "copyFail": "Selecciónalo y cópialo a mano",
-        "foot": "Se copia tal cual, en inglés: es el original. El tuyo no tiene por qué ser un shooter — el tema es libre.",
-        "notes": {
-          "ref": "Referencia",
-          "fanout": "Despliega subagentes que se encarguen individualmente de cada elemento para que quede perfecto",
-          "loop": "Cada subagente dentro de un loop",
-          "critic": "Un subagente crítico por cada agente constructor",
-          "harsh": "Sé muy crítico y no pares hasta que no se distinga la versión original",
-          "ultra": "Super saiyan 4, ultrainstinto, sharingan, encuentra el one piece"
-        }
       },
       "design": {
         "label": "cómo se diseña",
@@ -680,7 +709,7 @@
           "Entregar antes del 28 de agosto"
         ],
         "signupTitle": "la inscripción está siempre abierta",
-        "signupBody": "No hay ventana que se cierre antes: el formulario sigue abierto hasta el día del cierre. Nadie se queda fuera por llegar tarde — el calendario está para repartir el trabajo, no para levantar una puerta."
+        "signupBody": "No hay ventana que se cierre antes: el formulario sigue abierto hasta el día del cierre. Nadie se queda fuera por llegar tarde. El calendario está para repartir el trabajo, no para levantar una puerta."
       },
       "submit": {
         "label": "la entrega",
@@ -727,7 +756,7 @@
         ],
         "rule": "la imagen es obligatoria · el vídeo es recomendado · la demo pública es opcional",
         "notes": [
-          "Repositorio: puede seguir privado durante agosto, pero tiene que abrirse al cierre — o compartirse con la organización para poder verificarlo.",
+          "Repositorio: puede seguir privado durante agosto, pero tiene que abrirse al cierre, o compartirse con la organización para poder verificarlo.",
           "Vídeo: no lo alojamos. Vale una URL de YouTube, Loom o similares."
         ],
         "whereTitle": "por dónde se entrega",

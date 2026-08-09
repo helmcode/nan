@@ -26,6 +26,7 @@ import { getLang, useT, withLang } from '../lib/i18n';
 import { spanLabel } from '../lib/agenda';
 import { calendarMonth, gauntletState, statusText, type GauntletDates } from '../lib/gauntlet';
 import { GAUNTLET_PROMPT as P, promptText } from '../data/gauntletPrompt';
+import { GAUNTLET_SHOWCASE } from '../data/gauntletShowcase';
 
 const lang = getLang(Astro.url);
 const tt = useT(lang).gauntlet;
@@ -49,6 +50,13 @@ const trail = (7 - ((month.lead + month.cells.length) % 7)) % 7;
 
 const communityHref = withLang('/community', lang);
 const projectsHref = withLang('/projects', lang);
+
+// Los ejemplos de la 01. El primero va destacado a ancho completo y el resto en
+// una fila; el título y la descripción viven en i18n y se emparejan por id, así
+// que el enlace y la imagen no se duplican en los dos idiomas.
+const [leadShot, ...restShots] = GAUNTLET_SHOWCASE;
+type ShotCopy = { title: string; desc: string };
+const shotCopy = (id: string): ShotCopy => (tt.showcase.items as Record<string, ShotCopy>)[id];
 
 // El botón de inscripción solo existe si hay formulario al otro lado. Mientras
 // `form.url` esté vacío, la página dice cuándo abre en vez de enseñar un botón
@@ -98,15 +106,85 @@ const cta =
     </div>
   </header>
 
-  <!-- 01 DE DÓNDE SALE ESTO -->
-  {/* Lo primero después del hero, y lo único escrito para quien no sabe nada:
-      de dónde viene el nombre y las tres preguntas que hace cualquiera antes
-      de decidir si esto va con él. Todo lo que viene detrás da por sabido lo
-      que se cuenta aquí. */}
+  <!-- 01 LO QUE YA ESTÁ SALIENDO -->
+  {/* Enseñar antes de explicar: quien llega no sabe qué es un Gauntlet Loop,
+      pero sí sabe reconocer un juego que funciona. Son cinco proyectos de otra
+      gente, así que cada tarjeta enlaza a su publicación y lleva el handle a la
+      vista. Las miniaturas se sirven desde /public a propósito: abrir la página
+      no manda una sola petición a X hasta que alguien hace clic. */}
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">01</span><span class="sechead__label">{tt.context.label}</span>
+        <span class="sechead__n">01</span><span class="sechead__label">{tt.showcase.label}</span>
+      </div>
+      <h2 class="gsec__title caret-type" data-reveal>{tt.showcase.title}</h2>
+      <p class="gsec__sub" data-reveal>{tt.showcase.lead}</p>
+
+      <a
+        class="shot shot--lead"
+        href={leadShot.href}
+        target="_blank"
+        rel="noopener"
+        data-reveal
+      >
+        <span class="shot__screen">
+          <img
+            class="shot__img"
+            src={leadShot.img}
+            alt={shotCopy(leadShot.id).title}
+            width="640"
+            height="360"
+            loading="lazy"
+          />
+          <span class="shot__scan" aria-hidden="true"></span>
+          <span class="shot__play" aria-hidden="true"></span>
+          {/* Solo lo lleva el que nombra el bucle en su publicación. Los otros
+              cuatro no lo dicen, y ponerles la etiqueta sería firmar por ellos. */}
+          {leadShot.credits && <span class="shot__badge mono">{tt.showcase.credits}</span>}
+        </span>
+        <span class="shot__body">
+          <span class="shot__title">{shotCopy(leadShot.id).title}</span>
+          <span class="shot__desc">{shotCopy(leadShot.id).desc}</span>
+          <span class="shot__meta mono">@{leadShot.author} · {leadShot.date} ↗</span>
+        </span>
+      </a>
+
+      <div class="shots" data-reveal-stagger>
+        {restShots.map((s) => (
+          <a class="shot" href={s.href} target="_blank" rel="noopener">
+            <span class="shot__screen">
+              <img
+                class="shot__img"
+                src={s.img}
+                alt={shotCopy(s.id).title}
+                width="640"
+                height="360"
+                loading="lazy"
+              />
+              <span class="shot__scan" aria-hidden="true"></span>
+              <span class="shot__play" aria-hidden="true"></span>
+            </span>
+            <span class="shot__body">
+              <span class="shot__title">{shotCopy(s.id).title}</span>
+              <span class="shot__desc">{shotCopy(s.id).desc}</span>
+              <span class="shot__meta mono">@{s.author} · {s.date} ↗</span>
+            </span>
+          </a>
+        ))}
+      </div>
+
+      <p class="gfoot">{tt.showcase.foot}</p>
+    </div>
+  </section>
+
+  <!-- 02 DE DÓNDE SALE ESTO -->
+  {/* Lo único escrito para quien no sabe nada: de dónde viene el nombre y las
+      tres preguntas que hace cualquiera antes de decidir si esto va con él.
+      Todo lo que viene detrás da por sabido lo que se cuenta aquí. */}
+  <section class="gsec">
+    <div class="container">
+      <div class="sechead" data-reveal>
+        <span class="sechead__n">02</span><span class="sechead__label">{tt.context.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.context.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.context.lead}</p>
@@ -122,30 +200,6 @@ const cta =
           </div>
         ))}
       </div>
-    </div>
-  </section>
-
-  <!-- 02 LA IDEA -->
-  <section class="gsec">
-    <div class="container">
-      <div class="sechead" data-reveal>
-        <span class="sechead__n">02</span><span class="sechead__label">{tt.idea.label}</span>
-      </div>
-      <h2 class="gsec__title caret-type" data-reveal>{tt.idea.title}</h2>
-      <p class="gsec__sub" data-reveal>{tt.idea.sub}</p>
-
-      <ol class="loop" data-reveal-stagger>
-        {tt.idea.steps.map((s) => (
-          <li class="loop__step">
-            <span class="loop__n mono">{s.n}</span>
-            <h3 class="loop__name">{s.name}</h3>
-            <p class="loop__body">{s.body}</p>
-          </li>
-        ))}
-      </ol>
-
-      <p class="quote" data-reveal>{tt.idea.quote}</p>
-      <p class="gnote" data-reveal>{tt.idea.note}</p>
     </div>
   </section>
 
@@ -217,11 +271,35 @@ const cta =
     </div>
   </section>
 
-  <!-- 04 CÓMO SE DISEÑA -->
+  <!-- 04 LA IDEA -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">04</span><span class="sechead__label">{tt.design.label}</span>
+        <span class="sechead__n">04</span><span class="sechead__label">{tt.idea.label}</span>
+      </div>
+      <h2 class="gsec__title caret-type" data-reveal>{tt.idea.title}</h2>
+      <p class="gsec__sub" data-reveal>{tt.idea.sub}</p>
+
+      <ol class="loop" data-reveal-stagger>
+        {tt.idea.steps.map((s) => (
+          <li class="loop__step">
+            <span class="loop__n mono">{s.n}</span>
+            <h3 class="loop__name">{s.name}</h3>
+            <p class="loop__body">{s.body}</p>
+          </li>
+        ))}
+      </ol>
+
+      <p class="quote" data-reveal>{tt.idea.quote}</p>
+      <p class="gnote" data-reveal>{tt.idea.note}</p>
+    </div>
+  </section>
+
+  <!-- 05 CÓMO SE DISEÑA -->
+  <section class="gsec">
+    <div class="container">
+      <div class="sechead" data-reveal>
+        <span class="sechead__n">05</span><span class="sechead__label">{tt.design.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.design.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.design.sub}</p>
@@ -247,11 +325,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 05 CALENDARIO -->
+  <!-- 06 CALENDARIO -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">05</span><span class="sechead__label">{tt.calendar.label}</span>
+        <span class="sechead__n">06</span><span class="sechead__label">{tt.calendar.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.calendar.title}</h2>
 
@@ -279,11 +357,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 06 CÓMO PARTICIPAR -->
+  <!-- 07 CÓMO PARTICIPAR -->
   <section class="gsec" id="join">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">06</span><span class="sechead__label">{tt.join.label}</span>
+        <span class="sechead__n">07</span><span class="sechead__label">{tt.join.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.join.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.join.sub}</p>
@@ -316,17 +394,17 @@ const cta =
             <p class="panel__note mono">{tt.form.note}</p>
           </>
         ) : (
-          <p class="panel__note mono">{tt.form.soonTitle} — {tt.form.soon}</p>
+          <p class="panel__note mono">{tt.form.soonTitle}: {tt.form.soon}</p>
         )}
       </div>
     </div>
   </section>
 
-  <!-- 07 LA ENTREGA -->
+  <!-- 08 LA ENTREGA -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">07</span><span class="sechead__label">{tt.submit.label}</span>
+        <span class="sechead__n">08</span><span class="sechead__label">{tt.submit.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.submit.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.submit.sub}</p>
@@ -364,11 +442,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 08 DESPUÉS DEL CIERRE -->
+  <!-- 09 DESPUÉS DEL CIERRE -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">08</span><span class="sechead__label">{tt.after.label}</span>
+        <span class="sechead__n">09</span><span class="sechead__label">{tt.after.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.after.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.after.sub}</p>
@@ -471,7 +549,78 @@ const cta =
   }
   .glink:hover { color: var(--color-text); border-bottom-color: var(--color-text); }
 
-  /* ---------- 01 las tres preguntas ----------
+  /* ---------- 01 los ejemplos ----------
+     Misma pantalla que las tarjetas de vídeo de /events (marco, líneas de
+     barrido, triángulo de play): son vídeos, y el usuario ya sabe en esta web
+     lo que significa esa caja. La diferencia es que estas SÍ son clicables,
+     porque el vídeo está en otro sitio. */
+  .shot { display: block; color: inherit; }
+  .shot__screen {
+    position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden;
+    background:
+      radial-gradient(120% 140% at 50% 0%, rgba(125,57,235,0.22), transparent 60%),
+      var(--color-surface);
+    border: 1px solid var(--color-line);
+    transition: border-color var(--dur-ui) var(--ease);
+  }
+  .shot:hover .shot__screen { border-color: color-mix(in srgb, var(--color-violet) 55%, transparent); }
+  .shot__img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    filter: brightness(0.82) contrast(1.02);
+    transition: filter var(--dur-ui) var(--ease), transform var(--dur-ui) var(--ease);
+  }
+  .shot:hover .shot__img { filter: brightness(1); transform: scale(1.03); }
+  .shot__scan {
+    position: absolute; inset: 0; opacity: 0.5;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 3px);
+  }
+  .shot__play {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 0; height: 0; border-left: 20px solid var(--color-violet-2);
+    border-top: 12px solid transparent; border-bottom: 12px solid transparent;
+    filter: drop-shadow(0 0 12px rgba(125,57,235,0.5));
+    transition: transform var(--dur-ui) var(--ease);
+  }
+  .shot:hover .shot__play { transform: translate(-50%, -50%) scale(1.12); }
+  .shot__badge {
+    position: absolute; left: 8px; top: 8px; font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #fff; background: var(--color-violet); padding: 3px 7px;
+  }
+  .shot__body { display: block; }
+  .shot__title {
+    display: block; margin-top: var(--space-4);
+    font-family: var(--font-serif); font-weight: 400; color: var(--color-text);
+    font-size: clamp(19px, 1.6vw, 24px); line-height: 1.1;
+  }
+  .shot__desc {
+    display: block; margin-top: var(--space-3);
+    color: var(--color-muted); font-size: 15px; line-height: 1.55;
+  }
+  /* El handle no es un adorno: es de quien es cada cosa. Por eso va siempre
+     visible y no aparece solo al pasar por encima. */
+  .shot__meta {
+    display: block; margin-top: var(--space-3);
+    font-size: 12px; letter-spacing: 0.02em; color: var(--color-violet-2);
+    transition: color var(--dur-micro) var(--ease);
+  }
+  .shot:hover .shot__meta { color: var(--color-text); }
+
+  /* El destacado: la pantalla a la izquierda y el texto al lado, para que se
+     lea como una portada y no como una tarjeta más grande. */
+  .shot--lead {
+    margin-top: var(--space-10);
+    display: grid; grid-template-columns: 1.35fr 1fr;
+    gap: var(--space-8); align-items: center;
+  }
+  .shot--lead .shot__title { margin-top: 0; font-size: clamp(26px, 2.6vw, 40px); }
+  .shot--lead .shot__desc { font-size: 16px; max-width: 42ch; }
+
+  .shots {
+    margin-top: var(--space-10); display: grid;
+    grid-template-columns: repeat(4, 1fr); gap: var(--space-8) var(--space-6);
+  }
+
+  /* ---------- 02 las tres preguntas ----------
      Misma rejilla de hairlines que el resto: tres celdas para las tres cosas
      que hay que saber antes de seguir leyendo. */
   .qa {
@@ -498,42 +647,6 @@ const cta =
     transition: color var(--dur-micro) var(--ease);
   }
   .qa__link:hover { color: var(--color-text); }
-
-  /* ---------- 02 el loop: tira de 5 celdas, como la del calendario ---------- */
-  .loop {
-    list-style: none; margin: var(--space-10) 0 0; padding: 0;
-    display: grid; grid-template-columns: repeat(5, 1fr);
-    gap: 1px; background: var(--color-line); border: 1px solid var(--color-line);
-  }
-  .loop__step {
-    background: var(--color-bg); padding: var(--space-6);
-    transition: background var(--dur-ui) var(--ease);
-  }
-  .loop__step:hover { background: var(--color-surface); }
-  .loop__n { font-size: 12px; color: var(--color-violet-2); font-weight: 700; }
-  .loop__name {
-    margin-top: var(--space-3); font-family: var(--font-serif); font-weight: 400;
-    color: var(--color-text); font-size: clamp(19px, 1.8vw, 24px); line-height: 1.1;
-  }
-  .loop__body { margin-top: var(--space-3); color: var(--color-muted); font-size: 14px; line-height: 1.6; }
-
-  /* ---------- 04 dos columnas enfrentadas ---------- */
-  .split {
-    margin-top: var(--space-10); display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: var(--color-line); border: 1px solid var(--color-line);
-  }
-  .split__col { background: var(--color-bg); padding: clamp(24px, 3vw, 40px); }
-  .split__title {
-    font-family: var(--font-serif); font-weight: 400; color: var(--color-text);
-    font-size: clamp(20px, 2vw, 28px); line-height: 1.1;
-  }
-  .split__items { list-style: none; margin: var(--space-5) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-  .split__items li {
-    font-size: 12px; color: var(--color-violet-2); padding: 4px 9px;
-    border: 1px solid color-mix(in srgb, var(--color-violet) 45%, transparent);
-    background: var(--color-violet-dim);
-  }
-  .split__body { margin-top: var(--space-5); color: var(--color-muted); font-size: 15px; line-height: 1.65; }
 
   /* ---------- 03 el prompt anotado ----------
      Una hoja con anotaciones al margen. Los seis colores de tinta son locales a
@@ -610,7 +723,43 @@ const cta =
   .copy[data-state='done'] { background: var(--color-violet); color: #fff; }
   .copy__note { font-size: 12px; color: var(--color-muted); max-width: 46ch; }
 
-  /* ---------- 05 calendario del mes ----------
+  /* ---------- 04 el loop: tira de 5 celdas, como la del calendario ---------- */
+  .loop {
+    list-style: none; margin: var(--space-10) 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 1px; background: var(--color-line); border: 1px solid var(--color-line);
+  }
+  .loop__step {
+    background: var(--color-bg); padding: var(--space-6);
+    transition: background var(--dur-ui) var(--ease);
+  }
+  .loop__step:hover { background: var(--color-surface); }
+  .loop__n { font-size: 12px; color: var(--color-violet-2); font-weight: 700; }
+  .loop__name {
+    margin-top: var(--space-3); font-family: var(--font-serif); font-weight: 400;
+    color: var(--color-text); font-size: clamp(19px, 1.8vw, 24px); line-height: 1.1;
+  }
+  .loop__body { margin-top: var(--space-3); color: var(--color-muted); font-size: 14px; line-height: 1.6; }
+
+  /* ---------- 05 dos columnas enfrentadas ---------- */
+  .split {
+    margin-top: var(--space-10); display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--color-line); border: 1px solid var(--color-line);
+  }
+  .split__col { background: var(--color-bg); padding: clamp(24px, 3vw, 40px); }
+  .split__title {
+    font-family: var(--font-serif); font-weight: 400; color: var(--color-text);
+    font-size: clamp(20px, 2vw, 28px); line-height: 1.1;
+  }
+  .split__items { list-style: none; margin: var(--space-5) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .split__items li {
+    font-size: 12px; color: var(--color-violet-2); padding: 4px 9px;
+    border: 1px solid color-mix(in srgb, var(--color-violet) 45%, transparent);
+    background: var(--color-violet-dim);
+  }
+  .split__body { margin-top: var(--space-5); color: var(--color-muted); font-size: 15px; line-height: 1.65; }
+
+  /* ---------- 06 calendario del mes ----------
      Rejilla de 7 columnas con las hairlines de 1px del sistema: el fondo del
      contenedor se ve a través de los huecos del `gap`, que es como está hecha
      la tira del loop y la rejilla de campos.
@@ -668,7 +817,7 @@ const cta =
   .cal__day.is-voting { background: color-mix(in srgb, var(--color-violet) 22%, transparent); }
   .cal__day.is-voting .cal__n { color: var(--color-text); }
 
-  /* ---------- 06 pasos + paneles ---------- */
+  /* ---------- 07 pasos + paneles ---------- */
   .steps {
     list-style: none; margin: var(--space-10) 0 0; padding: 0;
     display: grid; grid-template-columns: repeat(5, 1fr);
@@ -701,7 +850,7 @@ const cta =
     width: 7px; height: 7px; background: var(--color-violet);
   }
 
-  /* ---------- 07 entrega ---------- */
+  /* ---------- 08 entrega ---------- */
   .fields {
     list-style: none; margin: var(--space-5) 0 0; padding: 0;
     display: grid; grid-template-columns: 1fr 1fr;
@@ -730,7 +879,7 @@ const cta =
   }
   .fine li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 8px; height: 1px; background: var(--color-muted); }
 
-  /* ---------- 08 después del cierre ---------- */
+  /* ---------- 09 después del cierre ---------- */
   .after {
     list-style: none; margin: var(--space-10) 0 0; padding: 0;
     display: grid; grid-template-columns: repeat(3, 1fr);
@@ -764,6 +913,12 @@ const cta =
   }
   @media (max-width: 900px) {
     .after { grid-template-columns: 1fr; }
+    /* El destacado deja de estar enfrentado y pasa a ser portada + pie. En dos
+       columnas estrechas la descripción se rompía en renglones de tres
+       palabras al lado de una pantalla ya diminuta. */
+    .shot--lead { grid-template-columns: 1fr; gap: 0; }
+    .shot--lead .shot__title { margin-top: var(--space-4); }
+    .shots { grid-template-columns: repeat(2, 1fr); }
     /* Con dos columnas la tercera pregunta se queda sola en su fila y la
        rejilla se lee rota; apiladas siguen siendo tres respuestas seguidas. */
     .qa { grid-template-columns: 1fr; }
@@ -790,6 +945,7 @@ const cta =
   }
   @media (max-width: 620px) {
     .loop, .steps { grid-template-columns: repeat(2, 1fr); }
+    .shots { grid-template-columns: 1fr; }
     .fields { grid-template-columns: 1fr; }
     .recs__row { grid-template-columns: 1fr; gap: var(--space-1); }
     .cal__month { padding-inline: var(--space-4); }
