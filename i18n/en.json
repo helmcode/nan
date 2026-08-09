@@ -577,6 +577,18 @@
           }
         }
       },
+      "join": {
+        "label": "the challenge",
+        "title": "The challenge is:",
+        "sub": "Build something good with the Gauntlet Loop prompt, using at least one NaN model. The theme is open: the shooter was the experiment, not the assignment.",
+        "reqTitle": "requirements",
+        "reqs": [
+          "Use at least one NaN model"
+        ],
+        "deliverLabel": "what you hand in at the end",
+        "signupTitle": "signup is always open",
+        "signupBody": "There's no early cut-off: the form stays open until closing day. Nobody is left out for showing up late. The calendar is there to spread the work, not to shut a door."
+      },
       "context": {
         "label": "where this comes from",
         "title": "Someone asked an agent for a Call of Duty.",
@@ -649,26 +661,6 @@
         "quote": "The edge isn't thinking harder. It's closing the loop with feedback you can observe.",
         "note": "\"One prompt\" means one initial human instruction, not one call and not one agent."
       },
-      "design": {
-        "label": "how it's designed",
-        "title": "More agents doesn't mean better results.",
-        "sub": "The lesson from the experiment: what breaks a loop isn't the number of agents, it's who owns what.",
-        "parallelTitle": "Parallelise what's independent",
-        "parallelItems": [
-          "Lighting",
-          "Materials",
-          "Colour"
-        ],
-        "parallelBody": "Pieces that don't touch each other can run at the same time without stepping on anyone.",
-        "ownerTitle": "One owner for what's coupled",
-        "ownerItems": [
-          "Weapons",
-          "Sound",
-          "Enemies"
-        ],
-        "ownerBody": "Systems that depend on each other need a single hand, or they drift apart.",
-        "quote": "The Gauntlet isn't about spawning a hundred agents. It's about designing ownership well."
-      },
       "calendar": {
         "label": "calendar",
         "title": "August is a season, not a day.",
@@ -689,27 +681,6 @@
           "close": "Closes",
           "voting": "Vote"
         }
-      },
-      "join": {
-        "label": "how to take part",
-        "title": "Build and publish. No permission needed.",
-        "sub": "You sign up, you build with what you already have on NaN and you publish. Nobody hands out slots.",
-        "steps": [
-          "Find the challenge",
-          "Build",
-          "Publish",
-          "Update",
-          "Mark the final run"
-        ],
-        "reqTitle": "what you need",
-        "reqs": [
-          "Be a NaN member",
-          "Use open models available on NaN",
-          "Document the loop and the human intervention",
-          "Submit before August 28"
-        ],
-        "signupTitle": "signup is always open",
-        "signupBody": "There's no early cut-off: the form stays open until closing day. Nobody is left out for showing up late. The calendar is there to spread the work, not to shut a door."
       },
       "submit": {
         "label": "the submission",

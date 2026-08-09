@@ -177,14 +177,88 @@ const cta =
     </div>
   </section>
 
-  <!-- 02 DE DÓNDE SALE ESTO -->
+  <!-- 02 EL RETO -->
+  {/* La sección que contesta "¿y yo qué tengo que hacer?", y va aquí arriba
+      justo por eso: antes estaba la séptima, detrás de cuatro secciones de
+      explicación, y para cuando llegabas ya no lo tenías claro.
+
+      Todo lo que hace falta para participar vive en esta sección y en ninguna
+      otra: qué se pide, el requisito y qué se entrega. Lo de abajo es contexto
+      —de dónde sale, el prompt, la idea, las fechas— y se puede leer o no. */}
+  <section class="gsec" id="join">
+    <div class="container">
+      <div class="sechead" data-reveal>
+        <span class="sechead__n">02</span><span class="sechead__label">{tt.join.label}</span>
+      </div>
+      <h2 class="gsec__title caret-type" data-reveal>{tt.join.title}</h2>
+      <p class="gsec__sub" data-reveal>{tt.join.sub}</p>
+
+      <div class="panel" data-reveal>
+        <p class="panel__t mono">{tt.join.reqTitle}</p>
+        <ul class="reqs">
+          {tt.join.reqs.map((r) => <li class="reqs__item">{r}</li>)}
+        </ul>
+      </div>
+
+      <p class="gsublabel mono" data-reveal>{tt.join.deliverLabel}</p>
+      <p class="gnote" data-reveal>{tt.submit.title} {tt.submit.sub}</p>
+
+      {/* Los dos últimos van destacados: en la fuente son los que prueban qué se
+          construyó y cómo, y por eso cierran la rejilla. */}
+      <ul class="fields" data-reveal-stagger>
+        {tt.submit.required.map((f, i) => (
+          <li class:list={['field-item', { 'is-key': i >= tt.submit.required.length - 2 }]}>{f}</li>
+        ))}
+      </ul>
+      <p class="gnote" data-reveal>{tt.submit.requiredNote}</p>
+
+      <p class="gsublabel mono" data-reveal>{tt.submit.recommendedLabel}</p>
+      <ul class="recs" data-reveal-stagger>
+        {tt.submit.recommended.map((r) => (
+          <li class="recs__row">
+            <span class="recs__name">{r.name}</span>
+            <span class="recs__why">{r.why}</span>
+          </li>
+        ))}
+      </ul>
+
+      <p class="gfoot mono" data-reveal>{tt.submit.rule}</p>
+
+      <ul class="fine" data-reveal>
+        {tt.submit.notes.map((n) => <li>{n}</li>)}
+      </ul>
+
+      <div class="panel" data-reveal>
+        <p class="panel__t mono">{tt.submit.whereTitle}</p>
+        <p class="panel__b">{tt.submit.whereBody}</p>
+      </div>
+
+      <div class="panel panel--v" data-reveal>
+        <p class="panel__t mono">{tt.join.signupTitle}</p>
+        <p class="panel__b">{tt.join.signupBody}</p>
+
+        {formUrl ? (
+          <>
+            <a class="btn btn-primary panel__cta" href={formUrl} target="_blank" rel="noopener">
+              {tt.form.cta} →
+            </a>
+            <p class="panel__note mono">{tt.form.note}</p>
+          </>
+        ) : (
+          <p class="panel__note mono">{tt.form.soonTitle}: {tt.form.soon}</p>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 DE DÓNDE SALE ESTO -->
   {/* Lo único escrito para quien no sabe nada: de dónde viene el nombre y las
       tres preguntas que hace cualquiera antes de decidir si esto va con él.
       Todo lo que viene detrás da por sabido lo que se cuenta aquí. */}
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">02</span><span class="sechead__label">{tt.context.label}</span>
+        <span class="sechead__n">03</span><span class="sechead__label">{tt.context.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.context.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.context.lead}</p>
@@ -203,11 +277,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 03 EL PROMPT -->
+  <!-- 04 EL PROMPT -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">03</span><span class="sechead__label">{tt.prompt.label}</span>
+        <span class="sechead__n">04</span><span class="sechead__label">{tt.prompt.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.prompt.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.prompt.lead}</p>
@@ -271,11 +345,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 04 LA IDEA -->
+  <!-- 05 LA IDEA -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">04</span><span class="sechead__label">{tt.idea.label}</span>
+        <span class="sechead__n">05</span><span class="sechead__label">{tt.idea.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.idea.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.idea.sub}</p>
@@ -292,36 +366,6 @@ const cta =
 
       <p class="quote" data-reveal>{tt.idea.quote}</p>
       <p class="gnote" data-reveal>{tt.idea.note}</p>
-    </div>
-  </section>
-
-  <!-- 05 CÓMO SE DISEÑA -->
-  <section class="gsec">
-    <div class="container">
-      <div class="sechead" data-reveal>
-        <span class="sechead__n">05</span><span class="sechead__label">{tt.design.label}</span>
-      </div>
-      <h2 class="gsec__title caret-type" data-reveal>{tt.design.title}</h2>
-      <p class="gsec__sub" data-reveal>{tt.design.sub}</p>
-
-      <div class="split" data-reveal>
-        <div class="split__col">
-          <h3 class="split__title">{tt.design.parallelTitle}</h3>
-          <ul class="split__items">
-            {tt.design.parallelItems.map((i) => <li class="mono">{i}</li>)}
-          </ul>
-          <p class="split__body">{tt.design.parallelBody}</p>
-        </div>
-        <div class="split__col">
-          <h3 class="split__title">{tt.design.ownerTitle}</h3>
-          <ul class="split__items">
-            {tt.design.ownerItems.map((i) => <li class="mono">{i}</li>)}
-          </ul>
-          <p class="split__body">{tt.design.ownerBody}</p>
-        </div>
-      </div>
-
-      <p class="quote" data-reveal>{tt.design.quote}</p>
     </div>
   </section>
 
@@ -357,96 +401,11 @@ const cta =
     </div>
   </section>
 
-  <!-- 07 CÓMO PARTICIPAR -->
-  <section class="gsec" id="join">
-    <div class="container">
-      <div class="sechead" data-reveal>
-        <span class="sechead__n">07</span><span class="sechead__label">{tt.join.label}</span>
-      </div>
-      <h2 class="gsec__title caret-type" data-reveal>{tt.join.title}</h2>
-      <p class="gsec__sub" data-reveal>{tt.join.sub}</p>
-
-      <ol class="steps" data-reveal-stagger>
-        {tt.join.steps.map((s, i) => (
-          <li class="steps__item">
-            <span class="steps__n mono">{String(i + 1).padStart(2, '0')}</span>
-            <span class="steps__label">{s}</span>
-          </li>
-        ))}
-      </ol>
-
-      <div class="panel" data-reveal>
-        <p class="panel__t mono">{tt.join.reqTitle}</p>
-        <ul class="reqs">
-          {tt.join.reqs.map((r) => <li class="reqs__item">{r}</li>)}
-        </ul>
-      </div>
-
-      <div class="panel panel--v" data-reveal>
-        <p class="panel__t mono">{tt.join.signupTitle}</p>
-        <p class="panel__b">{tt.join.signupBody}</p>
-
-        {formUrl ? (
-          <>
-            <a class="btn btn-primary panel__cta" href={formUrl} target="_blank" rel="noopener">
-              {tt.form.cta} →
-            </a>
-            <p class="panel__note mono">{tt.form.note}</p>
-          </>
-        ) : (
-          <p class="panel__note mono">{tt.form.soonTitle}: {tt.form.soon}</p>
-        )}
-      </div>
-    </div>
-  </section>
-
-  <!-- 08 LA ENTREGA -->
+  <!-- 07 DESPUÉS DEL CIERRE -->
   <section class="gsec">
     <div class="container">
       <div class="sechead" data-reveal>
-        <span class="sechead__n">08</span><span class="sechead__label">{tt.submit.label}</span>
-      </div>
-      <h2 class="gsec__title caret-type" data-reveal>{tt.submit.title}</h2>
-      <p class="gsec__sub" data-reveal>{tt.submit.sub}</p>
-
-      <p class="gsublabel mono" data-reveal>{tt.submit.requiredLabel}</p>
-      {/* Los dos últimos van destacados: en la fuente son los que prueban qué se
-          construyó y cómo, y por eso cierran la rejilla. */}
-      <ul class="fields" data-reveal-stagger>
-        {tt.submit.required.map((f, i) => (
-          <li class:list={['field-item', { 'is-key': i >= tt.submit.required.length - 2 }]}>{f}</li>
-        ))}
-      </ul>
-      <p class="gnote" data-reveal>{tt.submit.requiredNote}</p>
-
-      <p class="gsublabel mono" data-reveal>{tt.submit.recommendedLabel}</p>
-      <ul class="recs" data-reveal-stagger>
-        {tt.submit.recommended.map((r) => (
-          <li class="recs__row">
-            <span class="recs__name">{r.name}</span>
-            <span class="recs__why">{r.why}</span>
-          </li>
-        ))}
-      </ul>
-
-      <p class="gfoot mono" data-reveal>{tt.submit.rule}</p>
-
-      <ul class="fine" data-reveal>
-        {tt.submit.notes.map((n) => <li>{n}</li>)}
-      </ul>
-
-      <div class="panel" data-reveal>
-        <p class="panel__t mono">{tt.submit.whereTitle}</p>
-        <p class="panel__b">{tt.submit.whereBody}</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 09 DESPUÉS DEL CIERRE -->
-  <section class="gsec">
-    <div class="container">
-      <div class="sechead" data-reveal>
-        <span class="sechead__n">09</span><span class="sechead__label">{tt.after.label}</span>
+        <span class="sechead__n">07</span><span class="sechead__label">{tt.after.label}</span>
       </div>
       <h2 class="gsec__title caret-type" data-reveal>{tt.after.title}</h2>
       <p class="gsec__sub" data-reveal>{tt.after.sub}</p>
@@ -620,7 +579,56 @@ const cta =
     grid-template-columns: repeat(4, 1fr); gap: var(--space-8) var(--space-6);
   }
 
-  /* ---------- 02 las tres preguntas ----------
+  /* ---------- 02 el reto: paneles, campos de la entrega y recomendados ---------- */
+  .panel { margin-top: var(--space-8); border: 1px solid var(--color-line); padding: clamp(20px, 2.4vw, 32px); }
+  .panel--v {
+    border-color: color-mix(in srgb, var(--color-violet) 45%, transparent);
+    background: var(--color-violet-dim);
+  }
+  .panel__t { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-violet-2); }
+  .panel__b { margin-top: var(--space-4); max-width: 68ch; color: var(--color-text); font-size: 16px; line-height: 1.65; }
+  .panel__cta { margin-top: var(--space-6); }
+  .panel__note { margin-top: var(--space-4); font-size: 12px; line-height: 1.6; color: var(--color-muted); }
+
+  .reqs { list-style: none; margin: var(--space-4) 0 0; padding: 0; }
+  .reqs__item {
+    position: relative; padding-left: 20px; margin-top: var(--space-3);
+    color: var(--color-text); font-size: 16px; line-height: 1.6;
+  }
+  .reqs__item::before {
+    content: ''; position: absolute; left: 0; top: 0.6em;
+    width: 7px; height: 7px; background: var(--color-violet);
+  }
+
+  .fields {
+    list-style: none; margin: var(--space-5) 0 0; padding: 0;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--color-line); border: 1px solid var(--color-line);
+  }
+  .field-item {
+    background: var(--color-bg); padding: var(--space-5);
+    font-family: var(--font-serif); font-size: clamp(16px, 1.4vw, 20px);
+    color: var(--color-text); line-height: 1.2;
+  }
+  .field-item.is-key { background: var(--color-violet-dim); color: var(--color-violet-2); }
+
+  .recs { list-style: none; margin: var(--space-5) 0 0; padding: 0; border-top: 1px solid var(--color-line); }
+  .recs__row {
+    display: grid; grid-template-columns: 240px 1fr; gap: var(--space-4);
+    align-items: baseline; padding-block: var(--space-4);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .recs__name { font-family: var(--font-serif); font-size: clamp(16px, 1.4vw, 20px); color: var(--color-text); }
+  .recs__why { color: var(--color-muted); font-size: 15px; line-height: 1.6; }
+
+  .fine { list-style: none; margin: var(--space-6) 0 0; padding: 0; max-width: 72ch; }
+  .fine li {
+    position: relative; padding-left: 16px; margin-top: var(--space-3);
+    color: var(--color-muted); font-size: 14px; line-height: 1.65;
+  }
+  .fine li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 8px; height: 1px; background: var(--color-muted); }
+
+  /* ---------- 03 las tres preguntas ----------
      Misma rejilla de hairlines que el resto: tres celdas para las tres cosas
      que hay que saber antes de seguir leyendo. */
   .qa {
@@ -648,7 +656,7 @@ const cta =
   }
   .qa__link:hover { color: var(--color-text); }
 
-  /* ---------- 03 el prompt anotado ----------
+  /* ---------- 04 el prompt anotado ----------
      Una hoja con anotaciones al margen. Los seis colores de tinta son locales a
      esta sección a propósito: el sistema es violeta de arriba abajo, y aquí lo
      que se está reproduciendo es una captura llena de rotulador. Fuera de este
@@ -723,7 +731,7 @@ const cta =
   .copy[data-state='done'] { background: var(--color-violet); color: #fff; }
   .copy__note { font-size: 12px; color: var(--color-muted); max-width: 46ch; }
 
-  /* ---------- 04 el loop: tira de 5 celdas, como la del calendario ---------- */
+  /* ---------- 05 el loop: tira de 5 celdas, como la del calendario ---------- */
   .loop {
     list-style: none; margin: var(--space-10) 0 0; padding: 0;
     display: grid; grid-template-columns: repeat(5, 1fr);
@@ -740,24 +748,6 @@ const cta =
     color: var(--color-text); font-size: clamp(19px, 1.8vw, 24px); line-height: 1.1;
   }
   .loop__body { margin-top: var(--space-3); color: var(--color-muted); font-size: 14px; line-height: 1.6; }
-
-  /* ---------- 05 dos columnas enfrentadas ---------- */
-  .split {
-    margin-top: var(--space-10); display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: var(--color-line); border: 1px solid var(--color-line);
-  }
-  .split__col { background: var(--color-bg); padding: clamp(24px, 3vw, 40px); }
-  .split__title {
-    font-family: var(--font-serif); font-weight: 400; color: var(--color-text);
-    font-size: clamp(20px, 2vw, 28px); line-height: 1.1;
-  }
-  .split__items { list-style: none; margin: var(--space-5) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-  .split__items li {
-    font-size: 12px; color: var(--color-violet-2); padding: 4px 9px;
-    border: 1px solid color-mix(in srgb, var(--color-violet) 45%, transparent);
-    background: var(--color-violet-dim);
-  }
-  .split__body { margin-top: var(--space-5); color: var(--color-muted); font-size: 15px; line-height: 1.65; }
 
   /* ---------- 06 calendario del mes ----------
      Rejilla de 7 columnas con las hairlines de 1px del sistema: el fondo del
@@ -817,69 +807,7 @@ const cta =
   .cal__day.is-voting { background: color-mix(in srgb, var(--color-violet) 22%, transparent); }
   .cal__day.is-voting .cal__n { color: var(--color-text); }
 
-  /* ---------- 07 pasos + paneles ---------- */
-  .steps {
-    list-style: none; margin: var(--space-10) 0 0; padding: 0;
-    display: grid; grid-template-columns: repeat(5, 1fr);
-    gap: 1px; background: var(--color-line); border: 1px solid var(--color-line);
-  }
-  .steps__item {
-    background: var(--color-bg); padding: var(--space-5);
-    display: flex; flex-direction: column; gap: var(--space-3);
-  }
-  .steps__n { font-size: 12px; color: var(--color-violet-2); font-weight: 700; }
-  .steps__label { font-family: var(--font-serif); font-size: clamp(16px, 1.4vw, 20px); color: var(--color-text); line-height: 1.15; }
-
-  .panel { margin-top: var(--space-8); border: 1px solid var(--color-line); padding: clamp(20px, 2.4vw, 32px); }
-  .panel--v {
-    border-color: color-mix(in srgb, var(--color-violet) 45%, transparent);
-    background: var(--color-violet-dim);
-  }
-  .panel__t { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-violet-2); }
-  .panel__b { margin-top: var(--space-4); max-width: 68ch; color: var(--color-text); font-size: 16px; line-height: 1.65; }
-  .panel__cta { margin-top: var(--space-6); }
-  .panel__note { margin-top: var(--space-4); font-size: 12px; line-height: 1.6; color: var(--color-muted); }
-
-  .reqs { list-style: none; margin: var(--space-4) 0 0; padding: 0; }
-  .reqs__item {
-    position: relative; padding-left: 20px; margin-top: var(--space-3);
-    color: var(--color-text); font-size: 16px; line-height: 1.6;
-  }
-  .reqs__item::before {
-    content: ''; position: absolute; left: 0; top: 0.6em;
-    width: 7px; height: 7px; background: var(--color-violet);
-  }
-
-  /* ---------- 08 entrega ---------- */
-  .fields {
-    list-style: none; margin: var(--space-5) 0 0; padding: 0;
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: var(--color-line); border: 1px solid var(--color-line);
-  }
-  .field-item {
-    background: var(--color-bg); padding: var(--space-5);
-    font-family: var(--font-serif); font-size: clamp(16px, 1.4vw, 20px);
-    color: var(--color-text); line-height: 1.2;
-  }
-  .field-item.is-key { background: var(--color-violet-dim); color: var(--color-violet-2); }
-
-  .recs { list-style: none; margin: var(--space-5) 0 0; padding: 0; border-top: 1px solid var(--color-line); }
-  .recs__row {
-    display: grid; grid-template-columns: 240px 1fr; gap: var(--space-4);
-    align-items: baseline; padding-block: var(--space-4);
-    border-bottom: 1px solid var(--color-line);
-  }
-  .recs__name { font-family: var(--font-serif); font-size: clamp(16px, 1.4vw, 20px); color: var(--color-text); }
-  .recs__why { color: var(--color-muted); font-size: 15px; line-height: 1.6; }
-
-  .fine { list-style: none; margin: var(--space-6) 0 0; padding: 0; max-width: 72ch; }
-  .fine li {
-    position: relative; padding-left: 16px; margin-top: var(--space-3);
-    color: var(--color-muted); font-size: 14px; line-height: 1.65;
-  }
-  .fine li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 8px; height: 1px; background: var(--color-muted); }
-
-  /* ---------- 09 después del cierre ---------- */
+  /* ---------- 07 después del cierre ---------- */
   .after {
     list-style: none; margin: var(--space-10) 0 0; padding: 0;
     display: grid; grid-template-columns: repeat(3, 1fr);
@@ -909,7 +837,7 @@ const cta =
      reordena en ningún punto — siete columnas son siete días, y una semana
      partida deja de ser un calendario. */
   @media (max-width: 1100px) {
-    .loop, .steps { grid-template-columns: repeat(3, 1fr); }
+    .loop { grid-template-columns: repeat(3, 1fr); }
   }
   @media (max-width: 900px) {
     .after { grid-template-columns: 1fr; }
@@ -922,7 +850,6 @@ const cta =
     /* Con dos columnas la tercera pregunta se queda sola en su fila y la
        rejilla se lee rota; apiladas siguen siendo tres respuestas seguidas. */
     .qa { grid-template-columns: 1fr; }
-    .split { grid-template-columns: 1fr; }
     .recs__row { grid-template-columns: 160px 1fr; }
     /* Sin márgenes que den para una nota, cada anotación baja debajo del
        párrafo que anota —que es el único sitio donde se sigue entendiendo a
@@ -944,7 +871,7 @@ const cta =
     .note::before { content: '↳ '; opacity: 0.7; }
   }
   @media (max-width: 620px) {
-    .loop, .steps { grid-template-columns: repeat(2, 1fr); }
+    .loop { grid-template-columns: repeat(2, 1fr); }
     .shots { grid-template-columns: 1fr; }
     .fields { grid-template-columns: 1fr; }
     .recs__row { grid-template-columns: 1fr; gap: var(--space-1); }

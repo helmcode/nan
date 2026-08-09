@@ -577,6 +577,18 @@
           }
         }
       },
+      "join": {
+        "label": "el reto",
+        "title": "El reto consiste en:",
+        "sub": "Montar algo que esté guapo con el prompt del Gauntlet Loop, usando al menos un modelo de NaN. El tema es libre: el shooter era el experimento, no el encargo.",
+        "reqTitle": "requisitos",
+        "reqs": [
+          "Usar al menos un modelo de NaN"
+        ],
+        "deliverLabel": "lo que se entrega al final",
+        "signupTitle": "la inscripción está siempre abierta",
+        "signupBody": "No hay ventana que se cierre antes: el formulario sigue abierto hasta el día del cierre. Nadie se queda fuera por llegar tarde. El calendario está para repartir el trabajo, no para levantar una puerta."
+      },
       "context": {
         "label": "de dónde sale esto",
         "title": "Alguien le pidió a un agente un Call of Duty.",
@@ -649,26 +661,6 @@
         "quote": "La ventaja no está en pensar más, sino en cerrar el bucle con feedback observable.",
         "note": "«Un prompt» es una instrucción humana inicial, no una sola llamada ni un único agente."
       },
-      "design": {
-        "label": "cómo se diseña",
-        "title": "Más agentes no significa mejores resultados.",
-        "sub": "La lección del experimento: lo que rompe un bucle no es el número de agentes, sino quién es dueño de qué.",
-        "parallelTitle": "Paraleliza lo independiente",
-        "parallelItems": [
-          "Luz",
-          "Materiales",
-          "Color"
-        ],
-        "parallelBody": "Las piezas que no se tocan pueden ir a la vez sin pisarse.",
-        "ownerTitle": "Un solo responsable para lo acoplado",
-        "ownerItems": [
-          "Armas",
-          "Sonido",
-          "Enemigos"
-        ],
-        "ownerBody": "Los sistemas que dependen entre sí necesitan una sola mano, o se separan.",
-        "quote": "El Gauntlet no es crear cien agentes: es diseñar bien la propiedad del trabajo."
-      },
       "calendar": {
         "label": "calendario",
         "title": "Agosto es una temporada, no un día.",
@@ -689,27 +681,6 @@
           "close": "Cierre",
           "voting": "Votar"
         }
-      },
-      "join": {
-        "label": "cómo participar",
-        "title": "Construye y publica. Sin pedir permiso.",
-        "sub": "Te apuntas, construyes con lo que ya tienes en NaN y publicas. Aquí nadie reparte plazas.",
-        "steps": [
-          "Descubre el reto",
-          "Construye",
-          "Publica",
-          "Actualiza",
-          "Marca la ejecución final"
-        ],
-        "reqTitle": "lo que hace falta",
-        "reqs": [
-          "Ser miembro de NaN",
-          "Usar modelos abiertos disponibles en NaN",
-          "Documentar el loop y la intervención humana",
-          "Entregar antes del 28 de agosto"
-        ],
-        "signupTitle": "la inscripción está siempre abierta",
-        "signupBody": "No hay ventana que se cierre antes: el formulario sigue abierto hasta el día del cierre. Nadie se queda fuera por llegar tarde. El calendario está para repartir el trabajo, no para levantar una puerta."
       },
       "submit": {
         "label": "la entrega",
