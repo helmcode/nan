@@ -520,6 +520,249 @@
         "statusBody": "La ventana de inscripción se ha cerrado. ¡Esperamos verte en el próximo hackathon de NaN!"
       }
     },
+    "gauntlet": {
+      "metaTitle": "Gauntlet Challenge · NaN",
+      "metaDesc": "Agosto en NaN: un prompt activa un sistema que construye, critica y se corrige solo. Construye hasta el 28 de agosto y después vota la comunidad.",
+      "heroEyebrow": "// gauntlet challenge",
+      "heroTitle1": "Gauntlet",
+      "heroTitle2": "Challenge.",
+      "heroSub": "Un prompt. Un sistema que construye, critica y se corrige solo. Construye hasta el 28 de agosto. Después vota la comunidad.",
+      "status": {
+        "pre": "Empieza en {n} días",
+        "preOne": "Empieza mañana",
+        "preZero": "Empieza hoy",
+        "live": "Quedan {n} días para el cierre",
+        "liveOne": "Mañana es el último día para entregar",
+        "liveZero": "Último día para entregar",
+        "voting": "Votaciones abiertas",
+        "closed": "Edición cerrada"
+      },
+      "ctaSecondary": "Únete a la comunidad",
+      "ctaVote": "La votación es en Discord",
+      "ctaClosed": "Ver los proyectos de la comunidad",
+      "form": {
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLSdsu4TfUcWHv_DsDYge1hGgZN4naQy-ju_9ettH0j98X4Dx-Q/viewform",
+        "cta": "Apúntate al challenge",
+        "note": "Abre un Google Form en otra pestaña · 4 campos, medio minuto",
+        "newTab": "se abre en otra pestaña",
+        "soonTitle": "la inscripción abre en el kickoff",
+        "soon": "El formulario se publica con el workshop del 7 de agosto. El enlace se anuncia en el Discord de NaN."
+      },
+      "showcase": {
+        "label": "lo que ya está saliendo",
+        "title": "Esto es lo que está saliendo de construir así.",
+        "lead": "Nada de esto es nuestro. Son proyectos que ha publicado otra gente en las últimas semanas: cada tarjeta lleva a la publicación original, que es donde está el vídeo.",
+        "credits": "cita el Gauntlet Loop",
+        "foot": "Todos publicados entre el 25 de julio y el 8 de agosto de 2026.",
+        "items": {
+          "claudefare": {
+            "title": "Modern Claudefare",
+            "desc": "Un remake de Call of Duty con cuatro mapas, modo solo y multijugador, y 84.100 líneas de código. Su autor cuenta que lo levantó en unos días aplicando los principios del Gauntlet Loop."
+          },
+          "original": {
+            "title": "El original",
+            "desc": "El shooter que empezó todo. Ni un solo asset externo: todo el código es propio."
+          },
+          "museum": {
+            "title": "The Neural Museum",
+            "desc": "Un museo que se recorre y en el que cada cuadro es un paper de IA."
+          },
+          "anatomy": {
+            "title": "Anatomy Atelier",
+            "desc": "Anatomía humana en 3D, órgano a órgano, dentro del navegador."
+          },
+          "ironveil": {
+            "title": "Ironveil Range",
+            "desc": "Un simulador de defensa antimisiles, jugable."
+          }
+        }
+      },
+      "join": {
+        "label": "el reto",
+        "title": "El reto consiste en:",
+        "sub": "Montar algo que esté guapo con el prompt del Gauntlet Loop, usando al menos un modelo de NaN. El tema es libre: el shooter era el experimento, no el encargo.",
+        "reqTitle": "requisitos",
+        "reqs": [
+          "Usar al menos un modelo de NaN"
+        ],
+        "deliverLabel": "lo que se entrega al final",
+        "signupTitle": "la inscripción está siempre abierta",
+        "signupBody": "No hay ventana que se cierre antes: el formulario sigue abierto hasta el día del cierre. Nadie se queda fuera por llegar tarde. El calendario está para repartir el trabajo, no para levantar una puerta."
+      },
+      "context": {
+        "label": "de dónde sale esto",
+        "title": "Alguien le pidió a un agente un Call of Duty.",
+        "lead": "No se lo pidió una vez. Montó un bucle: subagentes construyendo una pieza cada uno, y un crítico comparando el resultado con el juego real que no daba el visto bueno hasta que no se distinguía. Eso es un Gauntlet Loop, y es lo que desmonta el workshop que abre agosto. El reto es que cada uno monte el suyo.",
+        "cards": [
+          {
+            "q": "¿Qué construyo?",
+            "a": "Lo que quieras. El tema es libre: el shooter era el experimento, no el encargo. Lo que se enseña es tu bucle y lo que salió de él."
+          },
+          {
+            "q": "¿Quién lo organiza?",
+            "a": "NaN, el trampolín para builders que construyen con IA abierta. Participar pide ser miembro.",
+            "link": "Cómo se entra"
+          },
+          {
+            "q": "¿Qué me llevo?",
+            "a": "Un proyecto terminado y delante de gente. Sin jurado: la comunidad vota lo entregado y los más votados lo presentan en directo."
+          }
+        ]
+      },
+      "prompt": {
+        "label": "el prompt",
+        "title": "Este es el prompt entero. Cópialo y adáptalo.",
+        "lead": "Aquí está entero, con las anotaciones de lo que hace cada trozo. Cópialo y cámbialo por lo tuyo: lo que se aprovecha no es el shooter, es la forma.",
+        "frame": "Gauntlet Prompt",
+        "copy": "Copiar el prompt",
+        "copied": "Copiado",
+        "copyFail": "Selecciónalo y cópialo a mano",
+        "foot": "Se copia tal cual, en inglés: es el original. El tuyo no tiene por qué ser un shooter. El tema es libre.",
+        "notes": {
+          "ref": "Referencia",
+          "fanout": "Despliega subagentes que se encarguen individualmente de cada elemento para que quede perfecto",
+          "loop": "Cada subagente dentro de un loop",
+          "critic": "Un subagente crítico por cada agente constructor",
+          "harsh": "Sé muy crítico y no pares hasta que no se distinga la versión original",
+          "ultra": "Super saiyan 4, ultrainstinto, sharingan, encuentra el one piece"
+        }
+      },
+      "idea": {
+        "label": "la idea clave",
+        "title": "Un prompt no hace el trabajo.",
+        "sub": "Activa un sistema autónomo que construye, observa, critica y corrige.",
+        "steps": [
+          {
+            "n": "01",
+            "name": "Objetivo",
+            "body": "Una instrucción humana que dice qué tiene que existir."
+          },
+          {
+            "n": "02",
+            "name": "Builders",
+            "body": "Agentes que lo construyen. Cada uno es dueño de una pieza y la entrega."
+          },
+          {
+            "n": "03",
+            "name": "Críticos",
+            "body": "Agentes que revisan el trabajo con pruebas, no con impresiones."
+          },
+          {
+            "n": "04",
+            "name": "Evidencia",
+            "body": "Capturas, tests, métricas. Artefactos que se pueden inspeccionar."
+          },
+          {
+            "n": "05",
+            "name": "Iteración",
+            "body": "Supera la referencia: entra. No la supera: vuelve al builder."
+          }
+        ],
+        "quote": "La ventaja no está en pensar más, sino en cerrar el bucle con feedback observable.",
+        "note": "«Un prompt» es una instrucción humana inicial, no una sola llamada ni un único agente."
+      },
+      "calendar": {
+        "label": "calendario",
+        "title": "Agosto es una temporada, no un día.",
+        "month": "agosto 2026",
+        "weekdays": [
+          "Lun",
+          "Mar",
+          "Mié",
+          "Jue",
+          "Vie",
+          "Sáb",
+          "Dom"
+        ],
+        "tbd": "Día de presentaciones · por confirmar",
+        "short": {
+          "workshop": "Kickoff",
+          "build": "Construir",
+          "close": "Cierre",
+          "voting": "Votar"
+        }
+      },
+      "submit": {
+        "label": "la entrega",
+        "title": "Lo que entregas tiene que probar qué construiste y cómo.",
+        "sub": "Una entrega por proyecto, editable hasta el cierre.",
+        "requiredLabel": "obligatorio",
+        "required": [
+          "Nombre + descripción",
+          "Modelo utilizado",
+          "Portada 16:9",
+          "Arquitectura del loop",
+          "Repositorio",
+          "Intervención humana",
+          "Prompt inicial",
+          "Resultado + aprendizajes"
+        ],
+        "requiredNote": "Los dos últimos son los que prueban qué se construyó y cómo.",
+        "recommendedLabel": "recomendado",
+        "recommended": [
+          {
+            "name": "Vídeo",
+            "why": "Demuestra el resultado"
+          },
+          {
+            "name": "Demo",
+            "why": "Permite probarlo"
+          },
+          {
+            "name": "Baseline vs. final",
+            "why": "Hace visible la mejora"
+          },
+          {
+            "name": "Tokens y tiempo",
+            "why": "Explican el coste"
+          },
+          {
+            "name": "Logs y trazas",
+            "why": "Permiten auditar"
+          },
+          {
+            "name": "Diagrama",
+            "why": "Aclara la arquitectura"
+          }
+        ],
+        "rule": "la imagen es obligatoria · el vídeo es recomendado · la demo pública es opcional",
+        "notes": [
+          "Repositorio: puede seguir privado durante agosto, pero tiene que abrirse al cierre, o compartirse con la organización para poder verificarlo.",
+          "Vídeo: no lo alojamos. Vale una URL de YouTube, Loom o similares."
+        ],
+        "whereTitle": "por dónde se entrega",
+        "whereBody": "El formulario de entrega aparecerá aquí más adelante."
+      },
+      "after": {
+        "label": "después del cierre",
+        "title": "La comunidad elige quién presenta.",
+        "sub": "Sin jurado. Lo entregado se enseña, la comunidad vota y los proyectos más votados se presentan en directo.",
+        "steps": [
+          {
+            "when": "28 ago",
+            "name": "Se cierra la entrada",
+            "body": "Se paran las inscripciones y las entregas."
+          },
+          {
+            "when": "Unos días",
+            "name": "Votaciones de la comunidad",
+            "body": "Se enseña todo lo entregado y la comunidad vota."
+          },
+          {
+            "when": "Por concretar",
+            "name": "Presentaciones",
+            "body": "Presentan los proyectos más votados."
+          }
+        ],
+        "tbdLabel": "fecha por confirmar",
+        "tbdBody": "Buscamos un día que le venga bien a todo el mundo, así que se anuncia en Discord en vez de fijarlo ahora.",
+        "note": "La votación no vive en esta página: pasa en el Discord de NaN."
+      },
+      "close": {
+        "title": "Un prompt. Un sistema entero.",
+        "text": "Agosto en NaN es una temporada: construye, deja que te critiquen, corrige y entrega algo que se pueda probar. La inscripción está abierta hasta el 28."
+      }
+    },
     "community": {
       "metaTitle": "Comunidad — NaN",
       "metaDesc": "NaN es el trampolín para builders que construyen con IA abierta. Build in public, en comunidad.",

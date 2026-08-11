@@ -42,12 +42,19 @@ describe('sitemap.xml', () => {
     const { xml } = await sitemap();
     const urls = locs(xml);
 
-    for (const path of ['/events', '/projects', '/community', '/privacy', '/terms', '/cookies']) {
+    for (const path of ['/events', '/gauntlet', '/projects', '/community', '/privacy', '/terms', '/cookies']) {
       expect(urls).toContain(`${SITE}${path}`);
       expect(urls).toContain(`${SITE}/es${path}`);
     }
     expect(urls).toContain(`${SITE}/`);
     expect(urls).toContain(`${SITE}/es`);
+  });
+
+  test('la landing del gauntlet está declarada: se enlaza desde /events', async () => {
+    // Regla del proyecto: o entra en el sitemap, o va con noindex. La fila de
+    // la agenda la enlaza, así que tiene que entrar.
+    const { xml } = await sitemap();
+    expect(locs(xml)).toContain(`${SITE}/gauntlet`);
   });
 
   test('el hackatón queda fuera entero, en los dos idiomas', async () => {

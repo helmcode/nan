@@ -12,7 +12,7 @@ import eventos from '../../data/eventos.json';
 
 interface Props {
   lang: Locale;
-  page: 'home' | 'events' | 'other';
+  page: 'home' | 'events' | 'gauntlet' | 'other';
   canonical: string;
   origin: string;
 }
@@ -62,6 +62,25 @@ if (page === 'events') {
         publisher: { '@id': `${origin}/#organization` },
       },
     })),
+  });
+}
+
+if (page === 'gauntlet') {
+  // Solo lo que la propia página afirma: nombre, fechas de construcción y que
+  // es un evento en línea de NaN. Ni el día de presentaciones (no tiene fecha)
+  // ni premios (sin definir) entran aquí.
+  graph.push({
+    '@type': 'Event',
+    '@id': `${canonical}#event`,
+    name: 'Gauntlet Challenge',
+    description: t.gauntlet.metaDesc,
+    startDate: eventos.gauntlet.start,
+    endDate: eventos.gauntlet.close,
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+    location: { '@type': 'VirtualLocation', url: canonical },
+    url: canonical,
+    organizer: { '@id': `${origin}/#organization` },
   });
 }
 

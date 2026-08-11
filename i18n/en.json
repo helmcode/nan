@@ -520,6 +520,249 @@
         "statusBody": "The registration window has closed. We hope to see you at the next NaN hackathon!"
       }
     },
+    "gauntlet": {
+      "metaTitle": "Gauntlet Challenge · NaN",
+      "metaDesc": "August at NaN: one prompt fires up a system that builds, critiques and corrects itself. Build until August 28, then the community votes.",
+      "heroEyebrow": "// gauntlet challenge",
+      "heroTitle1": "Gauntlet",
+      "heroTitle2": "Challenge.",
+      "heroSub": "One prompt. A system that builds, critiques and corrects itself. Build until August 28. Then the community votes.",
+      "status": {
+        "pre": "Starts in {n} days",
+        "preOne": "Starts tomorrow",
+        "preZero": "Starts today",
+        "live": "{n} days left to submit",
+        "liveOne": "Tomorrow is the last day to submit",
+        "liveZero": "Last day to submit",
+        "voting": "Voting is open",
+        "closed": "This edition is closed"
+      },
+      "ctaSecondary": "Join the community",
+      "ctaVote": "Voting is on Discord",
+      "ctaClosed": "See community projects",
+      "form": {
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLSdsu4TfUcWHv_DsDYge1hGgZN4naQy-ju_9ettH0j98X4Dx-Q/viewform",
+        "cta": "Sign up for the challenge",
+        "note": "Opens a Google Form in a new tab · 4 fields, half a minute",
+        "newTab": "opens in a new tab",
+        "soonTitle": "signup opens at the kickoff",
+        "soon": "The form goes live with the workshop on August 7. We announce the link on NaN's Discord."
+      },
+      "showcase": {
+        "label": "what's already shipping",
+        "title": "This is what's coming out of building this way.",
+        "lead": "None of this is ours. These are projects other people posted over the last few weeks: every card goes to the original post, which is where the video lives.",
+        "credits": "credits the Gauntlet Loop",
+        "foot": "All posted between July 25 and August 8, 2026.",
+        "items": {
+          "claudefare": {
+            "title": "Modern Claudefare",
+            "desc": "A Call of Duty remake with four maps, solo and multiplayer, and 84,100 lines of code. Its author says they put it together in a few days applying the principles of the Gauntlet Loop."
+          },
+          "original": {
+            "title": "The original",
+            "desc": "The shooter that started all of this. Not one external asset: every line is custom."
+          },
+          "museum": {
+            "title": "The Neural Museum",
+            "desc": "A museum you walk through where every framed piece is an AI paper."
+          },
+          "anatomy": {
+            "title": "Anatomy Atelier",
+            "desc": "Human anatomy in 3D, organ by organ, inside the browser."
+          },
+          "ironveil": {
+            "title": "Ironveil Range",
+            "desc": "A playable ballistic missile defense simulator."
+          }
+        }
+      },
+      "join": {
+        "label": "the challenge",
+        "title": "The challenge is:",
+        "sub": "Build something good with the Gauntlet Loop prompt, using at least one NaN model. The theme is open: the shooter was the experiment, not the assignment.",
+        "reqTitle": "requirements",
+        "reqs": [
+          "Use at least one NaN model"
+        ],
+        "deliverLabel": "what you hand in at the end",
+        "signupTitle": "signup is always open",
+        "signupBody": "There's no early cut-off: the form stays open until closing day. Nobody is left out for showing up late. The calendar is there to spread the work, not to shut a door."
+      },
+      "context": {
+        "label": "where this comes from",
+        "title": "Someone asked an agent for a Call of Duty.",
+        "lead": "Not once. They built a loop: sub-agents each owning one piece, and a critic comparing the result against the real game that refused to sign off until you couldn't tell them apart. That is a Gauntlet Loop, and it's what the workshop opening August takes apart. The challenge is that everyone builds their own.",
+        "cards": [
+          {
+            "q": "What do I build?",
+            "a": "Whatever you want. The theme is open: the shooter was the experiment, not the assignment. What gets shown is your loop and what came out of it."
+          },
+          {
+            "q": "Who runs it?",
+            "a": "NaN, the springboard for builders shipping with open AI. Taking part means being a member.",
+            "link": "How to join"
+          },
+          {
+            "q": "What do I get?",
+            "a": "A finished project, in front of people. No jury: the community votes on what was submitted and the most voted present it live."
+          }
+        ]
+      },
+      "prompt": {
+        "label": "the prompt",
+        "title": "This is the whole prompt. Copy it and make it yours.",
+        "lead": "Here it is in full, annotated with what each piece is doing. Copy it and swap in your own thing: what carries over isn't the shooter, it's the shape.",
+        "frame": "Gauntlet Prompt",
+        "copy": "Copy the prompt",
+        "copied": "Copied",
+        "copyFail": "Select it and copy it by hand",
+        "foot": "Copied verbatim, in English: it is the original. Yours does not have to be a shooter. The theme is open.",
+        "notes": {
+          "ref": "Reference",
+          "fanout": "Fan out sub-agents, each owning one element until it is perfect",
+          "loop": "Every sub-agent inside a loop",
+          "critic": "One critic sub-agent per builder sub-agent",
+          "harsh": "Be a harsh critic and do not stop until it is indistinguishable from the original",
+          "ultra": "Super saiyan 4, ultra instinct, sharingan, find the one piece"
+        }
+      },
+      "idea": {
+        "label": "the key idea",
+        "title": "A prompt doesn't do the work.",
+        "sub": "It fires up an autonomous system that builds, observes, critiques and corrects.",
+        "steps": [
+          {
+            "n": "01",
+            "name": "Goal",
+            "body": "One human instruction stating what has to exist."
+          },
+          {
+            "n": "02",
+            "name": "Builders",
+            "body": "Agents that write it. Each one owns a piece and ships it."
+          },
+          {
+            "n": "03",
+            "name": "Critics",
+            "body": "Agents that review the work against proof, not impressions."
+          },
+          {
+            "n": "04",
+            "name": "Evidence",
+            "body": "Screenshots, tests, metrics. Artifacts you can inspect."
+          },
+          {
+            "n": "05",
+            "name": "Iteration",
+            "body": "Beats the reference: it lands. Doesn't: back to the builder."
+          }
+        ],
+        "quote": "The edge isn't thinking harder. It's closing the loop with feedback you can observe.",
+        "note": "\"One prompt\" means one initial human instruction, not one call and not one agent."
+      },
+      "calendar": {
+        "label": "calendar",
+        "title": "August is a season, not a day.",
+        "month": "August 2026",
+        "weekdays": [
+          "Mon",
+          "Tue",
+          "Wed",
+          "Thu",
+          "Fri",
+          "Sat",
+          "Sun"
+        ],
+        "tbd": "Presentation day · to be confirmed",
+        "short": {
+          "workshop": "Kickoff",
+          "build": "Build",
+          "close": "Closes",
+          "voting": "Vote"
+        }
+      },
+      "submit": {
+        "label": "the submission",
+        "title": "What you submit has to prove what you built, and how.",
+        "sub": "One submission per project, editable until it closes.",
+        "requiredLabel": "required",
+        "required": [
+          "Name + description",
+          "Model used",
+          "16:9 cover image",
+          "Loop architecture",
+          "Repository",
+          "Human intervention",
+          "Initial prompt",
+          "Result + learnings"
+        ],
+        "requiredNote": "The last two are the ones that prove what you built and how.",
+        "recommendedLabel": "recommended",
+        "recommended": [
+          {
+            "name": "Video",
+            "why": "Shows the result"
+          },
+          {
+            "name": "Demo",
+            "why": "Lets people try it"
+          },
+          {
+            "name": "Baseline vs final",
+            "why": "Makes the improvement visible"
+          },
+          {
+            "name": "Tokens and time",
+            "why": "Explain the cost"
+          },
+          {
+            "name": "Logs and traces",
+            "why": "Make it auditable"
+          },
+          {
+            "name": "Diagram",
+            "why": "Clarifies the architecture"
+          }
+        ],
+        "rule": "the image is required · the video is recommended · a public demo is optional",
+        "notes": [
+          "Repository: it can stay private during August, but it has to be opened at closing time, or shared with the organisers so it can be verified.",
+          "Video: we don't host it. A YouTube, Loom or similar URL works."
+        ],
+        "whereTitle": "where to submit",
+        "whereBody": "The submission form will appear here later."
+      },
+      "after": {
+        "label": "after the close",
+        "title": "The community picks who presents.",
+        "sub": "No jury. What you ship gets shown, the community votes, and the most-voted projects present live.",
+        "steps": [
+          {
+            "when": "Aug 28",
+            "name": "Entry closes",
+            "body": "Signup and submissions stop."
+          },
+          {
+            "when": "A few days",
+            "name": "Community voting",
+            "body": "Everything submitted gets shown, and the community votes."
+          },
+          {
+            "when": "To be confirmed",
+            "name": "Presentations",
+            "body": "The most-voted projects present live."
+          }
+        ],
+        "tbdLabel": "date to be confirmed",
+        "tbdBody": "We're looking for a day that works for everyone, so it gets announced on Discord rather than pinned down now.",
+        "note": "Voting doesn't live on this page: it happens on NaN's Discord."
+      },
+      "close": {
+        "title": "One prompt. A whole system.",
+        "text": "August at NaN is a season: build it, let it be critiqued, correct it and ship something you can prove. Signup is open until the 28th."
+      }
+    },
     "community": {
       "metaTitle": "Community — NaN",
       "metaDesc": "NaN is the springboard for builders shipping with open AI. Build in public, together.",

@@ -54,6 +54,16 @@ describe('agenda de eventos.json', () => {
         const key = `nan.events.types.${a.type}`;
         expect(t(key, lang)).not.toBe(key);
       }
+      if (a.href !== undefined) {
+        // Ruta interna y sin prefijo de idioma: la fila la compone con
+        // `withLang`, así que un '/es/...' aquí daría '/es/es/...'. Y tiene que
+        // existir la página, o la fila enlaza a un 404.
+        expect(a.href.startsWith('/')).toBe(true);
+        expect(a.href.startsWith('/es/')).toBe(false);
+        expect(a.href.endsWith('/')).toBe(false);
+        const route = resolve(here, `../../pages${a.href}.astro`);
+        expect(existsSync(route), `no existe ${a.href}`).toBe(true);
+      }
       if (a.until !== undefined) {
         expect(a.until).toMatch(ISO);
         // Inclusivo y hacia delante: un `until` anterior al inicio no marcaría
@@ -86,6 +96,13 @@ describe('página de eventos', () => {
     expect(page).toContain('calendarDays(');
     expect(page).toContain('upcomingIn(');
     expect(page).not.toContain('a.date === iso');
+  });
+
+  test('las entradas con landing propia se pintan como enlace', () => {
+    // La fila era texto muerto: la entrada natural a la landing de un evento
+    // es su propia fila de agenda.
+    expect(page).toContain('a.href');
+    expect(page).toContain('withLang(a.href, lang)');
   });
 
   test('los textos de las tarjetas pasan por el resolutor de idioma', () => {
