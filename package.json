@@ -24,6 +24,7 @@
     "@astrojs/preact": "^5.0.2",
     "@fontsource-variable/archivo": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
+    "@scalar/api-reference": "^1.64.0",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.0.8",
     "astro-i18n": "^2.2.4",

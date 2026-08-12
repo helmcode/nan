@@ -9,6 +9,7 @@ import '@fontsource/jetbrains-mono/500.css';
 import '@fontsource/jetbrains-mono/700.css';
 
 import { getCollection } from 'astro:content';
+import { API_DOC_META, API_DOC_SLUG } from '../lib/apiDoc';
 
 interface Props {
   title: string;
@@ -28,17 +29,28 @@ const ogImage = `${siteUrl}/og/og-en.png`;
 const socialTitle = `${title} — NaN Docs`;
 
 const entries = await getCollection('docs');
-entries.sort((a, b) => a.data.order - b.data.order);
 
 interface NavItem {
   slug: string;
   label: string;
+  order: number;
 }
 
-const navItems: NavItem[] = entries.map((entry) => ({
-  slug: entry.id === 'intro' ? '/docs' : `/docs/${entry.id}`,
-  label: entry.data.title,
-}));
+/*
+ * La referencia de API no sale de la colección: /docs/api la sirve Scalar desde
+ * el spec (src/data/openapi.json), así que no hay entry del que sacar título ni
+ * orden. Se añade a mano para que siga estando en la navegación en el sitio
+ * donde estaba. Los metadatos vienen de apiDoc.ts, el mismo módulo del que los
+ * lee /api/docs, para que la página y el manifest no puedan discrepar.
+ */
+const navItems: NavItem[] = [
+  ...entries.map((entry) => ({
+    slug: entry.id === 'intro' ? '/docs' : `/docs/${entry.id}`,
+    label: entry.data.title,
+    order: entry.data.order,
+  })),
+  { slug: `/docs/${API_DOC_SLUG}`, label: API_DOC_META.title, order: API_DOC_META.order },
+].sort((a, b) => a.order - b.order);
 
 const currentPageIndex = navItems.findIndex((item) => item.slug === Astro.url.pathname);
 const prevPage = currentPageIndex > 0 ? navItems[currentPageIndex - 1] : null;

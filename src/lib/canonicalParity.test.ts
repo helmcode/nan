@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { getApiDocText } from './apiDoc';
 import { mdxToText, normalizeCanonicalText } from './mdxToText';
 
 /**
@@ -69,6 +70,33 @@ const corpus: Array<{ label: string; body: string }> = [
     body: stripFrontmatterSource(fs.readFileSync(path.join(docsDir, f), 'utf8')),
   })),
 ];
+
+/**
+ * La referencia de API ya no pasa por mdxToText: se genera desde el spec. Sigue
+ * viajando por el mismo sitio (/api/docs/api.md) y la vuelve a canonicalizar el
+ * mismo bot, así que tiene que cumplir exactamente las mismas propiedades. Sin
+ * esto, el hash del manifest y el que calcula el bot no coincidirían nunca y
+ * reindexaría la referencia entera en cada versión.
+ */
+describe('openapiToText output is a fixed point of the bot canonicaliser', () => {
+  const out = getApiDocText();
+
+  it('canonicalize(x) === x', () => {
+    expect(canonicalizeDocText(out, { stripFrontmatter: false })).toBe(out);
+  });
+
+  it('stable under strip_frontmatter=True too', () => {
+    expect(canonicalizeDocText(out, { stripFrontmatter: true })).toBe(out);
+  });
+
+  it('does not open with a frontmatter-shaped fence', () => {
+    expect(out.startsWith('---')).toBe(false);
+  });
+
+  it('has no run of three or more newlines for the canonicaliser to collapse', () => {
+    expect(out).not.toMatch(/\n{3,}/);
+  });
+});
 
 describe('mdxToText output is a fixed point of the bot canonicaliser', () => {
   for (const { label, body } of corpus) {

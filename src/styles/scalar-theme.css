@@ -1,0 +1,89 @@
+/* ============================================
+   Scalar API Reference — tema de NaN
+   ============================================
+
+   Scalar se tematiza entero con variables CSS (--scalar-*). Aquí se mapean a
+   los tokens de src/styles/tokens.css, que es la fuente de verdad del sistema:
+   ningún hex suelto en este fichero. En la versión de helmcode ese cableado se
+   quedó pendiente y el tema heredó literales; aquí se hace desde el principio,
+   así que cambiar el violeta en tokens.css cambia también la referencia de API.
+
+   El sistema de NaN es SOLO modo oscuro (tokens.css), así que no se define
+   `.light-mode`: el componente fuerza el modo oscuro y oculta el conmutador.
+   Referencia de variables: https://scalar.com/products/api-references/themes */
+
+@import './tokens.css';
+
+:root {
+  --scalar-font: var(--font-sans);
+  --scalar-font-code: var(--font-mono);
+
+  /* Esquina recta en toda la UI, igual que el resto del sitio. */
+  --scalar-radius: var(--radius-ui);
+  --scalar-radius-lg: var(--radius-ui);
+  --scalar-radius-xl: var(--radius-ui);
+}
+
+/* Scalar aplica el tema bajo .dark-mode. El componente lo fuerza siempre. */
+.dark-mode {
+  --scalar-background-1: var(--color-bg); /* base */
+  --scalar-background-2: var(--color-surface); /* elevado — cards, bloques de código */
+  --scalar-background-3: #1B1B1F; /* hovers y anidados: un escalón sobre --color-surface */
+  --scalar-background-accent: var(--color-violet-dim);
+
+  /* Rampa de texto: los tres niveles del sistema, sin inventar grises nuevos. */
+  --scalar-color-1: var(--color-text); /* titulares, nombres de propiedad */
+  --scalar-color-2: var(--color-body); /* prosa y descripciones */
+  --scalar-color-3: var(--color-muted); /* metadatos, pistas */
+
+  /* El acento va con --color-violet-2 y no con --color-violet: Scalar lo usa
+     sobre todo en TEXTO (enlaces, pestaña activa, nombres de operación), y la
+     regla de contraste de tokens.css reserva --color-violet para rellenos por
+     quedarse en 3.43:1. El claro cumple AA (5.39:1) sobre el off-black. */
+  --scalar-color-accent: var(--color-violet-2);
+  --scalar-border-color: var(--color-line);
+
+  /* Paleta semántica: pastillas de método HTTP, badges de tipo y resaltado de
+     sintaxis. Es la única parte que NO puede colapsar al monoacento — un POST
+     y un DELETE tienen que distinguirse entre sí. */
+  --scalar-color-green: #3FB950;
+  --scalar-color-red: #F85149;
+  --scalar-color-yellow: #E3B341;
+  --scalar-color-blue: #58A6FF;
+  --scalar-color-orange: #FF9A4D;
+  --scalar-color-purple: var(--color-violet-2);
+}
+
+/* ── Jerarquía por brillo y peso, no por tono ────────────────────────────────
+   El nombre de propiedad lee fuerte y en peso medio en vez de ir coloreado, y
+   los tipos se quedan apagados. Así el violeta sigue significando una sola
+   cosa en todo el sitio: interactivo. Las clases son de Scalar. */
+.property .property-name,
+.property-name {
+  color: var(--scalar-color-1);
+  font-weight: 600;
+}
+.property-detail-value {
+  color: var(--scalar-color-3);
+}
+
+/* OJO: no forzar `height: 100vh` en #scalar-api-reference / .scalar-app. Scalar
+   dimensiona su propio layout (100dvh + --refs-sidebar-height, grid CSS) y
+   constreñirlo rompe la sincronía de scroll del sidebar: los enlaces dejan de
+   responder. El layout es suyo. */
+
+/* ── Funciones de producto alojado ───────────────────────────────────────────
+   "Ask AI" y "Generate MCP" apuntan a la nube de Scalar. NO se ocultan aquí:
+   se apagan por configuración en ApiReference.astro (`agent.disabled` y
+   `mcp.disabled`), porque ocultarlas por CSS no evitaba que el componente se
+   montara y llamara a api.scalar.com en cada carga.
+
+   La atribución "Powered by Scalar" se MANTIENE a propósito: Scalar es MIT y
+   el crédito es suyo. */
+
+/* El sitio es solo oscuro, así que el conmutador de color no tiene sentido:
+   dejarlo visible ofrece un modo claro que el resto del sitio no tiene. */
+.scalar-app .darklight,
+.scalar-app .darklight-reference {
+  display: none !important;
+}

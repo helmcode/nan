@@ -9,7 +9,7 @@ order: 5
 NaN Cloud lets you deploy AI agents in your own **microVM**: a lightweight virtual machine with QEMU + KVM, its own kernel, its own filesystem, and full root access. Isolated from the host and from other members. The first available agent type is **Hermes**.
 
 > **Using an agent you host yourself?**
-> If you run your own MCP-compatible agent elsewhere, you can plug our tools (such as web search) straight into it with the same API key via our remote [MCP server](/docs/api#mcp).
+> If you run your own MCP-compatible agent elsewhere, you can plug our tools (such as web search) straight into it with the same API key via our remote [MCP server](/docs/api#tag/mcp).
 
 ## Architecture
 

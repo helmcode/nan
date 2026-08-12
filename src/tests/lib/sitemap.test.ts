@@ -118,7 +118,31 @@ describe('sitemap.xml', () => {
   test('sin documentos, el sitemap sigue siendo válido', async () => {
     const { xml } = await sitemap([]);
     expect(xml).toContain('<urlset');
-    expect(xml.includes('/docs/')).toBe(false);
+    // La referencia de API no depende de la colección, así que sobrevive a una
+    // colección vacía; lo que no puede aparecer es ninguna guía.
+    expect(locs(xml).filter((u) => u.includes('/docs/'))).toEqual([
+      `${SITE}/docs/api`,
+      `${SITE}/es/docs/api`,
+    ]);
+  });
+
+  /**
+   * /docs/api dejó de salir de la colección: la sirve Scalar desde el spec. Es
+   * además la única página de /docs que existe en español, así que es la única
+   * de la sección que lleva alternates. Si algún día se vuelve a colar en la
+   * colección, saldría dos veces — lo cubre el test de URLs repetidas.
+   */
+  test('la referencia de API entra aunque no esté en la colección, y con sus dos idiomas', async () => {
+    const { xml } = await sitemap([{ id: 'intro' }]);
+    const urls = locs(xml);
+
+    expect(urls).toContain(`${SITE}/docs/api`);
+    expect(urls).toContain(`${SITE}/es/docs/api`);
+
+    const block = xml.match(/<url><loc>https:\/\/nan\.builders\/docs\/api<\/loc>(.*?)<\/url>/)?.[1] ?? '';
+    expect(block).toContain(`hreflang="en" href="${SITE}/docs/api"`);
+    expect(block).toContain(`hreflang="es" href="${SITE}/es/docs/api"`);
+    expect(block).toContain(`hreflang="x-default" href="${SITE}/docs/api"`);
   });
 
   test('no hay URLs repetidas', async () => {

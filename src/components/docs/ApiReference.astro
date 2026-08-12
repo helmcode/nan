@@ -1,0 +1,336 @@
+---
+/*
+ * ApiReference — la referencia de API interactiva de /docs/api, servida con
+ * Scalar desde src/data/openapi.json en vez de escrita a mano en MDX.
+ *
+ * Es una página COMPLETA, no un componente dentro de Docs.astro: Scalar trae su
+ * propio layout (sidebar sincronizado, paneles pegajosos, grid a 100dvh) y
+ * meterlo dentro del layout de docs obliga a pelearse con él. Lo que se aporta
+ * es la barra superior de NaN encima, y a Scalar se le deja el resto.
+ *
+ * Ambos idiomas renderizan el MISMO spec: el contenido de una referencia de API
+ * se queda en inglés por convención, y lo que se traduce es el chrome y las
+ * etiquetas de UI de Scalar (su opción `locale`). El cambio de idioma va con
+ * enlaces normales, como el resto del sitio (Nav.astro), no con el intercambio
+ * en caliente que se montó en helmcode.
+ */
+import { switchLocalePath, type Locale } from '../../lib/i18n';
+
+interface Props {
+  lang?: Locale;
+}
+
+const { lang = 'en' } = Astro.props;
+const pfx = lang === 'es' ? '/es' : '';
+
+const t = {
+  en: {
+    docs: 'Docs',
+    guides: 'Guides',
+    ref: 'API Reference',
+    platform: 'Platform ↗',
+    site: 'nan.builders ↗',
+    title: 'API Reference — NaN Docs',
+    description:
+      'Interactive reference for the NaN API: OpenAI-compatible endpoints for chat, embeddings, rerank, audio, images and web search.',
+  },
+  es: {
+    docs: 'Docs',
+    guides: 'Guías',
+    ref: 'Referencia API',
+    platform: 'Plataforma ↗',
+    site: 'nan.builders ↗',
+    title: 'Referencia API — NaN Docs',
+    description:
+      'Referencia interactiva de la API de NaN: endpoints compatibles con OpenAI para chat, embeddings, rerank, audio, imágenes y búsqueda web.',
+  },
+}[lang];
+
+const SITE = 'https://nan.builders';
+const canonical = `${SITE}${Astro.url.pathname.replace(/\/+$/, '') || '/'}`;
+const ogImage = `${SITE}/og/og-${lang}.png`;
+
+/*
+ * `connect-src` tiene que dejar salir a api.nan.builders o el "try it" no
+ * funciona: el navegador manda la petición desde esta página al dominio de la
+ * API. Va directo a propósito, sin el proxy en la nube de Scalar (`proxyUrl:
+ * ''` abajo) — mandar la key de un miembro a un tercero contradice el "zero
+ * logs" del producto. La API responde con CORS abierto, así que no hace falta
+ * intermediario. `worker-src blob:` es para el resaltado de sintaxis de Scalar.
+ */
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  "img-src 'self' data: https:",
+  "connect-src 'self' https://api.nan.builders",
+  "worker-src 'self' blob:",
+  "frame-src 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content={t.description} />
+    <meta http-equiv="Content-Security-Policy" content={CSP} />
+
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en" href={`${SITE}/docs/api`} />
+    <link rel="alternate" hreflang="es" href={`${SITE}/es/docs/api`} />
+    <link rel="alternate" hreflang="x-default" href={`${SITE}/docs/api`} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="NaN" />
+    <meta property="og:title" content={t.title} />
+    <meta property="og:description" content={t.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={t.title} />
+    <meta name="twitter:description" content={t.description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <title>{t.title}</title>
+
+    <!--
+      Scalar se monta en cliente, así que entre que carga el HTML y arranca el
+      JS hay un hueco. Pintar el fondo del sistema aquí evita que ese hueco se
+      vea como un flash blanco (el navegador pinta blanco por defecto).
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #0b0b0c;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="docs-top">
+      <a class="docs-brand" href={`${pfx}/docs`}>
+        <img src="/nan-logo.png" alt="NaN" height="26" width="26" />
+        <span class="docs-brand__name">NaN</span>
+        <span class="docs-brand__tag">{t.docs}</span>
+      </a>
+      <nav class="docs-nav" aria-label={t.ref}>
+        <a href={`${pfx}/docs`}>{t.guides}</a>
+        <a href={`${pfx}/docs/api`} aria-current="page" class="is-active">{t.ref}</a>
+        <a href="https://cloud.nan.builders/">{t.platform}</a>
+        <a href={pfx || '/'}>{t.site}</a>
+        <span class="docs-lang" role="group" aria-label="Language">
+          <a
+            href={switchLocalePath(Astro.url.pathname, 'en')}
+            hreflang="en"
+            class:list={['docs-lang__opt', { 'is-active': lang === 'en' }]}>EN</a
+          >
+          <span class="docs-lang__sep" aria-hidden="true">/</span>
+          <a
+            href={switchLocalePath(Astro.url.pathname, 'es')}
+            hreflang="es"
+            class:list={['docs-lang__opt', { 'is-active': lang === 'es' }]}>ES</a
+          >
+        </span>
+      </nav>
+    </header>
+
+    <!-- Scalar se monta aquí. -->
+    <div id="scalar-api-reference"></div>
+
+    <style is:global>
+      /* Baja los paneles pegajosos de Scalar por debajo de nuestra barra. */
+      .scalar-app {
+        --refs-header-height: 56px !important;
+      }
+
+      .docs-top {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        height: 56px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--space-5);
+        background: var(--color-bg);
+        border-bottom: 1px solid var(--color-line);
+        font-family: var(--font-mono);
+      }
+
+      .docs-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        text-decoration: none;
+      }
+      .docs-brand img {
+        display: block;
+        height: 26px;
+        width: auto;
+      }
+      .docs-brand__name {
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--color-text);
+        letter-spacing: -0.01em;
+      }
+      .docs-brand__tag {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-muted);
+        border-left: 1px solid var(--color-line);
+        padding-left: var(--space-3);
+        margin-left: var(--space-1);
+      }
+
+      .docs-nav {
+        display: flex;
+        align-items: center;
+        gap: var(--space-6);
+      }
+      .docs-nav > a {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-body);
+        text-decoration: none;
+        transition: color var(--dur-micro) var(--ease);
+      }
+      .docs-nav > a:hover {
+        color: var(--color-link);
+      }
+      .docs-nav > a.is-active {
+        color: var(--color-link);
+      }
+
+      .docs-lang {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        padding-left: var(--space-3);
+        border-left: 1px solid var(--color-line);
+        font-size: 12px;
+      }
+      .docs-lang__opt {
+        color: var(--color-muted);
+        text-decoration: none;
+        padding: 0 var(--space-1);
+        transition: color var(--dur-micro) var(--ease);
+      }
+      .docs-lang__opt:hover {
+        color: var(--color-link);
+      }
+      .docs-lang__opt.is-active {
+        color: var(--color-text);
+        font-weight: 700;
+      }
+      .docs-lang__sep {
+        color: var(--color-line);
+      }
+
+      /* Tablet: fuera los enlaces externos, se quedan Guías / Referencia. */
+      @media (max-width: 760px) {
+        .docs-nav > a:nth-of-type(n + 3) {
+          display: none;
+        }
+      }
+      /* Móvil: solo la marca y el selector de idioma. */
+      @media (max-width: 560px) {
+        .docs-nav > a {
+          display: none;
+        }
+        .docs-brand__tag {
+          display: none;
+        }
+        .docs-top {
+          padding: 0 var(--space-4);
+        }
+      }
+    </style>
+
+    <script>
+      import { createApiReference } from '@scalar/api-reference';
+      // La hoja de estilos de Scalar NO se inyecta sola cuando el paquete se
+      // empaqueta con Vite, así que hay que importarla a mano. Sin esto la
+      // referencia sale sin estilar: SVGs gigantes y el nav como lista de
+      // bullets.
+      import '@scalar/api-reference/style.css';
+      import '../../styles/scalar-theme.css';
+
+      const SELECTOR = '#scalar-api-reference';
+      const LANG = document.documentElement.lang === 'es' ? 'es' : 'en';
+
+      const CONFIG = {
+        url: '/openapi.json',
+        pageTitle: 'NaN API',
+        locale: LANG,
+        // El sitio es solo oscuro; sin forzarlo, Scalar sigue al sistema y un
+        // visitante en claro vería la referencia en blanco sobre un sitio negro.
+        darkMode: true,
+        forceDarkModeState: 'dark' as const,
+        // Scalar inyecta por defecto sus propias fuentes desde fonts.scalar.com.
+        // Eso manda la IP de cada visitante a un tercero, que es exactamente lo
+        // que se evitó autohospedando las fuentes del resto del sitio (ver
+        // Docs.astro). Además no hacen falta: el tema ya usa Archivo y JetBrains
+        // Mono vía --scalar-font / --scalar-font-code.
+        withDefaultFonts: false,
+        // "Generate MCP" es una función del producto alojado de Scalar: consulta
+        // su registro en api.scalar.com en cada carga. Se apaga aquí y no solo
+        // ocultando el botón por CSS, porque ocultarlo no evita la petición.
+        // Nada que ver con el endpoint /mcp de NaN, que sí se documenta: eso es
+        // una ruta del spec, esto es una integración de Scalar.
+        mcp: { disabled: true },
+        // "Ask AI" es el asistente alojado de Scalar. Ocultar su botón no basta:
+        // el componente se monta igual y consulta api.scalar.com en cada carga
+        // (AgentScalarChatInterface, el que pedía /vector/registry). Se apaga.
+        agent: { disabled: true },
+        // Parámetros de petición desplegados; respuestas compactas.
+        expandAllSchemaProperties: true,
+        defaultOpenAllTags: true,
+        // Los schemas reutilizables ya salen embebidos en cada endpoint.
+        hideModels: true,
+        // Se ocultan los snippets HTTP automáticos: el spec trae x-codeSamples
+        // curados (cURL + SDK de OpenAI) para cada endpoint.
+        hiddenClients: true as const,
+        // Sin el proxy en la nube de Scalar: el "try it" va directo contra
+        // api.nan.builders, que responde con CORS abierto. Así la key del
+        // miembro no pasa por un tercero.
+        proxyUrl: '',
+      };
+
+      let instance: ReturnType<typeof createApiReference> | null = null;
+
+      function mount() {
+        if (instance) return;
+        if (!document.querySelector(SELECTOR)) return;
+        instance = createApiReference(SELECTOR, CONFIG);
+      }
+
+      function unmount() {
+        instance?.destroy?.();
+        const el = document.querySelector(SELECTOR);
+        if (el) el.innerHTML = '';
+        instance = null;
+      }
+
+      mount();
+      // Red de seguridad para view transitions: hoy no hay ClientRouter, así
+      // que estos oyentes no se disparan. Si algún día se añade, sin esto la
+      // referencia solo aparecería tras recargar a mano.
+      document.addEventListener('astro:before-swap', unmount);
+      document.addEventListener('astro:page-load', mount);
+    </script>
+  </body>
+</html>
