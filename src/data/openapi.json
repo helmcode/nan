@@ -1212,11 +1212,6 @@
                   "guidance": {
                     "type": "number",
                     "description": "NaN extension: FLUX guidance scale (in OpenAI SDKs, pass via `extra_body`)."
-                  },
-                  "enhance_prompt": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "NaN extension: when `true`, an AI model first rewrites your prompt into a richer, more detailed description before generation — enriching style, lighting and composition without adding new subjects. Defaults to `false` on the API (in OpenAI SDKs, pass via `extra_body`). The rewritten prompt is used internally and is not returned in the response."
                   }
                 }
               }
@@ -1345,11 +1340,6 @@
                   "guidance": {
                     "type": "number",
                     "description": "NaN extension: FLUX guidance scale (form field)."
-                  },
-                  "enhance_prompt": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "NaN extension: when `true`, an AI model first rewrites your prompt into a richer description before generation (subjects unchanged). Send as a form field; defaults to `false`. The rewritten prompt is used internally and is not returned."
                   }
                 }
               }
