@@ -144,3 +144,57 @@ export function getRateLimitsConfig(env: RateLimitsEnv = {}): RateLimitsConfig {
     },
   };
 }
+
+/**
+ * The rate-limit section of the OpenAPI spec, built from this same config.
+ *
+ * The spec (src/data/openapi.json) carries a `{{RATE_LIMITS}}` placeholder
+ * instead of the numbers, and it is filled in when the spec is served. Without
+ * this the numbers would be a third hardcoded copy, which is the exact failure
+ * this module was written to prevent: the component and the extractor had
+ * already drifted once (60 rpm against 100 rpm), and `RATE_LIMIT_RPM` is an env
+ * var, so a deployed change would update /docs/models and leave /docs/api
+ * publishing a number that is no longer true.
+ *
+ * The wording is the spec's (English, table-first, addressed to whoever is
+ * about to write a client) rather than the docs page's; only the data is
+ * shared, which is what has to agree.
+ */
+export function rateLimitsToSpecMarkdown(config: RateLimitsConfig): string {
+  const tpm = config.tokensPerMinuteByModel;
+  const rows = [
+    '| Limit | Value |',
+    '| --- | --- |',
+    `| Requests per minute | ${config.perKey.requestsPerMinute} |`,
+    `| Concurrent requests | ${config.perKey.maxParallel} |`,
+  ];
+  if (tpm.length) {
+    // The label already carries its unit ("1.5M tpm"), so the value column
+    // takes it verbatim and the models are listed in the limit column.
+    const models = tpm.map((m) => `\`${m.model}\``).join(', ');
+    rows.push(`| Tokens per minute (${models}) | ${tpm[0].label.replace(/\s*tpm$/, '')} |`);
+  }
+  for (const m of config.requestsPerMinuteByModel) {
+    rows.push(`| Requests per minute (\`${m.model}\`) | ${m.label.replace(/\s*rpm$/, '')} |`);
+  }
+
+  const out = [
+    'Limits apply per API key (RPM and concurrency), not on total token volume:',
+    '',
+    ...rows,
+  ];
+
+  for (const m of config.windowedModels) {
+    out.push(
+      '',
+      `\`${m.model}\` is not gated by a per-minute rate but by a rolling window plus an ` +
+        `allowance per billing period: ${formatTokens(m.windowTokens)} tokens per rolling ` +
+        `${m.windowHours} hours and a ${formatTokens(m.periodCapTokens)}-token allowance that ` +
+        `returns to zero when your billing period starts. The window is rolling, not a daily ` +
+        `reset. Context window: ${formatTokens(m.contextTokens)} tokens, ` +
+        `${m.maxParallel} concurrent requests.`,
+    );
+  }
+
+  return out.join('\n');
+}

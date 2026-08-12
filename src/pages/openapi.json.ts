@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
-import spec from '../data/openapi.json';
+import { env } from 'cloudflare:workers';
+import { resolveSpec } from '../lib/apiDoc';
+import { getRateLimitsConfig } from '../lib/rateLimits';
 
 /**
  * El spec OpenAPI que renderiza Scalar en /docs/api.
@@ -9,13 +11,17 @@ import spec from '../data/openapi.json';
  * mismo sitio. Con el fichero en public/ habría que duplicarlo o leerlo del
  * disco, y en Workers no hay disco.
  *
- * Prerenderizado: es contenido estático que cambia solo cuando se despliega, y
- * así Scalar lo pide a un asset en vez de despertar al worker en cada visita.
+ * NO se prerenderiza, aunque el contenido sea casi estático: los rate limits
+ * salen de rateLimits.ts, que lee RATE_LIMIT_RPM y RATE_LIMIT_PARALLEL del
+ * entorno (wrangler.jsonc). Prerenderizado congelaría esos números en el build
+ * y /docs/api publicaría un límite distinto del que publica /docs/models en
+ * cuanto alguien cambiase la variable. La cabecera de caché se encarga de que
+ * el coste sea el de una petición por hora.
  */
-export const prerender = true;
+export const prerender = false;
 
 export const GET: APIRoute = () =>
-  new Response(JSON.stringify(spec), {
+  new Response(JSON.stringify(resolveSpec(getRateLimitsConfig(env))), {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'public, max-age=3600',

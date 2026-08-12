@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { getApiDocText } from '../../lib/apiDoc';
+import { DEFAULT_RATE_LIMITS } from '../../lib/rateLimits';
 import { mdxToText } from '../../lib/mdxToText';
 
 /**
@@ -33,7 +34,7 @@ let api = '';
 
 beforeAll(async () => {
   models = await mdxToText(docBody('models'));
-  api = getApiDocText();
+  api = getApiDocText(DEFAULT_RATE_LIMITS);
 });
 
 /** The glm5.2 card only, so a 256K from another model cannot pass for it. */

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import spec from '../data/openapi.json';
+import { resolveSpec } from './apiDoc';
+import { DEFAULT_RATE_LIMITS, formatTokens, getRateLimitsConfig } from './rateLimits';
 
 /**
  * Tripwire over src/data/openapi.json, the spec Scalar renders at /docs/api
@@ -156,5 +158,59 @@ describe('openapi.json: the model catalogue', () => {
     ].schema.properties.model.description as string;
     expect(chat).toContain('glm5.2');
     expect(chat).toMatch(/premium tier/i);
+  });
+});
+
+/**
+ * The rate limits are NOT written into the spec: they come from rateLimits.ts,
+ * the module that exists because the docs page and the docs API had already
+ * drifted apart once (60 rpm against 100 rpm). Hardcoding them here would have
+ * been a third copy, and one that cannot follow RATE_LIMIT_RPM, an env var.
+ */
+describe('openapi.json: rate limits come from the single source of truth', () => {
+  it('ships a placeholder rather than the numbers', () => {
+    expect(spec.info.description).toContain('{{RATE_LIMITS}}');
+    expect(spec.info.description).not.toMatch(/\| Requests per minute \|/);
+  });
+
+  it('resolves the placeholder from the config it is given', () => {
+    const description = resolveSpec(DEFAULT_RATE_LIMITS).info.description;
+    expect(description).not.toContain('{{RATE_LIMITS}}');
+    expect(description).toContain(
+      `| Requests per minute | ${DEFAULT_RATE_LIMITS.perKey.requestsPerMinute} |`,
+    );
+    expect(description).toContain(
+      `| Concurrent requests | ${DEFAULT_RATE_LIMITS.perKey.maxParallel} |`,
+    );
+  });
+
+  /** An env override has to reach /docs/api, not only /docs/models. */
+  it('follows an env override of the per-key limits', () => {
+    const overridden = getRateLimitsConfig({ RATE_LIMIT_RPM: '250', RATE_LIMIT_PARALLEL: '9' });
+    const description = resolveSpec(overridden).info.description;
+    expect(description).toContain('| Requests per minute | 250 |');
+    expect(description).toContain('| Concurrent requests | 9 |');
+    expect(description).not.toContain(
+      `| Requests per minute | ${DEFAULT_RATE_LIMITS.perKey.requestsPerMinute} |`,
+    );
+  });
+
+  it('publishes every model that carries a per-minute limit', () => {
+    const description = resolveSpec(DEFAULT_RATE_LIMITS).info.description;
+    for (const m of DEFAULT_RATE_LIMITS.tokensPerMinuteByModel) {
+      expect(description, m.model).toContain(`\`${m.model}\``);
+    }
+    for (const m of DEFAULT_RATE_LIMITS.requestsPerMinuteByModel) {
+      expect(description, m.model).toContain(`\`${m.model}\``);
+    }
+  });
+
+  it('publishes the windowed model with its real window and allowance', () => {
+    const description = resolveSpec(DEFAULT_RATE_LIMITS).info.description;
+    for (const m of DEFAULT_RATE_LIMITS.windowedModels) {
+      expect(description).toContain(`${formatTokens(m.windowTokens)} tokens per rolling ${m.windowHours} hours`);
+      expect(description).toContain(`${formatTokens(m.periodCapTokens)}-token allowance`);
+      expect(description).toContain(`${formatTokens(m.contextTokens)} tokens`);
+    }
   });
 });

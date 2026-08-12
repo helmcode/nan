@@ -46,7 +46,7 @@ export const GET: APIRoute = async ({ request }) => {
     // The API reference is no longer a file in the collection: Scalar serves it
     // from the spec. It is published as an entry all the same, because to a
     // manifest consumer it is still one more docs page. See src/lib/apiDoc.ts.
-    const apiText = getApiDocText();
+    const apiText = getApiDocText(rateLimits);
     const apiEntry = {
       slug: API_DOC_SLUG,
       title: API_DOC_META.title,

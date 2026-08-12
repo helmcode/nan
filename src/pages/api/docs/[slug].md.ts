@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     // body is generated from the spec. See src/lib/apiDoc.ts.
     let body: string;
     if (slug === API_DOC_SLUG) {
-      body = getApiDocText();
+      body = getApiDocText(getRateLimitsConfig(env));
     } else {
       const entry = await getEntry('docs', slug);
       if (!entry) {

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { getApiDocText } from './apiDoc';
+import { DEFAULT_RATE_LIMITS } from './rateLimits';
 import { mdxToText, normalizeCanonicalText } from './mdxToText';
 
 /**
@@ -79,7 +80,7 @@ const corpus: Array<{ label: string; body: string }> = [
  * would re-index the whole reference on every version.
  */
 describe('openapiToText output is a fixed point of the bot canonicaliser', () => {
-  const out = getApiDocText();
+  const out = getApiDocText(DEFAULT_RATE_LIMITS);
 
   it('canonicalize(x) === x', () => {
     expect(canonicalizeDocText(out, { stripFrontmatter: false })).toBe(out);
