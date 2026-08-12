@@ -130,8 +130,9 @@ describe('apiSearchHeadings', () => {
 });
 
 describe('the API reference entry of the nav', () => {
-  it('carries a group so it does not fall into the default bucket', () => {
-    expect(API_DOC_META.group).toBe('Reference');
+  it('carries a group per locale, so it does not split the Spanish nav', () => {
+    expect(API_DOC_META.group.en).toBe('Reference');
+    expect(API_DOC_META.group.es).toBe('Referencia');
   });
 
   it('keeps the slug the rest of the pipeline addresses it by', () => {

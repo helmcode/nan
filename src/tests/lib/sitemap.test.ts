@@ -104,15 +104,24 @@ describe('sitemap.xml', () => {
     expect(block).toContain(`hreflang="x-default" href="${SITE}/events"`);
   });
 
-  test('la documentación entra desde la colección, y sin alternates (solo existe en inglés)', async () => {
+  /**
+   * The guides used to be English-only and were listed without alternates.
+   * They now exist at /docs/<slug> and /es/docs/<slug>, so each is listed in
+   * both languages, cross-declared. Whether the Spanish copy is translated yet
+   * is a content matter and does not change what is indexable.
+   */
+  test('every guide is listed in both languages, with its alternates', async () => {
     const { xml } = await sitemap([{ id: 'intro' }, { id: 'apps' }]);
     const urls = locs(xml);
 
-    expect(urls).toContain(`${SITE}/docs/intro`);
-    expect(urls).toContain(`${SITE}/docs/apps`);
+    for (const id of ['intro', 'apps']) {
+      expect(urls).toContain(`${SITE}/docs/${id}`);
+      expect(urls).toContain(`${SITE}/es/docs/${id}`);
+    }
 
     const block = xml.match(/<url><loc>https:\/\/nan\.builders\/docs\/intro<\/loc>(.*?)<\/url>/)?.[1] ?? '';
-    expect(block).not.toContain('hreflang');
+    expect(block).toContain(`hreflang="en" href="${SITE}/docs/intro"`);
+    expect(block).toContain(`hreflang="es" href="${SITE}/es/docs/intro"`);
   });
 
   test('sin documentos, el sitemap sigue siendo válido', async () => {

@@ -1,0 +1,29 @@
+---
+/*
+ * /es/docs and /es/docs/<slug>: the Spanish guides.
+ *
+ * It mirrors the English route but reads the `docsEs` collection. The static
+ * /es/docs/api route wins over this catch-all, exactly as it does in English.
+ */
+import { getEntry, render } from 'astro:content';
+import Docs from '../../../layouts/Docs.astro';
+
+const slugParam = Astro.params.slug;
+const slug = slugParam && slugParam.length > 0 ? slugParam : 'intro';
+
+const entry = await getEntry('docsEs', slug);
+
+if (!entry) {
+  return new Response('Not found', { status: 404 });
+}
+
+const { Content } = await render(entry);
+---
+
+<Docs
+  title={entry.data.title}
+  description={entry.data.description}
+  lang="es"
+>
+  <Content />
+</Docs>
