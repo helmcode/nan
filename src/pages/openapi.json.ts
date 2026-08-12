@@ -4,19 +4,19 @@ import { resolveSpec } from '../lib/apiDoc';
 import { getRateLimitsConfig } from '../lib/rateLimits';
 
 /**
- * El spec OpenAPI que renderiza Scalar en /docs/api.
+ * The OpenAPI spec Scalar renders at /docs/api.
  *
- * Vive en src/data/ y no en public/ para que haya UNA sola copia: el generador
- * de Markdown que alimenta /api/docs (src/lib/openapiToText.ts) lo importa del
- * mismo sitio. Con el fichero en public/ habría que duplicarlo o leerlo del
- * disco, y en Workers no hay disco.
+ * It lives in src/data/ rather than public/ so there is ONE copy: the Markdown
+ * generator behind /api/docs (src/lib/openapiToText.ts) imports it from the
+ * same place. With the file in public/ it would have to be duplicated or read
+ * from disk, and Workers has no disk.
  *
- * NO se prerenderiza, aunque el contenido sea casi estático: los rate limits
- * salen de rateLimits.ts, que lee RATE_LIMIT_RPM y RATE_LIMIT_PARALLEL del
- * entorno (wrangler.jsonc). Prerenderizado congelaría esos números en el build
- * y /docs/api publicaría un límite distinto del que publica /docs/models en
- * cuanto alguien cambiase la variable. La cabecera de caché se encarga de que
- * el coste sea el de una petición por hora.
+ * NOT prerendered, even though the content is nearly static: the rate limits
+ * come from rateLimits.ts, which reads RATE_LIMIT_RPM and RATE_LIMIT_PARALLEL
+ * from the env (wrangler.jsonc). Prerendering would freeze those numbers at
+ * build time, and /docs/api would publish a different limit from /docs/models
+ * the moment someone changed the variable. The cache header keeps the cost to
+ * one request an hour.
  */
 export const prerender = false;
 

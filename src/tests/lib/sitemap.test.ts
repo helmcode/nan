@@ -118,8 +118,8 @@ describe('sitemap.xml', () => {
   test('sin documentos, el sitemap sigue siendo válido', async () => {
     const { xml } = await sitemap([]);
     expect(xml).toContain('<urlset');
-    // La referencia de API no depende de la colección, así que sobrevive a una
-    // colección vacía; lo que no puede aparecer es ninguna guía.
+    // The API reference does not depend on the collection, so it survives an
+    // empty one; what must not appear is any guide.
     expect(locs(xml).filter((u) => u.includes('/docs/'))).toEqual([
       `${SITE}/docs/api`,
       `${SITE}/es/docs/api`,
@@ -127,12 +127,13 @@ describe('sitemap.xml', () => {
   });
 
   /**
-   * /docs/api dejó de salir de la colección: la sirve Scalar desde el spec. Es
-   * además la única página de /docs que existe en español, así que es la única
-   * de la sección que lleva alternates. Si algún día se vuelve a colar en la
-   * colección, saldría dos veces, lo cubre el test de URLs repetidas.
+   * /docs/api no longer comes from the collection: Scalar serves it from the
+   * spec. It is also the only page under /docs that exists in Spanish, so it is
+   * the only one in the section carrying alternates. If it ever sneaks back
+   * into the collection it would appear twice, which the duplicate-URL test
+   * covers.
    */
-  test('la referencia de API entra aunque no esté en la colección, y con sus dos idiomas', async () => {
+  test('the API reference is listed even though it is not in the collection, in both languages', async () => {
     const { xml } = await sitemap([{ id: 'intro' }]);
     const urls = locs(xml);
 

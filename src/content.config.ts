@@ -9,13 +9,13 @@ const docs = defineCollection({
     description: z.string(),
     order: z.number().int().min(0),
     /*
-     * Encabezado bajo el que la página aparece en la navegación de docs.
+     * The heading the page appears under in the docs navigation.
      *
-     * El nav de helmcode escribe los grupos a mano en el layout; aquí van en el
-     * dato para que añadir una guía siga siendo crear un fichero y no tocar
-     * también el layout, que es como se desincronizan estas cosas. El orden
-     * entre grupos sale del `order` más bajo de cada uno, así que tampoco hay
-     * una segunda lista que mantener.
+     * helmcode's nav writes the groups by hand in the layout; here they live in
+     * the data so adding a guide stays a matter of creating a file rather than
+     * also editing the layout, which is how these things drift apart. The order
+     * between groups comes from the lowest `order` in each, so there is no
+     * second list to maintain either.
      */
     group: z.string().default('Guides'),
     locale: z.string().default('es'),

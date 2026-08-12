@@ -1,9 +1,10 @@
 ---
 /*
- * /docs/api: la referencia interactiva.
+ * /docs/api: the interactive reference.
  *
- * Ruta estática, así que gana al catch-all `[...slug].astro` que sirve el resto
- * de la colección de docs. `api.mdx` ya no existe: el contenido sale del spec.
+ * A static route, so it wins over the `[...slug].astro` catch-all that serves
+ * the rest of the docs collection. `api.mdx` is gone: the content comes from
+ * the spec.
  */
 import ApiReference from '../../components/docs/ApiReference.astro';
 ---

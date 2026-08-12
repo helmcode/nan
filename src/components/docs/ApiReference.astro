@@ -1,25 +1,24 @@
 ---
 /*
- * ApiReference: la referencia de API interactiva de /docs/api, servida con
- * Scalar desde src/data/openapi.json en vez de escrita a mano en MDX.
+ * ApiReference: the interactive API reference at /docs/api, served with Scalar
+ * from src/data/openapi.json instead of hand-written in MDX.
  *
- * Es una página COMPLETA, no un componente dentro de Docs.astro: Scalar trae su
- * propio layout (sidebar sincronizado, paneles pegajosos, grid a 100dvh) y
- * meterlo dentro del layout de docs obliga a pelearse con él. Lo que se aporta
- * es la barra superior de NaN encima, y a Scalar se le deja el resto.
+ * It is a FULL page, not a component inside Docs.astro: Scalar brings its own
+ * layout (synced sidebar, sticky panels, a 100dvh grid) and putting it inside
+ * the docs layout means fighting it. What we add is NaN's top bar above it,
+ * and Scalar owns the rest.
  *
- * Ambos idiomas renderizan el MISMO spec: el contenido de una referencia de API
- * se queda en inglés por convención, y lo que se traduce es el chrome y las
- * etiquetas de UI de Scalar (su opción `locale`). El cambio de idioma va con
- * enlaces normales, como el resto del sitio (Nav.astro), no con el intercambio
- * en caliente que se montó en helmcode.
+ * Both languages render the SAME spec: an API reference's content stays in
+ * English by convention, and what gets translated is the chrome and Scalar's
+ * UI labels (its `locale` option). Switching language uses ordinary links,
+ * like the rest of the site (Nav.astro), not the hot swap built in helmcode.
  */
 /*
- * Fuentes autohospedadas, igual que Docs.astro y NanBase.astro. Sin esto la
- * página declara `--scalar-font: var(--font-sans)` (Archivo) pero el navegador
- * no tiene de dónde sacarla y cae al sistema: se veía correcta en las variables
- * CSS y mal en pantalla. No se pueden dejar a Scalar, que las serviría desde
- * fonts.scalar.com (ver `withDefaultFonts: false` más abajo).
+ * Self-hosted fonts, as in Docs.astro and NanBase.astro. Without these the page
+ * declares `--scalar-font: var(--font-sans)` (Archivo) but the browser has
+ * nowhere to get it from and falls back to the system one: correct in the CSS
+ * variables and wrong on screen. They cannot be left to Scalar, which would
+ * serve them from fonts.scalar.com (see `withDefaultFonts: false` below).
  */
 import '@fontsource-variable/archivo/wdth.css';
 import '@fontsource/jetbrains-mono/400.css';
@@ -36,7 +35,7 @@ interface Props {
 
 const { lang = 'en' } = Astro.props;
 
-/* Solo el copy de esta página: el de la barra vive en DocsTopBar.astro. */
+/* Only this page's copy: the bar's lives in DocsTopBar.astro. */
 const t = {
   en: {
     title: 'API Reference · NaN Docs',
@@ -55,12 +54,12 @@ const canonical = `${SITE}${Astro.url.pathname.replace(/\/+$/, '') || '/'}`;
 const ogImage = `${SITE}/og/og-${lang}.png`;
 
 /*
- * `connect-src` tiene que dejar salir a api.nan.builders o el "try it" no
- * funciona: el navegador manda la petición desde esta página al dominio de la
- * API. Va directo a propósito, sin el proxy en la nube de Scalar (`proxyUrl:
- * ''` abajo): mandar la key de un miembro a un tercero contradice el "zero
- * logs" del producto. La API responde con CORS abierto, así que no hace falta
- * intermediario. `worker-src blob:` es para el resaltado de sintaxis de Scalar.
+ * `connect-src` has to allow api.nan.builders or "try it" does not work: the
+ * browser sends the request from this page to the API's domain. It goes direct
+ * on purpose, without Scalar's cloud proxy (`proxyUrl: ''` below): sending a
+ * member's key to a third party contradicts the product's "zero logs". The API
+ * answers with open CORS, so no intermediary is needed. `worker-src blob:` is
+ * for Scalar's syntax highlighting.
  */
 const CSP = [
   "default-src 'self'",
@@ -108,9 +107,9 @@ const CSP = [
     <title>{t.title}</title>
 
     <!--
-      Scalar se monta en cliente, así que entre que carga el HTML y arranca el
-      JS hay un hueco. Pintar el fondo del sistema aquí evita que ese hueco se
-      vea como un flash blanco (el navegador pinta blanco por defecto).
+      Scalar mounts on the client, so there is a gap between the HTML loading
+      and the JS starting. Painting the system background here keeps that gap
+      from showing as a white flash (browsers paint white by default).
     -->
     <style>
       html,
@@ -123,13 +122,13 @@ const CSP = [
   <body class="docs">
     <DocsTopBar lang={lang} bilingual current="reference" />
 
-    <!-- Scalar se monta aquí. -->
+    <!-- Scalar mounts here. -->
     <div id="scalar-api-reference"></div>
 
     <style is:global>
-      /* Baja los paneles pegajosos de Scalar por debajo de nuestra barra. El
-         resto del chrome (barra, logotipo, enlaces, idioma) vive en
-         src/styles/docs-shell.css, compartido con el layout de las guías. */
+      /* Pushes Scalar's sticky panels below our bar. The rest of the chrome
+         (bar, wordmark, links, language) lives in src/styles/docs-shell.css,
+         shared with the guides layout. */
       .scalar-app {
         --refs-header-height: var(--doc-top) !important;
       }
@@ -137,10 +136,9 @@ const CSP = [
 
     <script>
       import { createApiReference } from '@scalar/api-reference';
-      // La hoja de estilos de Scalar NO se inyecta sola cuando el paquete se
-      // empaqueta con Vite, así que hay que importarla a mano. Sin esto la
-      // referencia sale sin estilar: SVGs gigantes y el nav como lista de
-      // bullets.
+      // Scalar's stylesheet is NOT auto-injected when the package is bundled
+      // with Vite, so it has to be imported by hand. Without it the reference
+      // renders unstyled: giant SVGs and the nav as a bullet list.
       import '@scalar/api-reference/style.css';
       import '../../styles/scalar-theme.css';
 
@@ -151,37 +149,38 @@ const CSP = [
         url: '/openapi.json',
         pageTitle: 'NaN API',
         locale: LANG,
-        // El sitio es solo oscuro; sin forzarlo, Scalar sigue al sistema y un
-        // visitante en claro vería la referencia en blanco sobre un sitio negro.
+        // The site is dark-only; without forcing it Scalar follows the system
+        // and a visitor in light mode would see a white reference on a black site.
         darkMode: true,
         forceDarkModeState: 'dark' as const,
-        // Scalar inyecta por defecto sus propias fuentes desde fonts.scalar.com.
-        // Eso manda la IP de cada visitante a un tercero, que es exactamente lo
-        // que se evitó autohospedando las fuentes del resto del sitio (ver
-        // Docs.astro). Además no hacen falta: el tema ya usa Archivo y JetBrains
-        // Mono vía --scalar-font / --scalar-font-code.
+        // By default Scalar injects its own fonts from fonts.scalar.com. That
+        // sends every visitor's IP to a third party, which is exactly what
+        // self-hosting the rest of the site's fonts avoids (see Docs.astro).
+        // They are not needed either: the theme already uses Archivo and
+        // JetBrains Mono via --scalar-font / --scalar-font-code.
         withDefaultFonts: false,
-        // "Generate MCP" es una función del producto alojado de Scalar: consulta
-        // su registro en api.scalar.com en cada carga. Se apaga aquí y no solo
-        // ocultando el botón por CSS, porque ocultarlo no evita la petición.
-        // Nada que ver con el endpoint /mcp de NaN, que sí se documenta: eso es
-        // una ruta del spec, esto es una integración de Scalar.
+        // "Generate MCP" is a hosted-product feature of Scalar: it queries
+        // their registry at api.scalar.com on every load. Turned off here and
+        // not merely by hiding the button with CSS, because hiding it does not
+        // stop the request. Nothing to do with NaN's /mcp endpoint, which IS
+        // documented: that is a spec route, this is a Scalar integration.
         mcp: { disabled: true },
-        // "Ask AI" es el asistente alojado de Scalar. Ocultar su botón no basta:
-        // el componente se monta igual y consulta api.scalar.com en cada carga
-        // (AgentScalarChatInterface, el que pedía /vector/registry). Se apaga.
+        // "Ask AI" is Scalar's hosted assistant. Hiding its button is not
+        // enough: the component mounts anyway and queries api.scalar.com on
+        // every load (AgentScalarChatInterface, the one requesting
+        // /vector/registry). Turned off.
         agent: { disabled: true },
-        // Parámetros de petición desplegados; respuestas compactas.
+        // Request parameters expanded; responses compact.
         expandAllSchemaProperties: true,
         defaultOpenAllTags: true,
-        // Los schemas reutilizables ya salen embebidos en cada endpoint.
+        // The reusable schemas are already shown inline per endpoint.
         hideModels: true,
-        // Se ocultan los snippets HTTP automáticos: el spec trae x-codeSamples
-        // curados (cURL + SDK de OpenAI) para cada endpoint.
+        // Hide the auto-generated HTTP snippets: the spec ships curated
+        // x-codeSamples (cURL + OpenAI SDK) for every endpoint.
         hiddenClients: true as const,
-        // Sin el proxy en la nube de Scalar: el "try it" va directo contra
-        // api.nan.builders, que responde con CORS abierto. Así la key del
-        // miembro no pasa por un tercero.
+        // No Scalar cloud proxy: "try it" goes straight to api.nan.builders,
+        // which answers with open CORS. That keeps the member's key from
+        // passing through a third party.
         proxyUrl: '',
       };
 
@@ -201,9 +200,9 @@ const CSP = [
       }
 
       mount();
-      // Red de seguridad para view transitions: hoy no hay ClientRouter, así
-      // que estos oyentes no se disparan. Si algún día se añade, sin esto la
-      // referencia solo aparecería tras recargar a mano.
+      // Safety net for view transitions: there is no ClientRouter today, so
+      // these listeners never fire. If one is ever added, without this the
+      // reference would only appear after a manual reload.
       document.addEventListener('astro:before-swap', unmount);
       document.addEventListener('astro:page-load', mount);
     </script>

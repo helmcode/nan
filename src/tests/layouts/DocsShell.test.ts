@@ -6,17 +6,17 @@ import { parseFrontmatter } from '@astrojs/markdown-remark';
 import { API_DOC_META } from '../../lib/apiDoc';
 
 /**
- * El shell de la documentación, vigilado sobre el código fuente.
+ * The documentation shell, guarded over the source.
  *
- * Existe por un caso real: al portar el shell de helmcode se perdieron cuatro
- * cosas del layout anterior (las migas, el botón de cerrar del cajón móvil, las
- * utilidades de layout del <body> y la coincidencia por prefijo del nav) y no
- * falló ni un test ni el build. Solo se vio comparando los dos ficheros a mano.
+ * It exists because of a real case: porting helmcode's shell lost four things
+ * from the previous layout (the breadcrumbs, the mobile drawer's close button,
+ * the <body> layout utilities and the nav's prefix matching) and neither a test
+ * nor the build failed. It only surfaced by diffing the two files by hand.
  *
- * Se comprueba la fuente y no el HTML renderizado, igual que NanBase.test.ts:
- * montar estas páginas en SSR arrastra la colección entera y los bindings de
- * Cloudflare. Es un guard tosco, pero cubre justo el modo de fallo que ocurrió:
- * que un trozo del layout desaparezca sin que nadie se entere.
+ * The source is checked rather than the rendered HTML, as in NanBase.test.ts:
+ * mounting these pages under SSR drags in the whole collection and the
+ * Cloudflare bindings. It is a blunt guard, but it covers exactly the failure
+ * mode that happened: a piece of the layout disappearing unnoticed.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -26,23 +26,22 @@ const layout = read('../../layouts/Docs.astro');
 const topBar = read('../../components/docs/DocsTopBar.astro');
 const shellCss = read('../../styles/docs-shell.css');
 
-describe('Docs.astro — piezas que no pueden desaparecer', () => {
-  it('pinta las migas de pan', () => {
+describe('Docs.astro: pieces that must not disappear', () => {
+  it('renders the breadcrumbs', () => {
     expect(layout).toContain('class="breadcrumb"');
     expect(layout).toContain('aria-label="Breadcrumb"');
   });
 
   /**
-   * Y las pinta DENTRO del <main>, no como hermanas suyas.
+   * And renders them INSIDE the <main>, not as its sibling.
    *
-   * `.docs-inner` es una rejilla de dos columnas (contenido y TOC). Al
-   * restaurar las migas quedaron como tercer hijo de esa rejilla, así que se
-   * llevaron la primera columna, el contenido se metió en la de 188px del TOC
-   * y la página salió con una palabra por línea. Los elementos estaban todos
-   * presentes, que es justo por lo que una comprobación de "¿existe?" no lo
-   * vio: el fallo era de colocación.
+   * `.docs-inner` is a two-column grid (content and TOC). When the breadcrumbs
+   * were restored they ended up as a third child of that grid, so they took the
+   * first column, the content landed in the TOC's 188px one and the page came
+   * out one word per line. Every element was present, which is precisely why an
+   * "does it exist?" check missed it: the fault was placement.
    */
-  it('mete las migas dentro del main, no como tercer hijo de la rejilla', () => {
+  it('puts the breadcrumbs inside main, not as a third child of the grid', () => {
     const main = layout.indexOf('<main id="docs-main"');
     const fin = layout.indexOf('</main>', main);
     const migas = layout.indexOf('class="breadcrumb"');
@@ -51,78 +50,78 @@ describe('Docs.astro — piezas que no pueden desaparecer', () => {
     expect(migas).toBeLessThan(fin);
   });
 
-  it('tiene enlace de saltar al contenido, apuntando al main', () => {
+  it('has a skip-to-content link pointing at main', () => {
     expect(layout).toContain('class="skip-link"');
     expect(layout).toContain('href="#docs-main"');
     expect(layout).toContain('id="docs-main"');
   });
 
-  it('mantiene el botón de cerrar del cajón móvil, y cableado', () => {
+  it('keeps the mobile drawer close button, and wired up', () => {
     expect(layout).toContain('id="docs-side-close"');
     expect(layout).toContain("getElementById('docs-side-close')");
-    // Sin la regla que lo enseña en móvil, el botón existe pero no se ve.
+    // Without the rule that shows it on mobile, the button exists but is invisible.
     expect(shellCss).toMatch(/\.docs-side-close\s*\{[^}]*display:\s*block/s);
   });
 
-  it('conserva el índice de contenidos y el prev/next', () => {
+  it('keeps the table of contents and prev/next', () => {
     expect(layout).toContain('id="toc"');
     expect(layout).toContain('class="docs-prevnext"');
     expect(layout).toContain('aria-label="Pagination"');
   });
 
-  it('conserva el buscador con su atajo de teclado', () => {
+  it('keeps the search box with its keyboard shortcut', () => {
     expect(layout).toContain('id="docs-search"');
     expect(layout).toMatch(/metaKey \|\| e\.ctrlKey/);
   });
 
   /**
-   * El índice se construye desde el DOM y no desde los `headings` de Astro
-   * porque las h2 que pintan componentes como ModelCard no aparecen en esa
-   * lista: /docs/models perdería su índice entero, y en silencio.
+   * The index is built from the DOM rather than from Astro's `headings`
+   * because the h2s rendered by components such as ModelCard do not appear in
+   * that list: /docs/models would lose its whole index, and silently.
    */
-  it('construye el índice desde el DOM y respeta data-toc-text', () => {
+  it('builds the index from the DOM and honours data-toc-text', () => {
     expect(layout).toContain(".docs-content h2, .docs-content h3");
     expect(layout).toContain('dataset.tocText');
   });
 
-  it('mantiene el enriquecimiento de bloques de código y el aviso de copiado', () => {
+  it('keeps the code-block enhancement and the copy toast', () => {
     expect(layout).toContain('docs-code-block');
     expect(layout).toContain("id=\"copy-toast\"");
     expect(layout).toContain('navigator.clipboard.writeText');
   });
 });
 
-describe('body.docs — utilidades de layout', () => {
+describe('body.docs: layout utilities', () => {
   /**
-   * El layout anterior las llevaba como utilidades de Tailwind en el <body> y
-   * se perdieron al portar: sin `min-height` el fondo no cubre el viewport en
-   * una página corta, y sin `overflow-x` una fuga horizontal deja de
-   * recortarse.
+   * The previous layout carried these as Tailwind utilities on the <body> and
+   * they were lost in the port: without `min-height` the background does not
+   * cover the viewport on a short page, and without `overflow-x` a horizontal
+   * overflow stops being clipped.
    */
-  it('declara min-height, overflow-x y el fondo', () => {
+  it('declares min-height, overflow-x and the background', () => {
     const body = shellCss.slice(shellCss.indexOf('body.docs'));
     expect(body).toMatch(/min-height:\s*100vh/);
     expect(body).toMatch(/overflow-x:\s*hidden/);
     expect(body).toMatch(/background:\s*var\(--doc-bg\)/);
   });
 
-  it('alimenta la capa --doc-* desde los tokens, sin hex sueltos', () => {
+  it('feeds the --doc-* layer from the tokens, with no loose hex', () => {
     const body = shellCss.slice(shellCss.indexOf('body.docs'), shellCss.indexOf('.skip-link'));
     expect(body).toMatch(/--doc-bg:\s*var\(--color-bg\)/);
     expect(body).toMatch(/--doc-tx:\s*var\(--color-body\)/);
-    // Un solo hex tolerado, el escalón sobre surface que el sistema no tiene.
+    // One hex tolerated: the step above surface the system does not define.
     expect((body.match(/#[0-9a-fA-F]{3,8}/g) ?? []).length).toBeLessThanOrEqual(1);
   });
 });
 
-describe('DocsTopBar — chrome compartido', () => {
-  it('lo usan tanto las guías como la referencia de API', () => {
+describe('DocsTopBar: shared chrome', () => {
+  it('is used by both the guides and the API reference', () => {
     expect(layout).toContain('DocsTopBar');
     expect(read('../../components/docs/ApiReference.astro')).toContain('DocsTopBar');
   });
 
-  it('solo ofrece el selector de idioma cuando la página existe en los dos', () => {
-    // Las guías no están traducidas: ofrecer ES ahí lleva a un 404.
+  it('only offers the language switcher where the page exists in both', () => {
+    // The guides are not translated: offering ES there leads to a 404.
     expect(topBar).toContain('bilingual');
     expect(layout).not.toMatch(/<DocsTopBar[^>]*\bbilingual\b/);
     expect(read('../../components/docs/ApiReference.astro')).toMatch(
@@ -130,25 +129,25 @@ describe('DocsTopBar — chrome compartido', () => {
     );
   });
 
-  it('usa el logotipo de marca, no el isotipo suelto en PNG', () => {
+  it('uses the brand wordmark, not the bare PNG icon', () => {
     expect(topBar).toContain('docs-wm');
     expect(topBar).not.toContain('nan-logo.png');
   });
 
   /**
-   * Los dos enlaces con ↗ salen del sitio, así que van absolutos. Con una ruta
-   * relativa se quedan en el dominio desde el que estés mirando: en una preview
-   * de Cloudflare, "nan.builders" te dejaba en *.workers.dev. Venía de portar el
-   * enlace relativo de helmcode, donde sí es correcto porque es su dominio.
+   * Both links carrying ↗ leave the site, so they are absolute. A relative path
+   * keeps them on whatever domain you are browsing: on a Cloudflare preview,
+   * "nan.builders" left you on *.workers.dev. It came from porting helmcode's
+   * relative link, where it is correct because that is their own domain.
    */
-  it('apunta fuera del sitio con URL absoluta en los enlaces externos', () => {
+  it('uses absolute URLs for the links that leave the site', () => {
     expect(topBar).toContain('https://nan.builders');
     expect(topBar).toContain('https://cloud.nan.builders/');
     expect(topBar).not.toMatch(/href=\{pfx \|\| '\/'\}/);
   });
 });
 
-describe('frontmatter de la colección de docs', () => {
+describe('frontmatter of the docs collection', () => {
   const docsDir = resolve(here, '../../content/docs');
   const files = readdirSync(docsDir).filter((f) => /\.(md|mdx)$/.test(f));
   const metas = files.map((f) => ({
@@ -160,11 +159,11 @@ describe('frontmatter de la colección de docs', () => {
     },
   }));
 
-  it('encuentra guías que vigilar', () => {
+  it('finds guides to guard', () => {
     expect(metas.length).toBeGreaterThan(0);
   });
 
-  it('declara un grupo conocido en cada guía', () => {
+  it('declares a known group on every guide', () => {
     const known = new Set(['Get started', 'Reference', 'Guides']);
     for (const m of metas) {
       expect(known.has(m.data.group ?? ''), `${m.file}: group=${m.data.group}`).toBe(true);
@@ -172,16 +171,16 @@ describe('frontmatter de la colección de docs', () => {
   });
 
   /**
-   * Un `order` repetido no rompe el build ni ningún test: solo deja la
-   * navegación en un orden arbitrario, que es de las cosas que nadie mira
-   * hasta que un lector se pierde.
+   * A repeated `order` breaks neither the build nor any test: it just leaves
+   * the navigation in an arbitrary order, which is the kind of thing nobody
+   * looks at until a reader gets lost.
    */
-  it('no repite ningún order, contando la entrada sintética de la referencia', () => {
+  it('repeats no order, counting the reference\'s synthetic entry', () => {
     const orders = [...metas.map((m) => m.data.order), API_DOC_META.order];
     expect(new Set(orders).size, `orders: ${orders.join(', ')}`).toBe(orders.length);
   });
 
-  it('numera sin huecos desde cero', () => {
+  it('numbers from zero with no gaps', () => {
     const orders = [...metas.map((m) => m.data.order as number), API_DOC_META.order].sort(
       (a, b) => a - b,
     );

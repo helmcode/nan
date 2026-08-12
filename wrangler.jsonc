@@ -10,16 +10,16 @@
 	"observability": {
 		"enabled": true
 	},
-	// Habilita las Preview URLs del worker, que es lo que hace utilizable
-	// `wrangler versions upload --preview-alias <nombre>`: sube una versión SIN
-	// servir tráfico y devuelve una URL estable en
-	// <alias>-nan-website.<subdominio>.workers.dev para enseñar un cambio antes
-	// de mergearlo. Cloudflare exige declararlo aquí.
+	// Enables the worker's Preview URLs, which is what makes
+	// `wrangler versions upload --preview-alias <name>` usable: it uploads a
+	// version WITHOUT serving traffic and returns a stable URL at
+	// <alias>-nan-website.<subdomain>.workers.dev to show a change before
+	// merging it. Cloudflare requires declaring it here.
 	//
-	// OJO: esas URLs son públicas, sin autenticación e indexables por defecto.
-	// Para una que vaya a estar arriba más de un rato, poner una regla de
-	// cabeceras con `X-Robots-Tag: noindex` sobre *.workers.dev; los canonical
-	// de las páginas ya apuntan a nan.builders, pero eso no es una garantía.
+	// NOTE: those URLs are public, unauthenticated and indexable by default.
+	// For one that will stay up for a while, add a headers rule with
+	// `X-Robots-Tag: noindex` over *.workers.dev; the pages' canonicals already
+	// point at nan.builders, but that is not a guarantee.
 	"preview_urls": true,
 	// Per-key rate limits shown in the docs and served to the Discord bot.
 	// Not secrets. Kept here so the deployed values are reproducible from the
