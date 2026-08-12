@@ -74,7 +74,13 @@ const t = {
       aria-current={current === 'reference' ? 'page' : undefined}>{t.reference}</a
     >
     <a href="https://cloud.nan.builders/" class="docs-top-link">{t.platform}</a>
-    <a href={pfx || '/'} class="docs-top-link">{t.site}</a>
+    {/*
+      Absoluto y no `/` como en helmcode: los dos enlaces con ↗ salen del sitio,
+      y con una ruta relativa este se queda en el dominio desde el que estés
+      mirando. En una preview de Cloudflare eso significa que "nan.builders" te
+      deja en *.workers.dev. El layout anterior ya lo tenía absoluto.
+    */}
+    <a href={`https://nan.builders${pfx}`} class="docs-top-link">{t.site}</a>
     {
       bilingual && (
         <span class="docs-lang" aria-label={t.language}>

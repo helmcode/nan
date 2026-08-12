@@ -134,6 +134,18 @@ describe('DocsTopBar — chrome compartido', () => {
     expect(topBar).toContain('docs-wm');
     expect(topBar).not.toContain('nan-logo.png');
   });
+
+  /**
+   * Los dos enlaces con ↗ salen del sitio, así que van absolutos. Con una ruta
+   * relativa se quedan en el dominio desde el que estés mirando: en una preview
+   * de Cloudflare, "nan.builders" te dejaba en *.workers.dev. Venía de portar el
+   * enlace relativo de helmcode, donde sí es correcto porque es su dominio.
+   */
+  it('apunta fuera del sitio con URL absoluta en los enlaces externos', () => {
+    expect(topBar).toContain('https://nan.builders');
+    expect(topBar).toContain('https://cloud.nan.builders/');
+    expect(topBar).not.toMatch(/href=\{pfx \|\| '\/'\}/);
+  });
 });
 
 describe('frontmatter de la colección de docs', () => {
