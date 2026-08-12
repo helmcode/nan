@@ -50,15 +50,15 @@ const T = rateLimitsLabels(lang);
       <dl class="grid gap-3 sm:grid-cols-2">
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
           <dt class="text-neutral-500 uppercase tracking-wider">{T.window(m.windowHours)}</dt>
-          <dd class="text-neutral-200 text-right">{formatTokens(m.windowTokens)} tokens</dd>
+          <dd class="text-neutral-200 text-right">{formatTokens(m.windowTokens, lang)} tokens</dd>
         </div>
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
           <dt class="text-neutral-500 uppercase tracking-wider">{T.allowance}</dt>
-          <dd class="text-neutral-200 text-right">{formatTokens(m.periodCapTokens)} tokens</dd>
+          <dd class="text-neutral-200 text-right">{formatTokens(m.periodCapTokens, lang)} tokens</dd>
         </div>
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
           <dt class="text-neutral-500 uppercase tracking-wider">{T.context}</dt>
-          <dd class="text-neutral-200 text-right">{formatTokens(m.contextTokens)} tokens</dd>
+          <dd class="text-neutral-200 text-right">{formatTokens(m.contextTokens, lang)} tokens</dd>
         </div>
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
           <dt class="text-neutral-500 uppercase tracking-wider">{T.concurrentRequests}</dt>

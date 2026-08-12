@@ -82,9 +82,16 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
  * 400M, 3,000M. Lives here so the docs page and /api/docs cannot drift from
  * each other, which is the whole reason this module exists.
  */
-export function formatTokens(tokens: number): string {
-  if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toLocaleString('en-US')}M`;
-  if (tokens >= 1_000) return `${(tokens / 1_000).toLocaleString('en-US')}K`;
+export type DocsLocale = 'en' | 'es';
+
+export function formatTokens(tokens: number, lang: DocsLocale = 'en'): string {
+  // The thousands separator is the one the rest of the page uses, so the card
+  // cannot read "3,000M" next to a model card that says "3.000M".
+  // `useGrouping: 'always'` because es-ES leaves four-digit numbers ungrouped,
+  // which would print 3000M beside a model card that already says 3.000M.
+  const fmt = new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', { useGrouping: 'always' });
+  if (tokens >= 1_000_000) return `${fmt.format(tokens / 1_000_000)}M`;
+  if (tokens >= 1_000) return `${fmt.format(tokens / 1_000)}K`;
   return String(tokens);
 }
 
@@ -96,11 +103,9 @@ export function formatTokens(tokens: number): string {
  * each surface: the page and the Discord bot were already caught disagreeing
  * about rpm, and this is the number a premium member plans against.
  */
-export type DocsLocale = 'en' | 'es';
-
 export function windowedModelHeadline(m: WindowedModelLimits, lang: DocsLocale = 'en'): string {
   return lang === 'es'
-    ? `${formatTokens(m.windowTokens)} tokens por ventana móvil de ${m.windowHours} horas`
+    ? `${formatTokens(m.windowTokens, lang)} tokens por ventana móvil de ${m.windowHours} horas`
     : `${formatTokens(m.windowTokens)} tokens per rolling ${m.windowHours} hours`;
 }
 

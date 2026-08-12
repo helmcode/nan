@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import {
+  formatTokens,
   rateLimitsLabels,
   windowedModelBody,
   windowedModelHeadline,
@@ -80,6 +81,12 @@ describe('the rate limits card speaks the language of the page', () => {
       (k) => typeof en[k as keyof typeof en] === 'string' && en[k as keyof typeof en] === es[k as keyof typeof es],
     );
     expect(shared, `untranslated: ${shared.join(', ')}`).toEqual([]);
+  });
+
+  it('writes the thousands separator the way the rest of the page does', () => {
+    expect(formatTokens(3_000_000_000, 'en')).toBe('3,000M');
+    expect(formatTokens(3_000_000_000, 'es')).toBe('3.000M');
+    expect(formatTokens(400_000_000, 'es')).toBe('400M');
   });
 
   it('keeps the numbers out of the translation, so both locales quote the same limits', () => {
