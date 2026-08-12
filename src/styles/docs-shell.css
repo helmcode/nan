@@ -43,6 +43,13 @@ body.docs {
   background: var(--doc-bg);
   color: var(--doc-tx);
   font-family: var(--font-sans);
+  /* Las traía el layout anterior con utilidades de Tailwind en el <body> y se
+     perdieron al portar. Sin `min-height` el fondo no cubre el viewport en una
+     página corta, y sin `overflow-x` una fuga horizontal deja de recortarse. */
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ── Saltar al contenido ─────────────────────────────────────────────────── */
@@ -173,6 +180,29 @@ body.docs {
   border-right: 1px solid var(--doc-bd);
   padding: var(--space-5) var(--space-4) var(--space-8);
   box-sizing: border-box;
+}
+
+/* Cerrar el cajón desde dentro. Solo existe en móvil: en escritorio el lateral
+   es una columna fija y no hay nada que cerrar. */
+.docs-side-close {
+  display: none;
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--doc-tx-dim);
+  padding: 4px;
+  transition: color var(--dur-micro) var(--ease);
+}
+.docs-side-close:hover {
+  color: var(--doc-tx-strong);
+}
+.docs-side-close svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 /* ── Buscador ────────────────────────────────────────────────────────────── */
@@ -476,6 +506,13 @@ body.docs {
   }
   .docs-side.open {
     transform: translateX(0);
+  }
+  .docs-side-close {
+    display: block;
+  }
+  /* Hueco para el botón de cerrar, que va en absoluto sobre el buscador. */
+  .docs-search {
+    margin-top: var(--space-6);
   }
   /* Se quedan Guías y Referencia; los enlaces externos y el tag, fuera. */
   .docs-top-tag {

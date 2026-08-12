@@ -75,7 +75,36 @@ const navGroups = [...new Map(navItems.map((i) => [i.group, i.group])).keys()].m
 }));
 
 const here = Astro.url.pathname.replace(/\/+$/, '') || '/docs';
-const isActive = (slug: string) => here === slug.replace(/\/+$/, '');
+
+/*
+ * Coincidencia exacta o de prefijo. Lo segundo hace falta para que una subruta
+ * anidada resalte a su padre en el nav; con la colección plana de hoy no se
+ * nota, pero es el comportamiento que tenía el layout anterior y perderlo sería
+ * un fallo silencioso el día que se anide una guía. `/docs` se excluye del
+ * prefijo o resaltaría en todas las páginas de la sección.
+ */
+const isActive = (slug: string) => {
+  const target = slug.replace(/\/+$/, '');
+  return here === target || (target !== '/docs' && here.startsWith(`${target}/`));
+};
+
+/*
+ * Migas de pan. Las tenía el layout anterior y helmcode no, así que al portar
+ * su estructura se cayeron; se recuperan porque en /docs son la única pista de
+ * dónde estás cuando llegas desde un buscador.
+ */
+const breadcrumb = Astro.url.pathname
+  .split('/')
+  .filter(Boolean)
+  .map((part, i, parts) => {
+    const path = '/' + parts.slice(0, i + 1).join('/');
+    const item = navItems.find((n) => n.slug === path);
+    return {
+      label: item ? item.label : part.replace(/-/g, ' '),
+      path: path === here ? null : path,
+      isCurrent: path === here,
+    };
+  });
 
 const currentIndex = navItems.findIndex((item) => isActive(item.slug));
 const prevPage = currentIndex > 0 ? navItems[currentIndex - 1] : null;
@@ -150,14 +179,14 @@ const searchData = [
     <meta name="twitter:title" content={socialTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    {/*
+      `font-src` necesita `data:`: Vite convierte en data URI las subfuentes que
+      bajan del límite de inline (varios subsets de Archivo y JetBrains Mono), y
+      con `'self'` a secas el navegador las bloqueaba. Venía de antes; solo se
+      veía mirando la consola.
+    */}
     <meta
       http-equiv="Content-Security-Policy"
-      {/*
-        `font-src` necesita `data:`: Vite convierte en data URI las subfuentes
-        que bajan del límite de inline (varios subsets de Archivo y JetBrains
-        Mono), y con `'self'` a secas el navegador las bloqueaba. Venía de
-        antes; solo se veía mirando la consola.
-      */}
       content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: https:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
     />
     <title>{socialTitle}</title>
@@ -171,6 +200,19 @@ const searchData = [
 
     <div class="docs-wrap">
       <aside class="docs-side" id="docs-side" aria-label="Documentation">
+        {/*
+          Cerrar desde dentro del propio panel. Solo se ve en móvil, donde el
+          lateral es un cajón: el layout anterior lo tenía y al portar el de
+          helmcode se perdió, dejando el cierre a merced del overlay, la tecla
+          Escape o volver al hamburger, que en una pantalla pequeña no son
+          afordancias evidentes.
+        */}
+        <button class="docs-side-close" id="docs-side-close" type="button" aria-label="Close menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+
         <div class="docs-search">
           <svg class="ds-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
             <circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3" stroke-linecap="round"></path>
@@ -212,6 +254,22 @@ const searchData = [
 
       <div class="docs-pane">
         <div class="docs-inner">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="/docs">Docs</a>
+            {
+              breadcrumb.slice(1).map((seg) => (
+                <>
+                  <span class="separator">/</span>
+                  {seg.isCurrent ? (
+                    <span class="current">{seg.label}</span>
+                  ) : (
+                    <a href={seg.path}>{seg.label}</a>
+                  )}
+                </>
+              ))
+            }
+          </nav>
+
           <main id="docs-main" class="docs-content">
             <slot />
 
@@ -321,6 +379,7 @@ const searchData = [
       const menuBtn = document.getElementById('docs-menu-btn');
       const side = document.getElementById('docs-side');
       const backdrop = document.getElementById('docs-backdrop');
+      const sideClose = document.getElementById('docs-side-close');
 
       if (menuBtn && side && backdrop) {
         // El botón vive en la barra compartida y sale oculto: solo tiene sentido
@@ -335,6 +394,7 @@ const searchData = [
         };
         menuBtn.addEventListener('click', () => setOpen(!side.classList.contains('open')));
         backdrop.addEventListener('click', () => setOpen(false));
+        sideClose?.addEventListener('click', () => setOpen(false));
         document.addEventListener('keydown', (e) => {
           if (e.key === 'Escape') setOpen(false);
         });
