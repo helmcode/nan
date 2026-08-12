@@ -32,7 +32,7 @@ const t = {
     reference: 'API Reference',
     platform: 'Platform ↗',
     site: 'nan.builders ↗',
-    home: 'NaN, back to the docs',
+    home: 'NaN, go to nan.builders',
     menu: 'Toggle menu',
     language: 'Language',
   },
@@ -42,7 +42,7 @@ const t = {
     reference: 'Referencia API',
     platform: 'Plataforma ↗',
     site: 'nan.builders ↗',
-    home: 'NaN, volver a los docs',
+    home: 'NaN, ir a nan.builders',
     menu: 'Abrir o cerrar el menú',
     language: 'Idioma',
   },
@@ -57,7 +57,12 @@ const t = {
         <path d="M3 6h18M3 12h18M3 18h18"></path>
       </svg>
     </button>
-    <a href={`${pfx}/docs`} class="docs-logo" aria-label={t.home}>
+    {/*
+      The wordmark goes to the site, not to the docs index. It is the brand
+      mark: clicking a logo is how you get out to the home page, and "Guides"
+      right next to it already covers going to the docs index.
+    */}
+    <a href={`https://nan.builders${pfx}`} class="docs-logo" aria-label={t.home}>
       <span class="docs-wm" aria-hidden="true"></span>
     </a>
     <span class="docs-top-tag">{t.docs}</span>

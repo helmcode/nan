@@ -69,11 +69,21 @@ export const GET: APIRoute = async () => {
     }
   }
 
-  // La documentación solo existe en inglés (la colección MDX no está traducida),
-  // así que va sin alternates.
+  /*
+   * The guides now exist in both languages, so each one is listed twice with
+   * its alternates. The Spanish copies are not all translated yet, which is a
+   * content matter: the URL exists and answers 200, and the page itself says
+   * so when it is still showing English.
+   */
   const docs = await getCollection('docs');
   for (const doc of docs) {
-    entries.push(`<url><loc>${abs(`/docs/${doc.id}`)}</loc></url>`);
+    const alternates = LOCALES.map((lang) => ({
+      lang,
+      href: abs(withLang(`/docs/${doc.id}`, lang)),
+    }));
+    for (const { href } of alternates) {
+      entries.push(urlEntry(href.replace(SITE, ''), alternates));
+    }
   }
 
   /*

@@ -51,8 +51,11 @@ function visibleText(source: string): string {
     .join('\n');
 }
 
-/** Files that legitimately hold Spanish copy for the /es route. */
-const BILINGUAL = ['DocsTopBar.astro', 'ApiReference.astro'];
+/**
+ * Files that legitimately hold Spanish copy for the /es routes, in an `es`
+ * branch beside the `en` one. Their Spanish is the point, not a leak.
+ */
+const BILINGUAL = ['DocsTopBar.astro', 'ApiReference.astro', 'Docs.astro'];
 
 const files = [
   ...readdirSync(componentsDir)

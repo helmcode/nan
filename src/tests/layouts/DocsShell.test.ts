@@ -120,10 +120,15 @@ describe('DocsTopBar: shared chrome', () => {
     expect(read('../../components/docs/ApiReference.astro')).toContain('DocsTopBar');
   });
 
-  it('only offers the language switcher where the page exists in both', () => {
-    // The guides are not translated: offering ES there leads to a 404.
+  /**
+   * Both surfaces are bilingual now that the guides have Spanish routes. The
+   * switcher stays opt-in through the prop rather than always-on, because a
+   * page whose Spanish counterpart does not exist would send readers to a 404,
+   * which is what it used to do before /es/docs existed.
+   */
+  it('offers the language switcher on both surfaces', () => {
     expect(topBar).toContain('bilingual');
-    expect(layout).not.toMatch(/<DocsTopBar[^>]*\bbilingual\b/);
+    expect(layout).toMatch(/<DocsTopBar[^>]*\bbilingual\b/);
     expect(read('../../components/docs/ApiReference.astro')).toMatch(
       /<DocsTopBar[^>]*\bbilingual\b/,
     );

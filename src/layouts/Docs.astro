@@ -23,11 +23,47 @@ import {
 interface Props {
   title: string;
   description?: string;
+  lang?: 'en' | 'es';
+  /** False on a Spanish page whose text is still the English original. */
+  translated?: boolean;
 }
 
 // The documentation exists in English only (the MDX collection is not
 // translated), so the page language, the default copy and the social card are.
-const { title, description = 'NaN docs. Connect to our open models through an OpenAI-compatible API.' } = Astro.props;
+const {
+  title,
+  description = lang === 'es'
+    ? 'Documentación de NaN. Conecta con nuestros modelos abiertos a través de una API compatible con OpenAI.'
+    : 'NaN docs. Connect to our open models through an OpenAI-compatible API.',
+  lang = 'en',
+  translated = true,
+} = Astro.props;
+
+const pfx = lang === 'es' ? '/es' : '';
+const T = {
+  en: {
+    onThisPage: 'On this page',
+    search: 'Search docs…',
+    skip: 'Skip to content',
+    prev: '← Previous',
+    next: 'Next →',
+    docs: 'Docs',
+    close: 'Close menu',
+    untranslated:
+      'This page is not translated yet, so it is shown in English.',
+  },
+  es: {
+    onThisPage: 'En esta página',
+    search: 'Buscar en la documentación…',
+    skip: 'Saltar al contenido',
+    prev: '← Anterior',
+    next: 'Siguiente →',
+    docs: 'Docs',
+    close: 'Cerrar menú',
+    untranslated:
+      'Esta página todavía no está traducida, así que se muestra en inglés.',
+  },
+}[lang];
 
 const siteUrl = 'https://nan.builders';
 
@@ -37,7 +73,7 @@ const canonical = `${siteUrl}${Astro.url.pathname.replace(/\/+$/, '') || '/'}`;
 const ogImage = `${siteUrl}/og/og-en.png`;
 const socialTitle = `${title} · NaN Docs`;
 
-const entries = await getCollection('docs');
+const entries = await getCollection(lang === 'es' ? 'docsEs' : 'docs');
 
 /*
  * The API reference does not come from the collection: Scalar serves /docs/api
@@ -47,14 +83,14 @@ const entries = await getCollection('docs');
  */
 const navItems: DocsNavItem[] = [
   ...entries.map((entry) => ({
-    slug: entry.id === 'intro' ? '/docs' : `/docs/${entry.id}`,
+    slug: entry.id === 'intro' ? `${pfx}/docs` : `${pfx}/docs/${entry.id}`,
     label: entry.data.title,
     order: entry.data.order,
     group: entry.data.group,
     description: entry.data.description,
   })),
   {
-    slug: `/docs/${API_DOC_SLUG}`,
+    slug: `${pfx}/docs/${API_DOC_SLUG}`,
     label: API_DOC_META.title,
     order: API_DOC_META.order,
     group: API_DOC_META.group,
@@ -64,7 +100,10 @@ const navItems: DocsNavItem[] = [
 
 const navGroups = groupDocsNav(navItems);
 
-const here = Astro.url.pathname.replace(/\/+$/, '') || '/docs';
+const enPath = Astro.url.pathname.replace(/^\/es(?=\/|$)/, '') || '/docs';
+const esPath = `/es${enPath}`;
+
+const here = Astro.url.pathname.replace(/\/+$/, '') || `${pfx}/docs`;
 const isActive = (slug: string) => isActiveDocPath(here, slug);
 
 /*
@@ -72,11 +111,13 @@ const isActive = (slug: string) => isActiveDocPath(here, slug);
  * its structure dropped them; they are restored because under /docs they are
  * the only clue to where you are when you arrive from a search engine.
  */
-const breadcrumb = Astro.url.pathname
+const breadcrumb = enPath
   .split('/')
   .filter(Boolean)
   .map((part, i, parts) => {
-    const path = '/' + parts.slice(0, i + 1).join('/');
+    // Built from the locale-stripped path: counting `/es` as a segment made the
+    // Spanish pages show an extra crumb for the docs index.
+    const path = `${pfx}/` + parts.slice(0, i + 1).join('/');
     const item = navItems.find((n) => n.slug === path);
     return {
       label: item ? item.label : part.replace(/-/g, ' '),
@@ -103,7 +144,7 @@ const collectionIndex = await Promise.all(
     const { headings } = await render(entry);
     return {
       title: entry.data.title,
-      href: entry.id === 'intro' ? '/docs' : `/docs/${entry.id}`,
+      href: entry.id === 'intro' ? `${pfx}/docs` : `${pfx}/docs/${entry.id}`,
       description: entry.data.description,
       headings: headings
         .filter((h) => h.depth >= 2 && h.depth <= 3)
@@ -116,7 +157,7 @@ const searchData = [
   ...collectionIndex,
   {
     title: API_DOC_META.title,
-    href: `/docs/${API_DOC_SLUG}`,
+    href: `${pfx}/docs/${API_DOC_SLUG}`,
     description: API_DOC_META.description,
     headings: apiSearchHeadings(spec),
   },
@@ -124,7 +165,7 @@ const searchData = [
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -134,6 +175,10 @@ const searchData = [
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="canonical" href={canonical} />
+    {/* Every guide exists at both paths, so each declares the other. */}
+    <link rel="alternate" hreflang="en" href={`${siteUrl}${enPath}`} />
+    <link rel="alternate" hreflang="es" href={`${siteUrl}${esPath}`} />
+    <link rel="alternate" hreflang="x-default" href={`${siteUrl}${enPath}`} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="NaN" />
     <meta property="og:title" content={socialTitle} />
@@ -143,7 +188,7 @@ const searchData = [
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={socialTitle} />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale" content={lang === 'es' ? 'es_ES' : 'en_US'} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={socialTitle} />
     <meta name="twitter:description" content={description} />
@@ -161,9 +206,9 @@ const searchData = [
     <title>{socialTitle}</title>
   </head>
   <body class="docs">
-    <a class="skip-link" href="#docs-main">Skip to content</a>
+    <a class="skip-link" href="#docs-main">{T.skip}</a>
 
-    <DocsTopBar current="guides" />
+    <DocsTopBar lang={lang} bilingual current="guides" />
 
     <div class="docs-backdrop" id="docs-backdrop" hidden></div>
 
@@ -176,7 +221,7 @@ const searchData = [
           going back to the hamburger, none of which are obvious affordances on
           a small screen.
         */}
-        <button class="docs-side-close" id="docs-side-close" type="button" aria-label="Close menu">
+        <button class="docs-side-close" id="docs-side-close" type="button" aria-label={T.close}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <path d="M6 18L18 6M6 6l12 12"></path>
           </svg>
@@ -189,7 +234,7 @@ const searchData = [
           <input
             id="docs-search"
             type="search"
-            placeholder="Search docs…"
+            placeholder={T.search}
             autocomplete="off"
             aria-label="Search documentation"
           />
@@ -224,8 +269,15 @@ const searchData = [
       <div class="docs-pane">
         <div class="docs-inner">
           <main id="docs-main" class="docs-content">
+            {
+              /* A Spanish page still showing the English original says so.
+                 Without this the site would be passing English off as a
+                 translation, which is worse than not offering the language. */
+              !translated && <p class="docs-untranslated">{T.untranslated}</p>
+            }
+
             <nav class="breadcrumb" aria-label="Breadcrumb">
-              <a href="/docs">Docs</a>
+              <a href={`${pfx}/docs`}>{T.docs}</a>
               {
                 breadcrumb.slice(1).map((seg) => (
                   <>
@@ -247,7 +299,7 @@ const searchData = [
                 <nav class="docs-prevnext" aria-label="Pagination">
                   {prevPage ? (
                     <a href={prevPage.slug} class="dpn dpn-prev">
-                      <span class="dpn-dir">← Previous</span>
+                      <span class="dpn-dir">{T.prev}</span>
                       <span class="dpn-title">{prevPage.label}</span>
                     </a>
                   ) : (
@@ -255,7 +307,7 @@ const searchData = [
                   )}
                   {nextPage && (
                     <a href={nextPage.slug} class="dpn dpn-next">
-                      <span class="dpn-dir">Next →</span>
+                      <span class="dpn-dir">{T.next}</span>
                       <span class="dpn-title">{nextPage.label}</span>
                     </a>
                   )}
@@ -269,8 +321,8 @@ const searchData = [
             </footer>
           </main>
 
-          <aside class="docs-toc" aria-label="On this page">
-            <p class="docs-toc-label">On this page</p>
+          <aside class="docs-toc" aria-label={T.onThisPage}>
+            <p class="docs-toc-label">{T.onThisPage}</p>
             <div class="toc" id="toc"></div>
           </aside>
         </div>
