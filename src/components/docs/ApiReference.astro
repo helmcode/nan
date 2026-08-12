@@ -26,35 +26,25 @@ import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 import '@fontsource/jetbrains-mono/700.css';
 
-import { switchLocalePath, type Locale } from '../../lib/i18n';
+import DocsTopBar from './DocsTopBar.astro';
+import { type Locale } from '../../lib/i18n';
+import '../../styles/docs-shell.css';
 
 interface Props {
   lang?: Locale;
 }
 
 const { lang = 'en' } = Astro.props;
-const pfx = lang === 'es' ? '/es' : '';
 
+/* Solo el copy de esta página: el de la barra vive en DocsTopBar.astro. */
 const t = {
   en: {
-    docs: 'Docs',
-    guides: 'Guides',
-    ref: 'API Reference',
-    platform: 'Platform ↗',
-    site: 'nan.builders ↗',
     title: 'API Reference · NaN Docs',
-    brandHome: 'NaN, back to the docs',
     description:
       'Interactive reference for the NaN API: OpenAI-compatible endpoints for chat, embeddings, rerank, audio, images and web search.',
   },
   es: {
-    docs: 'Docs',
-    guides: 'Guías',
-    ref: 'Referencia API',
-    platform: 'Plataforma ↗',
-    site: 'nan.builders ↗',
     title: 'Referencia API · NaN Docs',
-    brandHome: 'NaN, volver a los docs',
     description:
       'Referencia interactiva de la API de NaN: endpoints compatibles con OpenAI para chat, embeddings, rerank, audio, imágenes y búsqueda web.',
   },
@@ -130,158 +120,18 @@ const CSP = [
       }
     </style>
   </head>
-  <body>
-    <header class="docs-top">
-      <a class="docs-brand" href={`${pfx}/docs`} aria-label={t.brandHome}>
-        <span class="docs-brand__wm" aria-hidden="true"></span>
-        <span class="docs-brand__tag">{t.docs}</span>
-      </a>
-      <nav class="docs-nav" aria-label={t.ref}>
-        <a href={`${pfx}/docs`}>{t.guides}</a>
-        <a href={`${pfx}/docs/api`} aria-current="page" class="is-active">{t.ref}</a>
-        <a href="https://cloud.nan.builders/">{t.platform}</a>
-        <a href={pfx || '/'}>{t.site}</a>
-        <span class="docs-lang" role="group" aria-label="Language">
-          <a
-            href={switchLocalePath(Astro.url.pathname, 'en')}
-            hreflang="en"
-            class:list={['docs-lang__opt', { 'is-active': lang === 'en' }]}>EN</a
-          >
-          <span class="docs-lang__sep" aria-hidden="true">/</span>
-          <a
-            href={switchLocalePath(Astro.url.pathname, 'es')}
-            hreflang="es"
-            class:list={['docs-lang__opt', { 'is-active': lang === 'es' }]}>ES</a
-          >
-        </span>
-      </nav>
-    </header>
+  <body class="docs">
+    <DocsTopBar lang={lang} bilingual current="reference" />
 
     <!-- Scalar se monta aquí. -->
     <div id="scalar-api-reference"></div>
 
     <style is:global>
-      /* Baja los paneles pegajosos de Scalar por debajo de nuestra barra. */
+      /* Baja los paneles pegajosos de Scalar por debajo de nuestra barra. El
+         resto del chrome (barra, logotipo, enlaces, idioma) vive en
+         src/styles/docs-shell.css, compartido con el layout de las guías. */
       .scalar-app {
-        --refs-header-height: 56px !important;
-      }
-
-      .docs-top {
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        height: 56px;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 var(--space-5);
-        background: var(--color-bg);
-        border-bottom: 1px solid var(--color-line);
-        font-family: var(--font-mono);
-      }
-
-      .docs-brand {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2);
-        text-decoration: none;
-      }
-      /*
-       * El logotipo va como MÁSCARA, no como <img>, igual que en Nav.astro y
-       * Footer.astro: el SVG solo aporta la silueta y el color lo pone
-       * `background`, así que puede pasar a violeta en el hover con transición.
-       * Con un <img> habría que duplicar el fichero en dos colores.
-       *
-       * Aquí sustituye al isotipo PNG + un <span>NaN</span> escrito a mano, que
-       * era recomponer la marca en vez de usar el logotipo real.
-       */
-      .docs-brand__wm {
-        display: block;
-        /* 220x33 en el SVG; a 20px de alto son 133px. `contain` respeta la
-           proporción, así que basta con que la caja no la estrangule. */
-        height: 20px;
-        width: 134px;
-        background: var(--color-text);
-        transition: background var(--dur-ui) var(--ease);
-        -webkit-mask: url('/brand/nan-wordmark-white.svg') left center / contain no-repeat;
-        mask: url('/brand/nan-wordmark-white.svg') left center / contain no-repeat;
-      }
-      .docs-brand:hover .docs-brand__wm {
-        background: var(--color-violet);
-      }
-      .docs-brand__tag {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--color-muted);
-        border-left: 1px solid var(--color-line);
-        padding-left: var(--space-3);
-        margin-left: var(--space-1);
-      }
-
-      .docs-nav {
-        display: flex;
-        align-items: center;
-        gap: var(--space-6);
-      }
-      .docs-nav > a {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--color-body);
-        text-decoration: none;
-        transition: color var(--dur-micro) var(--ease);
-      }
-      .docs-nav > a:hover {
-        color: var(--color-link);
-      }
-      .docs-nav > a.is-active {
-        color: var(--color-link);
-      }
-
-      .docs-lang {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-1);
-        padding-left: var(--space-3);
-        border-left: 1px solid var(--color-line);
-        font-size: 12px;
-      }
-      .docs-lang__opt {
-        color: var(--color-muted);
-        text-decoration: none;
-        padding: 0 var(--space-1);
-        transition: color var(--dur-micro) var(--ease);
-      }
-      .docs-lang__opt:hover {
-        color: var(--color-link);
-      }
-      .docs-lang__opt.is-active {
-        color: var(--color-text);
-        font-weight: 700;
-      }
-      .docs-lang__sep {
-        color: var(--color-line);
-      }
-
-      /* Tablet: fuera los enlaces externos, se quedan Guías / Referencia. */
-      @media (max-width: 760px) {
-        .docs-nav > a:nth-of-type(n + 3) {
-          display: none;
-        }
-      }
-      /* Móvil: solo la marca y el selector de idioma. */
-      @media (max-width: 560px) {
-        .docs-nav > a {
-          display: none;
-        }
-        .docs-brand__tag {
-          display: none;
-        }
-        .docs-top {
-          padding: 0 var(--space-4);
-        }
+        --refs-header-height: var(--doc-top) !important;
       }
     </style>
 

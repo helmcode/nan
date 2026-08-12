@@ -1,0 +1,102 @@
+---
+/*
+ * Barra superior de la documentación, compartida por el layout de las guías
+ * (Docs.astro) y por la referencia de API (ApiReference.astro).
+ *
+ * Existe porque si no, las dos superficies se separan: la referencia se montó
+ * con su propia cabecera y las guías con otra, y ya se veían distintas entre sí
+ * estando a un clic de distancia. Portada del DocsLayout de helmcode.
+ *
+ * El selector EN/ES solo se pinta cuando la página tiene versión española, que
+ * hoy es únicamente /docs/api: las guías salen de una colección que no está
+ * traducida, y ofrecer un idioma que lleva a un 404 es peor que no ofrecerlo.
+ */
+import { switchLocalePath, type Locale } from '../../lib/i18n';
+
+interface Props {
+  lang?: Locale;
+  /** Con `false` no se pinta el selector de idioma (páginas solo en inglés). */
+  bilingual?: boolean;
+  /** Marca el enlace activo de la barra. */
+  current?: 'guides' | 'reference';
+}
+
+const { lang = 'en', bilingual = false, current } = Astro.props;
+const pfx = lang === 'es' ? '/es' : '';
+
+const t = {
+  en: {
+    docs: 'Docs',
+    guides: 'Guides',
+    reference: 'API Reference',
+    platform: 'Platform ↗',
+    site: 'nan.builders ↗',
+    home: 'NaN, back to the docs',
+    menu: 'Toggle menu',
+    language: 'Language',
+  },
+  es: {
+    docs: 'Docs',
+    guides: 'Guías',
+    reference: 'Referencia API',
+    platform: 'Plataforma ↗',
+    site: 'nan.builders ↗',
+    home: 'NaN, volver a los docs',
+    menu: 'Abrir o cerrar el menú',
+    language: 'Idioma',
+  },
+}[lang];
+---
+
+<header class="docs-top">
+  <div class="docs-top-left">
+    {/* Solo aparece donde hay barra lateral que abrir: la referencia no la tiene. */}
+    <button class="docs-menu-btn" id="docs-menu-btn" aria-label={t.menu} aria-expanded="false" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18"></path>
+      </svg>
+    </button>
+    <a href={`${pfx}/docs`} class="docs-logo" aria-label={t.home}>
+      <span class="docs-wm" aria-hidden="true"></span>
+    </a>
+    <span class="docs-top-tag">{t.docs}</span>
+  </div>
+
+  <nav class="docs-top-right" aria-label={t.docs}>
+    <a
+      href={`${pfx}/docs`}
+      class:list={['docs-top-link', { 'is-active': current === 'guides' }]}
+      aria-current={current === 'guides' ? 'page' : undefined}>{t.guides}</a
+    >
+    <a
+      href={`${pfx}/docs/api`}
+      class:list={['docs-top-link', { 'is-active': current === 'reference' }]}
+      aria-current={current === 'reference' ? 'page' : undefined}>{t.reference}</a
+    >
+    <a href="https://cloud.nan.builders/" class="docs-top-link">{t.platform}</a>
+    <a href={pfx || '/'} class="docs-top-link">{t.site}</a>
+    {
+      bilingual && (
+        <span class="docs-lang" aria-label={t.language}>
+          <a
+            href={switchLocalePath(Astro.url.pathname, 'en')}
+            hreflang="en"
+            class:list={['docs-lang-opt', { 'is-active': lang === 'en' }]}
+          >
+            EN
+          </a>
+          <span class="docs-lang-sep" aria-hidden="true">
+            /
+          </span>
+          <a
+            href={switchLocalePath(Astro.url.pathname, 'es')}
+            hreflang="es"
+            class:list={['docs-lang-opt', { 'is-active': lang === 'es' }]}
+          >
+            ES
+          </a>
+        </span>
+      )
+    }
+  </nav>
+</header>

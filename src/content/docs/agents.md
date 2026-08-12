@@ -2,6 +2,7 @@
 title: Agents
 description: "Deploy AI agents in an isolated microVM with QEMU: Hermes, web terminal, file uploads, and observability."
 order: 5
+group: Guides
 ---
 
 # Agents.

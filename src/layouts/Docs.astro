@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import '../styles/docs-shell.css';
 
 // Fuentes autohospedadas, igual que NanBase. Antes venían de Google Fonts: eso
 // bloqueaba el render y mandaba la IP de cada visitante a un tercero.
@@ -8,8 +9,10 @@ import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 import '@fontsource/jetbrains-mono/700.css';
 
-import { getCollection } from 'astro:content';
-import { API_DOC_META, API_DOC_SLUG } from '../lib/apiDoc';
+import { getCollection, render } from 'astro:content';
+import DocsTopBar from '../components/docs/DocsTopBar.astro';
+import { API_DOC_META, API_DOC_SLUG, getApiDocText } from '../lib/apiDoc';
+import { DEFAULT_RATE_LIMITS } from '../lib/rateLimits';
 
 interface Props {
   title: string;
@@ -26,48 +29,100 @@ const siteUrl = 'https://nan.builders';
 // variantes de cada URL no compitan entre sí.
 const canonical = `${siteUrl}${Astro.url.pathname.replace(/\/+$/, '') || '/'}`;
 const ogImage = `${siteUrl}/og/og-en.png`;
-const socialTitle = `${title} — NaN Docs`;
-
-const entries = await getCollection('docs');
+const socialTitle = `${title} · NaN Docs`;
 
 interface NavItem {
   slug: string;
   label: string;
   order: number;
+  group: string;
+  description: string;
 }
+
+const entries = await getCollection('docs');
 
 /*
  * La referencia de API no sale de la colección: /docs/api la sirve Scalar desde
- * el spec (src/data/openapi.json), así que no hay entry del que sacar título ni
- * orden. Se añade a mano para que siga estando en la navegación en el sitio
- * donde estaba. Los metadatos vienen de apiDoc.ts, el mismo módulo del que los
- * lee /api/docs, para que la página y el manifest no puedan discrepar.
+ * el spec, así que no hay entry del que sacar título, orden ni grupo. Se añade
+ * a mano desde apiDoc.ts, el mismo módulo del que los lee /api/docs, para que
+ * la página y el manifest no puedan discrepar.
  */
 const navItems: NavItem[] = [
   ...entries.map((entry) => ({
     slug: entry.id === 'intro' ? '/docs' : `/docs/${entry.id}`,
     label: entry.data.title,
     order: entry.data.order,
+    group: entry.data.group,
+    description: entry.data.description,
   })),
-  { slug: `/docs/${API_DOC_SLUG}`, label: API_DOC_META.title, order: API_DOC_META.order },
+  {
+    slug: `/docs/${API_DOC_SLUG}`,
+    label: API_DOC_META.title,
+    order: API_DOC_META.order,
+    group: API_DOC_META.group,
+    description: API_DOC_META.description,
+  },
 ].sort((a, b) => a.order - b.order);
 
-const currentPageIndex = navItems.findIndex((item) => item.slug === Astro.url.pathname);
-const prevPage = currentPageIndex > 0 ? navItems[currentPageIndex - 1] : null;
-const nextPage = currentPageIndex >= 0 && currentPageIndex < navItems.length - 1
-  ? navItems[currentPageIndex + 1]
-  : null;
+/*
+ * Los grupos salen del dato, no de una lista escrita a mano en el layout como
+ * en helmcode: se ordenan por el `order` más bajo que tenga cada uno. Así
+ * añadir una guía es crear un fichero, sin una segunda lista que mantener.
+ */
+const navGroups = [...new Map(navItems.map((i) => [i.group, i.group])).keys()].map((group) => ({
+  group,
+  items: navItems.filter((i) => i.group === group),
+}));
 
-const pathParts = Astro.url.pathname.split('/').filter(Boolean);
-const breadcrumbSegments = pathParts.map((part, i) => {
-  const path = '/' + pathParts.slice(0, i + 1).join('/');
-  const item = navItems.find((n) => n.slug === path);
-  return {
-    label: item ? item.label : part.replace(/-/g, ' '),
-    path: path === Astro.url.pathname ? null : path,
-    isCurrent: path === Astro.url.pathname,
-  };
-});
+const here = Astro.url.pathname.replace(/\/+$/, '') || '/docs';
+const isActive = (slug: string) => here === slug.replace(/\/+$/, '');
+
+const currentIndex = navItems.findIndex((item) => isActive(item.slug));
+const prevPage = currentIndex > 0 ? navItems[currentIndex - 1] : null;
+const nextPage =
+  currentIndex >= 0 && currentIndex < navItems.length - 1 ? navItems[currentIndex + 1] : null;
+
+/*
+ * Índice del buscador.
+ *
+ * helmcode lo construye con import.meta.glob sobre páginas .md; aquí las guías
+ * son una content collection, así que los encabezados salen de render(entry) y
+ * los de la referencia de API se sacan del Markdown que genera el spec, que es
+ * la única representación en texto que tiene (Scalar renderiza en cliente).
+ */
+const collectionIndex = await Promise.all(
+  entries.map(async (entry) => {
+    const { headings } = await render(entry);
+    return {
+      title: entry.data.title,
+      href: entry.id === 'intro' ? '/docs' : `/docs/${entry.id}`,
+      description: entry.data.description,
+      headings: headings
+        .filter((h) => h.depth >= 2 && h.depth <= 3)
+        .map((h) => ({ text: h.text, slug: h.slug })),
+    };
+  }),
+);
+
+/** Encabezados `##`/`###` del Markdown de la referencia, con el slug de Scalar. */
+const apiHeadings = getApiDocText(DEFAULT_RATE_LIMITS)
+  .split('\n')
+  .flatMap((line) => {
+    const m = /^##\s+(.+)$/.exec(line);
+    // Solo los `##`: son los tags (Chat, Embeddings...) y las secciones del
+    // overview, que es lo que Scalar convierte en destinos navegables.
+    return m ? [{ text: m[1].trim(), slug: `tag/${m[1].trim().toLowerCase()}` }] : [];
+  });
+
+const searchData = [
+  ...collectionIndex,
+  {
+    title: API_DOC_META.title,
+    href: `/docs/${API_DOC_SLUG}`,
+    description: API_DOC_META.description,
+    headings: apiHeadings,
+  },
+];
 ---
 
 <!doctype html>
@@ -97,190 +152,219 @@ const breadcrumbSegments = pathParts.map((part, i) => {
     <meta name="twitter:image" content={ogImage} />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
+      {/*
+        `font-src` necesita `data:`: Vite convierte en data URI las subfuentes
+        que bajan del límite de inline (varios subsets de Archivo y JetBrains
+        Mono), y con `'self'` a secas el navegador las bloqueaba. Venía de
+        antes; solo se veía mirando la consola.
+      */}
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: https:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
     />
     <title>{socialTitle}</title>
   </head>
-  <body class="bg-[#0a0a0a] text-neutral-300 font-sans antialiased min-h-screen overflow-x-hidden">
-    <!-- Mobile header -->
-    <header class="sticky top-0 z-40 flex items-center justify-between border-b border-neutral-800/60 bg-[#0a0a0a] px-4 py-3 md:hidden">
-      <a href="https://nan.builders" class="group flex items-center gap-2" aria-label="NaN">
-        <span
-          class="docs-wm h-[22px] w-[147px] bg-white transition-colors duration-200 group-hover:bg-violet-500"
-          aria-hidden="true"
-        ></span>
-      </a>
-      <button
-        id="menu-toggle"
-        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-neutral-800 bg-[#0a0a0a] text-neutral-400 transition-colors hover:text-white"
-        aria-label="Toggle menu"
-        aria-expanded="false"
-      >
-        <svg id="menu-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-        <svg id="close-icon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </header>
+  <body class="docs">
+    <a class="skip-link" href="#docs-main">Skip to content</a>
 
-    <!-- Mobile overlay -->
-    <div id="menu-overlay" class="fixed inset-0 z-40 hidden bg-black/60 md:hidden"></div>
+    <DocsTopBar current="guides" />
 
-    <div class="flex min-h-screen">
-      <!-- Sidebar: fixed overlay on mobile, static column on desktop -->
-      <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 flex-col border-r border-neutral-800/60 bg-[#0a0a0a] px-5 py-6 shadow-2xl transition-transform duration-200 -translate-x-full md:relative md:w-56 md:translate-x-0 md:shadow-none">
-        <div class="mb-4 flex items-center justify-between">
-          <a href="https://nan.builders" class="group flex items-center gap-2" aria-label="NaN">
-            <span
-              class="docs-wm h-[20px] w-[134px] bg-white transition-colors duration-200 group-hover:bg-violet-500"
-              aria-hidden="true"
-            ></span>
-          </a>
-          <button id="sidebar-close" class="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-800 bg-[#0a0a0a] text-neutral-400 transition-colors hover:text-white md:hidden" aria-label="Close menu">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div class="docs-backdrop" id="docs-backdrop" hidden></div>
+
+    <div class="docs-wrap">
+      <aside class="docs-side" id="docs-side" aria-label="Documentation">
+        <div class="docs-search">
+          <svg class="ds-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3" stroke-linecap="round"></path>
+          </svg>
+          <input
+            id="docs-search"
+            type="search"
+            placeholder="Search docs…"
+            autocomplete="off"
+            aria-label="Search documentation"
+          />
+          <span class="ds-kbd">⌘K</span>
+          <div id="docs-search-results" class="ds-results" hidden></div>
         </div>
-        <div class="mb-4 h-px bg-neutral-800/60" />
-        <nav class="space-y-1">
-          {navItems.map(item => {
-            const isActive = Astro.url.pathname === item.slug || (item.slug !== '/docs' && Astro.url.pathname.startsWith(item.slug + '/'));
-            return (
-              <a
-                href={item.slug}
-                class:list={[
-                  'block rounded-lg px-3 py-2 text-sm font-mono uppercase tracking-wider transition-colors duration-200',
-                  isActive
-                    ? 'bg-violet-400/10 text-violet-400'
-                    : 'text-neutral-200 hover:bg-neutral-800/60 hover:text-white'
-                ]}
-              >
-                {item.label}
-              </a>
-            );
-          })}
+
+        <nav class="docs-nav" aria-label="Docs sections">
+          {
+            navGroups.map((g) => (
+              <div class="docs-nav-group">
+                <p class="docs-nav-label">{g.group}</p>
+                <ul>
+                  {g.items.map((item) => (
+                    <li>
+                      <a
+                        href={item.slug}
+                        class:list={['docs-nav-link', { 'is-active': isActive(item.slug) }]}
+                        aria-current={isActive(item.slug) ? 'page' : undefined}
+                      >
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
         </nav>
       </aside>
 
-      <!-- Main content with TOC -->
-      <div class="flex flex-1 min-w-0">
-        <main class="flex-1 min-w-0 bg-[#141414]">
-          <div class="max-w-4xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-16">
-            <!-- Breadcrumb -->
-            <nav class="breadcrumb" aria-label="Breadcrumb">
-              <a href="/docs">Docs</a>
-              {breadcrumbSegments.slice(1).map(seg => (
-                <>
-                  <span class="separator">/</span>
-                  {seg.isCurrent ? (
-                    <span class="current">{seg.label}</span>
+      <div class="docs-pane">
+        <div class="docs-inner">
+          <main id="docs-main" class="docs-content">
+            <slot />
+
+            {
+              (prevPage || nextPage) && (
+                <nav class="docs-prevnext" aria-label="Pagination">
+                  {prevPage ? (
+                    <a href={prevPage.slug} class="dpn dpn-prev">
+                      <span class="dpn-dir">← Previous</span>
+                      <span class="dpn-title">{prevPage.label}</span>
+                    </a>
                   ) : (
-                    <a href={seg.path}>{seg.label}</a>
+                    <span />
                   )}
-                </>
-              ))}
-            </nav>
+                  {nextPage && (
+                    <a href={nextPage.slug} class="dpn dpn-next">
+                      <span class="dpn-dir">Next →</span>
+                      <span class="dpn-title">{nextPage.label}</span>
+                    </a>
+                  )}
+                </nav>
+              )
+            }
 
-            <!-- Page content -->
-            <div class="docs-content">
-              <slot />
-            </div>
-
-            <!-- Prev/Next navigation -->
-            {(prevPage || nextPage) && (
-              <div class="page-nav">
-                {prevPage && (
-                  <a href={prevPage.slug}>
-                    <span class="label">← anterior</span>
-                    <span class="title">{prevPage.label}</span>
-                  </a>
-                )}
-                {nextPage && (
-                  <a href={nextPage.slug} class="next">
-                    <span class="label">siguiente →</span>
-                    <span class="title">{nextPage.label}</span>
-                  </a>
-                )}
-              </div>
-            )}
-
-            <!-- Footer -->
-            <footer class="border-t border-neutral-900 pt-8 mt-16">
-              <div class="flex items-center justify-between text-xs text-neutral-500 font-mono">
-                <span class="shrink-0">nan.builders</span>
-                <span>© {new Date().getFullYear()}</span>
-              </div>
+            <footer class="docs-foot">
+              <span>nan.builders</span>
+              <span>© {new Date().getFullYear()}</span>
             </footer>
-          </div>
-        </main>
+          </main>
 
-        <!-- TOC sidebar (desktop only) -->
-        <aside class="hidden xl:block xl:w-56 shrink-0">
-          <div class="sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto px-6 py-8">
-            <p class="font-mono text-[10px] text-neutral-600 uppercase tracking-widest mb-4">
-              en esta página
-            </p>
-            <div class="toc" id="toc">
-              <!-- Populated by JS from h2/h3 headings -->
-            </div>
-          </div>
-        </aside>
+          <aside class="docs-toc" aria-label="On this page">
+            <p class="docs-toc-label">On this page</p>
+            <div class="toc" id="toc"></div>
+          </aside>
+        </div>
       </div>
     </div>
 
     <!-- Copy toast notification -->
     <div class="copy-toast" id="copy-toast">¡Copiado al portapapeles!</div>
 
+    <script define:vars={{ searchData }} is:inline>
+      // Buscador: filtra por título, descripción y encabezados. Sin dependencias
+      // ni índice invertido; con siete páginas, un `includes` sobra.
+      (function () {
+        const input = document.getElementById('docs-search');
+        const panel = document.getElementById('docs-search-results');
+        if (!input || !panel) return;
+
+        const escape = (s) =>
+          String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+        const render = (raw) => {
+          const q = raw.trim().toLowerCase();
+          if (!q) {
+            panel.hidden = true;
+            panel.innerHTML = '';
+            return;
+          }
+          const out = [];
+          for (const page of searchData) {
+            if (page.title.toLowerCase().includes(q) || page.description.toLowerCase().includes(q)) {
+              out.push({ title: page.title, sub: '', href: page.href });
+            }
+            for (const h of page.headings) {
+              if (h.text.toLowerCase().includes(q)) {
+                out.push({ title: page.title, sub: h.text, href: page.href + '#' + h.slug });
+              }
+            }
+          }
+          const top = out.slice(0, 8);
+          panel.innerHTML = top.length
+            ? top
+                .map(
+                  (r) =>
+                    `<a class="ds-result" href="${escape(r.href)}"><span class="ds-r-title">${escape(r.title)}</span>${
+                      r.sub ? `<span class="ds-r-sub">${escape(r.sub)}</span>` : ''
+                    }</a>`,
+                )
+                .join('')
+            : '<div class="ds-empty">No results</div>';
+          panel.hidden = false;
+        };
+
+        input.addEventListener('input', (e) => render(e.target.value));
+        input.addEventListener('focus', (e) => {
+          if (e.target.value) render(e.target.value);
+        });
+        document.addEventListener('click', (e) => {
+          if (!panel.contains(e.target) && e.target !== input) panel.hidden = true;
+        });
+        document.addEventListener('keydown', (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            input.focus();
+          }
+          if (e.key === 'Escape') {
+            panel.hidden = true;
+            input.blur();
+          }
+        });
+      })();
+    </script>
+
     <script>
-      const toggle = document.getElementById('menu-toggle')!;
-      const overlay = document.getElementById('menu-overlay')!;
-      const sidebar = document.getElementById('sidebar')!;
-      const sidebarClose = document.getElementById('sidebar-close')!;
+      // ── Cajón lateral en móvil ────────────────────────────────────────────
+      const menuBtn = document.getElementById('docs-menu-btn');
+      const side = document.getElementById('docs-side');
+      const backdrop = document.getElementById('docs-backdrop');
 
-      function openMenu() {
-        sidebar.classList.remove('-translate-x-full');
-        overlay.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+      if (menuBtn && side && backdrop) {
+        // El botón vive en la barra compartida y sale oculto: solo tiene sentido
+        // donde hay lateral que abrir, y la referencia de API no lo tiene.
+        menuBtn.hidden = false;
+
+        const setOpen = (open: boolean) => {
+          side.classList.toggle('open', open);
+          backdrop.hidden = !open;
+          menuBtn.setAttribute('aria-expanded', String(open));
+          document.body.style.overflow = open ? 'hidden' : '';
+        };
+        menuBtn.addEventListener('click', () => setOpen(!side.classList.contains('open')));
+        backdrop.addEventListener('click', () => setOpen(false));
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') setOpen(false);
+        });
+        side.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
       }
 
-      function closeMenu() {
-        sidebar.classList.add('-translate-x-full');
-        overlay.classList.add('hidden');
-        document.body.style.overflow = '';
-      }
-
-      toggle.addEventListener('click', openMenu);
-      sidebarClose.addEventListener('click', closeMenu);
-      overlay.addEventListener('click', closeMenu);
-
-      // Escape to close sidebar
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeMenu();
-      });
-
-      // Build TOC from h2/h3 headings
+      // ── TOC ───────────────────────────────────────────────────────────────
+      // Se construye desde el DOM y no desde los `headings` de Astro a
+      // propósito: las h2 que pintan componentes como ModelCard no aparecen en
+      // esa lista, así que /docs/models perdería su índice entero.
       const tocContainer = document.getElementById('toc');
-      // HTMLElement (no Element) para poder leer dataset.tocText más abajo.
       const headings = document.querySelectorAll<HTMLElement>('.docs-content h2, .docs-content h3');
 
       if (headings.length > 0 && tocContainer) {
         headings.forEach((heading) => {
-          const id = heading.id || heading.textContent?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+          const id =
+            heading.id ||
+            heading.textContent?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
           if (id) heading.id = id;
 
           const link = document.createElement('a');
           link.href = `#${id}`;
-          link.className = `toc-link ${heading.tagName === 'H3' ? 'h2' : ''}`;
           // data-toc-text lets a heading keep decorations (badges) out of the TOC
           link.textContent = heading.dataset.tocText || heading.textContent || '';
-          link.dataset.target = id;
+          link.dataset.target = id!;
+          if (heading.tagName === 'H3') link.classList.add('lvl3');
 
           link.addEventListener('click', (e) => {
             e.preventDefault();
-            const target = document.getElementById(id);
+            const target = document.getElementById(id!);
             if (target) {
               target.scrollIntoView({ behavior: 'smooth', block: 'start' });
               history.replaceState(null, '', `#${id}`);
@@ -290,27 +374,25 @@ const breadcrumbSegments = pathParts.map((part, i) => {
           tocContainer.appendChild(link);
         });
 
-        // Intersection observer for active TOC link
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            const link = tocContainer.querySelector(`[data-target="${entry.target.id}"]`);
-            if (link) {
-              if (entry.isIntersecting) {
-                tocContainer.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const link = tocContainer.querySelector(`[data-target="${entry.target.id}"]`);
+              if (link && entry.isIntersecting) {
+                tocContainer.querySelectorAll('a').forEach((l) => l.classList.remove('active'));
                 link.classList.add('active');
               }
-            }
-          });
-        }, {
-          rootMargin: '-20% 0px -60% 0px',
-          threshold: 1
-        });
+            });
+          },
+          { rootMargin: '-20% 0px -60% 0px', threshold: 1 },
+        );
 
-        headings.forEach(heading => {
+        headings.forEach((heading) => {
           if (heading.id) observer.observe(heading);
         });
       }
 
+      // ── Bloques de código ─────────────────────────────────────────────────
       // Progressive enhancement for Markdown-generated <pre><code> blocks:
       // wrap each in a toolbar with language label + copy button.
       const prettifyLanguage = (raw: string | null | undefined) => {

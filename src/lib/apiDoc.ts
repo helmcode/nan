@@ -22,6 +22,8 @@ export const API_DOC_META = {
   title: 'API',
   description: 'Public API endpoint reference. OpenAI-compatible.',
   order: 2,
+  /** Same shape the collection's frontmatter carries, so the docs nav can group it. */
+  group: 'Reference',
 } as const;
 
 /**
