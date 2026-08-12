@@ -14,6 +14,18 @@
  * enlaces normales, como el resto del sitio (Nav.astro), no con el intercambio
  * en caliente que se montó en helmcode.
  */
+/*
+ * Fuentes autohospedadas, igual que Docs.astro y NanBase.astro. Sin esto la
+ * página declara `--scalar-font: var(--font-sans)` (Archivo) pero el navegador
+ * no tiene de dónde sacarla y cae al sistema: se veía correcta en las variables
+ * CSS y mal en pantalla. No se pueden dejar a Scalar, que las serviría desde
+ * fonts.scalar.com (ver `withDefaultFonts: false` más abajo).
+ */
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '@fontsource/jetbrains-mono/700.css';
+
 import { switchLocalePath, type Locale } from '../../lib/i18n';
 
 interface Props {
