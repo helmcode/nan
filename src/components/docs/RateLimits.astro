@@ -5,24 +5,32 @@ import {
   getRateLimitsConfig,
   windowedModelBody,
   windowedModelHeadline,
+  rateLimitsLabels,
 } from '../../lib/rateLimits';
 
 const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel, windowedModels } =
   getRateLimitsConfig(env);
+
+// This card is embedded from both the English and the Spanish guides, and MDX
+// content cannot pass props down from the layout, so the locale is read off the
+// route the page was rendered for.
+const lang = Astro.url.pathname.startsWith('/es/') ? 'es' : 'en';
+
+const T = rateLimitsLabels(lang);
 ---
 
 <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
   <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
-    rate limits per API key
+    {T.perKey}
   </p>
   <dl class="grid gap-3 sm:grid-cols-2">
     <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-      <dt class="text-neutral-500 uppercase tracking-wider">Requests / min</dt>
+      <dt class="text-neutral-500 uppercase tracking-wider">{T.requestsPerMin}</dt>
       <dd class="text-neutral-200 text-right">{perKey.requestsPerMinute} rpm</dd>
     </div>
     <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-      <dt class="text-neutral-500 uppercase tracking-wider">Max parallel</dt>
-      <dd class="text-neutral-200 text-right">{perKey.maxParallel} concurrent</dd>
+      <dt class="text-neutral-500 uppercase tracking-wider">{T.maxParallel}</dt>
+      <dd class="text-neutral-200 text-right">{perKey.maxParallel} {T.concurrent}</dd>
     </div>
   </dl>
 </div>
@@ -37,29 +45,29 @@ const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel, windowedModels
   windowedModels.map((m) => (
     <div class="rounded-xl border border-violet-500/30 bg-violet-500/[0.06] p-6 mb-6">
       <p class="font-mono text-[10px] text-violet-300 uppercase tracking-widest mb-4">
-        {m.model} · premium tier limits
+        {m.model} · {T.premium}
       </p>
       <dl class="grid gap-3 sm:grid-cols-2">
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-          <dt class="text-neutral-500 uppercase tracking-wider">Rolling {m.windowHours}h window</dt>
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.window(m.windowHours)}</dt>
           <dd class="text-neutral-200 text-right">{formatTokens(m.windowTokens)} tokens</dd>
         </div>
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-          <dt class="text-neutral-500 uppercase tracking-wider">Allowance / billing period</dt>
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.allowance}</dt>
           <dd class="text-neutral-200 text-right">{formatTokens(m.periodCapTokens)} tokens</dd>
         </div>
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-          <dt class="text-neutral-500 uppercase tracking-wider">Context window</dt>
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.context}</dt>
           <dd class="text-neutral-200 text-right">{formatTokens(m.contextTokens)} tokens</dd>
         </div>
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-          <dt class="text-neutral-500 uppercase tracking-wider">Concurrent requests</dt>
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.concurrentRequests}</dt>
           <dd class="text-neutral-200 text-right">{m.maxParallel}</dd>
         </div>
       </dl>
       <p class="mt-4 font-mono text-[11px] leading-relaxed text-neutral-400">
-        <span class="text-violet-200">{windowedModelHeadline(m)}</span>{' '}
-        {windowedModelBody(m)}
+        <span class="text-violet-200">{windowedModelHeadline(m, lang)}</span>{' '}
+        {windowedModelBody(m, lang)}
       </p>
     </div>
   ))
@@ -67,7 +75,7 @@ const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel, windowedModels
 
 <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
   <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
-    tokens / min per model
+    {T.tokensPerModel}
   </p>
   <dl class="grid gap-3 sm:grid-cols-2">
     {
@@ -83,7 +91,7 @@ const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel, windowedModels
 
 <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-14">
   <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
-    requests / min per model
+    {T.requestsPerModel}
   </p>
   <dl class="grid gap-3 sm:grid-cols-2">
     {

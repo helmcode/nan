@@ -28,13 +28,13 @@ interface Props {
 
 // The guides exist in both languages, each in its own collection, so the page
 // language, the default copy and the social card follow the `lang` prop.
-const {
-  title,
-  description = lang === 'es'
+const { title, lang = 'en' } = Astro.props;
+
+const description =
+  Astro.props.description ??
+  (lang === 'es'
     ? 'Documentación de NaN. Conecta con nuestros modelos abiertos a través de una API compatible con OpenAI.'
-    : 'NaN docs. Connect to our open models through an OpenAI-compatible API.',
-  lang = 'en',
-} = Astro.props;
+    : 'NaN docs. Connect to our open models through an OpenAI-compatible API.');
 
 const pfx = lang === 'es' ? '/es' : '';
 const T = {

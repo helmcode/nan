@@ -96,12 +96,26 @@ export function formatTokens(tokens: number): string {
  * each surface: the page and the Discord bot were already caught disagreeing
  * about rpm, and this is the number a premium member plans against.
  */
-export function windowedModelHeadline(m: WindowedModelLimits): string {
-  return `${formatTokens(m.windowTokens)} tokens per rolling ${m.windowHours} hours`;
+export type DocsLocale = 'en' | 'es';
+
+export function windowedModelHeadline(m: WindowedModelLimits, lang: DocsLocale = 'en'): string {
+  return lang === 'es'
+    ? `${formatTokens(m.windowTokens)} tokens por ventana móvil de ${m.windowHours} horas`
+    : `${formatTokens(m.windowTokens)} tokens per rolling ${m.windowHours} hours`;
 }
 
 /** The rest of the sentence started by windowedModelHeadline(). */
-export function windowedModelBody(m: WindowedModelLimits): string {
+export function windowedModelBody(m: WindowedModelLimits, lang: DocsLocale = 'en'): string {
+  if (lang === 'es') {
+    return (
+      `es el límite con el que topa antes una sesión intensiva de agente de código, ` +
+      `mucho antes que la cuota. Cuando lo alcanzas, las peticiones a ${m.model} se ` +
+      `rechazan hasta que la ventana avanza: es una ventana móvil, no un reinicio ` +
+      `diario. El contador de la cuota vuelve a cero cuando empieza tu periodo de ` +
+      `facturación, y si subes de plan a mitad de periodo esa primera cuota se ` +
+      `prorratea a la parte del periodo que has pagado.`
+    );
+  }
   return (
     `is the limit a heavy coding-agent run reaches first, well before the allowance. ` +
     `Once you hit it, ${m.model} requests are rejected until the window slides forward: ` +
@@ -112,8 +126,8 @@ export function windowedModelBody(m: WindowedModelLimits): string {
 }
 
 /** Headline plus body, for the surfaces that publish it as one paragraph. */
-export function windowedModelNote(m: WindowedModelLimits): string {
-  return `${windowedModelHeadline(m)} ${windowedModelBody(m)}`;
+export function windowedModelNote(m: WindowedModelLimits, lang: DocsLocale = 'en'): string {
+  return `${windowedModelHeadline(m, lang)} ${windowedModelBody(m, lang)}`;
 }
 
 function parsePositiveInt(raw: string | undefined, fallback: number, varName: string): number {
@@ -197,4 +211,40 @@ export function rateLimitsToSpecMarkdown(config: RateLimitsConfig): string {
   }
 
   return out.join('\n');
+}
+
+/**
+ * The visible labels of the rate limits card. They live here, beside the numbers
+ * they label, so a locale cannot silently fall back to the other language the
+ * way it did when they were literals inside the component.
+ */
+export function rateLimitsLabels(lang: DocsLocale) {
+  return {
+  en: {
+    perKey: 'rate limits per API key',
+    requestsPerMin: 'Requests / min',
+    maxParallel: 'Max parallel',
+    concurrent: 'concurrent',
+    premium: 'premium tier limits',
+    window: (h: number) => `Rolling ${h}h window`,
+    allowance: 'Allowance / billing period',
+    context: 'Context window',
+    concurrentRequests: 'Concurrent requests',
+    tokensPerModel: 'tokens / min per model',
+    requestsPerModel: 'requests / min per model',
+  },
+  es: {
+    perKey: 'límites por API key',
+    requestsPerMin: 'Peticiones / min',
+    maxParallel: 'Máximo en paralelo',
+    concurrent: 'concurrentes',
+    premium: 'límites del tier premium',
+    window: (h: number) => `Ventana móvil de ${h}h`,
+    allowance: 'Cuota / periodo de facturación',
+    context: 'Contexto',
+    concurrentRequests: 'Peticiones concurrentes',
+    tokensPerModel: 'tokens / min por modelo',
+    requestsPerModel: 'peticiones / min por modelo',
+  },
+}[lang];
 }
