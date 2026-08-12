@@ -1,28 +1,27 @@
 ---
-title: Introduction
-description: Connect your favorite tools (OpenCode, Cursor, Cline, etc.) to our shared inference cluster.
+title: Introducción
+description: Conecta tus herramientas favoritas (OpenCode, Cursor, Cline, etc.) a nuestro clúster de inferencia compartido.
 order: 0
-group: Get started
-translated: false
+group: Primeros pasos
 ---
 
-# Welcome to NaN.
+# Bienvenido a NaN.
 
-This doc explains how to connect your tools to our GPUs. The cluster runs open models with an OpenAI-compatible API. If something accepts a `base URL` + `API key`, it works with NaN.
+Esta documentación explica cómo conectar tus herramientas a nuestras GPUs. El clúster ejecuta modelos abiertos con una API compatible con OpenAI. Si algo acepta una `base URL` y una `API key`, funciona con NaN.
 
-> **To get your API Key**
-> You must be a NaN community member. You can generate your API Key from the user settings section under "API Keys" on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable.
+> **Para conseguir tu API Key**
+> Tienes que ser miembro de la comunidad de NaN. Puedes generar tu API Key desde los ajustes de usuario, en el apartado "API Keys" de la [plataforma](https://cloud.nan.builders/). La key es personal e intransferible.
 
 ## Rate limits
 
-| Metric | Value |
+| Métrica | Valor |
 |---|---|
-| Requests per minute | 60 rpm |
-| Max parallel | 5 concurrent |
+| Peticiones por minuto | 60 rpm |
+| Máximo en paralelo | 5 concurrentes |
 
-## What to do next
+## Por dónde seguir
 
-- [Getting Started](/docs/getting-started): endpoint, auth, and step-by-step setup.
-- [Models](/docs/models): capabilities and limits of the models.
-- [Examples](/docs/examples): snippets in Python, Node.js, and curl.
-- Support: report issues via `#support` on Discord.
+- [Primeros pasos](/es/docs/getting-started): endpoint, autenticación y configuración paso a paso.
+- [Modelos](/es/docs/models): capacidades y límites de los modelos.
+- [Ejemplos](/es/docs/examples): fragmentos en Python, Node.js y curl.
+- Soporte: reporta incidencias en `#support` de Discord.

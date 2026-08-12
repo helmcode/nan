@@ -22,8 +22,15 @@ export const API_DOC_META = {
   title: 'API',
   description: 'Public API endpoint reference. OpenAI-compatible.',
   order: 2,
-  /** Same shape the collection's frontmatter carries, so the docs nav can group it. */
-  group: 'Reference',
+  /**
+   * The nav group, per locale.
+   *
+   * The reference is not in either collection, so its group label cannot come
+   * from frontmatter like every other page's. Hardcoding the English one split
+   * the Spanish sidebar into "Reference" and "Referencia", two sections where
+   * there should be one.
+   */
+  group: { en: 'Reference', es: 'Referencia' },
 } as const;
 
 /**

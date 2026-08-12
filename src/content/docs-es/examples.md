@@ -1,18 +1,17 @@
 ---
-title: Examples
-description: Code snippets to connect to the NaN API with Python, Node.js, curl, and more.
+title: Ejemplos
+description: Fragmentos de código para conectarte a la API de NaN con Python, Node.js, curl y más.
 order: 4
-group: Guides
-translated: false
+group: Guías
 ---
 
-# Code snippets.
+# Fragmentos de código.
 
-Examples to connect to the API with different languages and tools. Use `https://api.nan.builders/v1` as base URL and your personal API key.
+Ejemplos para conectarte a la API desde distintos lenguajes y herramientas. Usa `https://api.nan.builders/v1` como base URL y tu API key personal.
 
 ## model: qwen3.6
 
-text generation and chat
+generación de texto y chat
 
 ### curl
 
@@ -50,7 +49,7 @@ for chunk in response:
         print(content, end="", flush=True)
 ```
 
-Install: `pip install openai`
+Instalación: `pip install openai`
 
 ### node.js (openai)
 
@@ -75,7 +74,7 @@ for await (const chunk of stream) {
 }
 ```
 
-Install: `npm install openai`
+Instalación: `npm install openai`
 
 ### opencode.json (config)
 
@@ -134,7 +133,7 @@ Install: `npm install openai`
 }
 ```
 
-This is the config to connect IDEs (Cursor, OpenCode) with the 4 available LLM models: `qwen3.6`, `gemma4`, `deepseek-v4-flash` and `mimo-v2.5`.
+Esta es la configuración para conectar IDEs (Cursor, OpenCode) con los 4 modelos LLM disponibles: `qwen3.6`, `gemma4`, `deepseek-v4-flash` y `mimo-v2.5`.
 
 ### .pi/agent/models.json (config)
 
@@ -171,7 +170,7 @@ This is the config to connect IDEs (Cursor, OpenCode) with the 4 available LLM m
 }
 ```
 
-Config for `~/.pi/agent/models.json`
+Configuración para `~/.pi/agent/models.json`
 
 ### .pi/agent/settings.json (config)
 
@@ -182,7 +181,7 @@ Config for `~/.pi/agent/models.json`
 }
 ```
 
-Config for `~/.pi/agent/settings.json`. Without `defaultProvider` and `defaultModel`, Pi uses its default provider and returns an authentication error (401).
+Configuración para `~/.pi/agent/settings.json`. Sin `defaultProvider` ni `defaultModel`, Pi usa su proveedor por defecto y devuelve un error de autenticación (401).
 
 ### openclaw.json (config)
 
@@ -222,9 +221,9 @@ Config for `~/.pi/agent/settings.json`. Without `defaultProvider` and `defaultMo
 }
 ```
 
-Config for `~/.openclaw/openclaw.json`
+Configuración para `~/.openclaw/openclaw.json`
 
-`maxTokens: 65536` is the maximum the model supports. `params.maxTokens: 16000` is what is sent per request. 16K is a good balance for most tasks. If you need longer responses, increase it — but keep in mind that reasoning also consumes from that budget.
+`maxTokens: 65536` es el máximo que admite el modelo. `params.maxTokens: 16000` es lo que se manda en cada petición. 16K es un buen equilibrio para la mayoría de tareas. Si necesitas respuestas más largas, súbelo, pero ten en cuenta que el razonamiento también consume de ese presupuesto.
 
 <h3 id="qwen36-zed">settings.json (Zed)</h3>
 
@@ -251,11 +250,11 @@ Config for `~/.openclaw/openclaw.json`
 }
 ```
 
-Config for `~/.config/zed/settings.json` — includes inline predictions.
+Configuración para `~/.config/zed/settings.json`. Incluye las predicciones en línea.
 
 ## model: qwen3-embedding
 
-vector embeddings
+embeddings vectoriales
 
 ### curl
 
@@ -313,7 +312,7 @@ console.log(embeddings[0].length);  // 4096
 
 ## model: rerank
 
-semantic reranking — completes the RAG stack
+reordenado semántico, completa el stack de RAG
 
 ### curl
 
@@ -364,11 +363,11 @@ for r in response["results"]:
     print(f"{r['index']}: {r['relevance_score']:.3f}")
 ```
 
-Also works with raw `requests` or any HTTP client — the endpoint is OpenAI-compatible in authentication and payload format.
+También funciona con `requests` a pelo o con cualquier cliente HTTP: el endpoint es compatible con OpenAI tanto en la autenticación como en el formato del cuerpo.
 
 ## model: kokoro
 
-text-to-speech
+texto a voz
 
 ### curl
 
@@ -441,7 +440,7 @@ fs.writeFileSync("output.mp3", buffer);
 
 ## model: whisper
 
-speech-to-text
+voz a texto
 
 ### curl
 
@@ -525,7 +524,7 @@ console.log(result.duration);   // 5.2
 
 ## model: mimo-v2.5
 
-omnimodal — chat, vision, and audio
+omnimodal: chat, visión y audio
 
 ### curl
 
@@ -540,9 +539,9 @@ curl https://api.nan.builders/v1/chat/completions \
   }'
 ```
 
-With reasoning enabled, `max_tokens ≥ 300` is recommended to leave room for reasoning.
+Con el razonamiento activado se recomienda `max_tokens ≥ 300`, para dejarle sitio.
 
-### vision (curl)
+### visión (curl)
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
@@ -588,7 +587,7 @@ print(response.choices[0].message.content)
 
 ## tool: web search
 
-authenticated web search for agents — `POST /v1/search`
+búsqueda web autenticada para agentes: `POST /v1/search`
 
 ### curl
 
@@ -630,13 +629,13 @@ for r in response["results"]:
     print(r["title"], "-", r["url"])
 ```
 
-Also works with raw `requests` or any HTTP client — send the JSON body with your Bearer key.
+También funciona con `requests` a pelo o con cualquier cliente HTTP: manda el cuerpo JSON con tu key en el Bearer.
 
-## IDE Integration
+## Integración con IDEs
 
-- **Cursor**: Settings → OpenAI API → Base URL: `https://api.nan.builders/v1`, API Key: your key
-- **Zed**: Settings → `settings.json` → see [full config above](#qwen36-zed)
-- **Cline / Continue / Aider**: Set the environment variables:
+- **Cursor**: Settings → OpenAI API → Base URL: `https://api.nan.builders/v1`, API Key: tu key
+- **Zed**: Settings → `settings.json` → mira la [configuración completa de arriba](#qwen36-zed)
+- **Cline / Continue / Aider**: define las variables de entorno:
 
 ```bash
 export OPENAI_BASE_URL="https://api.nan.builders/v1"

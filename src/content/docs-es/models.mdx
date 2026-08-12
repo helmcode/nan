@@ -1,38 +1,37 @@
 ---
-title: Models
-description: Technical specifications, capabilities, and parameters of the shared cluster models.
+title: Modelos
+description: Especificaciones técnicas, capacidades y parámetros de los modelos del clúster compartido.
 order: 3
-group: Reference
-translated: false
+group: Referencia
 ---
 
 import ModelCard from '../../components/docs/ModelCard.astro';
 import LimitationsCard from '../../components/docs/LimitationsCard.astro';
 import RateLimits from '../../components/docs/RateLimits.astro';
 
-# Cluster Models.
+# Modelos del clúster.
 
-Community models. All are accessed via the same OpenAI-compatible API
-with the same `base URL`.
+Modelos de la comunidad. A todos se accede con la misma API compatible con
+OpenAI y la misma `base URL`.
 
 <ModelCard
   id="deepseek-v4-flash"
   name="deepseek-v4-flash"
   tag="284B-21B"
-  leftLabel="text generation & chat"
-  rightLabel="capabilities"
-  description="284B parameter MoE model (21B active). 1M token context. Tool calling and reasoning. 500M token monthly quota per member."
+  leftLabel="generación de texto y chat"
+  rightLabel="capacidades"
+  description="Modelo MoE de 284B parámetros (21B activos). Contexto de 1M tokens. Tool calling y razonamiento. Cuota de 500M tokens al mes por miembro."
   specs={[
-    { label: 'Type', value: 'MoE (284B total · 21B active)' },
-    { label: 'Quantization', value: 'FP8' },
-    { label: 'Context', value: '1M tokens' },
-    { label: 'Monthly quota', value: '500M tokens / member' },
+    { label: 'Tipo', value: 'MoE (284B total · 21B activos)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Cuota mensual', value: '500M tokens / miembro' },
   ]}
   items={[
     'Tool calling',
-    'Reasoning mode',
-    '1M token context',
-    'Streaming generation (SSE)',
+    'Modo razonamiento',
+    'Contexto de 1M tokens',
+    'Generación en streaming (SSE)',
   ]}
 />
 
@@ -40,25 +39,25 @@ with the same `base URL`.
   id="mimo-v2-5"
   name="mimo-v2.5"
   tag="310B-15B"
-  leftLabel="omnimodal — text, vision & audio"
-  rightLabel="capabilities"
-  description="310B parameter MoE model (15B active), natively omnimodal with dedicated vision and audio encoders. 1M token context. Tool calling and reasoning. 1.0B token monthly quota per member. MIT license."
+  leftLabel="omnimodal: texto, visión y audio"
+  rightLabel="capacidades"
+  description="Modelo MoE de 310B parámetros (15B activos), omnimodal de forma nativa con codificadores dedicados de visión y audio. Contexto de 1M tokens. Tool calling y razonamiento. Cuota de 1.0B tokens al mes por miembro. Licencia MIT."
   specs={[
-    { label: 'Type', value: 'MoE (310B total · 15B active)' },
-    { label: 'Quantization', value: 'FP8' },
-    { label: 'Context', value: '1M tokens' },
-    { label: 'Input modalities', value: 'text · image · audio' },
-    { label: 'Output modalities', value: 'text' },
-    { label: 'Monthly quota', value: '1.0B tokens / member' },
-    { label: 'License', value: 'MIT' },
+    { label: 'Tipo', value: 'MoE (310B total · 15B activos)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Modalidades de entrada', value: 'texto · imagen · audio' },
+    { label: 'Modalidades de salida', value: 'texto' },
+    { label: 'Cuota mensual', value: '1.0B tokens / miembro' },
+    { label: 'Licencia', value: 'MIT' },
   ]}
   items={[
     'Tool calling (function calling)',
-    'Reasoning mode (recommended <code>max_tokens &ge; 300</code>)',
-    'Vision (image input)',
-    'Audio (audio input)',
-    '1M token context',
-    'Streaming generation (SSE)',
+    'Modo razonamiento (se recomienda <code>max_tokens &ge; 300</code>)',
+    'Visión (entrada de imagen)',
+    'Audio (entrada de audio)',
+    'Contexto de 1M tokens',
+    'Generación en streaming (SSE)',
   ]}
 />
 
@@ -66,26 +65,26 @@ with the same `base URL`.
   id="glm-5-2"
   name="glm5.2"
   tag="753B MoE"
-  leftLabel="text generation & chat — agentic coding"
-  rightLabel="capabilities"
-  description="Premium tier: callable only with a key on the GLM 5.2 premium membership. ~753B parameter MoE model, focused on coding and long-horizon agentic tasks. 500K token context. Tool calling and reasoning (emits a reasoning trace). Text only. 3,000M token quota per member, and the counter goes back to zero when your billing period starts. Also capped at 400M tokens per rolling 4h window, which is the limit a heavy coding-agent run reaches first."
+  leftLabel="generación de texto y chat: coding agéntico"
+  rightLabel="capacidades"
+  description="Tier premium: solo se puede llamar con una key de la membresía premium GLM 5.2. Modelo MoE de ~753B parámetros, enfocado a coding y a tareas agénticas de largo recorrido. Contexto de 500K tokens. Tool calling y razonamiento (emite una traza de razonamiento). Solo texto. Cuota de 3.000M tokens por miembro, y el contador vuelve a cero cuando empieza tu periodo de facturación. Además tiene un tope de 400M tokens por ventana móvil de 4h, que es el límite con el que topa antes una sesión intensiva de agente de código."
   specs={[
-    { label: 'Type', value: 'MoE (~753B total)' },
-    { label: 'Quantization', value: 'FP8' },
-    { label: 'Attention', value: 'Sparse attention' },
-    { label: 'Context', value: '500K tokens' },
-    { label: 'Input modalities', value: 'text' },
-    { label: 'Output modalities', value: 'text' },
-    { label: 'Allowance / billing period', value: '3,000M tokens / member' },
-    { label: 'Rolling 4h window', value: '400M tokens' },
+    { label: 'Tipo', value: 'MoE (~753B total)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Atención', value: 'Sparse attention' },
+    { label: 'Contexto', value: '500K tokens' },
+    { label: 'Modalidades de entrada', value: 'texto' },
+    { label: 'Modalidades de salida', value: 'texto' },
+    { label: 'Cuota / periodo de facturación', value: '3.000M tokens / miembro' },
+    { label: 'Ventana móvil de 4h', value: '400M tokens' },
   ]}
   items={[
     'Tool calling (function calling)',
-    'Reasoning mode (reasoning trace)',
-    'Coding and long-horizon agentic tasks',
-    '500K token context',
-    'Streaming generation (SSE)',
-    'Requires the GLM 5.2 premium tier',
+    'Modo razonamiento (traza de razonamiento)',
+    'Coding y tareas agénticas de largo recorrido',
+    'Contexto de 500K tokens',
+    'Generación en streaming (SSE)',
+    'Requiere el tier premium GLM 5.2',
   ]}
 />
 
@@ -93,21 +92,21 @@ with the same `base URL`.
   id="gemma4"
   name="gemma4"
   tag="26B-A4B"
-  leftLabel="text generation & chat"
-  rightLabel="capabilities"
-  description="26B parameter MoE model (4B active), multimodal with vision. Tool calling and reasoning."
+  leftLabel="generación de texto y chat"
+  rightLabel="capacidades"
+  description="Modelo MoE de 26B parámetros (4B activos), multimodal con visión. Tool calling y razonamiento."
   specs={[
-    { label: 'Type', value: 'MoE (26B total · 4B active)' },
-    { label: 'Quantization', value: 'FP8' },
-    { label: 'Context', value: '256K tokens' },
-    { label: 'Sampling', value: 'temp=0.6, top_p=0.95' },
-    { label: 'Reasoning', value: 'reasoning_config={}' },
+    { label: 'Tipo', value: 'MoE (26B total · 4B activos)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '256K tokens' },
+    { label: 'Muestreo', value: 'temp=0.6, top_p=0.95' },
+    { label: 'Razonamiento', value: 'reasoning_config={}' },
   ]}
   items={[
-    'Tool calling (XML format)',
-    'Reasoning mode',
-    'Multimodal (vision / images)',
-    'Streaming generation (SSE)',
+    'Tool calling (formato XML)',
+    'Modo razonamiento',
+    'Multimodal (visión / imágenes)',
+    'Generación en streaming (SSE)',
   ]}
 />
 
@@ -115,23 +114,23 @@ with the same `base URL`.
   id="qwen36"
   name="qwen3.6"
   tag="35B-A3B"
-  leftLabel="text generation & chat"
-  rightLabel="capabilities"
-  description="The flagship model. 35B parameter MoE, multimodal, with tool calling and reasoning."
+  leftLabel="generación de texto y chat"
+  rightLabel="capacidades"
+  description="El modelo insignia. MoE de 35B parámetros, multimodal, con tool calling y razonamiento."
   specs={[
-    { label: 'Type', value: 'MoE (35B total)' },
-    { label: 'Active per token', value: '3B' },
-    { label: 'Quantization', value: 'FP8' },
-    { label: 'Context', value: '256K tokens' },
-    { label: 'Speculative decoding', value: 'MTP → ~2x throughput' },
-    { label: 'Sampling', value: 'temp=0.6, top_p=0.95' },
-    { label: 'Reasoning', value: 'reasoning_config={}' },
+    { label: 'Tipo', value: 'MoE (35B total)' },
+    { label: 'Activos por token', value: '3B' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '256K tokens' },
+    { label: 'Decodificación especulativa', value: 'MTP → ~2x de rendimiento' },
+    { label: 'Muestreo', value: 'temp=0.6, top_p=0.95' },
+    { label: 'Razonamiento', value: 'reasoning_config={}' },
   ]}
   items={[
-    'Tool calling (XML format)',
-    'Reasoning mode',
-    'Multimodal (vision / images)',
-    'Streaming generation (SSE)',
+    'Tool calling (formato XML)',
+    'Modo razonamiento',
+    'Multimodal (visión / imágenes)',
+    'Generación en streaming (SSE)',
   ]}
 />
 
@@ -139,20 +138,20 @@ with the same `base URL`.
   id="qwen3-embedding"
   name="qwen3-embedding"
   tag="8B"
-  leftLabel="vector embeddings"
-  rightLabel="use cases"
-  description="Vector embedding model. MMTEB score 70.58 — top-tier open models. Supports 100+ languages including Spanish and code."
+  leftLabel="embeddings vectoriales"
+  rightLabel="casos de uso"
+  description="Modelo de embeddings vectoriales. Puntuación MMTEB de 70.58, entre los mejores modelos abiertos. Admite más de 100 idiomas, incluidos el español y el código."
   specs={[
-    { label: 'Dimension', value: '4096' },
-    { label: 'Precision', value: 'Float32 (CPU)' },
+    { label: 'Dimensión', value: '4096' },
+    { label: 'Precisión', value: 'Float32 (CPU)' },
     { label: 'RPM', value: '60' },
-    { label: 'Batch size', value: '32' },
+    { label: 'Tamaño de lote', value: '32' },
   ]}
   items={[
-    'Cross-lingual similarity (ES↔EN: 0.915)',
-    'Semantic search',
-    'Text classification',
-    'RAG / retrieval augmentation',
+    'Similitud entre idiomas (ES↔EN: 0.915)',
+    'Búsqueda semántica',
+    'Clasificación de texto',
+    'RAG / recuperación aumentada',
   ]}
 />
 
@@ -160,20 +159,20 @@ with the same `base URL`.
   id="rerank"
   name="rerank"
   tag="Qwen3-Reranker-8B"
-  leftLabel="semantic reranking"
-  rightLabel="use cases"
-  description="8B parameter reranking model (BF16). Reorders a list of documents by relevance to a query. Completes the RAG stack alongside qwen3-embedding: first retrieve top-K via embeddings, then rerank for precision. Supports 100+ languages including Spanish, code retrieval, and cross-lingual. Top-tier on MTEB reranking benchmarks."
+  leftLabel="reordenado semántico"
+  rightLabel="casos de uso"
+  description="Modelo de reordenado de 8B parámetros (BF16). Reordena una lista de documentos por relevancia frente a una consulta. Completa el stack de RAG junto a qwen3-embedding: primero recuperas los top-K con embeddings y después reordenas para ganar precisión. Admite más de 100 idiomas, incluidos el español, la recuperación de código y la búsqueda entre idiomas. De los mejores en los benchmarks de reranking de MTEB."
   specs={[
-    { label: 'Parameters', value: '8B' },
-    { label: 'Precision', value: 'BF16' },
+    { label: 'Parámetros', value: '8B' },
+    { label: 'Precisión', value: 'BF16' },
     { label: 'Endpoints', value: '/v1/rerank · /v2/rerank' },
-    { label: 'Languages', value: '100+' },
+    { label: 'Idiomas', value: '100+' },
   ]}
   items={[
-    'Reranking in RAG pipelines (embedding → rerank → LLM)',
-    'Cross-lingual search (ES↔EN, etc.)',
-    'Code retrieval',
-    'Query-document relevance scoring',
+    'Reordenado en pipelines de RAG (embedding → rerank → LLM)',
+    'Búsqueda entre idiomas (ES↔EN, etc.)',
+    'Recuperación de código',
+    'Puntuación de relevancia consulta-documento',
   ]}
 />
 
@@ -181,19 +180,19 @@ with the same `base URL`.
   id="kokoro"
   name="kokoro"
   tag="v1.0"
-  leftLabel="text-to-speech"
-  rightLabel="available voices"
-  description="82M parameter TTS with 67 voice packs. Sub-second latency on CPU."
+  leftLabel="texto a voz"
+  rightLabel="voces disponibles"
+  description="TTS de 82M parámetros con 67 packs de voces. Latencia por debajo del segundo en CPU."
   specs={[
-    { label: 'Latency', value: '< 1s' },
-    { label: 'Parameters', value: '82M' },
+    { label: 'Latencia', value: '< 1s' },
+    { label: 'Parámetros', value: '82M' },
     { label: 'RPM', value: '15' },
   ]}
   items={[
-    '<span class="text-white">af_heart</span> — English (female)',
-    '<span class="text-white">ef_dora</span> — Spanish (female)',
-    '<span class="text-white">em_alex</span> — Spanish (male)',
-    '67 voice packs total (<a class="text-violet-400 hover:underline" href="https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md" target="_blank" rel="noopener">see full list</a>)',
+    '<span class="text-white">af_heart</span> · inglés (femenina)',
+    '<span class="text-white">ef_dora</span> · español (femenina)',
+    '<span class="text-white">em_alex</span> · español (masculina)',
+    '67 packs de voces en total (<a class="text-violet-400 hover:underline" href="https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md" target="_blank" rel="noopener">ver la lista completa</a>)',
   ]}
 />
 
@@ -201,35 +200,36 @@ with the same `base URL`.
   id="whisper"
   name="whisper"
   tag="large-v3"
-  leftLabel="speech-to-text"
-  rightLabel="capabilities"
-  description="CPU-based STT with CTranslate2 and INT8. ~1x realtime. 99+ languages."
+  leftLabel="voz a texto"
+  rightLabel="capacidades"
+  description="STT en CPU con CTranslate2 e INT8. Aproximadamente 1x tiempo real. Más de 99 idiomas."
   specs={[
-    { label: 'Size', value: '~3 GB (INT8)' },
+    { label: 'Tamaño', value: '~3 GB (INT8)' },
     { label: 'WER ES', value: '~3.2%' },
     { label: 'RPM', value: '10' },
   ]}
   items={[
-    'Audio-to-text transcription',
-    '99+ languages',
-    'Automatic language detection',
-    'OpenAI-compatible API',
+    'Transcripción de audio a texto',
+    'Más de 99 idiomas',
+    'Detección automática de idioma',
+    'API compatible con OpenAI',
   ]}
 />
 
 <LimitationsCard
+  title="limitaciones conocidas"
   items={[
     {
-      title: 'File size limit — 25 MB',
-      body: 'Maximum size per request. Compressed formats (OGG/Opus, MP3) make better use of this limit than uncompressed WAV.',
+      title: 'Tamaño máximo de fichero: 25 MB',
+      body: 'Tamaño máximo por petición. Los formatos comprimidos (OGG/Opus, MP3) aprovechan mucho mejor este límite que un WAV sin comprimir.',
     },
     {
-      title: 'Timeout — audios > 2 min duration',
-      body: 'Whisper processes on CPU at ~1x realtime. For audios longer than ~2 minutes, the proxy may return a <code>524</code> (timeout) error before transcription completes. Use compressed formats like <strong>OGG/Opus</strong> and split long files into ≤ 2 minute segments to avoid this.',
+      title: 'Timeout: audios de más de 2 minutos',
+      body: 'Whisper procesa en CPU a aproximadamente 1x tiempo real. Con audios de más de 2 minutos, el proxy puede devolver un error <code>524</code> (timeout) antes de que termine la transcripción. Usa formatos comprimidos como <strong>OGG/Opus</strong> y parte los ficheros largos en tramos de 2 minutos o menos para evitarlo.',
     },
     {
-      title: 'Recommended formats',
-      body: '<code>OGG/Opus</code> and <code>MP3</code> — smaller files, same transcription quality. A 60-minute audio in OGG/Opus at 48 kbps takes ~20 MB vs ~550 MB in WAV.',
+      title: 'Formatos recomendados',
+      body: '<code>OGG/Opus</code> y <code>MP3</code>: ficheros más pequeños con la misma calidad de transcripción. Un audio de 60 minutos en OGG/Opus a 48 kbps ocupa unos 20 MB frente a los ~550 MB del WAV.',
     },
   ]}
 />
@@ -237,21 +237,21 @@ with the same `base URL`.
 <ModelCard
   id="flux-2-klein"
   name="flux-2-klein"
-  leftLabel="image generation"
-  rightLabel="capabilities"
-  description="FLUX diffusion model for text-to-image and image-to-image. Compatible with OpenAI's Images API (/v1/images/generations and /v1/images/edits). Requires inference-tier membership."
+  leftLabel="generación de imágenes"
+  rightLabel="capacidades"
+  description="Modelo de difusión FLUX para texto a imagen e imagen a imagen. Compatible con la API de Images de OpenAI (/v1/images/generations y /v1/images/edits). Requiere membresía del tier de inferencia."
   specs={[
-    { label: 'Type', value: 'Diffusion (FLUX)' },
-    { label: 'Modalities', value: 'text→image · image→image' },
-    { label: 'Resolution', value: '256–1536 px (multiples of 16)' },
-    { label: 'Images / request', value: '1–4 (n)' },
-    { label: 'Monthly quota', value: '100 requests / member' },
+    { label: 'Tipo', value: 'Difusión (FLUX)' },
+    { label: 'Modalidades', value: 'texto→imagen · imagen→imagen' },
+    { label: 'Resolución', value: '256 a 1536 px (múltiplos de 16)' },
+    { label: 'Imágenes / petición', value: '1 a 4 (n)' },
+    { label: 'Cuota mensual', value: '100 peticiones / miembro' },
   ]}
   items={[
-    'Text-to-image (<code>/v1/images/generations</code>)',
-    'Image-to-image with up to 4 references (<code>/v1/images/edits</code>)',
-    'Output as temporary URL (R2, ~60 min) or base64',
-    'Reproducibility via <code>seed</code> and <code>guidance</code> control',
+    'Texto a imagen (<code>/v1/images/generations</code>)',
+    'Imagen a imagen con hasta 4 referencias (<code>/v1/images/edits</code>)',
+    'Salida como URL temporal (R2, ~60 min) o base64',
+    'Reproducibilidad con <code>seed</code> y control de <code>guidance</code>',
   ]}
 />
 

@@ -24,19 +24,16 @@ interface Props {
   title: string;
   description?: string;
   lang?: 'en' | 'es';
-  /** False on a Spanish page whose text is still the English original. */
-  translated?: boolean;
 }
 
-// The documentation exists in English only (the MDX collection is not
-// translated), so the page language, the default copy and the social card are.
+// The guides exist in both languages, each in its own collection, so the page
+// language, the default copy and the social card follow the `lang` prop.
 const {
   title,
   description = lang === 'es'
     ? 'Documentación de NaN. Conecta con nuestros modelos abiertos a través de una API compatible con OpenAI.'
     : 'NaN docs. Connect to our open models through an OpenAI-compatible API.',
   lang = 'en',
-  translated = true,
 } = Astro.props;
 
 const pfx = lang === 'es' ? '/es' : '';
@@ -49,8 +46,6 @@ const T = {
     next: 'Next →',
     docs: 'Docs',
     close: 'Close menu',
-    untranslated:
-      'This page is not translated yet, so it is shown in English.',
   },
   es: {
     onThisPage: 'En esta página',
@@ -60,8 +55,6 @@ const T = {
     next: 'Siguiente →',
     docs: 'Docs',
     close: 'Cerrar menú',
-    untranslated:
-      'Esta página todavía no está traducida, así que se muestra en inglés.',
   },
 }[lang];
 
@@ -93,7 +86,7 @@ const navItems: DocsNavItem[] = [
     slug: `${pfx}/docs/${API_DOC_SLUG}`,
     label: API_DOC_META.title,
     order: API_DOC_META.order,
-    group: API_DOC_META.group,
+    group: API_DOC_META.group[lang],
     description: API_DOC_META.description,
   },
 ].sort((a, b) => a.order - b.order);
@@ -269,13 +262,6 @@ const searchData = [
       <div class="docs-pane">
         <div class="docs-inner">
           <main id="docs-main" class="docs-content">
-            {
-              /* A Spanish page still showing the English original says so.
-                 Without this the site would be passing English off as a
-                 translation, which is worse than not offering the language. */
-              !translated && <p class="docs-untranslated">{T.untranslated}</p>
-            }
-
             <nav class="breadcrumb" aria-label="Breadcrumb">
               <a href={`${pfx}/docs`}>{T.docs}</a>
               {

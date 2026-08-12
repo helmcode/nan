@@ -1,74 +1,73 @@
 ---
 title: Apps
-description: Deploy your apps from GitHub to NaN Cloud in minutes.
+description: Despliega tus apps desde GitHub a NaN Cloud en minutos.
 order: 6
-group: Guides
-translated: false
+group: Guías
 ---
 
 # Apps.
 
-NaN Cloud lets you **deploy your own apps from a GitHub repository**: we build your image, publish it in your isolated environment, and serve it behind a public domain with HTTPS. All in one click.
+NaN Cloud te permite **desplegar tus propias apps desde un repositorio de GitHub**: construimos tu imagen, la publicamos en tu entorno aislado y la servimos tras un dominio público con HTTPS. Todo en un clic.
 
-> **Before you start**
-> Apps live inside a **Space**: your own environment with its own resource quota. If you have an active inference subscription, you receive **one free Basic Space** included in your membership. If not, you can purchase one from [cloud.nan.builders/spaces](https://cloud.nan.builders/spaces).
+> **Antes de empezar**
+> Las apps viven dentro de un **Space**: tu propio entorno, con su cuota de recursos. Si tienes una suscripción de inferencia activa, tu membresía incluye **un Space Basic gratis**. Si no, puedes comprar uno en [cloud.nan.builders/spaces](https://cloud.nan.builders/spaces).
 
-## Available tiers
+## Tiers disponibles
 
-Each Space belongs to a tier. The tier defines the total CPU, RAM, and storage quota shared across all apps you deploy within it. You can **upgrade or downgrade** at any time from the Space dashboard (downgrades are only allowed if your current usage fits within the new tier).
+Cada Space pertenece a un tier. El tier define la cuota total de CPU, RAM y almacenamiento que comparten todas las apps que despliegues dentro. Puedes **subir o bajar de tier** cuando quieras desde el panel del Space (bajar solo se permite si tu consumo actual cabe en el tier nuevo).
 
-| Tier | CPU | RAM | Disk | Pods | Price |
+| Tier | CPU | RAM | Disco | Pods | Precio |
 |---|---|---|---|---|---|
-| Basic | 2 vCPU | 4 GiB | 20 GiB | 5 | Free with inference · $6 / €6 per month |
-| Medium | 4 vCPU | 8 GiB | 40 GiB | 10 | $12 / €12 per month |
-| Large | 4 vCPU | 16 GiB | 80 GiB | 20 | $24 / €24 per month |
+| Basic | 2 vCPU | 4 GiB | 20 GiB | 5 | Gratis con inferencia · 6 € al mes |
+| Medium | 4 vCPU | 8 GiB | 40 GiB | 10 | 12 € al mes |
+| Large | 4 vCPU | 16 GiB | 80 GiB | 20 | 24 € al mes |
 
-CPU and RAM are the **Space aggregate limits** (sum of all your apps). By default, each app you create starts with a comfortable limit of `500m` CPU and `500 MiB` RAM, enough for a typical API or worker; you can increase the per-app limit from the *Advanced options* section of the form up to consuming the full tier. Disk is shared via PVCs (5/10/20 per tier) and is only used by apps you mark as *persistent*.
+La CPU y la RAM son los **límites agregados del Space** (la suma de todas tus apps). Por defecto, cada app que creas arranca con un límite holgado de `500m` de CPU y `500 MiB` de RAM, suficiente para una API o un worker típicos; puedes subir el límite por app desde la sección *Opciones avanzadas* del formulario hasta agotar el tier. El disco se comparte mediante PVCs (5/10/20 según el tier) y solo lo consumen las apps que marques como *persistentes*.
 
-## 1. Create a Space
+## 1. Crea un Space
 
-Go to [cloud.nan.builders/spaces](https://cloud.nan.builders/spaces). If you're an inference member, you'll see a panel offering you a free Basic Space: choose a *slug* (1–20 characters, lowercase, no spaces) and click **Claim free Basic**. The slug will be used to build the public domains of your apps, so choose it wisely.
+Entra en [cloud.nan.builders/spaces](https://cloud.nan.builders/spaces). Si eres miembro de inferencia verás un panel que te ofrece un Space Basic gratis: elige un *slug* (de 1 a 20 caracteres, en minúscula y sin espacios) y pulsa **Claim free Basic**. Ese slug se usará para construir los dominios públicos de tus apps, así que elígelo con cabeza.
 
-![Claim a free Basic Space](/docs/apps/01-claim-free-space.png)
+![Reclamar un Space Basic gratis](/docs/apps/01-claim-free-space.png)
 
-The Space activates instantly.
+El Space se activa al instante.
 
-## 2. Create an App within the Space
+## 2. Crea una App dentro del Space
 
-Open your newly created Space. You'll see the resource usage summary, the **Change plan** button if you want to upgrade at any point, and the **Apps in this Space** section. Click **New App** to start the form.
+Abre el Space que acabas de crear. Verás el resumen de consumo de recursos, el botón **Change plan** por si quieres subir de tier en algún momento, y la sección **Apps in this Space**. Pulsa **New App** para empezar el formulario.
 
-![Create a new App within the Space](/docs/apps/02-space-new-app.png)
+![Crear una App nueva dentro del Space](/docs/apps/02-space-new-app.png)
 
-## 3. Connect GitHub and configure the build
+## 3. Conecta GitHub y configura la build
 
-Connect your GitHub account by authorizing the NaN Cloud GitHub App to the repository you want to deploy (the first time it takes you to the official installation flow on github.com). Once connected, select the repo from the list, choose the branch, and give your App a name.
+Conecta tu cuenta de GitHub autorizando la GitHub App de NaN Cloud en el repositorio que quieras desplegar (la primera vez te lleva al flujo de instalación oficial en github.com). Una vez conectado, elige el repo de la lista, la rama, y dale un nombre a tu App.
 
-> **Mandatory requirement: Dockerfile**
-> Your repository **must contain a `Dockerfile`** at the root (or at the path you configure). Without a Dockerfile we cannot build your image and the app will not deploy. This gives you full control over the runtime, dependencies, and processes that start inside your app.
+> **Requisito obligatorio: Dockerfile**
+> Tu repositorio **tiene que contener un `Dockerfile`** en la raíz (o en la ruta que configures). Sin Dockerfile no podemos construir tu imagen y la app no se desplegará. A cambio, tienes control total sobre el runtime, las dependencias y los procesos que arrancan dentro de tu app.
 
-If your app is an HTTP service (web page, API, admin panel, etc.), check **Expose over HTTP** and specify the **port** your app listens on internally. For example, if you start with `node server.js` listening on `:8080`, put `8080` here. We'll handle publishing it on a public domain with HTTPS.
+Si tu app es un servicio HTTP (una web, una API, un panel de administración, etc.), marca **Expose over HTTP** e indica el **puerto** en el que escucha internamente. Por ejemplo, si arrancas con `node server.js` escuchando en `:8080`, pon `8080` aquí. Del resto nos encargamos nosotros: publicarla en un dominio público con HTTPS.
 
-If your app is a process that doesn't need to be accessible from outside (a worker, a cron, a queue consumer, etc.), uncheck *Expose over HTTP*: the app will start in worker mode, without a public URL.
+Si tu app es un proceso que no necesita ser accesible desde fuera (un worker, un cron, un consumidor de cola, etc.), desmarca *Expose over HTTP*: la app arrancará en modo worker, sin URL pública.
 
-![App creation form: GitHub + Dockerfile + port](/docs/apps/03-new-app-form.png)
+![Formulario de creación de App: GitHub, Dockerfile y puerto](/docs/apps/03-new-app-form.png)
 
-The **Environment variables** block (optional) lets you add both runtime and build variables. And in **Advanced options** you can adjust replicas, CPU/memory, and add persistent storage if your app needs to save state.
+El bloque **Environment variables** (opcional) te permite añadir variables tanto de runtime como de build. Y en **Advanced options** puedes ajustar réplicas, CPU y memoria, y añadir almacenamiento persistente si tu app necesita guardar estado.
 
-Click **Deploy**. On the App detail screen you'll see the build in real-time. After the build, if everything went well, you'll see the status change to `Running`.
+Pulsa **Deploy**. En la pantalla de detalle de la App verás la build en tiempo real. Al terminar, si todo ha ido bien, el estado cambiará a `Running`.
 
-## 4. Open your App
+## 4. Abre tu App
 
-When the status is `Running`, click the **Open** button in the top right. It opens your app's public URL in a new tab.
+Cuando el estado sea `Running`, pulsa el botón **Open** de arriba a la derecha. Abre la URL pública de tu app en una pestaña nueva.
 
-![App in Running state with Open button](/docs/apps/04-app-running.png)
+![App en estado Running con el botón Open](/docs/apps/04-app-running.png)
 
-From the same screen you have access to your app's live logs, events, metrics (CPU, memory, disk), environment variable management, and a settings panel to mutate branch, Dockerfile, port, and resources on the fly.
+Desde esa misma pantalla tienes acceso a los logs en vivo de tu app, a los eventos, a las métricas (CPU, memoria, disco), a la gestión de variables de entorno y a un panel de ajustes para cambiar sobre la marcha la rama, el Dockerfile, el puerto y los recursos.
 
-## 5. Your app, in production
+## 5. Tu app, en producción
 
-That's it. Your GitHub repository is serving real traffic from a public domain with HTTPS, on our infrastructure. Each `git push` to the configured branch (with auto-deploy enabled) triggers a new build automatically.
+Ya está. Tu repositorio de GitHub está sirviendo tráfico real desde un dominio público con HTTPS, sobre nuestra infraestructura. Cada `git push` a la rama configurada (con el auto-deploy activado) dispara una build nueva automáticamente.
 
-![Example of a deployed and served App](/docs/apps/05-app-example.png)
+![Ejemplo de una App desplegada y sirviendo](/docs/apps/05-app-example.png)
 
-> **Your App is live.**
-> With these 5 steps you already have your app deployed. If you need to scale (more resources, more replicas, persistent storage, more Spaces to separate dev/staging/prod environments), you can do so at any time from the dashboard. Apps and Spaces are in **Beta** — if you find any issues, report them in `#support` on Discord.
+> **Tu App está en marcha.**
+> Con estos 5 pasos ya tienes tu app desplegada. Si necesitas escalar (más recursos, más réplicas, almacenamiento persistente, o más Spaces para separar entornos de dev, staging y producción), puedes hacerlo cuando quieras desde el panel. Apps y Spaces están en **Beta**: si encuentras algún problema, repórtalo en `#support` de Discord.

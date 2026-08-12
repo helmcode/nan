@@ -538,17 +538,3 @@ body.docs {
     transition: none;
   }
 }
-
-/* Notice on a Spanish page whose text is still the English original. It is a
-   warning, not decoration: without it the site would be passing English off as
-   a translation. */
-.docs-untranslated {
-  margin: 0 0 var(--space-6);
-  padding: var(--space-3) var(--space-4);
-  border-left: 2px solid var(--doc-accent-fill);
-  background: var(--doc-accent-dim);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--doc-tx);
-}

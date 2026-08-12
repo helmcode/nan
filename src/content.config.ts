@@ -16,14 +16,6 @@ const docsSchema = z.object({
    * second list to maintain either.
    */
   group: z.string().default('Guides'),
-  /*
-   * Whether the Spanish copy has actually been translated yet.
-   *
-   * The Spanish guides ship as copies of the English ones so /es/docs does not
-   * 404, and the page says so instead of passing English off as Spanish. Set
-   * it to true as each guide is translated.
-   */
-  translated: z.boolean().default(true),
   locale: z.string().default('es'),
 });
 
