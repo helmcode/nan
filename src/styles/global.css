@@ -81,6 +81,28 @@
   tab-size: 2;
 }
 
+/*
+ * Logotipo de la cabecera de docs.
+ *
+ * Va como MÁSCARA y no como <img>, igual que Nav.astro y Footer.astro en la
+ * web: el SVG solo aporta la silueta y el color lo pone `background`, así que
+ * el logo puede virar a violeta en el hover con transición. Con un <img>
+ * habría que mantener el fichero en dos colores.
+ *
+ * Sustituye al isotipo `nan-logo.png` (un PNG de 600x600 escalado a 28px) más
+ * un <span>NaN</span> de texto, que era recomponer la marca a mano en vez de
+ * usar el logotipo real.
+ *
+ * El tamaño y el color se ponen con utilidades de Tailwind desde Docs.astro,
+ * que es como está escrito ese layout; aquí solo vive la máscara, que no tiene
+ * utilidad equivalente.
+ */
+.docs-wm {
+  display: block;
+  -webkit-mask: url('/brand/nan-wordmark-white.svg') left center / contain no-repeat;
+  mask: url('/brand/nan-wordmark-white.svg') left center / contain no-repeat;
+}
+
 /* Docs content typography */
 .docs-content h1 {
   font-family: "JetBrains Mono", ui-monospace, monospace;

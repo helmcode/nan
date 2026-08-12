@@ -43,6 +43,7 @@ const t = {
     platform: 'Platform ↗',
     site: 'nan.builders ↗',
     title: 'API Reference · NaN Docs',
+    brandHome: 'NaN, back to the docs',
     description:
       'Interactive reference for the NaN API: OpenAI-compatible endpoints for chat, embeddings, rerank, audio, images and web search.',
   },
@@ -53,6 +54,7 @@ const t = {
     platform: 'Plataforma ↗',
     site: 'nan.builders ↗',
     title: 'Referencia API · NaN Docs',
+    brandHome: 'NaN, volver a los docs',
     description:
       'Referencia interactiva de la API de NaN: endpoints compatibles con OpenAI para chat, embeddings, rerank, audio, imágenes y búsqueda web.',
   },
@@ -130,9 +132,8 @@ const CSP = [
   </head>
   <body>
     <header class="docs-top">
-      <a class="docs-brand" href={`${pfx}/docs`}>
-        <img src="/nan-logo.png" alt="NaN" height="26" width="26" />
-        <span class="docs-brand__name">NaN</span>
+      <a class="docs-brand" href={`${pfx}/docs`} aria-label={t.brandHome}>
+        <span class="docs-brand__wm" aria-hidden="true"></span>
         <span class="docs-brand__tag">{t.docs}</span>
       </a>
       <nav class="docs-nav" aria-label={t.ref}>
@@ -186,16 +187,28 @@ const CSP = [
         gap: var(--space-2);
         text-decoration: none;
       }
-      .docs-brand img {
+      /*
+       * El logotipo va como MÁSCARA, no como <img>, igual que en Nav.astro y
+       * Footer.astro: el SVG solo aporta la silueta y el color lo pone
+       * `background`, así que puede pasar a violeta en el hover con transición.
+       * Con un <img> habría que duplicar el fichero en dos colores.
+       *
+       * Aquí sustituye al isotipo PNG + un <span>NaN</span> escrito a mano, que
+       * era recomponer la marca en vez de usar el logotipo real.
+       */
+      .docs-brand__wm {
         display: block;
-        height: 26px;
-        width: auto;
+        /* 220x33 en el SVG; a 20px de alto son 133px. `contain` respeta la
+           proporción, así que basta con que la caja no la estrangule. */
+        height: 20px;
+        width: 134px;
+        background: var(--color-text);
+        transition: background var(--dur-ui) var(--ease);
+        -webkit-mask: url('/brand/nan-wordmark-white.svg') left center / contain no-repeat;
+        mask: url('/brand/nan-wordmark-white.svg') left center / contain no-repeat;
       }
-      .docs-brand__name {
-        font-weight: 700;
-        font-size: 15px;
-        color: var(--color-text);
-        letter-spacing: -0.01em;
+      .docs-brand:hover .docs-brand__wm {
+        background: var(--color-violet);
       }
       .docs-brand__tag {
         font-size: 11px;

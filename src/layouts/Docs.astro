@@ -104,9 +104,11 @@ const breadcrumbSegments = pathParts.map((part, i) => {
   <body class="bg-[#0a0a0a] text-neutral-300 font-sans antialiased min-h-screen overflow-x-hidden">
     <!-- Mobile header -->
     <header class="sticky top-0 z-40 flex items-center justify-between border-b border-neutral-800/60 bg-[#0a0a0a] px-4 py-3 md:hidden">
-      <a href="https://nan.builders" class="flex items-center gap-2">
-        <img src="/nan-logo.png" alt="NaN" class="h-8 w-auto" />
-        <span class="font-mono text-sm font-bold text-white tracking-tight">NaN</span>
+      <a href="https://nan.builders" class="group flex items-center gap-2" aria-label="NaN">
+        <span
+          class="docs-wm h-[22px] w-[147px] bg-white transition-colors duration-200 group-hover:bg-violet-500"
+          aria-hidden="true"
+        ></span>
       </a>
       <button
         id="menu-toggle"
@@ -130,9 +132,11 @@ const breadcrumbSegments = pathParts.map((part, i) => {
       <!-- Sidebar: fixed overlay on mobile, static column on desktop -->
       <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 flex-col border-r border-neutral-800/60 bg-[#0a0a0a] px-5 py-6 shadow-2xl transition-transform duration-200 -translate-x-full md:relative md:w-56 md:translate-x-0 md:shadow-none">
         <div class="mb-4 flex items-center justify-between">
-          <a href="https://nan.builders" class="flex items-center gap-2">
-            <img src="/nan-logo.png" alt="NaN" class="h-7 w-auto" />
-            <span class="font-mono text-base font-bold text-white tracking-tight">NaN</span>
+          <a href="https://nan.builders" class="group flex items-center gap-2" aria-label="NaN">
+            <span
+              class="docs-wm h-[20px] w-[134px] bg-white transition-colors duration-200 group-hover:bg-violet-500"
+              aria-hidden="true"
+            ></span>
           </a>
           <button id="sidebar-close" class="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-800 bg-[#0a0a0a] text-neutral-400 transition-colors hover:text-white md:hidden" aria-label="Close menu">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
