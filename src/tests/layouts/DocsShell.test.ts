@@ -32,6 +32,25 @@ describe('Docs.astro — piezas que no pueden desaparecer', () => {
     expect(layout).toContain('aria-label="Breadcrumb"');
   });
 
+  /**
+   * Y las pinta DENTRO del <main>, no como hermanas suyas.
+   *
+   * `.docs-inner` es una rejilla de dos columnas (contenido y TOC). Al
+   * restaurar las migas quedaron como tercer hijo de esa rejilla, así que se
+   * llevaron la primera columna, el contenido se metió en la de 188px del TOC
+   * y la página salió con una palabra por línea. Los elementos estaban todos
+   * presentes, que es justo por lo que una comprobación de "¿existe?" no lo
+   * vio: el fallo era de colocación.
+   */
+  it('mete las migas dentro del main, no como tercer hijo de la rejilla', () => {
+    const main = layout.indexOf('<main id="docs-main"');
+    const fin = layout.indexOf('</main>', main);
+    const migas = layout.indexOf('class="breadcrumb"');
+    expect(main).toBeGreaterThan(-1);
+    expect(migas).toBeGreaterThan(main);
+    expect(migas).toBeLessThan(fin);
+  });
+
   it('tiene enlace de saltar al contenido, apuntando al main', () => {
     expect(layout).toContain('class="skip-link"');
     expect(layout).toContain('href="#docs-main"');

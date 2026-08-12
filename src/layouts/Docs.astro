@@ -223,23 +223,23 @@ const searchData = [
 
       <div class="docs-pane">
         <div class="docs-inner">
-          <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="/docs">Docs</a>
-            {
-              breadcrumb.slice(1).map((seg) => (
-                <>
-                  <span class="separator">/</span>
-                  {seg.isCurrent ? (
-                    <span class="current">{seg.label}</span>
-                  ) : (
-                    <a href={seg.path}>{seg.label}</a>
-                  )}
-                </>
-              ))
-            }
-          </nav>
-
           <main id="docs-main" class="docs-content">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+              <a href="/docs">Docs</a>
+              {
+                breadcrumb.slice(1).map((seg) => (
+                  <>
+                    <span class="separator">/</span>
+                    {seg.isCurrent ? (
+                      <span class="current">{seg.label}</span>
+                    ) : (
+                      <a href={seg.path}>{seg.label}</a>
+                    )}
+                  </>
+                ))
+              }
+            </nav>
+
             <slot />
 
             {
