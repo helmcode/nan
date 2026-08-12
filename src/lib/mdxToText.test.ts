@@ -97,7 +97,7 @@ describe('mdxToText rate limits', () => {
       ],
     });
     expect(out).toContain('- Requests / min: 120 rpm');
-    expect(out).toContain('- Paralelo máximo: 8 concurrentes');
+    expect(out).toContain('- Max parallel: 8 concurrent');
     expect(out).toContain('- foo: 2M tpm');
     expect(out).toContain('- bar: 500 rpm');
     expect(out).toContain('**baz · premium tier limits**');
@@ -110,7 +110,7 @@ describe('mdxToText rate limits', () => {
   it('defaults to the same numbers <RateLimits /> renders', async () => {
     const out = await mdxToText(input);
     expect(out).toContain('- Requests / min: 60 rpm');
-    expect(out).toContain('- Paralelo máximo: 5 concurrentes');
+    expect(out).toContain('- Max parallel: 5 concurrent');
     // glm5.2 is gated by the window, not by a per-minute rate, and the docs
     // had no row for it at all while the model was already being served.
     expect(out).toContain('- Rolling 4h window: 400M tokens');
@@ -124,8 +124,8 @@ describe('mdxToText rate limits', () => {
       requestsPerMinuteByModel: [],
       windowedModels: [],
     });
-    expect(out).not.toContain('tokens / min por modelo');
-    expect(out).not.toContain('requests / min por modelo');
+    expect(out).not.toContain('tokens / min per model');
+    expect(out).not.toContain('requests / min per model');
     expect(out).not.toContain('premium tier limits');
   });
 });
