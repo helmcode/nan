@@ -204,8 +204,8 @@ describe('GET /api/docs/manifest.json', () => {
     expect(typeof body.version).toBe('string');
     expect(body.version.startsWith('sha256:')).toBe(true);
     expect(Array.isArray(body.entries)).toBe(true);
-    // Las dos de la colección más la referencia de API, que se genera desde el
-    // spec y no depende de ella.
+    // The two from the collection plus the API reference, generated from the
+    // spec and independent of it.
     expect(body.entries.length).toBe(3);
     for (const e of body.entries) {
       expect(e).toHaveProperty('slug');
@@ -217,11 +217,11 @@ describe('GET /api/docs/manifest.json', () => {
   });
 
   /**
-   * El bot de Discord no falla cuando un slug desaparece del manifest: borra
-   * sus chunks en silencio (bot/knowledge.py::load_documentation_from_remote,
-   * `stale_sources`). Cuando /docs/api pasó a servirse con Scalar, `api` dejó
-   * de estar en la colección, así que sin esta entrada sintética el bot habría
-   * perdido la referencia de API sin que saltara ninguna alarma.
+   * The Discord bot does not fail when a slug disappears from the manifest: it
+   * silently drops its chunks (bot/knowledge.py::load_documentation_from_remote,
+   * `stale_sources`). When /docs/api moved to Scalar, `api` left the collection,
+   * so without this synthetic entry the bot would have lost the API reference
+   * with no alarm going off.
    */
   it('publishes the API reference even though it is not in the collection', async () => {
     getCollectionMock.mockResolvedValue([entry('intro', '# Intro\n\nHola.\n')]);
@@ -236,7 +236,7 @@ describe('GET /api/docs/manifest.json', () => {
     expect(api.title).toBe('API');
   });
 
-  /** Dos entradas con el mismo slug harían que el bot la indexara dos veces. */
+  /** Two entries with the same slug would make the bot index it twice. */
   it('keeps a single `api` entry if the collection ever gets one back', async () => {
     getCollectionMock.mockResolvedValue([
       entry('intro', '# Intro\n\nHola.\n'),
@@ -248,7 +248,7 @@ describe('GET /api/docs/manifest.json', () => {
 
     const apiEntries = body.entries.filter((e: { slug: string }) => e.slug === 'api');
     expect(apiEntries.length).toBe(1);
-    // Gana el spec, no el fichero.
+    // The spec wins, not the file.
     expect(apiEntries[0].title).toBe('API');
   });
 });

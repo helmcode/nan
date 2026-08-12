@@ -130,7 +130,7 @@ describe('sitemap.xml', () => {
    * /docs/api dejó de salir de la colección: la sirve Scalar desde el spec. Es
    * además la única página de /docs que existe en español, así que es la única
    * de la sección que lleva alternates. Si algún día se vuelve a colar en la
-   * colección, saldría dos veces — lo cubre el test de URLs repetidas.
+   * colección, saldría dos veces, lo cubre el test de URLs repetidas.
    */
   test('la referencia de API entra aunque no esté en la colección, y con sus dos idiomas', async () => {
     const { xml } = await sitemap([{ id: 'intro' }]);

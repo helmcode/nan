@@ -72,11 +72,11 @@ const corpus: Array<{ label: string; body: string }> = [
 ];
 
 /**
- * La referencia de API ya no pasa por mdxToText: se genera desde el spec. Sigue
- * viajando por el mismo sitio (/api/docs/api.md) y la vuelve a canonicalizar el
- * mismo bot, así que tiene que cumplir exactamente las mismas propiedades. Sin
- * esto, el hash del manifest y el que calcula el bot no coincidirían nunca y
- * reindexaría la referencia entera en cada versión.
+ * The API reference no longer goes through mdxToText: it is generated from the
+ * spec. It still travels the same way (/api/docs/api.md) and is re-canonicalised
+ * by the same bot, so it has to satisfy exactly the same properties. Without
+ * this, the manifest hash and the one the bot computes would never agree and it
+ * would re-index the whole reference on every version.
  */
 describe('openapiToText output is a fixed point of the bot canonicaliser', () => {
   const out = getApiDocText();

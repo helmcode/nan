@@ -2,18 +2,18 @@ import spec from '../data/openapi.json';
 import { openapiToText } from './openapiToText';
 
 /**
- * La referencia de API como entrada de docs, generada desde el spec.
+ * The API reference as a docs entry, generated from the spec.
  *
- * Desde que /docs/api la sirve Scalar, `api` ya no es un fichero de la
- * colección: sale de src/data/openapi.json. Pero los consumidores de
- * /api/docs —el bot de Discord, hoy— no tienen por qué enterarse de eso, así
- * que se sigue publicando con el mismo slug, el mismo orden y la misma forma
- * que tenía cuando era `api.mdx`. El contrato del manifest no cambia; cambia
- * de dónde sale el texto.
+ * Since Scalar took over /docs/api, `api` is no longer a file in the
+ * collection: it comes from src/data/openapi.json. Consumers of /api/docs
+ * (the Discord bot today) have no reason to learn about that, so it keeps
+ * being published under the same slug, the same order and the same shape it
+ * had as `api.mdx`. The manifest contract does not change; only where the
+ * text comes from does.
  *
- * Los metadatos replican el frontmatter que tenía `api.mdx` (incluido
- * `order: 2`) para que ni el orden del manifest ni el de la navegación se
- * muevan con la migración.
+ * The metadata mirrors the frontmatter `api.mdx` used to carry (`order: 2`
+ * included) so that neither the manifest order nor the docs navigation moves
+ * with the migration.
  */
 export const API_DOC_SLUG = 'api';
 
@@ -26,9 +26,9 @@ export const API_DOC_META = {
 let cached: string | null = null;
 
 /**
- * El texto canónico de la referencia. Se memoiza porque el spec es estático
- * dentro de un despliegue: recorrer 12 endpoints y 23 esquemas en cada
- * petición del manifest sería trabajo repetido para un resultado idéntico.
+ * The canonical text of the reference. Memoised because the spec is static
+ * within a deployment: walking 12 endpoints and 23 schemas on every manifest
+ * request would be repeated work for an identical result.
  */
 export function getApiDocText(): string {
   if (cached === null) cached = openapiToText(spec);

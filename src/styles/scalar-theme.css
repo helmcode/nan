@@ -1,5 +1,5 @@
 /* ============================================
-   Scalar API Reference — tema de NaN
+   Scalar API Reference: tema de NaN
    ============================================
 
    Scalar se tematiza entero con variables CSS (--scalar-*). Aquí se mapean a
@@ -27,7 +27,7 @@
 /* Scalar aplica el tema bajo .dark-mode. El componente lo fuerza siempre. */
 .dark-mode {
   --scalar-background-1: var(--color-bg); /* base */
-  --scalar-background-2: var(--color-surface); /* elevado — cards, bloques de código */
+  --scalar-background-2: var(--color-surface); /* elevado: cards, bloques de código */
   --scalar-background-3: #1B1B1F; /* hovers y anidados: un escalón sobre --color-surface */
   --scalar-background-accent: var(--color-violet-dim);
 
@@ -44,7 +44,7 @@
   --scalar-border-color: var(--color-line);
 
   /* Paleta semántica: pastillas de método HTTP, badges de tipo y resaltado de
-     sintaxis. Es la única parte que NO puede colapsar al monoacento — un POST
+     sintaxis. Es la única parte que NO puede colapsar al monoacento: un POST
      y un DELETE tienen que distinguirse entre sí. */
   --scalar-color-green: #3FB950;
   --scalar-color-red: #F85149;

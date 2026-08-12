@@ -2,22 +2,22 @@ import { describe, expect, it } from 'vitest';
 import spec from '../data/openapi.json';
 
 /**
- * Tripwire sobre src/data/openapi.json, el spec que Scalar renderiza en
- * /docs/api y del que sale el Markdown que consume el bot de Discord.
+ * Tripwire over src/data/openapi.json, the spec Scalar renders at /docs/api
+ * and the source of the Markdown the Discord bot consumes.
  *
- * Hace falta porque el spec es un dato, no código: nada lo type-checkea y un
- * error dentro se publica en silencio. Y este spec en concreto se derivó del de
- * helmcode.com, cuyo catálogo y cuyo modelo de cobro NO son los de NaN, así que
- * lo que se vigila sobre todo es que no vuelva a colarse nada de allí.
+ * It exists because the spec is data, not code: nothing type-checks it and a
+ * mistake inside ships silently. And this spec in particular was derived from
+ * helmcode.com's, whose catalogue and billing model are NOT NaN's, so what
+ * this mostly watches for is anything from there creeping back in.
  *
- * La superficie de endpoints se comprobó contra el backend real sondeando cada
- * ruta: las 12 de aquí responden 401 (existen, piden auth) y /v1/moderations,
- * /v1/batches y /v1/files responden 404 (no están habilitadas en NaN).
+ * The endpoint surface was checked against the real backend by probing each
+ * route: the 12 listed here answer 401 (they exist and want auth) while
+ * /v1/moderations, /v1/batches and /v1/files answer 404 (not enabled on NaN).
  */
 
 const raw = JSON.stringify(spec);
 
-/** Las 12 rutas públicas verificadas contra api.nan.builders. */
+/** The 12 public routes verified against api.nan.builders. */
 const PUBLIC_SURFACE: Array<[string, string]> = [
   ['/models', 'get'],
   ['/chat/completions', 'post'],
@@ -33,7 +33,7 @@ const PUBLIC_SURFACE: Array<[string, string]> = [
   ['/mcp', 'post'],
 ];
 
-/** El catálogo real de NaN (src/data/modelos.json + la referencia de API). */
+/** NaN's real catalogue (src/data/modelos.json + the API reference). */
 const NAN_MODELS = [
   'deepseek-v4-flash',
   'mimo-v2.5',
@@ -47,16 +47,16 @@ const NAN_MODELS = [
   'flux-2-klein',
 ];
 
-describe('openapi.json — estructura', () => {
-  it('declara OpenAPI 3.1', () => {
+describe('openapi.json: structure', () => {
+  it('declares OpenAPI 3.1', () => {
     expect(spec.openapi).toMatch(/^3\.1/);
   });
 
-  it('apunta al servidor de NaN', () => {
+  it("points at NaN's server", () => {
     expect(spec.servers?.[0]?.url).toBe('https://api.nan.builders/v1');
   });
 
-  it('todos los $ref resuelven', () => {
+  it('every $ref resolves', () => {
     const missing: string[] = [];
     const walk = (node: unknown) => {
       if (Array.isArray(node)) return node.forEach(walk);
@@ -81,18 +81,18 @@ describe('openapi.json — estructura', () => {
   });
 });
 
-describe('openapi.json — la superficie es la que el backend sirve de verdad', () => {
+describe('openapi.json: the surface is what the backend actually serves', () => {
   for (const [path, method] of PUBLIC_SURFACE) {
-    it(`documenta ${method.toUpperCase()} ${path}`, () => {
+    it(`documents ${method.toUpperCase()} ${path}`, () => {
       const paths = spec.paths as Record<string, Record<string, unknown>>;
       expect(paths[path], path).toBeDefined();
       expect(paths[path][method], `${method} ${path}`).toBeDefined();
     });
   }
 
-  it('no documenta endpoints que NaN no sirve', () => {
+  it('does not document endpoints NaN does not serve', () => {
     const documented = Object.keys(spec.paths as Record<string, unknown>);
-    // Estos tres responden 404 en api.nan.builders.
+    // These three answer 404 on api.nan.builders.
     for (const absent of ['/moderations', '/batches', '/files']) {
       expect(documented).not.toContain(absent);
     }
@@ -100,13 +100,15 @@ describe('openapi.json — la superficie es la que el backend sirve de verdad', 
   });
 });
 
-describe('openapi.json — no queda nada de helmcode.com', () => {
-  it('no nombra modelos que NaN no sirve', () => {
-    const foreign = raw.match(/\b(claude-[a-z0-9.-]+|gpt-[0-9][a-z0-9.-]*|gemini-[0-9][a-z0-9.-]*)\b/g);
+describe('openapi.json: nothing left over from helmcode.com', () => {
+  it('names no model NaN does not serve', () => {
+    const foreign = raw.match(
+      /\b(claude-[a-z0-9.-]+|gpt-[0-9][a-z0-9.-]*|gemini-[0-9][a-z0-9.-]*)\b/g,
+    );
     expect(foreign).toBeNull();
   });
 
-  it('no describe el cobro por crédito prepago ni la reventa', () => {
+  it('does not describe prepaid-credit billing or resale', () => {
     for (const term of [
       'prepaid',
       'credit balance',
@@ -120,31 +122,35 @@ describe('openapi.json — no queda nada de helmcode.com', () => {
     }
   });
 
-  it('solo menciona Helmcode como la nota del servicio enterprise', () => {
-    // Una sola mención, y en info: la que dice que la enterprise usa otra base
-    // URL. Cualquier otra sería marca sin migrar.
+  it('mentions Helmcode only as the enterprise-service note', () => {
+    // A single mention, and inside info: the one saying enterprise uses a
+    // different base URL. Any other would be un-migrated branding.
     const outsideInfo = JSON.stringify({ ...spec, info: undefined });
     expect(outsideInfo.toLowerCase()).not.toContain('helmcode');
   });
 });
 
-describe('openapi.json — el catálogo de modelos', () => {
+describe('openapi.json: the model catalogue', () => {
   /**
-   * Los identificadores con pinta de modelo que aparecen en el spec tienen que
-   * estar todos en el catálogo. Es la red que evita publicar un modelo que no
-   * existe, que es justo lo que ya pasó una vez con glm5.2 en sentido inverso.
+   * Every model-looking identifier appearing in the spec must be in the
+   * catalogue. This is the net that stops us publishing a model that does not
+   * exist, which is exactly what happened once with glm5.2 the other way round.
    */
-  it('no cita ningún identificador de modelo fuera del catálogo', () => {
+  it('cites no model identifier outside the catalogue', () => {
     const cited = new Set(
       (raw.match(/`([a-z0-9][a-z0-9.-]{2,})`/g) ?? [])
         .map((m) => m.slice(1, -1))
-        .filter((token) => /^(deepseek|qwen|gemma|glm|mimo|kokoro|whisper|flux|rerank|claude|gpt|gemini|llama|mistral)/.test(token)),
+        .filter((token) =>
+          /^(deepseek|qwen|gemma|glm|mimo|kokoro|whisper|flux|rerank|claude|gpt|gemini|llama|mistral)/.test(
+            token,
+          ),
+        ),
     );
     const unknown = [...cited].filter((m) => !NAN_MODELS.includes(m));
     expect(unknown).toEqual([]);
   });
 
-  it('publica glm5.2 como modelo de chat del tier premium', () => {
+  it('publishes glm5.2 as a premium-tier chat model', () => {
     const chat = (spec.paths as any)['/chat/completions'].post.requestBody.content[
       'application/json'
     ].schema.properties.model.description as string;

@@ -79,7 +79,7 @@ export const GET: APIRoute = async () => {
   /*
    * La referencia de API va aparte porque ya no sale de la colección: la sirve
    * Scalar desde el spec. Y sí lleva alternates, porque es la única página de
-   * /docs que existe en los dos idiomas — el spec se queda en inglés, pero el
+   * /docs que existe en los dos idiomas: el spec se queda en inglés, pero el
    * chrome y las etiquetas de Scalar están traducidos y /es/docs/api es una URL
    * real que queremos indexada como tal.
    */

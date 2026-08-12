@@ -1,6 +1,6 @@
 ---
 /*
- * ApiReference — la referencia de API interactiva de /docs/api, servida con
+ * ApiReference: la referencia de API interactiva de /docs/api, servida con
  * Scalar desde src/data/openapi.json en vez de escrita a mano en MDX.
  *
  * Es una página COMPLETA, no un componente dentro de Docs.astro: Scalar trae su
@@ -42,7 +42,7 @@ const t = {
     ref: 'API Reference',
     platform: 'Platform ↗',
     site: 'nan.builders ↗',
-    title: 'API Reference — NaN Docs',
+    title: 'API Reference · NaN Docs',
     description:
       'Interactive reference for the NaN API: OpenAI-compatible endpoints for chat, embeddings, rerank, audio, images and web search.',
   },
@@ -52,7 +52,7 @@ const t = {
     ref: 'Referencia API',
     platform: 'Plataforma ↗',
     site: 'nan.builders ↗',
-    title: 'Referencia API — NaN Docs',
+    title: 'Referencia API · NaN Docs',
     description:
       'Referencia interactiva de la API de NaN: endpoints compatibles con OpenAI para chat, embeddings, rerank, audio, imágenes y búsqueda web.',
   },
@@ -66,7 +66,7 @@ const ogImage = `${SITE}/og/og-${lang}.png`;
  * `connect-src` tiene que dejar salir a api.nan.builders o el "try it" no
  * funciona: el navegador manda la petición desde esta página al dominio de la
  * API. Va directo a propósito, sin el proxy en la nube de Scalar (`proxyUrl:
- * ''` abajo) — mandar la key de un miembro a un tercero contradice el "zero
+ * ''` abajo): mandar la key de un miembro a un tercero contradice el "zero
  * logs" del producto. La API responde con CORS abierto, así que no hace falta
  * intermediario. `worker-src blob:` es para el resaltado de sintaxis de Scalar.
  */

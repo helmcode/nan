@@ -23,9 +23,9 @@ export const GET: APIRoute = async ({ request }) => {
     });
 
     const rateLimits = getRateLimitsConfig(env);
-    // Si alguien vuelve a añadir un `api.md(x)` a la colección, el spec sigue
-    // mandando: dos entradas con el mismo slug le harían indexar la referencia
-    // dos veces, y con contenidos distintos.
+    // If anyone adds an `api.md(x)` back to the collection, the spec still
+    // wins: two entries with the same slug would make consumers index the
+    // reference twice, with different contents.
     const collectionEntries = await Promise.all(
       entries
         .filter((entry) => entry.id !== API_DOC_SLUG)
@@ -43,9 +43,9 @@ export const GET: APIRoute = async ({ request }) => {
         }),
     );
 
-    // La referencia de API ya no es un fichero de la colección: la sirve Scalar
-    // desde el spec. Se publica igualmente como entrada, porque para quien
-    // consume el manifest sigue siendo una página de docs más. Ver src/lib/apiDoc.ts.
+    // The API reference is no longer a file in the collection: Scalar serves it
+    // from the spec. It is published as an entry all the same, because to a
+    // manifest consumer it is still one more docs page. See src/lib/apiDoc.ts.
     const apiText = getApiDocText();
     const apiEntry = {
       slug: API_DOC_SLUG,

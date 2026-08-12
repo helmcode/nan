@@ -14,10 +14,10 @@ import { mdxToText } from '../../lib/mdxToText';
  * asserts here are on the text /api/docs actually serves (same extractor the
  * Discord bot consumes), so the page and the API are covered at once.
  *
- * Desde la migración a Scalar, la mitad de `api` ya no sale de `api.mdx` sino
- * del spec (src/data/openapi.json) a través de openapiToText. La redacción
- * cambió con ella; lo que se comprueba sigue siendo lo mismo: que glm5.2 se
- * publique como llamable, con sus límites reales y sin decir de dónde sale.
+ * Since the Scalar migration, the `api` half no longer comes from `api.mdx` but
+ * from the spec (src/data/openapi.json) via openapiToText. The wording changed
+ * with it; what is asserted is still the same: that glm5.2 is published as
+ * callable, with its real limits and without saying where it is sourced from.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -128,9 +128,9 @@ describe('docs/api — glm5.2 is callable', () => {
   });
 
   /**
-   * El 402 dejó de ser el crédito prepago de helmcode. Si al reconstruir el
-   * spec se recupera aquel texto, volvería a publicarse un modelo de cobro que
-   * NaN no tiene.
+   * The 402 stopped being helmcode's prepaid credit. If rebuilding the spec
+   * brings that text back, we would again publish a billing model NaN does not
+   * have.
    */
   test('does not describe a prepaid-credit billing model', () => {
     expect(api).not.toMatch(/prepaid|credit balance|credits_exhausted|top ?up/i);
