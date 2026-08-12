@@ -11,8 +11,14 @@ import '@fontsource/jetbrains-mono/700.css';
 
 import { getCollection, render } from 'astro:content';
 import DocsTopBar from '../components/docs/DocsTopBar.astro';
-import { API_DOC_META, API_DOC_SLUG, getApiDocText } from '../lib/apiDoc';
-import { DEFAULT_RATE_LIMITS } from '../lib/rateLimits';
+import { API_DOC_META, API_DOC_SLUG } from '../lib/apiDoc';
+import spec from '../data/openapi.json';
+import {
+  apiSearchHeadings,
+  groupDocsNav,
+  isActiveDocPath,
+  type DocsNavItem,
+} from '../lib/docsNav';
 
 interface Props {
   title: string;
@@ -31,14 +37,6 @@ const canonical = `${siteUrl}${Astro.url.pathname.replace(/\/+$/, '') || '/'}`;
 const ogImage = `${siteUrl}/og/og-en.png`;
 const socialTitle = `${title} · NaN Docs`;
 
-interface NavItem {
-  slug: string;
-  label: string;
-  order: number;
-  group: string;
-  description: string;
-}
-
 const entries = await getCollection('docs');
 
 /*
@@ -47,7 +45,7 @@ const entries = await getCollection('docs');
  * a mano desde apiDoc.ts, el mismo módulo del que los lee /api/docs, para que
  * la página y el manifest no puedan discrepar.
  */
-const navItems: NavItem[] = [
+const navItems: DocsNavItem[] = [
   ...entries.map((entry) => ({
     slug: entry.id === 'intro' ? '/docs' : `/docs/${entry.id}`,
     label: entry.data.title,
@@ -64,29 +62,10 @@ const navItems: NavItem[] = [
   },
 ].sort((a, b) => a.order - b.order);
 
-/*
- * Los grupos salen del dato, no de una lista escrita a mano en el layout como
- * en helmcode: se ordenan por el `order` más bajo que tenga cada uno. Así
- * añadir una guía es crear un fichero, sin una segunda lista que mantener.
- */
-const navGroups = [...new Map(navItems.map((i) => [i.group, i.group])).keys()].map((group) => ({
-  group,
-  items: navItems.filter((i) => i.group === group),
-}));
+const navGroups = groupDocsNav(navItems);
 
 const here = Astro.url.pathname.replace(/\/+$/, '') || '/docs';
-
-/*
- * Coincidencia exacta o de prefijo. Lo segundo hace falta para que una subruta
- * anidada resalte a su padre en el nav; con la colección plana de hoy no se
- * nota, pero es el comportamiento que tenía el layout anterior y perderlo sería
- * un fallo silencioso el día que se anide una guía. `/docs` se excluye del
- * prefijo o resaltaría en todas las páginas de la sección.
- */
-const isActive = (slug: string) => {
-  const target = slug.replace(/\/+$/, '');
-  return here === target || (target !== '/docs' && here.startsWith(`${target}/`));
-};
+const isActive = (slug: string) => isActiveDocPath(here, slug);
 
 /*
  * Migas de pan. Las tenía el layout anterior y helmcode no, así que al portar
@@ -133,23 +112,13 @@ const collectionIndex = await Promise.all(
   }),
 );
 
-/** Encabezados `##`/`###` del Markdown de la referencia, con el slug de Scalar. */
-const apiHeadings = getApiDocText(DEFAULT_RATE_LIMITS)
-  .split('\n')
-  .flatMap((line) => {
-    const m = /^##\s+(.+)$/.exec(line);
-    // Solo los `##`: son los tags (Chat, Embeddings...) y las secciones del
-    // overview, que es lo que Scalar convierte en destinos navegables.
-    return m ? [{ text: m[1].trim(), slug: `tag/${m[1].trim().toLowerCase()}` }] : [];
-  });
-
 const searchData = [
   ...collectionIndex,
   {
     title: API_DOC_META.title,
     href: `/docs/${API_DOC_SLUG}`,
     description: API_DOC_META.description,
-    headings: apiHeadings,
+    headings: apiSearchHeadings(spec),
   },
 ];
 ---
