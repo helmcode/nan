@@ -1,0 +1,2529 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NaN API",
+    "version": "1.0.0",
+    "description": "Open models on a shared EU inference cluster. Zero logs.\n\nThe NaN API is OpenAI-compatible: predictable, resource-oriented URLs, JSON request and response bodies, and standard HTTP verbs and status codes. Point any OpenAI SDK at our base URL and your existing code keeps working. Change the base URL and the API key, and that's it.\n\nOne schema across every model, so you only learn the API once. Change the `model` field to switch models; everything else stays the same.\n\n- Base URL: `https://api.nan.builders/v1`\n- OpenAPI spec: this document. Import it into Postman, Insomnia, or your own tooling.\n\nIf you use the [Helmcode](https://helmcode.com) enterprise service, the base URL is `https://api.helmcode.com/v1` instead. Every other endpoint is identical.\n\n## Authentication\n\nEvery request authenticates with an API key, sent as a Bearer token:\n\n```\nAuthorization: Bearer $NAN_API_KEY\n```\n\nYou must be a NaN community member. Generate your key from user settings, under \"API Keys\", on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable. Keep it secret: never embed one in client-side code or commit it to source control. Requests must go over HTTPS; calls over plain HTTP fail.\n\n## Making requests\n\nThe API is OpenAI-compatible, so point an official OpenAI SDK at our base URL and change nothing else:\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.chat.completions.create(\n    model=\"qwen3.6\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello\"}],\n)\nprint(resp.choices[0].message.content)\n```\n\n## Streaming\n\nChat responses can stream token-by-token. Set `\"stream\": true` on `/chat/completions` and the response arrives as Server-Sent Events: each event is a `data:` line carrying a `chat.completion.chunk`, with the new text in `choices[0].delta.content`. A final `data: [DONE]` line ends the stream. Only `/chat/completions` streams incrementally; `/responses` currently emits a single terminal event.\n\n## Rate limits\n\n{{RATE_LIMITS}}\n\nWeb search runs on its own budget, separate from the model endpoints: 20 requests per minute, 3 concurrent, and 500 searches per day per key. Image endpoints have their own too: 20 requests per minute and 100 requests per month. Exceed any limit and you get a `429`.\n\n## Errors\n\nNaN uses conventional HTTP status codes: `2xx` on success, `4xx` for a problem with the request (a missing parameter, an invalid key, an unavailable model) and `5xx` for a server-side error. Every error returns a JSON body in the OpenAI shape:\n\n```json\n{\n  \"error\": {\n    \"message\": \"The model 'foo' does not exist.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"model\",\n    \"code\": \"model_not_found\"\n  }\n}\n```\n\n`message` is human-readable, `param` names the offending field when applicable, and `code` is a short machine-readable string you can branch on.\n\n| Status | Meaning | `code` |\n| --- | --- | --- |\n| `400` | Invalid or malformed parameter (`param` says which); or content blocked by the safety filter. | `invalid_request_error` · `content_policy_violation` |\n| `401` | Missing or invalid API key. | `invalid_api_key` |\n| `402` | The token allowance for the billing period is spent on a model that carries one, such as `glm5.2`. Not retryable: the counter returns to zero when your billing period starts. | `monthly_cap_reached` |\n| `403` | Your tier can't access this endpoint or model. Image generation requires inference membership. | `tier_restricted` |\n| `404` | The requested model doesn't exist. | `model_not_found` |\n| `429` | Rate limit hit (`rpm_limit`, `max_parallel_requests`), the rolling 4h token budget of `glm5.2`, or a quota exhausted. | `rate_limit_exceeded` · `insufficient_quota` · `quota_exceeded` |\n| `500` | Something went wrong on our side (includes upstream model errors). | (none) |\n| `503` | Web search is temporarily unavailable; retry shortly. | `search_unavailable` |\n| `524` | Timeout, typical with large audio files on `/audio/transcriptions`. | (none) |\n\nRetry `429` and `5xx` responses with exponential backoff. Don't retry `400`, `401`, `403`, or `404` blindly: they'll fail the same way every time until you change the request. `402` cannot be fixed by repetition either: it clears when your billing period starts.\n\n## Model catalog\n\nEvery endpoint takes a `model` id. Capabilities vary by model:\n\n| Model | Use for | Capabilities |\n| --- | --- | --- |\n| `deepseek-v4-flash` | Chat, reasoning | Streaming, tool calling, reasoning, 1M-token context. 500M tokens/month per member |\n| `mimo-v2.5` | Chat, vision, audio | Streaming, tool calling, reasoning, image input, audio input, 1M-token context. 1.0B tokens/month per member |\n| `qwen3.6` | Chat, agents | Streaming, tool calling, vision, reasoning (opt-out, returns `reasoning_content`) |\n| `gemma4` | Chat, vision, agents | Streaming, tool calling, vision, reasoning (opt-in) |\n| `glm5.2` | Coding, long-horizon agents | Streaming, tool calling, reasoning trace, 500K-token context. Premium tier only |\n| `qwen3-embedding` | Embeddings | 4096-dimension vectors |\n| `rerank` | RAG reranking | Qwen3-Reranker-8B, 100+ languages |\n| `kokoro` | Text-to-speech | Multiple voices and audio formats |\n| `whisper` | Speech-to-text | Transcription with word/segment timestamps |\n| `flux-2-klein` | Image generation | Text-to-image and image-to-image |\n\n`glm5.2` is served only to keys on the GLM 5.2 premium tier; every other model is available to any inference member. Call [List models](#tag/Models) for the exact set available to your key.\n\n## Versioning & compatibility\n\nThe API tracks the OpenAI API surface, so OpenAI SDKs and tools work against `https://api.nan.builders/v1` unchanged. This reference documents the stable public `/v1` endpoints, and we add capabilities without breaking existing fields.",
+    "contact": {
+      "name": "NaN",
+      "url": "https://nan.builders"
+    },
+    "termsOfService": "https://nan.builders/terms"
+  },
+  "servers": [
+    {
+      "url": "https://api.nan.builders/v1",
+      "description": "Production (NaN community cluster)"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Models",
+      "description": "List available models."
+    },
+    {
+      "name": "Chat",
+      "description": "Chat completions, the main conversational endpoint."
+    },
+    {
+      "name": "Completions",
+      "description": "Legacy text completions."
+    },
+    {
+      "name": "Embeddings",
+      "description": "Vector embeddings."
+    },
+    {
+      "name": "Rerank",
+      "description": "Reorder documents by relevance (RAG)."
+    },
+    {
+      "name": "Audio",
+      "description": "Text-to-speech and speech-to-text."
+    },
+    {
+      "name": "Responses",
+      "description": "OpenAI-style Responses endpoint."
+    },
+    {
+      "name": "Images",
+      "description": "Text-to-image and image-to-image."
+    },
+    {
+      "name": "Search",
+      "description": "Authenticated web search for agents."
+    },
+    {
+      "name": "MCP",
+      "description": "Remote MCP server for agents and MCP clients."
+    }
+  ],
+  "paths": {
+    "/models": {
+      "get": {
+        "operationId": "listModels",
+        "tags": [
+          "Models"
+        ],
+        "summary": "List models",
+        "description": "Returns a list of the models available to your API key, most-capable first. Each entry is a [Model](#tag/Models) object. Use an `id` as the `model` field in your requests.",
+        "responses": {
+          "200": {
+            "description": "A list of models.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "type": "string",
+                      "enum": [
+                        "list"
+                      ],
+                      "description": "Always `list`."
+                    },
+                    "data": {
+                      "type": "array",
+                      "description": "The available models.",
+                      "items": {
+                        "$ref": "#/components/schemas/Model"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "object": "list",
+                  "data": [
+                    {
+                      "id": "qwen3.6",
+                      "object": "model",
+                      "created": 1677610602,
+                      "owned_by": "openai"
+                    },
+                    {
+                      "id": "deepseek-v4-flash",
+                      "object": "model",
+                      "created": 1677610602,
+                      "owned_by": "openai"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/models \\\n  -H \"Authorization: Bearer $NAN_API_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nfor m in client.models.list().data:\n    print(m.id)"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst models = await client.models.list();\nfor (const m of models.data) console.log(m.id);"
+          }
+        ]
+      }
+    },
+    "/chat/completions": {
+      "post": {
+        "operationId": "createChatCompletion",
+        "tags": [
+          "Chat"
+        ],
+        "summary": "Create chat completion",
+        "description": "Creates a model response for the given chat conversation. Compatible with OpenAI's Chat Completions API.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "model",
+                  "messages"
+                ],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "description": "Model id. See [List models](#tag/Models) for what your key can use. Chat models are `deepseek-v4-flash`, `mimo-v2.5`, `qwen3.6`, `gemma4` and `glm5.2`.\n\n`glm5.2` requires a key on the GLM 5.2 premium tier; other keys get `403` `tier_restricted`. The rest are available to every inference member.",
+                    "example": "qwen3.6"
+                  },
+                  "messages": {
+                    "type": "array",
+                    "minItems": 1,
+                    "description": "The conversation so far, oldest first. `content` is a string, or an array of parts (`text` + `image_url`) for vision input on `qwen3.6` and `gemma4`.",
+                    "items": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "example": [
+                      {
+                        "role": "user",
+                        "content": "Hola"
+                      }
+                    ]
+                  },
+                  "max_tokens": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Maximum number of tokens to generate.",
+                    "example": 512
+                  },
+                  "temperature": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 2,
+                    "default": 0.6,
+                    "description": "Sampling temperature. Higher is more random, lower more deterministic.",
+                    "example": 0.6
+                  },
+                  "top_p": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.95,
+                    "description": "Nucleus sampling: only consider the top `top_p` probability mass.",
+                    "example": 0.95
+                  },
+                  "stream": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "When `true`, the reply arrives as Server-Sent Events: each `data:` line is a `chat.completion.chunk` with new text in `choices[0].delta.content`, ending with `data: [DONE]`.",
+                    "example": false
+                  },
+                  "tools": {
+                    "type": "array",
+                    "description": "Functions the model may call (OpenAI function schema). When it calls one, the reply carries `choices[0].message.tool_calls` and `finish_reason: \"tool_calls\"`. Validated on `qwen3.6`.",
+                    "items": {
+                      "$ref": "#/components/schemas/Tool"
+                    }
+                  },
+                  "tool_choice": {
+                    "$ref": "#/components/schemas/ToolChoice"
+                  },
+                  "response_format": {
+                    "$ref": "#/components/schemas/ResponseFormat"
+                  },
+                  "reasoning_effort": {
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "default": "medium",
+                    "description": "Reasoning depth (`deepseek-v4-flash` only). The trace comes back in `message.reasoning_content`. More effort helps on hard problems, at the cost of latency and tokens.",
+                    "example": "medium"
+                  },
+                  "chat_template_kwargs": {
+                    "type": "object",
+                    "properties": {
+                      "enable_thinking": {
+                        "type": "boolean"
+                      }
+                    },
+                    "description": "Reasoning toggle for `qwen3.6`/`gemma4`: `{ \"enable_thinking\": boolean }`. In OpenAI SDKs, pass it inside `extra_body`."
+                  }
+                }
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Basic",
+                  "value": {
+                    "model": "qwen3.6",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Hola"
+                      }
+                    ],
+                    "max_tokens": 200
+                  }
+                },
+                "streaming": {
+                  "summary": "Streaming (SSE)",
+                  "value": {
+                    "model": "qwen3.6",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Cuéntame un chiste corto"
+                      }
+                    ],
+                    "stream": true
+                  }
+                },
+                "vision": {
+                  "summary": "Vision (multimodal input)",
+                  "value": {
+                    "model": "qwen3.6",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "¿Qué hay en esta imagen?"
+                          },
+                          {
+                            "type": "image_url",
+                            "image_url": {
+                              "url": "https://example.com/foto.jpg"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "json_schema": {
+                  "summary": "Structured output (json_schema, strict)",
+                  "value": {
+                    "model": "qwen3.6",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Alice, 30 años."
+                      }
+                    ],
+                    "response_format": {
+                      "type": "json_schema",
+                      "json_schema": {
+                        "name": "user",
+                        "strict": true,
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "age": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "age"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    }
+                  }
+                },
+                "reasoning_effort": {
+                  "summary": "Reasoning effort (deepseek-v4-flash)",
+                  "value": {
+                    "model": "deepseek-v4-flash",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Resuelve paso a paso: 3x + 7 = 22"
+                      }
+                    ],
+                    "reasoning_effort": "high"
+                  }
+                },
+                "premium_tier": {
+                  "summary": "Premium tier model (glm5.2)",
+                  "description": "`glm5.2` is served only to keys on the GLM 5.2 premium tier. Same request shape as any other model, only `model` changes. A key without the tier gets `403` `tier_restricted`.",
+                  "value": {
+                    "model": "glm5.2",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Refactor this function and explain the trade-offs."
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The chat completion. When `stream: false` the body is a single `chat.completion` (`application/json`). When `stream: true` the body is a `text/event-stream` of `chat.completion.chunk` events ending with `data: [DONE]`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCompletion"
+                },
+                "example": {
+                  "id": "chatcmpl-...",
+                  "created": 1778258163,
+                  "model": "qwen3.6",
+                  "object": "chat.completion",
+                  "choices": [
+                    {
+                      "finish_reason": "stop",
+                      "index": 0,
+                      "message": {
+                        "role": "assistant",
+                        "content": "¡Hola! ¿En qué puedo ayudarte?",
+                        "reasoning_content": "..."
+                      }
+                    }
+                  ],
+                  "usage": {
+                    "completion_tokens": 20,
+                    "prompt_tokens": 17,
+                    "total_tokens": 37
+                  }
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCompletionChunk"
+                },
+                "example": "data: {\"id\":\"chatcmpl-...\",\"object\":\"chat.completion.chunk\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"¡Hola\"}}]}\n\ndata: {\"id\":\"chatcmpl-...\",\"object\":\"chat.completion.chunk\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"!\"},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/chat/completions \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"model\": \"qwen3.6\",\n    \"messages\": [{\"role\": \"user\", \"content\": \"Hola\"}]\n  }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.chat.completions.create(\n    model=\"qwen3.6\",\n    messages=[{\"role\": \"user\", \"content\": \"Hola\"}],\n)\nprint(resp.choices[0].message.content)"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst resp = await client.chat.completions.create({\n  model: \"qwen3.6\",\n  messages: [{ role: \"user\", content: \"Hola\" }],\n});\nconsole.log(resp.choices[0].message.content);"
+          }
+        ]
+      }
+    },
+    "/completions": {
+      "post": {
+        "operationId": "createCompletion",
+        "tags": [
+          "Completions"
+        ],
+        "summary": "Create completion",
+        "description": "Creates a completion for the provided prompt. This is a legacy endpoint; for conversations use [Create chat completion](#tag/Chat) instead. Model: `qwen3.6`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "model",
+                  "prompt"
+                ],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "enum": [
+                      "qwen3.6"
+                    ],
+                    "description": "The model to use. Currently `qwen3.6`.",
+                    "example": "qwen3.6"
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "description": "The prompt to complete.",
+                    "example": "The capital of France is"
+                  },
+                  "max_tokens": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "The maximum number of tokens to generate.",
+                    "example": 16
+                  },
+                  "temperature": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 2,
+                    "default": 0.6,
+                    "description": "Sampling temperature. Higher is more random."
+                  },
+                  "top_p": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.95,
+                    "description": "Nucleus sampling."
+                  },
+                  "stream": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Stream partial completions as Server-Sent Events."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The completion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Completion"
+                },
+                "example": {
+                  "id": "cmpl-...",
+                  "object": "text_completion",
+                  "created": 1778258166,
+                  "model": "qwen3.6",
+                  "choices": [
+                    {
+                      "text": " Paris.",
+                      "index": 0,
+                      "finish_reason": "stop",
+                      "logprobs": null
+                    }
+                  ],
+                  "usage": {
+                    "prompt_tokens": 5,
+                    "completion_tokens": 3,
+                    "total_tokens": 8
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/completions \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ \"model\": \"qwen3.6\", \"prompt\": \"The capital of France is\", \"max_tokens\": 16 }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.completions.create(\n    model=\"qwen3.6\",\n    prompt=\"The capital of France is\",\n    max_tokens=16,\n)\nprint(resp.choices[0].text)"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst resp = await client.completions.create({\n  model: \"qwen3.6\",\n  prompt: \"The capital of France is\",\n  max_tokens: 16,\n});\nconsole.log(resp.choices[0].text);"
+          }
+        ]
+      }
+    },
+    "/embeddings": {
+      "post": {
+        "operationId": "createEmbedding",
+        "tags": [
+          "Embeddings"
+        ],
+        "summary": "Create embeddings",
+        "description": "Creates an embedding vector representing the input text. Pair with [Rerank](#tag/Rerank) to build a retrieval stack. Model: `qwen3-embedding` (4096-dimension vectors).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "model",
+                  "input"
+                ],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "enum": [
+                      "qwen3-embedding"
+                    ],
+                    "description": "The embedding model. Currently `qwen3-embedding`.",
+                    "example": "qwen3-embedding"
+                  },
+                  "input": {
+                    "description": "The text to embed: a single string, or an array of strings to embed in one request.",
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ],
+                    "example": [
+                      "Hola mundo",
+                      "Hello world"
+                    ]
+                  },
+                  "encoding_format": {
+                    "type": "string",
+                    "enum": [
+                      "float",
+                      "base64"
+                    ],
+                    "default": "float",
+                    "description": "The format of the returned vectors: `float` (default) or `base64`."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The embeddings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmbeddingList"
+                },
+                "example": {
+                  "object": "list",
+                  "model": "qwen3-embedding",
+                  "data": [
+                    {
+                      "object": "embedding",
+                      "index": 0,
+                      "embedding": [
+                        0.021,
+                        0.0105,
+                        -0.0204,
+                        "..."
+                      ]
+                    }
+                  ],
+                  "usage": {
+                    "prompt_tokens": 3,
+                    "total_tokens": 3
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/embeddings \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ \"model\": \"qwen3-embedding\", \"input\": [\"Hola mundo\", \"Hello world\"] }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.embeddings.create(\n    model=\"qwen3-embedding\",\n    input=[\"Hola mundo\", \"Hello world\"],\n)\nprint(resp.data[0].embedding[:3])"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst resp = await client.embeddings.create({\n  model: \"qwen3-embedding\",\n  input: [\"Hola mundo\", \"Hello world\"],\n});\nconsole.log(resp.data[0].embedding.slice(0, 3));"
+          }
+        ]
+      }
+    },
+    "/rerank": {
+      "post": {
+        "operationId": "rerank",
+        "tags": [
+          "Rerank"
+        ],
+        "summary": "Rerank documents",
+        "description": "Reranks a list of documents by their relevance to a query, returning them ordered most-relevant first. Completes the RAG stack with `qwen3-embedding`: retrieve top-K by embedding similarity, then reorder here. Supports 100+ languages and code. Model: `rerank`. Also available at `/v2/rerank`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "model",
+                  "query",
+                  "documents"
+                ],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "enum": [
+                      "rerank"
+                    ],
+                    "description": "The rerank model. Currently `rerank` (Qwen3-Reranker-8B).",
+                    "example": "rerank"
+                  },
+                  "query": {
+                    "type": "string",
+                    "description": "The query each document is scored against.",
+                    "example": "What is the capital of France?"
+                  },
+                  "documents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "The documents to rerank. Returned sorted by descending relevance, each keeping its original `index`.",
+                    "example": [
+                      "Paris is the capital of France.",
+                      "Berlin is the capital of Germany.",
+                      "Madrid is the capital of Spain."
+                    ]
+                  },
+                  "top_n": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Return only the `top_n` most relevant documents. Defaults to all."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The reranked documents.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RerankResponse"
+                },
+                "example": {
+                  "id": "score-a032ee5767cab0ee",
+                  "results": [
+                    {
+                      "index": 0,
+                      "relevance_score": 0.739,
+                      "document": {
+                        "text": "Paris is the capital of France."
+                      }
+                    },
+                    {
+                      "index": 1,
+                      "relevance_score": 0.6,
+                      "document": {
+                        "text": "Berlin is the capital of Germany."
+                      }
+                    }
+                  ],
+                  "meta": {
+                    "billed_units": {
+                      "total_tokens": 43
+                    },
+                    "tokens": {
+                      "input_tokens": 43
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/rerank \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"model\": \"rerank\",\n    \"query\": \"What is the capital of France?\",\n    \"documents\": [\"Paris is the capital of France.\", \"Berlin is the capital of Germany.\"]\n  }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\n# rerank isn't part of the OpenAI client, so call it directly:\nresp = client.post(\n    \"/rerank\",\n    cast_to=object,\n    body={\n        \"model\": \"rerank\",\n        \"query\": \"What is the capital of France?\",\n        \"documents\": [\"Paris is the capital of France.\", \"Berlin is the capital of Germany.\"],\n    },\n)\nfor r in resp[\"results\"]:\n    print(r[\"index\"], r[\"relevance_score\"])"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\n// rerank isn't part of the OpenAI client, so call it directly:\nconst res = await fetch(\"https://api.nan.builders/v1/rerank\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.NAN_API_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({\n    model: \"rerank\",\n    query: \"What is the capital of France?\",\n    documents: [\"Paris is the capital of France.\", \"Berlin is the capital of Germany.\"],\n  }),\n});\nconst data = await res.json();\nconsole.log(data.results);"
+          }
+        ]
+      }
+    },
+    "/audio/speech": {
+      "post": {
+        "operationId": "createSpeech",
+        "tags": [
+          "Audio"
+        ],
+        "summary": "Create speech",
+        "description": "Generates audio from the input text (text-to-speech). Returns the raw audio file, not JSON. Model: `kokoro`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "model",
+                  "input",
+                  "voice"
+                ],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "enum": [
+                      "kokoro"
+                    ],
+                    "description": "The TTS model. Currently `kokoro`.",
+                    "example": "kokoro"
+                  },
+                  "input": {
+                    "type": "string",
+                    "description": "The text to synthesize into audio.",
+                    "example": "Bienvenido a NaN."
+                  },
+                  "voice": {
+                    "type": "string",
+                    "description": "The voice to use, e.g. `af_heart` (English female), `ef_dora` (Spanish female) or `em_alex` (Spanish male).",
+                    "example": "ef_dora"
+                  },
+                  "response_format": {
+                    "type": "string",
+                    "enum": [
+                      "mp3",
+                      "wav",
+                      "flac",
+                      "aac",
+                      "pcm",
+                      "opus"
+                    ],
+                    "default": "mp3",
+                    "description": "The audio format to return."
+                  },
+                  "speed": {
+                    "type": "number",
+                    "default": 1,
+                    "description": "Playback speed multiplier."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The generated audio file, in the requested format.",
+            "content": {
+              "audio/mpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/audio/speech \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ \"model\": \"kokoro\", \"voice\": \"ef_dora\", \"input\": \"Bienvenido a NaN.\" }' \\\n  -o speech.mp3"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nspeech = client.audio.speech.create(\n    model=\"kokoro\",\n    voice=\"ef_dora\",\n    input=\"Bienvenido a NaN.\",\n)\nspeech.stream_to_file(\"speech.mp3\")"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nimport fs from \"node:fs\";\nconst speech = await client.audio.speech.create({\n  model: \"kokoro\",\n  voice: \"ef_dora\",\n  input: \"Bienvenido a NaN.\",\n});\nfs.writeFileSync(\"speech.mp3\", Buffer.from(await speech.arrayBuffer()));"
+          }
+        ]
+      }
+    },
+    "/audio/transcriptions": {
+      "post": {
+        "operationId": "createTranscription",
+        "tags": [
+          "Audio"
+        ],
+        "summary": "Create transcription",
+        "description": "Transcribes audio into text (speech-to-text). Model: `whisper`. Send the audio as `multipart/form-data`.\n\nLimits: max 25 MB per request. Audio longer than ~2 minutes may time out (`524`); split it into shorter segments. OGG/Opus and MP3 give the best size-to-quality ratio.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "model"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The audio file to transcribe."
+                  },
+                  "model": {
+                    "type": "string",
+                    "enum": [
+                      "whisper"
+                    ],
+                    "description": "The transcription model. Currently `whisper`."
+                  },
+                  "language": {
+                    "type": "string",
+                    "description": "The input language as an ISO-639-1 code (e.g. `es`, `en`). Auto-detected if omitted."
+                  },
+                  "response_format": {
+                    "type": "string",
+                    "enum": [
+                      "json",
+                      "verbose_json"
+                    ],
+                    "default": "json",
+                    "description": "Response shape. `verbose_json` adds `duration` and `segments`."
+                  },
+                  "timestamp_granularities[]": {
+                    "type": "string",
+                    "enum": [
+                      "word",
+                      "segment"
+                    ],
+                    "description": "Timestamp detail (with `verbose_json`): `word` fills the `words` array; `segment` (default) fills `segments`."
+                  },
+                  "temperature": {
+                    "type": "number",
+                    "description": "Sampling temperature for the decoder."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The transcription (example shown for `verbose_json`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transcription"
+                },
+                "example": {
+                  "text": "Hola, esto es una prueba.",
+                  "language": "es",
+                  "task": "transcribe",
+                  "duration": 1.728,
+                  "segments": [
+                    {
+                      "id": 1,
+                      "start": 0,
+                      "end": 1.4,
+                      "text": " Hola, esto es una prueba.",
+                      "avg_logprob": -0.059,
+                      "no_speech_prob": 0.044
+                    }
+                  ],
+                  "words": null
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "524": {
+            "description": "Timeout: the audio was too long to transcribe in one request. Split it into segments of 2 minutes or less."
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/audio/transcriptions \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -F \"model=whisper\" \\\n  -F \"file=@audio.mp3\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.audio.transcriptions.create(\n    model=\"whisper\",\n    file=open(\"audio.mp3\", \"rb\"),\n)\nprint(resp.text)"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nimport fs from \"node:fs\";\nconst resp = await client.audio.transcriptions.create({\n  model: \"whisper\",\n  file: fs.createReadStream(\"audio.mp3\"),\n});\nconsole.log(resp.text);"
+          }
+        ]
+      }
+    },
+    "/responses": {
+      "post": {
+        "operationId": "createResponse",
+        "tags": [
+          "Responses"
+        ],
+        "summary": "Create response",
+        "description": "Creates a model response using the OpenAI-style Responses API. Models: `qwen3.6`, `gemma4`. Streaming currently emits a single terminal event; for token-by-token streaming, use [Create chat completion](#tag/Chat) with `stream: true`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "model",
+                  "input"
+                ],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "enum": [
+                      "qwen3.6",
+                      "gemma4"
+                    ],
+                    "description": "The model to use.",
+                    "example": "qwen3.6"
+                  },
+                  "input": {
+                    "description": "The input: a single string, or an array of messages in the Responses format.",
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    ],
+                    "example": "Hola, ¿cómo estás?"
+                  },
+                  "max_output_tokens": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "The maximum number of output tokens. Default 65536 on `qwen3.6`."
+                  },
+                  "temperature": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 2,
+                    "default": 0.6,
+                    "description": "Sampling temperature."
+                  },
+                  "top_p": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "default": 0.95,
+                    "description": "Nucleus sampling."
+                  },
+                  "instructions": {
+                    "type": "string",
+                    "description": "System-level instructions that steer the model."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseObject"
+                },
+                "example": {
+                  "id": "resp_...",
+                  "created_at": 1778258181,
+                  "model": "qwen3.6",
+                  "object": "response",
+                  "status": "completed",
+                  "output": [
+                    {
+                      "id": "rs_...",
+                      "type": "reasoning",
+                      "summary": [],
+                      "content": [
+                        {
+                          "type": "reasoning_text",
+                          "text": "..."
+                        }
+                      ]
+                    },
+                    {
+                      "id": "msg_...",
+                      "type": "message",
+                      "role": "assistant",
+                      "status": "completed",
+                      "content": [
+                        {
+                          "type": "output_text",
+                          "text": "Hola.",
+                          "annotations": []
+                        }
+                      ]
+                    }
+                  ],
+                  "usage": {
+                    "input_tokens": 17,
+                    "output_tokens": 118,
+                    "total_tokens": 135
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/responses \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ \"model\": \"qwen3.6\", \"input\": \"Hola, ¿cómo estás?\" }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.responses.create(\n    model=\"qwen3.6\",\n    input=\"Hola, ¿cómo estás?\",\n)\nprint(resp.output_text)"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst resp = await client.responses.create({\n  model: \"qwen3.6\",\n  input: \"Hola, ¿cómo estás?\",\n});\nconsole.log(resp.output_text);"
+          }
+        ]
+      }
+    },
+    "/images/generations": {
+      "post": {
+        "operationId": "createImage",
+        "tags": [
+          "Images"
+        ],
+        "summary": "Create image",
+        "description": "Creates one or more images from a text prompt (text-to-image). Model: `flux-2-klein`.\n\nRequires `inference`-tier membership (`403` otherwise). Image endpoints are rate-limited separately from chat: 20 requests per minute and 100 requests per month per user. These don't consume your chat token budget. `stream: true` is not supported. For OpenAI SDK compatibility, `quality`, `style`, `background`, `moderation`, `output_format`, `output_compression`, and `user` are accepted but ignored.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "prompt"
+                ],
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "A text description of the image to generate.",
+                    "example": "Un faro al atardecer sobre acantilados, estilo cinemático"
+                  },
+                  "model": {
+                    "type": "string",
+                    "default": "flux-2-klein",
+                    "description": "The image model. An unknown model returns `404`.",
+                    "example": "flux-2-klein"
+                  },
+                  "n": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4,
+                    "default": 1,
+                    "description": "The number of images to generate (1–4). Values above 4 return `400`."
+                  },
+                  "size": {
+                    "type": "string",
+                    "default": "1024x1024",
+                    "description": "\"WIDTHxHEIGHT\". Each side divisible by 16 and between 256 and 1536, aspect ratio 1:3–3:1. `auto` or omitted → `1024x1024`.",
+                    "example": "1024x1024"
+                  },
+                  "response_format": {
+                    "type": "string",
+                    "enum": [
+                      "url",
+                      "b64_json"
+                    ],
+                    "default": "url",
+                    "description": "`url` returns a temporary link (~60 min); `b64_json` returns inline base64 bytes."
+                  },
+                  "seed": {
+                    "type": "integer",
+                    "description": "NaN extension: base seed for reproducibility (in OpenAI SDKs, pass via `extra_body`)."
+                  },
+                  "guidance": {
+                    "type": "number",
+                    "description": "NaN extension: FLUX guidance scale (in OpenAI SDKs, pass via `extra_body`)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The generated images.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageResponse"
+                },
+                "example": {
+                  "created": 1778258200,
+                  "data": [
+                    {
+                      "url": "https://...r2.../image.png"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "The model does not exist (`model_not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/images/generations \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ \"model\": \"flux-2-klein\", \"prompt\": \"Un faro al atardecer sobre acantilados\", \"size\": \"1024x1024\" }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nimg = client.images.generate(\n    model=\"flux-2-klein\",\n    prompt=\"Un faro al atardecer sobre acantilados\",\n    size=\"1024x1024\",\n)\nprint(img.data[0].url)"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst img = await client.images.generate({\n  model: \"flux-2-klein\",\n  prompt: \"Un faro al atardecer sobre acantilados\",\n  size: \"1024x1024\",\n});\nconsole.log(img.data[0].url);"
+          }
+        ]
+      }
+    },
+    "/images/edits": {
+      "post": {
+        "operationId": "editImage",
+        "tags": [
+          "Images"
+        ],
+        "summary": "Edit image",
+        "description": "Creates an image from one or more reference images and a prompt (image-to-image). Model: `flux-2-klein`. Send images as `multipart/form-data`. Same `inference`-tier membership and monthly quota as [Create image](#tag/Images). `mask` is not supported (returns `400`).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "image",
+                  "prompt"
+                ],
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "One or more reference images (up to 4; extras are dropped). PNG, JPEG or WebP, each under 25 MB. Repeat the field as `image[]` for multiple."
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "description": "A description of the edit or transformation to apply."
+                  },
+                  "model": {
+                    "type": "string",
+                    "default": "flux-2-klein",
+                    "description": "The image model."
+                  },
+                  "n": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4,
+                    "default": 1,
+                    "description": "The number of images to generate (1–4)."
+                  },
+                  "size": {
+                    "type": "string",
+                    "default": "1024x1024",
+                    "description": "Output size, same rules as Create image."
+                  },
+                  "response_format": {
+                    "type": "string",
+                    "enum": [
+                      "url",
+                      "b64_json"
+                    ],
+                    "default": "url",
+                    "description": "`url` (default) or `b64_json`."
+                  },
+                  "seed": {
+                    "type": "integer",
+                    "description": "NaN extension: base seed (form field)."
+                  },
+                  "guidance": {
+                    "type": "number",
+                    "description": "NaN extension: FLUX guidance scale (form field)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The generated image(s).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageResponse"
+                },
+                "example": {
+                  "created": 1778258200,
+                  "data": [
+                    {
+                      "url": "https://...r2.../image.png"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/images/edits \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -F \"model=flux-2-klein\" \\\n  -F \"image[]=@ref.png\" \\\n  -F \"prompt=Convierte la escena en invierno con nieve\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nimg = client.images.edit(\n    model=\"flux-2-klein\",\n    image=open(\"ref.png\", \"rb\"),\n    prompt=\"Convierte la escena en invierno con nieve\",\n)\nprint(img.data[0].url)"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nimport fs from \"node:fs\";\nconst img = await client.images.edit({\n  model: \"flux-2-klein\",\n  image: fs.createReadStream(\"ref.png\"),\n  prompt: \"Convierte la escena en invierno con nieve\",\n});\nconsole.log(img.data[0].url);"
+          }
+        ]
+      }
+    },
+    "/search": {
+      "post": {
+        "operationId": "search",
+        "tags": [
+          "Search"
+        ],
+        "summary": "Web search",
+        "description": "An authenticated web search tool for agents. Give it a query and it returns ranked results (title, URL, snippet, source), drawn from a hybrid of upstream search providers. Results come back through the NaN API, so your key never talks to a third-party search provider directly, and you never hold a provider key.\n\nSet `fetch_content: true` to also extract the readable main text of the top results (adds latency). You supply only `query`; when `fetch_content` is `true` the server fetches page content **only** for the URLs the search returned, through a hardened anti-SSRF fetcher, so you cannot pass an arbitrary URL to fetch.\n\nLimits are per API key and separate from the model endpoints, so searching does not consume your chat RPM budget or vice versa: 20 requests per minute, 3 concurrent, and 500 searches per day. Exceeding the per-minute or concurrency limit returns `429` `rate_limit_exceeded`; exhausting the daily quota returns `429` `insufficient_quota`. A `429` carries a `Retry-After` header. Repeated identical queries within ~15 minutes are served from a short-lived cache (`cached: true`); cached hits still count toward your rate and quota.\n\n## Use it as an agent tool\n\nDrop this OpenAI-style function schema into your model call's `tools` array. When the model emits a `web_search` tool call, invoke `POST /v1/search` with the arguments and feed the JSON response back as the tool result.\n\n```json\n{\n  \"type\": \"function\",\n  \"function\": {\n    \"name\": \"web_search\",\n    \"description\": \"Search the public web and return relevant results (title, URL, snippet, and optional page content). Use it when the answer may depend on current events, recent developments, prices, release/version numbers, or facts you are not confident are up to date.\",\n    \"parameters\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"query\": { \"type\": \"string\", \"description\": \"The web search query.\" },\n        \"count\": { \"type\": \"integer\", \"description\": \"Number of results to return (1-20).\", \"minimum\": 1, \"maximum\": 20, \"default\": 5 },\n        \"freshness\": { \"type\": \"string\", \"description\": \"Restrict results by recency: 'pd' (past day), 'pw' (past week), 'pm' (past month), 'py' (past year), or a 'YYYY-MM-DDtoYYYY-MM-DD' date range. Omit for no time filter.\" },\n        \"fetch_content\": { \"type\": \"boolean\", \"description\": \"When true, also fetch and include the readable text of the top results (slower). Default false returns snippets only.\", \"default\": false }\n      },\n      \"required\": [\"query\"]\n    }\n  }\n}\n```",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "query"
+                ],
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "The search query.",
+                    "example": "latest go release"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "default": 5,
+                    "description": "Number of results to return, 1–20 (values outside the range are clamped).",
+                    "example": 5
+                  },
+                  "freshness": {
+                    "type": "string",
+                    "description": "Recency filter: `pd` (past day), `pw` (past week), `pm` (past month), `py` (past year), or a `YYYY-MM-DDtoYYYY-MM-DD` date range. Omit for no time filter.",
+                    "example": "pw"
+                  },
+                  "fetch_content": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "When `true`, also fetch and include the readable main text of the top results (`content`). Slower; defaults to snippets only.",
+                    "example": false
+                  }
+                }
+              },
+              "example": {
+                "query": "latest go release",
+                "count": 5,
+                "freshness": "pw",
+                "fetch_content": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The search results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                },
+                "example": {
+                  "results": [
+                    {
+                      "title": "Go 1.23 is released",
+                      "url": "https://go.dev/blog/go1.23",
+                      "snippet": "The latest Go release adds ...",
+                      "source": "primary"
+                    }
+                  ],
+                  "cached": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "description": "Search is temporarily unavailable (`search_unavailable`); retry shortly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/v1/search \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ \"query\": \"latest go release\", \"count\": 5, \"freshness\": \"pw\" }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\n# search isn't part of the OpenAI client, so call it directly:\nresp = client.post(\n    \"/search\",\n    cast_to=object,\n    body={\"query\": \"latest go release\", \"count\": 5, \"freshness\": \"pw\"},\n)\nfor r in resp[\"results\"]:\n    print(r[\"title\"], r[\"url\"])"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "const res = await fetch(\"https://api.nan.builders/v1/search\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.NAN_API_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ query: \"latest go release\", count: 5, freshness: \"pw\" }),\n});\nconst data = await res.json();\nfor (const r of data.results) console.log(r.title, r.url);"
+          }
+        ]
+      }
+    },
+    "/mcp": {
+      "post": {
+        "operationId": "mcpJsonRpc",
+        "tags": [
+          "MCP"
+        ],
+        "summary": "MCP server (JSON-RPC)",
+        "description": "Remote [Model Context Protocol](https://modelcontextprotocol.io) server, so our tools can be used inside any MCP-compatible agent or client with the same `sk-` key as the REST API.\n\nTransport is streamable HTTP and stateless; the protocol is JSON-RPC 2.0 with the methods `initialize`, `tools/list`, `tools/call` and `ping`. Today the server exposes a single tool, `web_search`, with the same arguments as [Web search](#tag/Search); it is a growing registry, so use `tools/list` to discover the current set.\n\nMCP calls share the **same** per-key rate limit, daily quota and concurrency as the equivalent REST endpoint, so there is no separate budget. A `web_search` tool call over MCP counts exactly like a `POST /v1/search` request.\n\nNote this endpoint lives at the host root, `https://api.nan.builders/mcp`, not under `/v1`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonRpcRequest"
+              },
+              "example": {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {
+                  "name": "web_search",
+                  "arguments": {
+                    "query": "kubernetes 1.34 release",
+                    "count": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A JSON-RPC 2.0 response. Protocol-level failures are reported in `error` with HTTP `200`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonRpcResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.nan.builders/mcp \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"jsonrpc\": \"2.0\",\n    \"id\": 1,\n    \"method\": \"tools/call\",\n    \"params\": {\n      \"name\": \"web_search\",\n      \"arguments\": { \"query\": \"kubernetes 1.34 release\", \"count\": 5 }\n    }\n  }'"
+          },
+          {
+            "lang": "json",
+            "label": "MCP client config",
+            "source": "{\n  \"mcpServers\": {\n    \"nan\": {\n      \"url\": \"https://api.nan.builders/mcp\",\n      \"headers\": {\n        \"Authorization\": \"Bearer sk-your-key-here\"\n      }\n    }\n  }\n}"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Personal, non-transferable API key. Send as `Authorization: Bearer <api-key>` on every request."
+      }
+    },
+    "schemas": {
+      "Model": {
+        "type": "object",
+        "description": "An available model, in the OpenAI-compatible model shape.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The model's unique slug. Pass this value as the `model` field in your requests.",
+            "example": "qwen3.6"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "model"
+            ],
+            "description": "The object type, which is always `model`.",
+            "example": "model"
+          },
+          "created": {
+            "type": "integer",
+            "description": "The Unix timestamp (in seconds) when the model became available.",
+            "example": 1677610602
+          },
+          "owned_by": {
+            "type": "string",
+            "description": "The organization that owns the model.",
+            "example": "nan"
+          }
+        }
+      },
+      "ContentPart": {
+        "description": "One part of a multimodal message. Use an array of these as `content` for vision input.",
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "type",
+              "text"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "text"
+                ]
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "type",
+              "image_url"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "image_url"
+                ]
+              },
+              "image_url": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public URL or `data:` URI of the image."
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Message": {
+        "type": "object",
+        "required": [
+          "role"
+        ],
+        "description": "A single message in a conversation. The `role` determines which other fields apply.",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "system",
+              "user",
+              "assistant",
+              "tool"
+            ],
+            "description": "The role of the message author: `system`, `user`, `assistant`, or `tool`."
+          },
+          "content": {
+            "description": "The contents of the message. A plain string, or an array of content parts for multimodal input. Can be `null` on an `assistant` message that only returns tool calls.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ContentPart"
+                }
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "An optional name for the author of this message."
+          },
+          "tool_calls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToolCall"
+            },
+            "description": "The tool calls generated by the model. Present on `assistant` messages when the model decides to invoke one or more tools."
+          },
+          "tool_call_id": {
+            "type": "string",
+            "description": "The id of the tool call this message answers. Required when `role` is `tool`."
+          },
+          "reasoning_content": {
+            "type": "string",
+            "description": "The model's reasoning trace. Present only for reasoning models; safe to display or ignore."
+          }
+        }
+      },
+      "Tool": {
+        "type": "object",
+        "required": [
+          "type",
+          "function"
+        ],
+        "description": "A function the model may call. Provide these in the request's `tools` array.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "function"
+            ],
+            "description": "The type of the tool. Currently only `function` is supported."
+          },
+          "function": {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the function to call. Up to 64 characters; letters, digits, underscores and dashes."
+              },
+              "description": {
+                "type": "string",
+                "description": "What the function does, used by the model to decide when and how to call it. Be descriptive."
+              },
+              "parameters": {
+                "type": "object",
+                "description": "The parameters the function accepts, described as a JSON Schema object."
+              }
+            }
+          }
+        }
+      },
+      "ToolChoice": {
+        "description": "Controls tool use: `\"auto\"` (default), `\"none\"`, `\"required\"`, or force one with `{ \"type\": \"function\", \"function\": { \"name\": \"...\" } }`.",
+        "oneOf": [
+          {
+            "type": "string",
+            "enum": [
+              "auto",
+              "none",
+              "required"
+            ]
+          },
+          {
+            "type": "object"
+          }
+        ]
+      },
+      "ToolCall": {
+        "type": "object",
+        "description": "A tool the model chose to call. Execute it, then send the result back in a `tool` message referencing `id`.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "A unique id for this tool call. Pass it as `tool_call_id` in your follow-up `tool` message."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "function"
+            ],
+            "description": "The type of the tool call. Always `function`."
+          },
+          "function": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the function to call."
+              },
+              "arguments": {
+                "type": "string",
+                "description": "The function arguments as a JSON-encoded string. Parse and validate it before use; models can occasionally emit malformed JSON."
+              }
+            }
+          }
+        }
+      },
+      "ResponseFormat": {
+        "description": "Force structured output. `json_object` guarantees syntactically valid JSON; `json_schema` (with `strict: true`) constrains the output to a schema. Works on `qwen3.6` and `gemma4`.",
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "json_object"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "type",
+              "json_schema"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "json_schema"
+                ]
+              },
+              "json_schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "schema"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "strict": {
+                    "type": "boolean"
+                  },
+                  "schema": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Usage": {
+        "type": "object",
+        "description": "Token accounting for the request.",
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer",
+            "description": "The number of tokens in the prompt (input)."
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "description": "The number of tokens in the generated completion (output)."
+          },
+          "total_tokens": {
+            "type": "integer",
+            "description": "The total tokens used: `prompt_tokens` plus `completion_tokens`. This is what counts against your quota."
+          }
+        }
+      },
+      "ChatCompletion": {
+        "type": "object",
+        "description": "The model's response to a chat request. Represents a single, non-streamed completion.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "A unique identifier for the completion."
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "chat.completion"
+            ],
+            "description": "The object type, always `chat.completion`."
+          },
+          "created": {
+            "type": "integer",
+            "description": "The Unix timestamp (in seconds) when the completion was created."
+          },
+          "model": {
+            "type": "string",
+            "description": "The model that produced the completion."
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "description": "The index of this choice in the `choices` array."
+                },
+                "finish_reason": {
+                  "type": "string",
+                  "enum": [
+                    "stop",
+                    "length",
+                    "tool_calls"
+                  ],
+                  "description": "Why the model stopped: `stop` (natural end or a stop sequence), `length` (hit `max_tokens`), or `tool_calls` (the model called a tool)."
+                },
+                "message": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            },
+            "description": "The list of completion choices. Contains a single choice unless you request more."
+          },
+          "usage": {
+            "$ref": "#/components/schemas/Usage",
+            "description": "Token usage for the request."
+          }
+        }
+      },
+      "ChatCompletionChunk": {
+        "type": "object",
+        "description": "One Server-Sent Event chunk when `stream: true`. New text arrives in `choices[0].delta.content`; the stream ends with `data: [DONE]`.",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "chat.completion.chunk"
+            ],
+            "description": "The object type, always `chat.completion.chunk`."
+          },
+          "created": {
+            "type": "integer",
+            "description": "The Unix timestamp (in seconds) when the chunk was created. Identical across all chunks of one response."
+          },
+          "model": {
+            "type": "string",
+            "description": "The model producing the response."
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer"
+                },
+                "delta": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string"
+                    },
+                    "content": {
+                      "type": "string"
+                    },
+                    "reasoning_content": {
+                      "type": "string"
+                    },
+                    "tool_calls": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ToolCall"
+                      }
+                    }
+                  },
+                  "description": "The incremental update for this chunk. `role` is set on the first chunk; `content` carries the new text to append."
+                },
+                "finish_reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "`null` on intermediate chunks; set to the stop reason on the final content chunk."
+                }
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "OpenAI-standard error envelope: a non-2xx HTTP status with a JSON body describing the problem.",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "type": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "param": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "example": {
+          "error": {
+            "message": "...",
+            "type": null,
+            "param": null,
+            "code": "..."
+          }
+        }
+      },
+      "Embedding": {
+        "type": "object",
+        "description": "A single embedding vector for one input.",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "embedding"
+            ],
+            "description": "The object type, always `embedding`."
+          },
+          "index": {
+            "type": "integer",
+            "description": "The position of this embedding in the request `input` array."
+          },
+          "embedding": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "The embedding vector: a list of 4096 floats. Cosine similarity between vectors measures semantic closeness."
+          }
+        }
+      },
+      "EmbeddingList": {
+        "type": "object",
+        "description": "A list of embeddings, one per input.",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ],
+            "description": "Always `list`."
+          },
+          "model": {
+            "type": "string",
+            "description": "The model used to create the embeddings."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Embedding"
+            },
+            "description": "The embeddings, in the same order as the request `input`."
+          },
+          "usage": {
+            "type": "object",
+            "description": "Token usage for the request.",
+            "properties": {
+              "prompt_tokens": {
+                "type": "integer",
+                "description": "Tokens in the input."
+              },
+              "total_tokens": {
+                "type": "integer",
+                "description": "Total tokens used."
+              }
+            }
+          }
+        }
+      },
+      "RerankResult": {
+        "type": "object",
+        "description": "One reranked document.",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "description": "The position of this document in the request `documents` array."
+          },
+          "relevance_score": {
+            "type": "number",
+            "description": "Relevance to the query, in the range [0, 1]. Higher is more relevant. Results are returned sorted by this, descending."
+          },
+          "document": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "The document text."
+              }
+            },
+            "description": "The document, echoed back."
+          }
+        }
+      },
+      "RerankResponse": {
+        "type": "object",
+        "description": "The reranked documents, most-relevant first.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "A unique identifier for the rerank request."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RerankResult"
+            },
+            "description": "The documents, sorted by descending `relevance_score`. Each carries its original `index`."
+          },
+          "meta": {
+            "type": "object",
+            "description": "Request metadata, including token accounting.",
+            "properties": {
+              "billed_units": {
+                "type": "object",
+                "properties": {
+                  "total_tokens": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "tokens": {
+                "type": "object",
+                "properties": {
+                  "input_tokens": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Transcription": {
+        "type": "object",
+        "description": "A transcription of the supplied audio.",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The full transcribed text."
+          },
+          "language": {
+            "type": "string",
+            "description": "The detected (or supplied) language, as an ISO-639-1 code."
+          },
+          "task": {
+            "type": "string",
+            "description": "The task performed, always `transcribe`."
+          },
+          "duration": {
+            "type": "number",
+            "description": "The audio duration in seconds. Present with `verbose_json`."
+          },
+          "segments": {
+            "type": "array",
+            "description": "Time-aligned segments. Present with `verbose_json`.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "start": {
+                  "type": "number",
+                  "description": "Segment start time in seconds."
+                },
+                "end": {
+                  "type": "number",
+                  "description": "Segment end time in seconds."
+                },
+                "text": {
+                  "type": "string"
+                },
+                "avg_logprob": {
+                  "type": "number"
+                },
+                "no_speech_prob": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "words": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "description": "Per-word timestamps `[{ word, start, end, probability }]`. Populated only when `timestamp_granularities[]=word`."
+          }
+        }
+      },
+      "ResponseObject": {
+        "type": "object",
+        "description": "A response produced by the Responses API.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "A unique identifier for the response."
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "The Unix timestamp (in seconds) when the response was created."
+          },
+          "model": {
+            "type": "string",
+            "description": "The model that produced the response."
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "response"
+            ],
+            "description": "The object type, always `response`."
+          },
+          "status": {
+            "type": "string",
+            "description": "The response status, e.g. `completed`."
+          },
+          "output": {
+            "type": "array",
+            "description": "The output items. May contain `reasoning` blocks (reasoning models) followed by a `message` block with the reply text in `content[].text`.",
+            "items": {
+              "type": "object"
+            }
+          },
+          "usage": {
+            "type": "object",
+            "description": "Token usage for the request.",
+            "properties": {
+              "input_tokens": {
+                "type": "integer"
+              },
+              "output_tokens": {
+                "type": "integer"
+              },
+              "total_tokens": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "ImageResponse": {
+        "type": "object",
+        "description": "The generated image(s).",
+        "properties": {
+          "created": {
+            "type": "integer",
+            "description": "The Unix timestamp (in seconds) when the images were created."
+          },
+          "data": {
+            "type": "array",
+            "description": "The generated images. Each item has a `url` (default) or a `b64_json` payload, depending on `response_format`.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "description": "A temporary URL to the image, valid ~60 minutes. Returned when `response_format` is `url`."
+                },
+                "b64_json": {
+                  "type": "string",
+                  "description": "The base64-encoded image bytes. Returned when `response_format` is `b64_json`."
+                }
+              }
+            }
+          }
+        }
+      },
+      "Completion": {
+        "type": "object",
+        "description": "A completion for the provided prompt (legacy).",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "text_completion"
+            ],
+            "description": "Always `text_completion`."
+          },
+          "created": {
+            "type": "integer",
+            "description": "The Unix timestamp (in seconds) when the completion was created."
+          },
+          "model": {
+            "type": "string"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "description": "The generated text."
+                },
+                "index": {
+                  "type": "integer"
+                },
+                "finish_reason": {
+                  "type": "string",
+                  "enum": [
+                    "stop",
+                    "length"
+                  ],
+                  "description": "Why generation stopped."
+                },
+                "logprobs": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/Usage"
+          }
+        }
+      },
+      "SearchResult": {
+        "type": "object",
+        "description": "One web search result.",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The result title (plain text)."
+          },
+          "url": {
+            "type": "string",
+            "description": "The result URL."
+          },
+          "snippet": {
+            "type": "string",
+            "description": "A short excerpt from the page."
+          },
+          "content": {
+            "type": "string",
+            "description": "The readable main text of the page. Present only when `fetch_content` was `true` and the fetch succeeded."
+          },
+          "source": {
+            "type": "string",
+            "description": "Which tier served this result: `primary` or `fallback`."
+          }
+        }
+      },
+      "SearchResponse": {
+        "type": "object",
+        "description": "The web search results.",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            },
+            "description": "The ranked results, most relevant first."
+          },
+          "cached": {
+            "type": "boolean",
+            "description": "`true` when the results came from the short-lived (~15 min) exact-query cache."
+          }
+        }
+      },
+      "JsonRpcRequest": {
+        "type": "object",
+        "required": [
+          "jsonrpc",
+          "method"
+        ],
+        "properties": {
+          "jsonrpc": {
+            "type": "string",
+            "enum": [
+              "2.0"
+            ],
+            "description": "Always `2.0`."
+          },
+          "id": {
+            "description": "Request id, echoed back in the response.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "initialize",
+              "tools/list",
+              "tools/call",
+              "ping"
+            ],
+            "description": "The JSON-RPC method to invoke."
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Method arguments. For `tools/call`: `name` (the tool) and `arguments` (its input)."
+          }
+        }
+      },
+      "JsonRpcResponse": {
+        "type": "object",
+        "properties": {
+          "jsonrpc": {
+            "type": "string",
+            "enum": [
+              "2.0"
+            ]
+          },
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "result": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Present on success. Shape depends on the method."
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "integer"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "description": "Present on a protocol-level failure."
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid parameter. The body includes `param` with the offending field. Safety filter returns `content_policy_violation`.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Invalid or missing `Authorization` header (`invalid_api_key`).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Your tier lacks access to this endpoint (`tier_restricted`). Image generation requires `inference` membership.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Rate limit exceeded: `rpm_limit` or `max_parallel_requests` (`rate_limit_exceeded`), or monthly quota exhausted (`quota_exceeded` / `insufficient_quota`).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "PaymentRequired": {
+        "description": "The token allowance for the billing period is spent on a model that carries one, such as `glm5.2`. The request was refused before it reached the model, so nothing ran. Not retryable: the counter returns to zero when your billing period starts. The wire `code` is `cap_reached` or `monthly_cap_reached`.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "error": {
+                "message": "Token allowance for this billing period exhausted for model glm5.2. The counter returns to zero when your next billing period starts.",
+                "type": "monthly_cap_reached",
+                "param": null,
+                "code": "monthly_cap_reached"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "NaN Docs",
+    "url": "https://nan.builders/docs"
+  }
+}

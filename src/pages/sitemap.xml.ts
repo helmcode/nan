@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
+import { API_DOC_SLUG } from '../lib/apiDoc';
 import { LOCALES, withLang, type Locale } from '../lib/i18n';
 
 export const prerender = false;
@@ -73,6 +74,21 @@ export const GET: APIRoute = async () => {
   const docs = await getCollection('docs');
   for (const doc of docs) {
     entries.push(`<url><loc>${abs(`/docs/${doc.id}`)}</loc></url>`);
+  }
+
+  /*
+   * The API reference is listed separately because it no longer comes from the
+   * collection: Scalar serves it from the spec. And it does carry alternates,
+   * because it is the only page under /docs that exists in both languages: the
+   * spec stays in English, but Scalar's chrome and labels are translated and
+   * /es/docs/api is a real URL we want indexed as such.
+   */
+  const apiAlternates = LOCALES.map((lang) => ({
+    lang,
+    href: abs(withLang(`/docs/${API_DOC_SLUG}`, lang)),
+  }));
+  for (const { href } of apiAlternates) {
+    entries.push(urlEntry(href.replace(SITE, ''), apiAlternates));
   }
 
   const xml =

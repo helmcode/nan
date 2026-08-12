@@ -1,0 +1,12 @@
+---
+/*
+ * /docs/api: the interactive reference.
+ *
+ * A static route, so it wins over the `[...slug].astro` catch-all that serves
+ * the rest of the docs collection. `api.mdx` is gone: the content comes from
+ * the spec.
+ */
+import ApiReference from '../../components/docs/ApiReference.astro';
+---
+
+<ApiReference lang="en" />

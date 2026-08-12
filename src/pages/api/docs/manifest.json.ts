@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { env } from 'cloudflare:workers';
+import { API_DOC_META, API_DOC_SLUG, getApiDocText } from '../../../lib/apiDoc';
 import { sha256Hex } from '../../../lib/contentHash';
 import { DOCS_CACHE_CONTROL, SAFE_SLUG, ifNoneMatchMatches, quoteEtag } from '../../../lib/docsApi';
 import { mdxToText } from '../../../lib/mdxToText';
@@ -22,20 +23,43 @@ export const GET: APIRoute = async ({ request }) => {
     });
 
     const rateLimits = getRateLimitsConfig(env);
-    const manifestEntries = await Promise.all(
-      entries.map(async (entry) => {
-        const text = await mdxToText(entry.body ?? '', rateLimits);
-        const contentHash = `sha256:${await sha256Hex(text)}`;
-        return {
-          slug: entry.id,
-          title: entry.data.title,
-          description: entry.data.description,
-          order: entry.data.order,
-          contentHash,
-          contentUrl: `/api/docs/${entry.id}.md`,
-        };
-      }),
+    // If anyone adds an `api.md(x)` back to the collection, the spec still
+    // wins: two entries with the same slug would make consumers index the
+    // reference twice, with different contents.
+    const collectionEntries = await Promise.all(
+      entries
+        .filter((entry) => entry.id !== API_DOC_SLUG)
+        .map(async (entry) => {
+          const text = await mdxToText(entry.body ?? '', rateLimits);
+          const contentHash = `sha256:${await sha256Hex(text)}`;
+          return {
+            slug: entry.id,
+            title: entry.data.title,
+            description: entry.data.description,
+            order: entry.data.order,
+            contentHash,
+            contentUrl: `/api/docs/${entry.id}.md`,
+          };
+        }),
     );
+
+    // The API reference is no longer a file in the collection: Scalar serves it
+    // from the spec. It is published as an entry all the same, because to a
+    // manifest consumer it is still one more docs page. See src/lib/apiDoc.ts.
+    const apiText = getApiDocText(rateLimits);
+    const apiEntry = {
+      slug: API_DOC_SLUG,
+      title: API_DOC_META.title,
+      description: API_DOC_META.description,
+      order: API_DOC_META.order,
+      contentHash: `sha256:${await sha256Hex(apiText)}`,
+      contentUrl: `/api/docs/${API_DOC_SLUG}.md`,
+    };
+
+    const manifestEntries = [...collectionEntries, apiEntry].sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      return a.slug.localeCompare(b.slug);
+    });
 
     const versionSeed = JSON.stringify(manifestEntries.map((e) => [e.slug, e.contentHash]));
     const version = `sha256:${await sha256Hex(versionSeed)}`;

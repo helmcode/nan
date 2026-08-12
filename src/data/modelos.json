@@ -37,7 +37,7 @@
         {
           "id": "qwen3.6",
           "by": "Alibaba",
-          "specs": "35B-A3B MoE · FP8 · 256K context · tool calling · reasoning",
+          "specs": "35B-A3B MoE · FP8 · 256K context · tool calling · reasoning · vision",
           "cuota": "sin contador",
           "frontier": false,
           "mostUsed": true

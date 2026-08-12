@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getEntry } from 'astro:content';
 import { env } from 'cloudflare:workers';
+import { API_DOC_SLUG, getApiDocText } from '../../../lib/apiDoc';
 import { sha256Hex } from '../../../lib/contentHash';
 import { DOCS_CACHE_CONTROL, SAFE_SLUG, ifNoneMatchMatches, quoteEtag } from '../../../lib/docsApi';
 import { mdxToText } from '../../../lib/mdxToText';
@@ -16,12 +17,19 @@ export const GET: APIRoute = async ({ params, request }) => {
   }
 
   try {
-    const entry = await getEntry('docs', slug);
-    if (!entry) {
-      return new Response('Not found', { status: 404 });
+    // `api` is not in the collection now that Scalar serves the reference: its
+    // body is generated from the spec. See src/lib/apiDoc.ts.
+    let body: string;
+    if (slug === API_DOC_SLUG) {
+      body = getApiDocText(getRateLimitsConfig(env));
+    } else {
+      const entry = await getEntry('docs', slug);
+      if (!entry) {
+        return new Response('Not found', { status: 404 });
+      }
+      body = await mdxToText(entry.body ?? '', getRateLimitsConfig(env));
     }
 
-    const body = await mdxToText(entry.body ?? '', getRateLimitsConfig(env));
     const contentHash = `sha256:${await sha256Hex(body)}`;
     const etag = quoteEtag(contentHash);
 

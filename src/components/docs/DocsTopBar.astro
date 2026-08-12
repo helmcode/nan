@@ -1,0 +1,109 @@
+---
+/*
+ * Top bar of the documentation, shared by the guides layout (Docs.astro) and
+ * the API reference (ApiReference.astro).
+ *
+ * It exists because otherwise the two surfaces drift apart: the reference got
+ * its own header and the guides another, and they already looked different
+ * from each other one click apart. Ported from helmcode's DocsLayout.
+ *
+ * The EN/ES switcher is only rendered where the page has a Spanish version,
+ * which today is just /docs/api: the guides come from a collection that is not
+ * translated, and offering a language that leads to a 404 is worse than not
+ * offering it.
+ */
+import { switchLocalePath, type Locale } from '../../lib/i18n';
+
+interface Props {
+  lang?: Locale;
+  /** With `false` the language switcher is not rendered (English-only pages). */
+  bilingual?: boolean;
+  /** Marks the active link in the bar. */
+  current?: 'guides' | 'reference';
+}
+
+const { lang = 'en', bilingual = false, current } = Astro.props;
+const pfx = lang === 'es' ? '/es' : '';
+
+const t = {
+  en: {
+    docs: 'Docs',
+    guides: 'Guides',
+    reference: 'API Reference',
+    platform: 'Platform ↗',
+    site: 'nan.builders ↗',
+    home: 'NaN, back to the docs',
+    menu: 'Toggle menu',
+    language: 'Language',
+  },
+  es: {
+    docs: 'Docs',
+    guides: 'Guías',
+    reference: 'Referencia API',
+    platform: 'Plataforma ↗',
+    site: 'nan.builders ↗',
+    home: 'NaN, volver a los docs',
+    menu: 'Abrir o cerrar el menú',
+    language: 'Idioma',
+  },
+}[lang];
+---
+
+<header class="docs-top">
+  <div class="docs-top-left">
+    {/* Only shown where there is a sidebar to open: the reference has none. */}
+    <button class="docs-menu-btn" id="docs-menu-btn" aria-label={t.menu} aria-expanded="false" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18"></path>
+      </svg>
+    </button>
+    <a href={`${pfx}/docs`} class="docs-logo" aria-label={t.home}>
+      <span class="docs-wm" aria-hidden="true"></span>
+    </a>
+    <span class="docs-top-tag">{t.docs}</span>
+  </div>
+
+  <nav class="docs-top-right" aria-label={t.docs}>
+    <a
+      href={`${pfx}/docs`}
+      class:list={['docs-top-link', { 'is-active': current === 'guides' }]}
+      aria-current={current === 'guides' ? 'page' : undefined}>{t.guides}</a
+    >
+    <a
+      href={`${pfx}/docs/api`}
+      class:list={['docs-top-link', { 'is-active': current === 'reference' }]}
+      aria-current={current === 'reference' ? 'page' : undefined}>{t.reference}</a
+    >
+    <a href="https://cloud.nan.builders/" class="docs-top-link">{t.platform}</a>
+    {/*
+      Absolute rather than `/` as in helmcode: both links carrying ↗ leave the
+      site, and a relative path keeps this one on whatever domain you happen to
+      be browsing. On a Cloudflare preview that means "nan.builders" leaves you
+      on *.workers.dev. The previous layout already had it absolute.
+    */}
+    <a href={`https://nan.builders${pfx}`} class="docs-top-link">{t.site}</a>
+    {
+      bilingual && (
+        <span class="docs-lang" aria-label={t.language}>
+          <a
+            href={switchLocalePath(Astro.url.pathname, 'en')}
+            hreflang="en"
+            class:list={['docs-lang-opt', { 'is-active': lang === 'en' }]}
+          >
+            EN
+          </a>
+          <span class="docs-lang-sep" aria-hidden="true">
+            /
+          </span>
+          <a
+            href={switchLocalePath(Astro.url.pathname, 'es')}
+            hreflang="es"
+            class:list={['docs-lang-opt', { 'is-active': lang === 'es' }]}
+          >
+            ES
+          </a>
+        </span>
+      )
+    }
+  </nav>
+</header>

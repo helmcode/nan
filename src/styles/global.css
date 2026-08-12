@@ -143,33 +143,6 @@
   border-radius: 0.25rem;
 }
 
-/* TOC */
-.toc-link {
-  display: block;
-  padding: 0.3rem 0 0.3rem 0.75rem;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.7rem;
-  line-height: 1.6;
-  color: rgb(113 113 122);
-  border-left: 2px solid transparent;
-  transition: all 0.15s ease;
-  text-decoration: none;
-}
-
-.toc-link:hover {
-  color: rgb(163 163 163);
-  border-left-color: rgb(82 82 91);
-}
-
-.toc-link.active {
-  color: rgb(167 139 250);
-  border-left-color: rgb(139 92 246);
-}
-
-.toc-link.h2 {
-  padding-left: 1.5rem;
-}
-
 /* Breadcrumb */
 .breadcrumb {
   display: flex;
@@ -198,53 +171,6 @@
 
 .breadcrumb .current {
   color: rgb(203 213 225);
-}
-
-/* Prev/Next nav */
-.page-nav {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgb(23 23 23);
-}
-
-.page-nav a {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding: 1rem 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgb(38 38 38 / 0.6);
-  background: rgb(10 10 10);
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.page-nav a:hover {
-  border-color: rgba(139, 92, 246, 0.3);
-  background: rgb(38 38 38 / 0.3);
-}
-
-.page-nav a .label {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.65rem;
-  color: rgb(113 113 122);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.35rem;
-}
-
-.page-nav a .title {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.8rem;
-  color: rgb(203 213 225);
-}
-
-.page-nav a.next {
-  text-align: right;
-  align-items: flex-end;
 }
 
 /* Copy button animation */

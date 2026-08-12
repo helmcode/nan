@@ -194,7 +194,7 @@ describe('GET /api/docs/manifest.json', () => {
   it('returns 200 with a well-formed manifest for valid entries', async () => {
     getCollectionMock.mockResolvedValue([
       entry('intro', '# Intro\n\nHola mundo.\n'),
-      entry('api', '# API\n\nContenido.\n'),
+      entry('models', '# Models\n\nContenido.\n'),
     ]);
 
     const res = await GET(ctx());
@@ -204,7 +204,9 @@ describe('GET /api/docs/manifest.json', () => {
     expect(typeof body.version).toBe('string');
     expect(body.version.startsWith('sha256:')).toBe(true);
     expect(Array.isArray(body.entries)).toBe(true);
-    expect(body.entries.length).toBe(2);
+    // The two from the collection plus the API reference, generated from the
+    // spec and independent of it.
+    expect(body.entries.length).toBe(3);
     for (const e of body.entries) {
       expect(e).toHaveProperty('slug');
       expect(e).toHaveProperty('contentHash');
@@ -212,5 +214,41 @@ describe('GET /api/docs/manifest.json', () => {
       expect(e.contentHash.startsWith('sha256:')).toBe(true);
       expect(e.contentUrl).toBe(`/api/docs/${e.slug}.md`);
     }
+  });
+
+  /**
+   * The Discord bot does not fail when a slug disappears from the manifest: it
+   * silently drops its chunks (bot/knowledge.py::load_documentation_from_remote,
+   * `stale_sources`). When /docs/api moved to Scalar, `api` left the collection,
+   * so without this synthetic entry the bot would have lost the API reference
+   * with no alarm going off.
+   */
+  it('publishes the API reference even though it is not in the collection', async () => {
+    getCollectionMock.mockResolvedValue([entry('intro', '# Intro\n\nHola.\n')]);
+
+    const res = await GET(ctx());
+    const body = await res.json();
+
+    const api = body.entries.find((e: { slug: string }) => e.slug === 'api');
+    expect(api).toBeDefined();
+    expect(api.contentUrl).toBe('/api/docs/api.md');
+    expect(api.contentHash).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(api.title).toBe('API');
+  });
+
+  /** Two entries with the same slug would make the bot index it twice. */
+  it('keeps a single `api` entry if the collection ever gets one back', async () => {
+    getCollectionMock.mockResolvedValue([
+      entry('intro', '# Intro\n\nHola.\n'),
+      entry('api', '# API\n\nUna copia vieja escrita a mano.\n'),
+    ]);
+
+    const res = await GET(ctx());
+    const body = await res.json();
+
+    const apiEntries = body.entries.filter((e: { slug: string }) => e.slug === 'api');
+    expect(apiEntries.length).toBe(1);
+    // The spec wins, not the file.
+    expect(apiEntries[0].title).toBe('API');
   });
 });

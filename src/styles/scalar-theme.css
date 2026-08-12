@@ -1,0 +1,89 @@
+/* ============================================
+   Scalar API Reference: NaN theme
+   ============================================
+
+   Scalar is themed entirely through CSS variables (--scalar-*). Here they are
+   mapped onto the tokens in src/styles/tokens.css, the system's source of
+   truth: no loose hex in this file. In helmcode's version that wiring was left
+   pending and the theme inherited literals; here it is done from the start, so
+   changing the violet in tokens.css also changes the API reference.
+
+   NaN's system is dark mode ONLY (tokens.css), so no `.light-mode` is defined:
+   the component forces dark and hides the toggle.
+   Variable reference: https://scalar.com/products/api-references/themes */
+
+@import './tokens.css';
+
+:root {
+  --scalar-font: var(--font-sans);
+  --scalar-font-code: var(--font-mono);
+
+  /* Esquina recta en toda la UI, igual que el resto del sitio. */
+  --scalar-radius: var(--radius-ui);
+  --scalar-radius-lg: var(--radius-ui);
+  --scalar-radius-xl: var(--radius-ui);
+}
+
+/* Scalar applies the theme under .dark-mode. The component always forces it. */
+.dark-mode {
+  --scalar-background-1: var(--color-bg); /* base */
+  --scalar-background-2: var(--color-surface); /* raised: cards, code blocks */
+  --scalar-background-3: #1B1B1F; /* hovers and nested: a step above --color-surface */
+  --scalar-background-accent: var(--color-violet-dim);
+
+  /* Text ramp: the system's three levels, without inventing new greys. */
+  --scalar-color-1: var(--color-text); /* headings, property names */
+  --scalar-color-2: var(--color-body); /* prose and descriptions */
+  --scalar-color-3: var(--color-muted); /* meta, hints */
+
+  /* The accent uses --color-violet-2 and not --color-violet: Scalar applies it
+     mostly to TEXT (links, active tab, operation names), and the contrast rule
+     in tokens.css reserves --color-violet for fills because it sits at 3.43:1.
+     The lighter one meets AA (5.39:1) over the off-black. */
+  --scalar-color-accent: var(--color-violet-2);
+  --scalar-border-color: var(--color-line);
+
+  /* Semantic palette: HTTP method pills, type badges and syntax highlighting.
+     This is the one part that can NOT collapse into the single accent: a POST
+     and a DELETE have to be told apart. */
+  --scalar-color-green: #3FB950;
+  --scalar-color-red: #F85149;
+  --scalar-color-yellow: #E3B341;
+  --scalar-color-blue: #58A6FF;
+  --scalar-color-orange: #FF9A4D;
+  --scalar-color-purple: var(--color-violet-2);
+}
+
+/* ── Hierarchy by brightness and weight, not hue ─────────────────────────────
+   Property names read strong and medium-weight instead of being coloured, and
+   types stay muted. That way violet keeps meaning one single thing across the
+   site: interactive. The classes are Scalar's. */
+.property .property-name,
+.property-name {
+  color: var(--scalar-color-1);
+  font-weight: 600;
+}
+.property-detail-value {
+  color: var(--scalar-color-3);
+}
+
+/* NOTE: do NOT force `height: 100vh` on #scalar-api-reference / .scalar-app.
+   Scalar sizes its own layout (100dvh + --refs-sidebar-height, CSS grid) and
+   constraining it breaks the sidebar's scroll sync: the links stop responding.
+   The layout is its own. */
+
+/* ── Hosted-product features ─────────────────────────────────────────────────
+   "Ask AI" and "Generate MCP" point at Scalar's own cloud. They are NOT hidden
+   here: they are turned off by configuration in ApiReference.astro
+   (`agent.disabled` and `mcp.disabled`), because hiding them with CSS did not
+   stop the component from mounting and calling api.scalar.com on every load.
+
+   The "Powered by Scalar" attribution is deliberately KEPT: Scalar is MIT and
+   the credit is theirs. */
+
+/* The site is dark-only, so the colour-mode toggle makes no sense: leaving it
+   visible offers a light mode the rest of the site does not have. */
+.scalar-app .darklight,
+.scalar-app .darklight-reference {
+  display: none !important;
+}

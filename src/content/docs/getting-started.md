@@ -2,6 +2,7 @@
 title: Getting Started
 description: Configure your favorite IDE or tool to connect to NaN models.
 order: 1
+group: Get started
 ---
 
 # Getting Started.

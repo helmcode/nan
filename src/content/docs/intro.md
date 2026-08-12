@@ -2,6 +2,7 @@
 title: Introduction
 description: Connect your favorite tools (OpenCode, Cursor, Cline, etc.) to our shared inference cluster.
 order: 0
+group: Get started
 ---
 
 # Welcome to NaN.

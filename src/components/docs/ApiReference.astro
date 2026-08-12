@@ -1,0 +1,210 @@
+---
+/*
+ * ApiReference: the interactive API reference at /docs/api, served with Scalar
+ * from src/data/openapi.json instead of hand-written in MDX.
+ *
+ * It is a FULL page, not a component inside Docs.astro: Scalar brings its own
+ * layout (synced sidebar, sticky panels, a 100dvh grid) and putting it inside
+ * the docs layout means fighting it. What we add is NaN's top bar above it,
+ * and Scalar owns the rest.
+ *
+ * Both languages render the SAME spec: an API reference's content stays in
+ * English by convention, and what gets translated is the chrome and Scalar's
+ * UI labels (its `locale` option). Switching language uses ordinary links,
+ * like the rest of the site (Nav.astro), not the hot swap built in helmcode.
+ */
+/*
+ * Self-hosted fonts, as in Docs.astro and NanBase.astro. Without these the page
+ * declares `--scalar-font: var(--font-sans)` (Archivo) but the browser has
+ * nowhere to get it from and falls back to the system one: correct in the CSS
+ * variables and wrong on screen. They cannot be left to Scalar, which would
+ * serve them from fonts.scalar.com (see `withDefaultFonts: false` below).
+ */
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '@fontsource/jetbrains-mono/700.css';
+
+import DocsTopBar from './DocsTopBar.astro';
+import { type Locale } from '../../lib/i18n';
+import '../../styles/docs-shell.css';
+
+interface Props {
+  lang?: Locale;
+}
+
+const { lang = 'en' } = Astro.props;
+
+/* Only this page's copy: the bar's lives in DocsTopBar.astro. */
+const t = {
+  en: {
+    title: 'API Reference · NaN Docs',
+    description:
+      'Interactive reference for the NaN API: OpenAI-compatible endpoints for chat, embeddings, rerank, audio, images and web search.',
+  },
+  es: {
+    title: 'Referencia API · NaN Docs',
+    description:
+      'Referencia interactiva de la API de NaN: endpoints compatibles con OpenAI para chat, embeddings, rerank, audio, imágenes y búsqueda web.',
+  },
+}[lang];
+
+const SITE = 'https://nan.builders';
+const canonical = `${SITE}${Astro.url.pathname.replace(/\/+$/, '') || '/'}`;
+const ogImage = `${SITE}/og/og-${lang}.png`;
+
+/*
+ * `connect-src` has to allow api.nan.builders or "try it" does not work: the
+ * browser sends the request from this page to the API's domain. It goes direct
+ * on purpose, without Scalar's cloud proxy (`proxyUrl: ''` below): sending a
+ * member's key to a third party contradicts the product's "zero logs". The API
+ * answers with open CORS, so no intermediary is needed. `worker-src blob:` is
+ * for Scalar's syntax highlighting.
+ */
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  "img-src 'self' data: https:",
+  "connect-src 'self' https://api.nan.builders",
+  "worker-src 'self' blob:",
+  "frame-src 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content={t.description} />
+    <meta http-equiv="Content-Security-Policy" content={CSP} />
+
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en" href={`${SITE}/docs/api`} />
+    <link rel="alternate" hreflang="es" href={`${SITE}/es/docs/api`} />
+    <link rel="alternate" hreflang="x-default" href={`${SITE}/docs/api`} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="NaN" />
+    <meta property="og:title" content={t.title} />
+    <meta property="og:description" content={t.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={t.title} />
+    <meta name="twitter:description" content={t.description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <title>{t.title}</title>
+
+    <!--
+      Scalar mounts on the client, so there is a gap between the HTML loading
+      and the JS starting. Painting the system background here keeps that gap
+      from showing as a white flash (browsers paint white by default).
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #0b0b0c;
+      }
+    </style>
+  </head>
+  <body class="docs">
+    <DocsTopBar lang={lang} bilingual current="reference" />
+
+    <!-- Scalar mounts here. -->
+    <div id="scalar-api-reference"></div>
+
+    <style is:global>
+      /* Pushes Scalar's sticky panels below our bar. The rest of the chrome
+         (bar, wordmark, links, language) lives in src/styles/docs-shell.css,
+         shared with the guides layout. */
+      .scalar-app {
+        --refs-header-height: var(--doc-top) !important;
+      }
+    </style>
+
+    <script>
+      import { createApiReference } from '@scalar/api-reference';
+      // Scalar's stylesheet is NOT auto-injected when the package is bundled
+      // with Vite, so it has to be imported by hand. Without it the reference
+      // renders unstyled: giant SVGs and the nav as a bullet list.
+      import '@scalar/api-reference/style.css';
+      import '../../styles/scalar-theme.css';
+
+      const SELECTOR = '#scalar-api-reference';
+      const LANG = document.documentElement.lang === 'es' ? 'es' : 'en';
+
+      const CONFIG = {
+        url: '/openapi.json',
+        pageTitle: 'NaN API',
+        locale: LANG,
+        // The site is dark-only; without forcing it Scalar follows the system
+        // and a visitor in light mode would see a white reference on a black site.
+        darkMode: true,
+        forceDarkModeState: 'dark' as const,
+        // By default Scalar injects its own fonts from fonts.scalar.com. That
+        // sends every visitor's IP to a third party, which is exactly what
+        // self-hosting the rest of the site's fonts avoids (see Docs.astro).
+        // They are not needed either: the theme already uses Archivo and
+        // JetBrains Mono via --scalar-font / --scalar-font-code.
+        withDefaultFonts: false,
+        // "Generate MCP" is a hosted-product feature of Scalar: it queries
+        // their registry at api.scalar.com on every load. Turned off here and
+        // not merely by hiding the button with CSS, because hiding it does not
+        // stop the request. Nothing to do with NaN's /mcp endpoint, which IS
+        // documented: that is a spec route, this is a Scalar integration.
+        mcp: { disabled: true },
+        // "Ask AI" is Scalar's hosted assistant. Hiding its button is not
+        // enough: the component mounts anyway and queries api.scalar.com on
+        // every load (AgentScalarChatInterface, the one requesting
+        // /vector/registry). Turned off.
+        agent: { disabled: true },
+        // Request parameters expanded; responses compact.
+        expandAllSchemaProperties: true,
+        defaultOpenAllTags: true,
+        // The reusable schemas are already shown inline per endpoint.
+        hideModels: true,
+        // Hide the auto-generated HTTP snippets: the spec ships curated
+        // x-codeSamples (cURL + OpenAI SDK) for every endpoint.
+        hiddenClients: true as const,
+        // No Scalar cloud proxy: "try it" goes straight to api.nan.builders,
+        // which answers with open CORS. That keeps the member's key from
+        // passing through a third party.
+        proxyUrl: '',
+      };
+
+      let instance: ReturnType<typeof createApiReference> | null = null;
+
+      function mount() {
+        if (instance) return;
+        if (!document.querySelector(SELECTOR)) return;
+        instance = createApiReference(SELECTOR, CONFIG);
+      }
+
+      function unmount() {
+        instance?.destroy?.();
+        const el = document.querySelector(SELECTOR);
+        if (el) el.innerHTML = '';
+        instance = null;
+      }
+
+      mount();
+      // Safety net for view transitions: there is no ClientRouter today, so
+      // these listeners never fire. If one is ever added, without this the
+      // reference would only appear after a manual reload.
+      document.addEventListener('astro:before-swap', unmount);
+      document.addEventListener('astro:page-load', mount);
+    </script>
+  </body>
+</html>
