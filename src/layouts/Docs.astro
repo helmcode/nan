@@ -278,7 +278,7 @@ const searchData = [
     </div>
 
     <!-- Copy toast notification -->
-    <div class="copy-toast" id="copy-toast">¡Copiado al portapapeles!</div>
+    <div class="copy-toast" id="copy-toast">Copied to clipboard</div>
 
     <script define:vars={{ searchData }} is:inline>
       // Search: filters by title, description and headings. No dependencies and
@@ -477,22 +477,22 @@ const searchData = [
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'copy-btn';
-        button.setAttribute('aria-label', `Copiar ${lang.label}`);
-        button.innerHTML = '<span class="copy-label">Copiar</span>';
+        button.setAttribute('aria-label', `Copy ${lang.label}`);
+        button.innerHTML = '<span class="copy-label">Copy</span>';
         button.addEventListener('click', async () => {
           const text = pre.textContent || '';
           try {
             await navigator.clipboard.writeText(text);
             const copyLabel = button.querySelector('.copy-label');
-            if (copyLabel) copyLabel.textContent = 'Copiado!';
-            showCopyToast('¡Copiado al portapapeles!');
+            if (copyLabel) copyLabel.textContent = 'Copied';
+            showCopyToast('Copied to clipboard');
             window.setTimeout(() => {
               const resetLabel = button.querySelector('.copy-label');
-              if (resetLabel) resetLabel.textContent = 'Copiar';
+              if (resetLabel) resetLabel.textContent = 'Copy';
             }, 1500);
           } catch (err) {
             console.error('copy failed', err);
-            showCopyToast('Error al copiar');
+            showCopyToast('Copy failed');
           }
         });
 

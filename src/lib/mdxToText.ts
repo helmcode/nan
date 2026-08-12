@@ -285,7 +285,7 @@ function modelCardToMd(node: MdxNode): string {
 }
 
 function limitationsCardToMd(node: MdxNode): string {
-  const title = String(getAttr(node, 'title') ?? 'limitaciones conocidas');
+  const title = String(getAttr(node, 'title') ?? 'known limitations');
   const items = (getAttr(node, 'items') as Array<{ title?: string; body?: string }> | undefined) || [];
 
   const lines: string[] = [`### ${title}`, ''];
@@ -346,10 +346,10 @@ function calloutToMd(node: MdxNode): string {
 
 function rateLimitsToMd(config: RateLimitsConfig): string {
   const lines = [
-    '**rate limits por API key**',
+    '**rate limits per API key**',
     '',
     `- Requests / min: ${config.perKey.requestsPerMinute} rpm`,
-    `- Paralelo máximo: ${config.perKey.maxParallel} concurrentes`,
+    `- Max parallel: ${config.perKey.maxParallel} concurrent`,
     '',
   ];
   for (const m of config.windowedModels) {
@@ -366,12 +366,12 @@ function rateLimitsToMd(config: RateLimitsConfig): string {
     );
   }
   if (config.tokensPerMinuteByModel.length) {
-    lines.push('**tokens / min por modelo**', '');
+    lines.push('**tokens / min per model**', '');
     for (const m of config.tokensPerMinuteByModel) lines.push(`- ${m.model}: ${m.label}`);
     lines.push('');
   }
   if (config.requestsPerMinuteByModel.length) {
-    lines.push('**requests / min por modelo**', '');
+    lines.push('**requests / min per model**', '');
     for (const m of config.requestsPerMinuteByModel) lines.push(`- ${m.model}: ${m.label}`);
     lines.push('');
   }
