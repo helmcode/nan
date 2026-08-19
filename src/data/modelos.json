@@ -15,7 +15,7 @@
           "id": "deepseek-v4-flash",
           "by": "DeepSeek",
           "specs": "284B-21B MoE · FP8 · 1M context · tool calling · reasoning",
-          "cuota": "500M tokens/mes",
+          "cuota": "2B tokens/mes",
           "frontier": true,
           "mostUsed": true
         },
