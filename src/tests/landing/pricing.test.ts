@@ -59,9 +59,10 @@ describe('Pricing — no per-region tier', () => {
 
   test('the community card CTA routes to the /community signup form, not the portal', () => {
     // The card must land on the restored form (with the #signup anchor),
-    // not on cloud.nan.builders (which has no signup form).
-    expect(tiers).toMatch(/\/es\/community#signup/);
-    expect(tiers).toMatch(/\/community#signup/);
+    // not on cloud.nan.builders (which has no signup form). Assert the full
+    // ternary so a regression on the EN branch (else '/#pricing') is caught,
+    // not masked by the ES substring also containing '/community#signup'.
+    expect(tiers).toMatch(/href: lang === 'es' \? '\/es\/community#signup' : '\/community#signup'/);
     expect(tiers).not.toMatch(/cloud\.nan\.builders/);
   });
 

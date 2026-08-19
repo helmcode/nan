@@ -207,7 +207,12 @@ const pct = membersPct();
       <h2 class="cclose__title">{tt.closeTitle}</h2>
       <p class="cclose__text">{tt.closeText}</p>
       <div class="cclose__form">
+        <div class="cclose__price">
+          <span class="cclose__amount">{t('community.priceLabel', lang)}</span>
+          <span class="cclose__note">{t('community.priceTaxNote', lang)}</span>
+        </div>
         <CommunitySignupForm client:load t={formStrings} />
+        <p class="cclose__footer">{t('community.footer', lang)}</p>
       </div>
     </div>
   </section>
@@ -345,6 +350,10 @@ const pct = membersPct();
   }
   .cclose .btn { margin-top: var(--space-8); }
   .cclose__form { margin-top: var(--space-8); max-width: 460px; }
+  .cclose__price { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-4); }
+  .cclose__amount { font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--color-text); }
+  .cclose__note { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-dim); }
+  .cclose__footer { margin-top: var(--space-3); font-family: var(--font-mono); font-size: 11px; color: var(--color-muted); text-align: center; }
 
   @media (max-width: 760px) {
     .pillars { grid-template-columns: 1fr; }

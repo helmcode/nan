@@ -83,16 +83,14 @@ type Status =
 export default function CommunitySignupForm({ t }: Props) {
   const [email, setEmail] = useState('');
   const [region, setRegion] = useState<Region | ''>('');
-  const [honeypot, setHoneypot] = useState('');
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
   async function onSubmit(e: TargetedSubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // Honeypot: the server is authoritative - it returns a benign 200 for a
-    // filled honeypot without creating anything. A client-side short-circuit
-    // would hang a real user (password manager / autofill) on a spinner with
-    // no recovery, and would not stop bots that POST directly to the endpoint.
+    // No client-side honeypot field: a hidden _hp risks autofill by a
+    // password manager, and the server rate-limiter + the server-side honeypot
+    // (when _hp is sent) are the real bot defence. The form sends no _hp.
 
     if (!isValidEmail(email)) {
       setStatus({ kind: 'error', message: t.errorInvalidEmail });
@@ -113,7 +111,6 @@ export default function CommunitySignupForm({ t }: Props) {
         body: JSON.stringify({
           email: normalizeEmail(email),
           region,
-          _hp: honeypot,
         }),
       });
     } catch {
@@ -177,20 +174,6 @@ export default function CommunitySignupForm({ t }: Props) {
       class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6 md:p-8"
       aria-describedby={errorMsg ? 'community-error' : undefined}
     >
-      <div class="absolute -left-[9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
-        <label>
-          {t.honeypot}
-          <input
-            type="text"
-            tabIndex={-1}
-            autoComplete="off"
-            name="_hp"
-            value={honeypot}
-            onInput={(e) => setHoneypot((e.currentTarget as HTMLInputElement).value)}
-          />
-        </label>
-      </div>
-
       <div class="space-y-5">
         <div>
           <label
