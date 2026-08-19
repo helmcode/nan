@@ -35,7 +35,8 @@
     "errorRateLimited": "Too many attempts. Wait a minute.",
     "errorServer": "Something went wrong. Try again in a moment.",
     "errorNetwork": "No connection. Try again.",
-    "footer": "Cancel anytime."
+    "footer": "Cancel anytime.",
+    "alreadyMemberLabel": "// already a member"
   },
   "hackaton": {
     "pageTitle": "#1 NaN Hackathon",

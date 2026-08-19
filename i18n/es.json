@@ -35,7 +35,8 @@
     "errorRateLimited": "Demasiados intentos. Espera un minuto.",
     "errorServer": "Algo falló. Vuelve a intentarlo en un momento.",
     "errorNetwork": "Sin conexión. Vuelve a intentarlo.",
-    "footer": "Cancela cuando quieras."
+    "footer": "Cancela cuando quieras.",
+    "alreadyMemberLabel": "// ya eres miembro"
   },
   "hackaton": {
     "pageTitle": "#1 Hackatón NaN",

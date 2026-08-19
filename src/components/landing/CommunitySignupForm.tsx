@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { TargetedSubmitEvent } from 'preact';
+import { resolveSignupResponse, errorMessageFor } from '../../lib/communitySignup';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -59,6 +60,7 @@ export interface CommunityTranslations {
   submitting: string;
   redirecting: string;
   alreadySubscribed: string;
+  alreadyMemberLabel: string;
   honeypot: string;
   errorInvalidEmail: string;
   errorInvalidRegion: string;
@@ -87,11 +89,10 @@ export default function CommunitySignupForm({ t }: Props) {
   async function onSubmit(e: TargetedSubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // Honeypot: bots get a fake-success response and we don't call the API.
-    if (honeypot.trim() !== '') {
-      setStatus({ kind: 'redirecting' });
-      return;
-    }
+    // Honeypot: the server is authoritative - it returns a benign 200 for a
+    // filled honeypot without creating anything. A client-side short-circuit
+    // would hang a real user (password manager / autofill) on a spinner with
+    // no recovery, and would not stop bots that POST directly to the endpoint.
 
     if (!isValidEmail(email)) {
       setStatus({ kind: 'error', message: t.errorInvalidEmail });
@@ -127,75 +128,49 @@ export default function CommunitySignupForm({ t }: Props) {
       body = null;
     }
 
-    if (
-      response.status === 200 &&
-      body &&
-      typeof body === 'object' &&
-      (body as { ok?: unknown }).ok === true &&
-      typeof (body as { url?: unknown }).url === 'string'
-    ) {
-      const url = (body as { url: string }).url;
-      setStatus({ kind: 'redirecting' });
-      window.location.href = url;
-      return;
+    const outcome = resolveSignupResponse(response.status, body);
+    switch (outcome.kind) {
+      case 'redirect':
+        setStatus({ kind: 'redirecting' });
+        window.location.href = outcome.url;
+        return;
+      case 'already':
+        setStatus({ kind: 'already' });
+        return;
+      case 'error':
+        setStatus({ kind: 'error', message: errorMessageFor(outcome.code, t) });
+        return;
     }
-
-    if (response.status === 409) {
-      setStatus({ kind: 'already' });
-      return;
-    }
-
-    const errorCode =
-      body && typeof body === 'object' && typeof (body as { error?: unknown }).error === 'string'
-        ? (body as { error: string }).error
-        : '';
-
-    let message = t.errorServer;
-    switch (errorCode) {
-      case 'invalid_email':
-        message = t.errorInvalidEmail;
-        break;
-      case 'invalid_region':
-        message = t.errorInvalidRegion;
-        break;
-      case 'rate_limited':
-        message = t.errorRateLimited;
-        break;
-      default:
-        message = t.errorServer;
-    }
-    setStatus({ kind: 'error', message });
-  }
-
-  if (status.kind === 'already') {
-    return (
-      <div
-        role="status"
-        aria-live="polite"
-        class="rounded-xl border border-violet-500/30 bg-violet-950/20 p-6 md:p-8 text-center"
-      >
-        <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-3">
-          // already a member
-        </p>
-        <p class="text-sm md:text-base text-white leading-relaxed">
-          {t.alreadySubscribed}{' '}
-          <a
-            href="mailto:hello@nan.builders"
-            class="text-violet-400 underline underline-offset-2 hover:text-violet-300"
-          >
-            hello@nan.builders
-          </a>
-        </p>
-      </div>
-    );
   }
 
   const submitting = status.kind === 'submitting';
   const redirecting = status.kind === 'redirecting';
   const disabled = submitting || redirecting;
   const errorMsg = status.kind === 'error' ? status.message : null;
+  const already = status.kind === 'already';
 
   return (
+    <div class="space-y-4">
+      {already && (
+        <div
+          role="status"
+          aria-live="polite"
+          class="rounded-xl border border-violet-500/30 bg-violet-500/10 p-5 md:p-6 text-center"
+        >
+          <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-2">
+            {t.alreadyMemberLabel}
+          </p>
+          <p class="text-sm text-white leading-relaxed">
+            {t.alreadySubscribed}{' '}
+            <a
+              href="mailto:hello@nan.builders"
+              class="text-violet-400 underline underline-offset-2 hover:text-violet-300"
+            >
+              hello@nan.builders
+            </a>
+          </p>
+        </div>
+      )}
     <form
       onSubmit={onSubmit}
       noValidate
@@ -277,7 +252,7 @@ export default function CommunitySignupForm({ t }: Props) {
         <button
           type="submit"
           disabled={disabled}
-          class="w-full inline-flex items-center justify-center gap-2 font-mono text-sm px-8 py-3 rounded-lg bg-violet-600 text-white hover:bg-violet-500 hover:shadow-[0_0_24px_rgba(139,92,246,0.4)] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+          class="btn btn-primary w-full gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {redirecting ? (
             <>
@@ -301,5 +276,6 @@ export default function CommunitySignupForm({ t }: Props) {
         </button>
       </div>
     </form>
+    </div>
   );
 }
