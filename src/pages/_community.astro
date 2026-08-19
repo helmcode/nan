@@ -1,13 +1,39 @@
 ---
 import NanPage from '../layouts/NanPage.astro';
-import { getLang, useT } from '../lib/i18n';
+import CommunitySignupForm from '../components/landing/CommunitySignupForm.tsx';
+import { getLang, useT, t } from '../lib/i18n';
+// La isla del formulario sigue escrita con utilidades de Tailwind; el tema de
+// Tailwind está apuntado a nuestros tokens (ver styles/global.css).
+import '../styles/global.css';
 import { MEMBERS_NOW, MEMBERS_GOAL, membersPct } from '../lib/members';
 
 const lang = getLang(Astro.url);
 const tt = useT(lang).community;
 
-const home = lang === 'es' ? '/es' : '/';
-const joinHref = `${home}#pricing`;
+// El formulario de alta es de este repo, no venía en el rediseño: se conserva
+// tal cual, con sus strings, porque es el punto de conversión de la página.
+const formStrings = {
+  emailLabel: t('community.emailLabel', lang),
+  emailPlaceholder: t('community.emailPlaceholder', lang),
+  regionLabel: t('community.regionLabel', lang),
+  regionEU: t('community.regionEU', lang),
+  regionUSA: t('community.regionUSA', lang),
+  regionLATAM: t('community.regionLATAM', lang),
+  regionDefault: t('community.regionDefault', lang),
+  submit: t('community.submit', lang),
+  submitting: t('community.submitting', lang),
+  redirecting: t('community.redirecting', lang),
+  alreadySubscribed: t('community.alreadySubscribed', lang),
+  alreadyMemberLabel: t('community.alreadyMemberLabel', lang),
+  honeypot: t('community.honeypot', lang),
+  errorInvalidEmail: t('community.errorInvalidEmail', lang),
+  errorInvalidRegion: t('community.errorInvalidRegion', lang),
+  errorRateLimited: t('community.errorRateLimited', lang),
+  errorServer: t('community.errorServer', lang),
+  errorNetwork: t('community.errorNetwork', lang),
+};
+
+const joinHref = '#signup';
 
 // La cuenta de miembros se actualiza a mano al alcanzar un hito y NO se
 // traduce, así que vive en lib/members y no en el diccionario, donde estaba
@@ -176,10 +202,18 @@ const pct = membersPct();
   </section>
 
   <!-- CIERRE -->
-  <section class="cclose">
+  <section class="cclose" id="signup">
     <div class="container cclose__inner" data-reveal>
       <h2 class="cclose__title">{tt.closeTitle}</h2>
       <p class="cclose__text">{tt.closeText}</p>
+      <div class="cclose__form">
+        <div class="cclose__price">
+          <span class="cclose__amount">{t('community.priceLabel', lang)}</span>
+          <span class="cclose__note">{t('community.priceTaxNote', lang)}</span>
+        </div>
+        <CommunitySignupForm client:load t={formStrings} />
+        <p class="cclose__footer">{t('community.footer', lang)}</p>
+      </div>
     </div>
   </section>
 </NanPage>
@@ -315,6 +349,11 @@ const pct = membersPct();
     font-family: var(--font-serif); font-size: clamp(17px, 1.3vw, 20px); line-height: 1.55;
   }
   .cclose .btn { margin-top: var(--space-8); }
+  .cclose__form { margin-top: var(--space-8); max-width: 460px; }
+  .cclose__price { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-4); }
+  .cclose__amount { font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--color-text); }
+  .cclose__note { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-dim); }
+  .cclose__footer { margin-top: var(--space-3); font-family: var(--font-mono); font-size: 11px; color: var(--color-muted); text-align: center; }
 
   @media (max-width: 760px) {
     .pillars { grid-template-columns: 1fr; }

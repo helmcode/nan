@@ -128,6 +128,61 @@ export type CommunitySignupSuccess = { ok: true; url: string };
 export type CommunitySignupFailure = { ok: false; error: CommunityErrorCode };
 export type CommunitySignupResult = CommunitySignupSuccess | CommunitySignupFailure;
 
+export type SignupOutcome =
+  | { kind: 'redirect'; url: string }
+  | { kind: 'already' }
+  | { kind: 'error'; code: CommunityErrorCode };
+
+/**
+ * Maps a raw response (status + parsed body) from the community-signup edge
+ * endpoint to a structured outcome the form component can act on. Pure so it
+ * can be unit-tested in node without a DOM.
+ *
+ * The fetch-throws case (no response at all) is handled by the caller as a
+ * network error; this function only classifies responses that did arrive.
+ */
+export function resolveSignupResponse(status: number, body: unknown): SignupOutcome {
+  if (
+    status === 200 &&
+    body && typeof body === 'object' &&
+    (body as { ok?: unknown }).ok === true &&
+    typeof (body as { url?: unknown }).url === 'string'
+  ) {
+    return { kind: 'redirect', url: (body as { url: string }).url };
+  }
+
+  if (status === 409) {
+    return { kind: 'already' };
+  }
+
+  const errStr =
+    body && typeof body === 'object' && typeof (body as { error?: unknown }).error === 'string'
+      ? (body as { error: string }).error
+      : '';
+
+  const known: CommunityErrorCode[] = [
+    'invalid_email', 'invalid_region', 'rate_limited', 'already_subscribed', 'server_error',
+  ];
+  if (known.includes(errStr as CommunityErrorCode)) {
+    return { kind: 'error', code: errStr as CommunityErrorCode };
+  }
+  return { kind: 'error', code: 'server_error' };
+}
+
+/** Localizes an error code using the form's translation table. */
+export function errorMessageFor(
+  code: CommunityErrorCode,
+  t: { errorInvalidEmail: string; errorInvalidRegion: string; errorRateLimited: string; errorServer: string },
+): string {
+  switch (code) {
+    case 'invalid_email': return t.errorInvalidEmail;
+    case 'invalid_region': return t.errorInvalidRegion;
+    case 'rate_limited': return t.errorRateLimited;
+    default: return t.errorServer;
+  }
+}
+
+
 /**
  * Calls the cloud-api community signup endpoint. On success, the backend
  * returns a Stripe Checkout Session URL the user should be redirected to.

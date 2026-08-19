@@ -57,6 +57,15 @@ describe('Pricing — no per-region tier', () => {
     expect(tiers).toMatch(/amount:\s*'14,99€'/);
   });
 
+  test('the community card CTA routes to the /community signup form, not the portal', () => {
+    // The card must land on the restored form (with the #signup anchor),
+    // not on cloud.nan.builders (which has no signup form). Assert the full
+    // ternary so a regression on the EN branch (else '/#pricing') is caught,
+    // not masked by the ES substring also containing '/community#signup'.
+    expect(tiers).toMatch(/href: lang === 'es' \? '\/es\/community#signup' : '\/community#signup'/);
+    expect(tiers).not.toMatch(/cloud\.nan\.builders/);
+  });
+
   /**
    * Nothing in the section may quote a dollar amount: all three Checkouts are
    * created in EUR for every region. The legacy USD subscriptions are true and
