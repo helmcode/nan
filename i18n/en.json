@@ -295,7 +295,7 @@
       "inferenceIncluded": "inference included",
       "memberIncludes": [
         "Access to the shared cluster. Open models, no token caps.",
-        "DeepSeek V4-Flash (frontier 284B, 1M context, reasoning). 500M tokens/month.",
+        "DeepSeek V4-Flash (frontier 284B, 1M context, reasoning). 2B tokens/month.",
         "Open models chosen by the community",
         "Personal API key compatible with OpenAI",
         "Private Discord channels for members only",
@@ -357,7 +357,7 @@
         },
         {
           "q": "Is it really unlimited tokens?",
-          "a": "On the cluster models, no counter. The frontier ones come with a token allowance per member so the plan holds up: 500M tokens per month on DeepSeek V4-Flash, 1.0B per month on MiMo v2.5, and 3,000M per billing period on GLM 5.2 for members on the premium tier. Those limits are published here, not in fine print. The bill is the fixed subscription price and it doesn’t move."
+          "a": "On the cluster models, no counter. The frontier ones come with a token allowance per member so the plan holds up: 2B tokens per month on DeepSeek V4-Flash, 1.0B per month on MiMo v2.5, and 3,000M per billing period on GLM 5.2 for members on the premium tier. Those limits are published here, not in fine print. The bill is the fixed subscription price and it doesn’t move."
         },
         {
           "q": "How are the models chosen?",
