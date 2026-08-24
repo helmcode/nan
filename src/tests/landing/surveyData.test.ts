@@ -1,4 +1,7 @@
 import { describe, expect, test } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import encuesta from '../../data/encuesta.json';
 import { loc, type Localized } from '../../lib/agenda';
 import { useT } from '../../lib/i18n';
@@ -191,6 +194,32 @@ describe('nada de datos personales en toda la página', () => {
 
   test('no se cuela un em dash (regla de estilo de la casa)', () => {
     for (const text of allText) expect(text).not.toContain('—');
+  });
+});
+
+describe('el titular de la portada', () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const page = readFileSync(resolve(here, '../../pages/_survey.astro'), 'utf-8');
+  const h1 = page.slice(page.indexOf('<h1>'), page.indexOf('</h1>'));
+
+  /**
+   * Salió a producción con las dos mitades pegadas: "The answers from" y "the
+   * NaN builders" se leían como "fromthe". Astro se come el espacio que hay
+   * entre una expresión y la etiqueta siguiente, así que tiene que ir
+   * explícito, como en /projects.
+   */
+  test('el espacio entre las dos mitades va explícito', () => {
+    expect(h1).toContain("{' '}");
+  });
+
+  test('las dos mitades del titular existen en los dos idiomas y no traen espacios de más', () => {
+    for (const lang of LANGS) {
+      const s = useT(lang).survey;
+      for (const half of [s.titleA, s.titleB]) {
+        expect(half).toBe(half.trim());
+        expect(half).not.toBe('');
+      }
+    }
   });
 });
 

@@ -65,7 +65,10 @@ const tt = useT(lang).survey;
       <div class="container">
         <div class="swrap">
           <p class="eyebrow">{tt.kicker}</p>
-          <h1>{tt.titleA} <span class="hl">{tt.titleB}</span></h1>
+          {/* El espacio va explícito: Astro se come el que hay entre una
+              expresión y la etiqueta siguiente, y las dos líneas del
+              titular quedaban pegadas ("from" + "the NaN builders"). */}
+          <h1>{tt.titleA}{' '}<span class="hl">{tt.titleB}</span></h1>
           <p class="shero__lead">{tt.lead}</p>
           <div class="sstats">
             {tt.stats.map((s) => (
