@@ -63,6 +63,16 @@ describe('sitemap.xml', () => {
     }
   });
 
+  test('el informe de la encuesta queda fuera, en los dos idiomas', async () => {
+    const { xml } = await sitemap();
+    const urls = locs(xml);
+
+    // Va con noindex y nofollow: se reparte por enlace, no se indexa. Tenerlo
+    // en el sitemap sería declarar lo contrario de lo que dice la propia página.
+    expect(urls).not.toContain(`${SITE}/survey`);
+    expect(urls).not.toContain(`${SITE}/es/survey`);
+  });
+
   test('no cuela el 404 ni las rutas de API', async () => {
     const { xml } = await sitemap();
     const urls = locs(xml);

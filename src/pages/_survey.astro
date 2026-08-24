@@ -16,7 +16,14 @@ const lang = getLang(Astro.url);
 const tt = useT(lang).survey;
 ---
 
-<NanPage title={tt.metaTitle} description={tt.metaDesc}>
+{/*
+  Fuera del buscador: es un informe para la comunidad, que se reparte por
+  enlace. `noindex` es lo que lo mantiene sin indexar; `nofollow` añade que
+  tampoco se sigan sus enlaces. Por eso no está en el sitemap (ver
+  sitemap.xml.ts): el sitemap es la declaración de qué queremos indexado y
+  pedir las dos cosas a la vez es contradecirse.
+*/}
+<NanPage title={tt.metaTitle} description={tt.metaDesc} noindex nofollow>
   <noscript slot="head">
     <!-- Sin JS nadie oculta el panel del roadmap: se lee la página entera de
          corrido. Con JS, el marcado ya viene con el segundo panel oculto para

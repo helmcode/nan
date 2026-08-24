@@ -20,6 +20,13 @@ interface Props {
   /** Páginas que no deben indexarse. */
   noindex?: boolean;
   /**
+   * Además de no indexar, pedir que no se sigan los enlaces de la página.
+   * Se separa de `noindex` porque son dos cosas distintas: lo que mantiene una
+   * página fuera del buscador es `noindex`; `nofollow` habla de sus enlaces.
+   * Por defecto va apagado, que es lo que quieren el 404 y el hackatón.
+   */
+  nofollow?: boolean;
+  /**
    * Escala de titulares del sistema (H1 gigante en mayúsculas). Se apaga en
    * las pantallas que todavía se escriben con utilidades de Tailwind y
    * columnas estrechas, donde un H1 de 96px parte las palabras. Esas páginas
@@ -33,6 +40,7 @@ const {
   title = t('nan.meta.title', locale),
   description = t('nan.meta.description', locale),
   noindex = false,
+  nofollow = false,
   scale = true,
 } = Astro.props;
 
@@ -83,7 +91,12 @@ const csp = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex, follow" />}
+    {(noindex || nofollow) && (
+      <meta
+        name="robots"
+        content={`${noindex ? 'noindex' : 'index'}, ${nofollow ? 'nofollow' : 'follow'}`}
+      />
+    )}
     <meta http-equiv="Content-Security-Policy" content={csp} />
 
     {!noindex && (
