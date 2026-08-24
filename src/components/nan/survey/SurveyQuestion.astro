@@ -1,0 +1,322 @@
+---
+/**
+ * Una pregunta del informe de la encuesta: gráfico de barras, nota, citas,
+ * tabla de cruce y la lectura.
+ *
+ * Las barras son hairline + relleno real (ancho en %), nunca ASCII: es la regla
+ * del sistema. Y muestran solo el porcentaje, porque el dataset no trae
+ * recuentos de respuestas a propósito (ver `lib/encuesta.ts`).
+ */
+import type { Question } from '../../../lib/encuesta';
+import { loc } from '../../../lib/encuesta';
+import type { Locale } from '../../../lib/i18n';
+
+interface Props {
+  q: Question;
+  lang: Locale;
+  /** Etiqueta de la lectura ("Lectura" / "Reading"), del diccionario. */
+  readLabel: string;
+}
+const { q, lang, readLabel } = Astro.props;
+
+const barClass = (kind?: string) => (kind ? `srow srow--${kind}` : 'srow');
+---
+
+<section class="sq">
+  <header class="sq__head">
+    <span class="sq__id">{q.id}</span>
+    <span class="sq__base">{loc(q.base, lang)}</span>
+  </header>
+  <h3>{loc(q.q, lang)}</h3>
+
+  <div class="schart">
+    {q.bars.map((b) => (
+      <div class={barClass(b.kind)}>
+        <div class="srow__lab">
+          <span>{loc(b.label, lang)}</span>
+          <span class="srow__val">{b.pct}%</span>
+        </div>
+        <div class="strack"><span class="sbar" style={`--w:${b.pct}%`}></span></div>
+      </div>
+    ))}
+  </div>
+  <p class="saxis">{loc(q.axis, lang)}</p>
+
+  {q.note && <p class="snote" set:html={loc(q.note, lang)} />}
+
+  {q.bars2 && (
+    <div class="schart">
+      {q.bars2.map((b) => (
+        <div class={barClass(b.kind)}>
+          <div class="srow__lab">
+            <span>{loc(b.label, lang)}</span>
+            <span class="srow__val">{b.pct}%</span>
+          </div>
+          <div class="strack"><span class="sbar" style={`--w:${b.pct}%`}></span></div>
+        </div>
+      ))}
+    </div>
+  )}
+  {q.axis2 && <p class="saxis">{loc(q.axis2, lang)}</p>}
+
+  {q.chips && (
+    <ul class="schips">
+      {q.chips.map((c) => <li class="schip">{loc(c, lang)}</li>)}
+    </ul>
+  )}
+
+  {q.table && (
+    <div class="stablewrap">
+      <table>
+        <caption>{loc(q.table.caption, lang)}</caption>
+        <thead>
+          <tr>{q.table.head.map((h) => <th scope="col">{loc(h, lang)}</th>)}</tr>
+        </thead>
+        <tbody>
+          {q.table.rows.map((r) => (
+            <tr>
+              <th scope="row">{loc(r.label, lang)}</th>
+              {r.cells.map((c, i) => (
+                <td class={i === r.highlight ? 'num num--hi' : 'num'}>{c}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+
+  {q.quotes && (
+    <div class="squotes">
+      {q.quotes.map((quote) => (
+        <blockquote class="squote">
+          <p>{loc(quote.text, lang)}</p>
+          {quote.cite && <cite>{loc(quote.cite, lang)}</cite>}
+        </blockquote>
+      ))}
+    </div>
+  )}
+
+  <div class="sread">
+    <span class="sread__label">{readLabel}</span>
+    {q.read.map((p) => <p set:html={loc(p, lang)} />)}
+  </div>
+</section>
+
+<style>
+  .sq {
+    background: var(--color-surface);
+    padding: clamp(20px, 3.4vw, 30px);
+  }
+  .sq__head {
+    display: flex;
+    gap: var(--space-4);
+    align-items: baseline;
+    flex-wrap: wrap;
+    margin-bottom: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .sq__id {
+    color: var(--color-violet-2);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+  .sq__base {
+    color: var(--color-muted);
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- barras ---------- */
+  .schart {
+    margin-top: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .srow {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .srow__lab {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-4);
+    font-size: 15px;
+    color: var(--color-text);
+  }
+  .srow__val {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--color-text);
+  }
+  .strack {
+    height: 12px;
+    background: color-mix(in srgb, var(--color-surface) 90%, var(--color-text));
+    border-bottom: 1px solid var(--color-line);
+  }
+  .sbar {
+    display: block;
+    height: 12px;
+    width: var(--w);
+    background: var(--color-violet);
+  }
+  .srow--hi .sbar { background: var(--color-violet-2); }
+  /* Gris para lo que es rechazo o ausencia de permiso: no es un dato más. */
+  .srow--neg .sbar { background: var(--color-muted); }
+
+  .saxis {
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .snote {
+    margin-top: var(--space-4);
+    font-size: 15px;
+    color: var(--color-body);
+    max-width: 78ch;
+  }
+
+  /* ---------- chips ---------- */
+  .schips {
+    list-style: none;
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .schip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 6px 10px;
+    border: 1px solid var(--color-line);
+    color: var(--color-body);
+  }
+
+  /* ---------- tabla ---------- */
+  /* El scroll vive en el contenedor: si la tabla no cabe, se desplaza ella y no
+     la página (nada de scroll horizontal en el body). */
+  .stablewrap {
+    margin-top: var(--space-5);
+    overflow-x: auto;
+    border: 1px solid var(--color-line);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 520px;
+    font-size: 14.5px;
+  }
+  caption {
+    text-align: left;
+    padding: 11px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    background: color-mix(in srgb, var(--color-surface) 90%, var(--color-text));
+    border-bottom: 1px solid var(--color-line);
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--color-line);
+    vertical-align: top;
+  }
+  thead th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    font-weight: 500;
+    background: color-mix(in srgb, var(--color-surface) 90%, var(--color-text));
+  }
+  tbody th {
+    font-weight: 400;
+    color: var(--color-text);
+  }
+  tbody tr:last-child th,
+  tbody tr:last-child td { border-bottom: 0; }
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--color-body);
+  }
+  .num--hi {
+    color: var(--color-violet-2);
+    font-weight: 700;
+  }
+
+  /* ---------- citas ---------- */
+  .squotes {
+    margin-top: var(--space-5);
+    display: grid;
+    /* El min() es obligatorio: sin él la pista no baja de 300px y desborda en
+       un móvil de 320. */
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: 1px;
+    background: var(--color-line);
+    border: 1px solid var(--color-line);
+  }
+  .squote {
+    margin: 0;
+    padding: 16px 18px;
+    background: color-mix(in srgb, var(--color-surface) 92%, var(--color-text));
+  }
+  .squote p {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--color-text);
+  }
+  .squote p::before {
+    content: '/ ';
+    font-family: var(--font-mono);
+    color: var(--color-violet-2);
+  }
+  .squote cite {
+    display: block;
+    margin-top: var(--space-2);
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /* ---------- lectura ---------- */
+  .sread {
+    margin-top: var(--space-5);
+    padding: 14px 0 14px 18px;
+    border-left: 2px solid var(--color-violet);
+    background: linear-gradient(90deg, var(--color-violet-dim), transparent 70%);
+  }
+  .sread__label {
+    display: block;
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-violet-2);
+  }
+  .sread p {
+    font-size: 15.5px;
+    max-width: 80ch;
+    color: var(--color-text);
+  }
+  .sread p + p { margin-top: 9px; }
+</style>

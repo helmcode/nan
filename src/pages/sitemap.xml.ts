@@ -39,6 +39,12 @@ const BILINGUAL = [
  *                                  escribiendo la URL. Van todas con noindex.
  *                                  Cuando haya un #2 se rediseñan las cinco
  *                                  pantallas y se le da entrada, en su PR.
+ *   /survey y /es/survey        -> el informe de la encuesta va con noindex y
+ *                                  nofollow: es un documento que se reparte por
+ *                                  enlace a la comunidad, no contenido que
+ *                                  queramos en el buscador. Si algún día se
+ *                                  quiere indexar, se quitan las dos banderas
+ *                                  de _survey.astro y se añade aquí.
  *   /404                        -> noindex
  *   /api/*                      -> no son páginas
  */

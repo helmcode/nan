@@ -1,0 +1,360 @@
+---
+/**
+ * Informe público de la encuesta de comunidad (13-20 de agosto de 2026).
+ *
+ * Cuerpo compartido por `/survey` y `/es/survey`. Es la versión que se comparte
+ * con la comunidad, no el informe interno: solo porcentajes, citas anónimas y
+ * sin proyectos, direcciones ni datos de contacto. Las reglas del dataset están
+ * en `lib/encuesta.ts` y las guarda `surveyData.test.ts`.
+ */
+import NanPage from '../layouts/NanPage.astro';
+import SurveyQuestion from '../components/nan/survey/SurveyQuestion.astro';
+import { getLang, useT } from '../lib/i18n';
+import { questions, roadmap, others, loc } from '../lib/encuesta';
+
+const lang = getLang(Astro.url);
+const tt = useT(lang).survey;
+---
+
+{/*
+  Fuera del buscador: es un informe para la comunidad, que se reparte por
+  enlace. `noindex` es lo que lo mantiene sin indexar; `nofollow` añade que
+  tampoco se sigan sus enlaces. Por eso no está en el sitemap (ver
+  sitemap.xml.ts): el sitemap es la declaración de qué queremos indexado y
+  pedir las dos cosas a la vez es contradecirse.
+*/}
+<NanPage title={tt.metaTitle} description={tt.metaDesc} noindex nofollow>
+  <noscript slot="head">
+    <!-- Sin JS nadie oculta el panel del roadmap: se lee la página entera de
+         corrido. Con JS, el marcado ya viene con el segundo panel oculto para
+         que no haya un salto al cargar. `is:inline` para que Astro no se lleve
+         el estilo fuera del noscript. -->
+    <style is:inline>
+      [data-survey-panel][hidden] { display: block !important; }
+    </style>
+  </noscript>
+
+  <div class="survey">
+    <div class="stopbar">
+      <div class="container">
+        <div class="stopbar__in">
+          <div class="stabs" role="tablist" aria-label={tt.tabsLabel} data-survey-tabs>
+            <button
+              class="stab"
+              type="button"
+              role="tab"
+              id="stab-data"
+              data-tab="datos"
+              aria-controls="spanel-data"
+              aria-selected="true">{tt.tabData}</button>
+            <button
+              class="stab"
+              type="button"
+              role="tab"
+              id="stab-roadmap"
+              data-tab="roadmap"
+              aria-controls="spanel-roadmap"
+              aria-selected="false"
+              tabindex="-1">{tt.tabRoadmap}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <header class="shero">
+      <div class="container">
+        <div class="swrap">
+          <p class="eyebrow">{tt.kicker}</p>
+          <h1>{tt.titleA} <span class="hl">{tt.titleB}</span></h1>
+          <p class="shero__lead">{tt.lead}</p>
+          <div class="sstats">
+            {tt.stats.map((s) => (
+              <div class="sstat">
+                <span class="sstat__n">{s.n}</span>
+                <span class="sstat__k">{s.k}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div
+      class="spanel"
+      id="spanel-data"
+      role="tabpanel"
+      aria-labelledby="stab-data"
+      data-survey-panel>
+      <div class="container">
+        <div class="swrap">
+          <div class="sechead-block">
+            <h2>{tt.dataHead}</h2>
+            <p class="sechead-block__lead">{tt.dataLead}</p>
+          </div>
+
+          <div class="sgrid">
+            {questions.map((q) => (
+              <SurveyQuestion q={q} lang={lang} readLabel={tt.readLabel} />
+            ))}
+          </div>
+
+          <div class="smethod">
+            {tt.method.map((p) => <p set:html={p} />)}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="spanel"
+      id="spanel-roadmap"
+      role="tabpanel"
+      aria-labelledby="stab-roadmap"
+      data-survey-panel
+      hidden>
+      <div class="container">
+        <div class="swrap">
+          <div class="sechead-block">
+            <h2>{tt.roadmapHead}</h2>
+            <p class="sechead-block__lead">{tt.roadmapLead}</p>
+          </div>
+
+          <ol class="sacts">
+            {roadmap.map((item, i) => (
+              <li class="sact">
+                <div class="sact__top">
+                  <span class="sact__n">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="sact__area">{loc(item.area, lang)}</span>
+                </div>
+                <h3>{loc(item.title, lang)}</h3>
+                {item.body && <p class="sact__body">{loc(item.body, lang)}</p>}
+              </li>
+            ))}
+          </ol>
+
+          <div class="sbox">
+            <h3>{loc(others.title, lang)}</h3>
+            <p class="sbox__lead">{loc(others.body, lang)}</p>
+            <ul class="sbox__list">
+              {others.items.map((o) => <li>{loc(o, lang)}</li>)}
+            </ul>
+          </div>
+
+          <p class="sclosing">{tt.closing}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</NanPage>
+
+<style>
+  /* Ancho de lectura propio: el contenedor del sitio llega a 1560px, que para
+     un informe de texto y gráficos deja la línea demasiado larga. */
+  .swrap {
+    max-width: 1120px;
+    margin-inline: auto;
+  }
+
+  /* ---------- pestañas ---------- */
+  .stopbar {
+    /* Pegada justo debajo de la nav del sitio, que es sticky en top:0. Sin esto
+       hay que volver arriba a mano para cambiar de pestaña. */
+    position: sticky;
+    top: var(--nav-h);
+    z-index: 40;
+    border-bottom: 1px solid var(--color-line);
+    background: var(--color-bg);
+  }
+  .stopbar__in {
+    display: flex;
+    justify-content: center;
+    padding-block: var(--space-4);
+  }
+  .stabs {
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px solid var(--color-line);
+  }
+  .stab {
+    border-right: 1px solid var(--color-line);
+    padding: 11px 16px;
+    min-height: 44px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-body);
+    background: transparent;
+    transition: color var(--dur-micro) var(--ease), background var(--dur-micro) var(--ease);
+  }
+  .stab:last-child { border-right: 0; }
+  .stab:hover { color: var(--color-text); background: var(--color-surface); }
+  .stab[aria-selected='true'] {
+    background: var(--color-violet);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  /* ---------- cabecera ---------- */
+  .shero {
+    padding-block: clamp(40px, 8vw, 88px) clamp(28px, 5vw, 44px);
+    border-bottom: 1px solid var(--color-line);
+    /* Glow radial violeta muy sutil, como en la home. */
+    background: radial-gradient(1100px 420px at 12% -10%, var(--color-violet-dim), transparent 62%);
+  }
+  .shero__lead {
+    margin-top: var(--space-6);
+    max-width: 62ch;
+    font-size: clamp(17px, 1.5vw, 21px);
+    color: var(--color-body);
+  }
+  .sstats {
+    margin-top: clamp(28px, 5vw, 40px);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+    gap: 1px;
+    background: var(--color-line);
+    border: 1px solid var(--color-line);
+  }
+  .sstat {
+    background: var(--color-surface);
+    padding: 18px 16px;
+  }
+  .sstat__n {
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: clamp(26px, 3.4vw, 36px);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-violet-2);
+  }
+  .sstat__k {
+    display: block;
+    margin-top: 9px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+
+  /* ---------- paneles ---------- */
+  .spanel { padding-block: clamp(32px, 6vw, 60px) clamp(60px, 10vw, 110px); }
+  .sechead-block {
+    margin-bottom: clamp(24px, 4vw, 36px);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .sechead-block__lead {
+    margin-top: var(--space-4);
+    max-width: 70ch;
+    color: var(--color-body);
+  }
+
+  /* Rejilla de una columna con hairlines: el fondo es la línea y cada tarjeta
+     tapa lo suyo, así los separadores son de 1px reales. */
+  .sgrid {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--color-line);
+    border: 1px solid var(--color-line);
+  }
+
+  .smethod {
+    margin-top: clamp(32px, 5vw, 52px);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-line);
+    max-width: 88ch;
+  }
+  .smethod p {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+  .smethod p + p { margin-top: 9px; }
+
+  /* ---------- roadmap ---------- */
+  .sacts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--color-line);
+    border: 1px solid var(--color-line);
+    border-top: 2px solid var(--color-violet);
+  }
+  .sact {
+    background: var(--color-surface);
+    padding: 20px clamp(18px, 3vw, 26px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sact__top {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .sact__n {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-violet-2);
+  }
+  .sact__area {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    border: 1px solid var(--color-line);
+    padding: 3px 8px;
+  }
+  .sact__body {
+    font-size: 15px;
+    color: var(--color-body);
+    max-width: 80ch;
+  }
+
+  .sbox {
+    margin-top: clamp(28px, 4vw, 40px);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    padding: clamp(20px, 3.2vw, 28px);
+  }
+  .sbox__lead {
+    margin-top: var(--space-3);
+    font-size: 14.5px;
+    color: var(--color-muted);
+    max-width: 70ch;
+  }
+  .sbox__list {
+    margin: var(--space-5) 0 0;
+    padding-left: 20px;
+    font-size: 15px;
+  }
+  .sbox__list li { color: var(--color-text); }
+  .sbox__list li + li { margin-top: 10px; }
+
+  .sclosing {
+    margin-top: clamp(28px, 4vw, 40px);
+    padding: 18px 20px;
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+    font-size: 15.5px;
+    color: var(--color-body);
+    max-width: 80ch;
+  }
+</style>
+
+<script>
+  import { initSurveyTabs } from '../scripts/surveyTabs';
+  initSurveyTabs();
+</script>

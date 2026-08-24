@@ -1,0 +1,1368 @@
+{
+  "_comment": "Encuesta de comunidad de agosto de 2026. Cifras verificadas contra el CSV de respuestas: solo porcentaje, nunca recuentos. Las citas van anonimas y sin numero de respuesta.",
+  "questions": [
+    {
+      "id": "P01",
+      "base": {
+        "en": "Multi-select · base 78 · none blank",
+        "es": "Multirespuesta · base 78 · nadie en blanco"
+      },
+      "q": {
+        "en": "What do you mainly use your subscription for?",
+        "es": "¿Para qué usas principalmente tu suscripción?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "Agentic coding",
+            "es": "Coding agéntico"
+          },
+          "pct": 85,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "Side projects",
+            "es": "Side projects"
+          },
+          "pct": 68
+        },
+        {
+          "label": {
+            "en": "Experimenting and learning",
+            "es": "Experimentar y aprender"
+          },
+          "pct": 67
+        },
+        {
+          "label": {
+            "en": "Day job",
+            "es": "Trabajo diario"
+          },
+          "pct": 44
+        },
+        {
+          "label": {
+            "en": "Product in production",
+            "es": "Producto en producción"
+          },
+          "pct": 28
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of the 78 who answered",
+        "es": "Eje: % de los 78 que respondieron"
+      },
+      "note": {
+        "en": "Others, one mention each: content creation, small personal apps and engineering coursework.",
+        "es": "Otros, con una mención cada uno: creación de contenido, apps pequeñas de uso personal y estudios de ingeniería."
+      },
+      "read": [
+        {
+          "en": "NaN is, above all, an agentic coding engine: 85%. And 28% have a <b>product in production</b>: people who are not asking for a bigger catalogue, they are asking for reliability, concurrency and a predictable quota.",
+          "es": "NaN es, sobre todo, un motor de coding agéntico: 85%. Y hay un 28% con <b>producto en producción</b>: gente que no pide más catálogo, pide fiabilidad, concurrencia y una cuota predecible."
+        },
+        {
+          "en": "The 67% who come in to experiment and learn explain why workshops win by a mile further down: the community is the school.",
+          "es": "El 67% que entra a experimentar y aprender explica por qué los workshops arrasan más abajo: la comunidad es la escuela."
+        }
+      ]
+    },
+    {
+      "id": "P02",
+      "base": {
+        "en": "Open text · 78% answered · grouped into themes",
+        "es": "Abierta · respondió el 78% · agrupada por temas"
+      },
+      "q": {
+        "en": "Which model or capability would you add to the catalogue?",
+        "es": "¿Qué modelo o capacidad añadirías al catálogo?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "More quota on the models that already have a cap",
+            "es": "Más cuota en los modelos que ya tienen tope"
+          },
+          "pct": 23,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "Various specific models (Nemotron, Mistral, MiniMax, Grok, Devstral, Hermes...)",
+            "es": "Modelos concretos varios (Nemotron, Mistral, MiniMax, Grok, Devstral, Hermes...)"
+          },
+          "pct": 21
+        },
+        {
+          "label": {
+            "en": "VPS, spaces and deploying apps or agents",
+            "es": "VPS, spaces y desplegar apps o agentes"
+          },
+          "pct": 15
+        },
+        {
+          "label": {
+            "en": "Qwen 3.8",
+            "es": "Qwen 3.8"
+          },
+          "pct": 11
+        },
+        {
+          "label": {
+            "en": "Frontier models and faster catalogue rotation",
+            "es": "Modelos frontera y rotación más rápida del catálogo"
+          },
+          "pct": 11
+        },
+        {
+          "label": {
+            "en": "Kimi K3",
+            "es": "Kimi K3"
+          },
+          "pct": 10
+        },
+        {
+          "label": {
+            "en": "GLM 5.2 on the lower plans",
+            "es": "GLM 5.2 en los planes bajos"
+          },
+          "pct": 10
+        },
+        {
+          "label": {
+            "en": "Usage metrics and observability",
+            "es": "Métricas y observabilidad del consumo"
+          },
+          "pct": 8
+        },
+        {
+          "label": {
+            "en": "OCR",
+            "es": "OCR"
+          },
+          "pct": 7
+        },
+        {
+          "label": {
+            "en": "Voice: transcription, synthesis and diarisation",
+            "es": "Voz: transcripción, síntesis y diarización"
+          },
+          "pct": 5
+        },
+        {
+          "label": {
+            "en": "Video generation",
+            "es": "Generación de vídeo"
+          },
+          "pct": 5
+        },
+        {
+          "label": {
+            "en": "Image generation",
+            "es": "Generación de imagen"
+          },
+          "pct": 3
+        },
+        {
+          "label": {
+            "en": "Shared repository of agents, skills and harnesses",
+            "es": "Repositorio compartido de agentes, skills y harnesses"
+          },
+          "pct": 3
+        },
+        {
+          "label": {
+            "en": "Fine tuning",
+            "es": "Fine tuning"
+          },
+          "pct": 2
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of the answers to this question",
+        "es": "Eje: % de las respuestas a esta pregunta"
+      },
+      "quotes": [
+        {
+          "text": {
+            "en": "The only thing I am missing is GLM 5.2 on the basic subscription. With that I would drop all my other subs.",
+            "es": "A mí solo me falta GLM 5.2 en la suscripción básica. Con eso ya quitaría el resto de subs."
+          }
+        },
+        {
+          "text": {
+            "en": "A VPS where I can run Hermes, OpenClaw... and when it breaks you hit a button and boom, start again.",
+            "es": "Un VPS donde poder correr Hermes, OpenClaw... y que cuando se rompa le des a un botón y zas, a volver a empezar."
+          }
+        },
+        {
+          "text": {
+            "en": "There are new models every month, there should be a rotating slot so people can try them. Plenty get recommended and rotation is low.",
+            "es": "Hay nuevos modelos cada mes, debería existir uno que rote para probarlo entre la gente. Se recomiendan muchos y la rotación es baja."
+          }
+        },
+        {
+          "text": {
+            "en": "More detailed metrics... I only have one global view, which leaves me uncertain about my granular usage.",
+            "es": "Métricas más detalladas... solo tengo una visual global, lo que me deja en incertidumbre sobre el consumo específico granular."
+          }
+        }
+      ],
+      "read": [
+        {
+          "en": "The number one request is not a new model: it is more quota on the ones already there. Adding “more quota” (23%) and “GLM 5.2 on the low plan” (10%), a third of the answers are about ceilings, not catalogue.",
+          "es": "La petición número uno no es un modelo nuevo: es más cuota en los que ya existen. Sumando «más cuota» (23%) y «GLM 5.2 en el plan bajo» (10%), un tercio de las respuestas habla de techo, no de catálogo."
+        },
+        {
+          "en": "The second block is infrastructure to run what people build: VPS, spaces and deploy (15%). Specific models with repeat demand: Qwen 3.8, Kimi K3 and GLM 5.2 on the basic plan.",
+          "es": "El segundo bloque es infraestructura para ejecutar lo que se construye: VPS, spaces y deploy (15%). Modelos concretos con demanda repetida: Qwen 3.8, Kimi K3 y GLM 5.2 en la básica."
+        }
+      ]
+    },
+    {
+      "id": "P03",
+      "base": {
+        "en": "Single choice plus open text · base 78 · 100% answered",
+        "es": "Opción única y texto libre · base 78 · respondió el 100%"
+      },
+      "q": {
+        "en": "If you cancelled tomorrow, what would the most likely reason be?",
+        "es": "Si mañana te dieras de baja, ¿cuál sería el motivo más probable?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "The limits or the context windows",
+            "es": "Los límites o las ventanas"
+          },
+          "pct": 29,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "I do not use it enough",
+            "es": "No la uso lo suficiente"
+          },
+          "pct": 21
+        },
+        {
+          "label": {
+            "en": "The price",
+            "es": "El precio"
+          },
+          "pct": 19
+        },
+        {
+          "label": {
+            "en": "A specific model I need is missing",
+            "es": "Me falta un modelo concreto"
+          },
+          "pct": 6
+        },
+        {
+          "label": {
+            "en": "Wrote their own reason by hand",
+            "es": "Escribió su propio motivo a mano"
+          },
+          "pct": 24
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of the 78 answers · closed options from the form",
+        "es": "Eje: % de las 78 respuestas · opciones cerradas del formulario"
+      },
+      "note": {
+        "en": "Recoding the 24% who wrote their own reason by hand as well, the real weight of each one comes out like this. One answer can touch several:",
+        "es": "Recodificando también el 24% que escribió su motivo a mano, el peso real de cada uno queda así. Una respuesta puede tocar varios:"
+      },
+      "bars2": [
+        {
+          "label": {
+            "en": "Limits, tokens and concurrent requests",
+            "es": "Límites, tokens y peticiones en paralelo"
+          },
+          "pct": 37,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "Price: it does not pay off for me",
+            "es": "Precio: no lo amortizo"
+          },
+          "pct": 28
+        },
+        {
+          "label": {
+            "en": "I do not use it enough",
+            "es": "No lo uso lo suficiente"
+          },
+          "pct": 23
+        },
+        {
+          "label": {
+            "en": "Missing frontier models or the catalogue is short",
+            "es": "Faltan modelos frontera o el catálogo es corto"
+          },
+          "pct": 18
+        },
+        {
+          "label": {
+            "en": "The competition works out cheaper for me",
+            "es": "La competencia me sale más rentable"
+          },
+          "pct": 6
+        },
+        {
+          "label": {
+            "en": "Reliability and latency",
+            "es": "Fiabilidad y latencia"
+          },
+          "pct": 3
+        },
+        {
+          "label": {
+            "en": "The agents that are not here yet",
+            "es": "Los agentes que aún no están"
+          },
+          "pct": 1
+        }
+      ],
+      "axis2": {
+        "en": "Axis: % of the 78 answers · grouped themes, not mutually exclusive",
+        "es": "Eje: % de las 78 respuestas · temas agrupados, no excluyentes"
+      },
+      "quotes": [
+        {
+          "text": {
+            "en": "The price is very hard to justify for me... for 75 USD it makes more sense to pay for a ChatGPT subscription and use Luna. Plus I have the 5 concurrent request limit.",
+            "es": "El precio se me hace muy difícil de amortizar... por 75 USD tiene más sentido pagar una suscripción de ChatGPT y usar Luna. Además tengo la limitación de 5 peticiones concurrentes."
+          }
+        },
+        {
+          "text": {
+            "en": "With DeepSeek available at other providers' prices, paying per use works out better than the NaN subscription (for now).",
+            "es": "Con la disposición de DeepSeek al precio de otros proveedores, sale más rentable pagar por uso que tener la suscripción de NaN (por el momento)."
+          }
+        },
+        {
+          "text": {
+            "en": "It started with no token limits and now everyone is getting capped... it should be a token limit with priority, and the other one unlimited but low priority.",
+            "es": "Empezó siendo sin límites de tokens y ya empiezan todos a tener limitación... debería ser límite de tokens con prioridad, y el otro sin límite pero con baja prioridad."
+          }
+        },
+        {
+          "text": {
+            "en": "I signed up looking for more community activity. Token prices today are hyper subsidised.",
+            "es": "Me di de alta buscando más actividad en la comunidad. El precio de los tokens a día de hoy está hipersubvencionado."
+          }
+        }
+      ],
+      "read": [
+        {
+          "en": "What weighs most is not the catalogue: it is the limits (37%), ahead of price (28%). And the two go together. Almost nobody says NaN is expensive: they say it is expensive <b>for what they can do with it</b>, compared with paying per use.",
+          "es": "Lo que más pesa no es el catálogo: son los límites (37%), por delante del precio (28%). Y las dos cosas van unidas. Casi nadie dice que NaN sea caro: dicen que es caro <b>para lo que pueden hacer con él</b>, comparándolo con pagar por uso."
+        },
+        {
+          "en": "Among the people with a product in production, limits dominate: a little over a third of that group. In the 23% who do not use it enough the problem is different: habit and onboarding, not the product.",
+          "es": "Entre quienes tienen producto en producción, el motivo dominante son los límites: algo más de un tercio de ese grupo. En el 23% que no lo usa lo suficiente el problema es otro: hábito y arranque, no producto."
+        }
+      ]
+    },
+    {
+      "id": "P04-P06",
+      "base": {
+        "en": "Open text plus permission · 87% described a project",
+        "es": "Abiertas y permiso · el 87% describió un proyecto"
+      },
+      "q": {
+        "en": "What is the best project you have built? Can we feature it?",
+        "es": "¿Cuál es el mejor proyecto que has construido? ¿Podemos destacarlo?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "Described a project or a concrete use",
+            "es": "Describieron un proyecto o un uso concreto"
+          },
+          "pct": 87,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "Authorise featuring it in Built with NaN",
+            "es": "Autorizan destacarlo en Built with NaN"
+          },
+          "pct": 42
+        },
+        {
+          "label": {
+            "en": "Left a usable address",
+            "es": "Dejaron una dirección utilizable"
+          },
+          "pct": 23
+        },
+        {
+          "label": {
+            "en": "Do not authorise publishing it",
+            "es": "No autorizan publicarlo"
+          },
+          "pct": 27,
+          "kind": "neg"
+        },
+        {
+          "label": {
+            "en": "Left the permission box blank",
+            "es": "Dejaron la casilla de permiso en blanco"
+          },
+          "pct": 31,
+          "kind": "neg"
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of the 78 answers · grey = no permission",
+        "es": "Eje: % de las 78 respuestas · gris = sin permiso"
+      },
+      "note": {
+        "en": "The projects are not listed here. The permission given was for Built with NaN, and that is where they will appear: one by one, with their author up front.",
+        "es": "Los proyectos no se listan aquí. El permiso que se dio era para Built with NaN, y ahí es donde irán apareciendo: uno a uno y con su autor delante."
+      },
+      "read": [
+        {
+          "en": "There is enough to fill Built with NaN for months without inventing a single number: 42% have already given permission and 23% left an address. And the variety sells itself, because the projects come from very different fields.",
+          "es": "Hay material para llenar Built with NaN durante meses sin inventar ni una cifra: un 42% ya ha dado permiso y un 23% dejó una dirección. Y la variedad vende sola, porque los proyectos vienen de campos muy distintos entre sí."
+        },
+        {
+          "en": "The 31% who left the box blank are not a no: they are people who skipped the question. If you are one of them, just say so.",
+          "es": "El 31% que dejó la casilla en blanco no es un no: es gente que se saltó la pregunta. Si eres una de ellas, basta con decirlo."
+        }
+      ]
+    },
+    {
+      "id": "P07",
+      "base": {
+        "en": "Open text · 82% answered · grouped into themes",
+        "es": "Abierta · respondió el 82% · agrupada por temas"
+      },
+      "q": {
+        "en": "If you recommended NaN to a colleague in one sentence, what would you say?",
+        "es": "Si recomendaras NaN a un colega en una frase, ¿qué le dirías?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "No limits, unlimited, no fear of burning tokens",
+            "es": "Sin límites, ilimitado, sin miedo a quemar tokens"
+          },
+          "pct": 55,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "The community and the team",
+            "es": "La comunidad y el equipo"
+          },
+          "pct": 19
+        },
+        {
+          "label": {
+            "en": "Learning, experimenting, testing ideas",
+            "es": "Aprender, experimentar, probar ideas"
+          },
+          "pct": 17
+        },
+        {
+          "label": {
+            "en": "Price and predictable cost",
+            "es": "Precio y coste predecible"
+          },
+          "pct": 16
+        },
+        {
+          "label": {
+            "en": "Privacy and zero data retention",
+            "es": "Privacidad y zero data retention"
+          },
+          "pct": 5
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of the sentences collected · themes not mutually exclusive",
+        "es": "Eje: % de las frases recogidas · temas no excluyentes"
+      },
+      "quotes": [
+        {
+          "text": {
+            "en": "You pay 70 and you do not have to worry about a thing, it is like the infinite money cheat in GTA, but with AI.",
+            "es": "Pagas 70 y no tienes que preocuparte de nada, es como el truco de dinero infinito del GTA, pero con IA."
+          }
+        },
+        {
+          "text": {
+            "en": "The best way into this world without worrying about providers, tokens, or surprises on the bill.",
+            "es": "La mejor forma de introducirte en este mundo sin preocuparte por providers, tokens, o sorpresas en la factura."
+          }
+        },
+        {
+          "text": {
+            "en": "Models with no limits (before, not any more... that was the cool part).",
+            "es": "Modelos sin límites (antes, ya no... era lo cool)."
+          }
+        },
+        {
+          "text": {
+            "en": "NaN makes a depth of research possible you cannot do on any other provider cost effectively.",
+            "es": "Con NaN puedes permitirte una investigación en profundidad que con ningún otro proveedor sale a cuenta."
+          },
+          "cite": {
+            "en": "answered in English",
+            "es": "respuesta escrita en inglés"
+          }
+        }
+      ],
+      "read": [
+        {
+          "en": "The value people perceive fits in two words: <b>unlimited tokens</b>. There is no second reason with comparable weight. That makes NaN very easy to explain, and it obliges us to something: any cut to the limits does not touch a feature, it touches the reason you are here.",
+          "es": "La propuesta de valor percibida cabe en dos palabras: <b>tokens ilimitados</b>. No hay una segunda razón con peso parecido. Eso hace NaN facilísimo de explicar, y nos obliga a algo: cualquier recorte de límites no toca una función, toca la razón por la que estáis aquí."
+        },
+        {
+          "en": "Privacy and zero data retention barely show up in the recommendation sentences (5%), though they do appear as a reason to use it in the longer answers. We are under communicating it.",
+          "es": "La privacidad y el zero data retention casi no aparecen en las frases de recomendación (5%), aunque sí como razón de uso en las respuestas largas. Lo tenemos infracomunicado."
+        }
+      ]
+    },
+    {
+      "id": "P08",
+      "base": {
+        "en": "Multi-select · base 78 · none blank",
+        "es": "Multirespuesta · base 78 · nadie en blanco"
+      },
+      "q": {
+        "en": "Would you like us to bring in partners with exclusive perks?",
+        "es": "¿Te interesaría que trajéramos partners con ventajas exclusivas?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "Cloud and GPUs",
+            "es": "Cloud y GPUs"
+          },
+          "pct": 60,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "Developer tooling",
+            "es": "Herramientas de desarrollo"
+          },
+          "pct": 59
+        },
+        {
+          "label": {
+            "en": "Training",
+            "es": "Formación"
+          },
+          "pct": 53
+        },
+        {
+          "label": {
+            "en": "Hardware",
+            "es": "Hardware"
+          },
+          "pct": 51
+        },
+        {
+          "label": {
+            "en": "Not interested",
+            "es": "No me interesa"
+          },
+          "pct": 10,
+          "kind": "neg"
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of the 78 who answered · grey = not interested",
+        "es": "Eje: % de los 78 que respondieron · gris = rechazo"
+      },
+      "note": {
+        "en": "A nuance from the open text: “maybe not formal training, but knowing how companies actually implement AI; we are all experimenting and knowing what other people do is the most valuable part”.",
+        "es": "Un matiz recogido en el texto libre: «tal vez no formación reglada, pero saber cómo implementan la IA en las empresas; todos estamos en experimentación y saber qué hace la gente es el plus más importante»."
+      },
+      "read": [
+        {
+          "en": "90% say go ahead and only 10% are not interested. The four categories are almost tied, but the order matters: infrastructure and tooling before training and hardware.",
+          "es": "90% de permiso para cerrar acuerdos y solo un 10% de rechazo. Las cuatro categorías van casi empatadas, pero el orden importa: infraestructura y herramientas antes que formación y hardware."
+        },
+        {
+          "en": "The nuance about training changes the brief: you do not want courses, you want to see real cases of how it gets implemented.",
+          "es": "El matiz sobre formación cambia el encargo: no queréis cursos, queréis ver casos reales de implantación."
+        }
+      ]
+    },
+    {
+      "id": "P09",
+      "base": {
+        "en": "Single choice · base 78 · 100% answered",
+        "es": "Opción única · base 78 · respondió el 100%"
+      },
+      "q": {
+        "en": "NaN Combinator: does it make sense? Would you sign up?",
+        "es": "NaN Combinator: ¿tiene sentido? ¿Te apuntarías?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "I would sign up for the first cohort",
+            "es": "Me apuntaría a la primera promoción"
+          },
+          "pct": 40,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "Interested, tell me more",
+            "es": "Me interesa, contadme más"
+          },
+          "pct": 40
+        },
+        {
+          "label": {
+            "en": "Not for me",
+            "es": "No es para mí"
+          },
+          "pct": 21,
+          "kind": "neg"
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of the 78 answers · grey = not for me",
+        "es": "Eje: % de las 78 respuestas · gris = rechazo"
+      },
+      "table": {
+        "caption": {
+          "en": "Cross tab: who would sign up for the first cohort",
+          "es": "Cruce: quién se apuntaría a la primera promoción"
+        },
+        "head": [
+          {
+            "en": "Segment",
+            "es": "Segmento"
+          },
+          {
+            "en": "First cohort",
+            "es": "Primera promoción"
+          },
+          {
+            "en": "Interested",
+            "es": "Me interesa"
+          },
+          {
+            "en": "Not for me",
+            "es": "No es para mí"
+          }
+        ],
+        "rows": [
+          {
+            "label": {
+              "en": "LATAM time zone",
+              "es": "Horario LATAM"
+            },
+            "cells": [
+              "57%",
+              "33%",
+              "10%"
+            ],
+            "highlight": 0
+          },
+          {
+            "label": {
+              "en": "Spain time zone",
+              "es": "Horario España"
+            },
+            "cells": [
+              "31%",
+              "44%",
+              "25%"
+            ]
+          },
+          {
+            "label": {
+              "en": "With product in production",
+              "es": "Con producto en producción"
+            },
+            "cells": [
+              "59%",
+              "23%",
+              "18%"
+            ],
+            "highlight": 0
+          },
+          {
+            "label": {
+              "en": "Without product in production",
+              "es": "Sin producto en producción"
+            },
+            "cells": [
+              "32%",
+              "46%",
+              "21%"
+            ]
+          }
+        ]
+      },
+      "read": [
+        {
+          "en": "80% interested and 40% signing up for the first cohort without knowing price or dates yet.",
+          "es": "80% de interés y un 40% que se apunta a la primera promoción sin saber todavía ni precio ni fechas."
+        },
+        {
+          "en": "The skew is very clear: LATAM time zone (57%) and people who already have a product in production (59%). That defines the programme: real monetisation, sales and scaling, not a beginners course, and on a schedule that works in LATAM.",
+          "es": "El sesgo es clarísimo: horario LATAM (57%) y gente que ya tiene producto en producción (59%). Eso define el programa: monetizar, vender y escalar de verdad, no iniciación, y con un horario que sirva en LATAM."
+        }
+      ]
+    },
+    {
+      "id": "P10",
+      "base": {
+        "en": "Multi-select · 72 of 78 answered",
+        "es": "Multirespuesta · respondieron 72 de 78"
+      },
+      "q": {
+        "en": "Which event formats interest you?",
+        "es": "¿Qué formatos de evento te interesan?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "Online workshop",
+            "es": "Workshop online"
+          },
+          "pct": 88,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "Builders coffee",
+            "es": "Café de builders"
+          },
+          "pct": 54
+        },
+        {
+          "label": {
+            "en": "Hackathon",
+            "es": "Hackathon"
+          },
+          "pct": 46
+        },
+        {
+          "label": {
+            "en": "In person talk",
+            "es": "Charla presencial"
+          },
+          "pct": 43
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of those who answered this question",
+        "es": "Eje: % de quienes respondieron a esta pregunta"
+      },
+      "note": {
+        "en": "Requested in the open text: live building (“seeing how the expert works around the obstacles that always come up”), regional meetups in LATAM, one to one advice and “anything online, because of the distance”.",
+        "es": "Pedidos en el texto libre: construcción en vivo («ver cómo el experto sale al paso de los obstáculos que suelen ocurrir»), encuentros regionales en LATAM, asesoría personal y «cualquier cosa que sea online, por la distancia»."
+      },
+      "read": [
+        {
+          "en": "The online workshop is the flagship format: 9 out of 10. In person does not reach half, and that is not a failure: it is the signal to organise it city by city with local hosts, not as a central event.",
+          "es": "El workshop online es el formato franquicia: 9 de cada 10. Lo presencial no llega a la mitad, y eso no es un fallo: es la señal de que hay que organizarlo por ciudad y con anfitriones locales, no como evento central."
+        },
+        {
+          "en": "The request for live building is easy to serve and it is not on the calendar today.",
+          "es": "La petición de construir en directo es fácil de servir y hoy no está en el calendario."
+        }
+      ]
+    },
+    {
+      "id": "P11",
+      "base": {
+        "en": "Single choice · base 78 · 100% answered",
+        "es": "Opción única · base 78 · respondió el 100%"
+      },
+      "q": {
+        "en": "Which time zone works best for you online?",
+        "es": "¿Qué horario te viene mejor para lo online?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "Spain time zone",
+            "es": "Horario España"
+          },
+          "pct": 62,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "LATAM time zone",
+            "es": "Horario LATAM"
+          },
+          "pct": 27
+        },
+        {
+          "label": {
+            "en": "I can adapt",
+            "es": "Me adapto"
+          },
+          "pct": 12
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of the 78 answers",
+        "es": "Eje: % de las 78 respuestas"
+      },
+      "read": [
+        {
+          "en": "More than a quarter of the people who answered live in another time zone. Scheduling everything on Spanish hours leaves out exactly the group most enthusiastic about the Combinator and most likely to offer to host in their city.",
+          "es": "Más de un cuarto de quienes responden vive en otro huso horario. Programar todo en horario peninsular deja fuera justo al grupo más entusiasta del Combinator y al que más se ofrece a organizar en su ciudad."
+        },
+        {
+          "en": "The fix is cheap: two passes for the important things, or a recording plus a questions session on LATAM hours.",
+          "es": "La solución es barata: doble pase para lo importante, o grabación más sesión de preguntas en horario LATAM."
+        }
+      ]
+    },
+    {
+      "id": "P12",
+      "base": {
+        "en": "Single choice · base 78 · 100% answered",
+        "es": "Opción única · base 78 · respondió el 100%"
+      },
+      "q": {
+        "en": "How comfortable would you be if the community switched to English?",
+        "es": "¿Cómo de cómodo te sentirías si la comunidad pasara a ser en inglés?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "I can adapt, no problem",
+            "es": "Me adapto sin problema"
+          },
+          "pct": 59,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "No problem, I even prefer it",
+            "es": "Sin problema, incluso lo prefiero"
+          },
+          "pct": 17
+        },
+        {
+          "label": {
+            "en": "It would be hard, but I understand",
+            "es": "Me costaría, pero lo entiendo"
+          },
+          "pct": 19
+        },
+        {
+          "label": {
+            "en": "I would lose interest in the community",
+            "es": "Perdería interés en la comunidad"
+          },
+          "pct": 5,
+          "kind": "neg"
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of the 78 answers · grey = friction",
+        "es": "Eje: % de las 78 respuestas · gris = fricción"
+      },
+      "table": {
+        "caption": {
+          "en": "Cross tab: comfort with English by time zone",
+          "es": "Cruce: comodidad con el inglés según huso horario"
+        },
+        "head": [
+          {
+            "en": "Time zone",
+            "es": "Huso horario"
+          },
+          {
+            "en": "Comfortable or prefers it",
+            "es": "Cómodo o lo prefiere"
+          },
+          {
+            "en": "Would be hard",
+            "es": "Me costaría"
+          },
+          {
+            "en": "Would lose interest",
+            "es": "Perdería interés"
+          }
+        ],
+        "rows": [
+          {
+            "label": {
+              "en": "Spain time zone",
+              "es": "Horario España"
+            },
+            "cells": [
+              "73%",
+              "19%",
+              "8%"
+            ],
+            "highlight": 2
+          },
+          {
+            "label": {
+              "en": "LATAM time zone",
+              "es": "Horario LATAM"
+            },
+            "cells": [
+              "76%",
+              "24%",
+              "0%"
+            ]
+          },
+          {
+            "label": {
+              "en": "Can adapt",
+              "es": "Me adapto"
+            },
+            "cells": [
+              "89%",
+              "11%",
+              "0%"
+            ]
+          }
+        ]
+      },
+      "quotes": [
+        {
+          "text": {
+            "en": "What makes NaN unique is the Spanish and Latin American spirit, the flavour, the idiosyncrasy, the camaraderie. It is vital not to lose that when moving into more formal settings.",
+            "es": "Lo que hace único a NaN es el espíritu hispano-latino, el sabor, la idiosincrasia, la camaradería. Es vital que esto no se pierda al entrar en entornos de más formalismos."
+          },
+          "cite": {
+            "en": "LATAM time zone",
+            "es": "horario LATAM"
+          }
+        },
+        {
+          "text": {
+            "en": "I speak English fluently, but I would definitely take part less. I think it is very important to nurture the Spanish speaking community.",
+            "es": "Hablo inglés con fluidez, pero definitivamente participaría menos. Creo que es muy importante estimular la comunidad hispanohablante."
+          },
+          "cite": {
+            "en": "Spain time zone",
+            "es": "horario España"
+          }
+        }
+      ],
+      "read": [
+        {
+          "en": "Opening up is viable: 76% comfortable and only 5% say they would lose interest, all of that 5% on Spanish hours. No answer from the LATAM time zone says they would drop off.",
+          "es": "La apertura es viable: 76% cómodo y solo un 5% dice que perdería interés, todo ese 5% en horario España. Ninguna respuesta en horario LATAM dice que se descolgaría."
+        },
+        {
+          "en": "But the risk is not about language, it is about <b>identity</b>. The 24% who would find it hard and the two most thoughtful comments point at the same thing: as we open up, the Spanish speaking space stays.",
+          "es": "Pero el riesgo no es de idioma, es de <b>identidad</b>. El 24% al que le costaría y los dos comentarios más elaborados apuntan a lo mismo: al abrir, el espacio en español se mantiene."
+        }
+      ]
+    },
+    {
+      "id": "P13",
+      "base": {
+        "en": "Multi-select · 73 of 78 answered",
+        "es": "Multirespuesta · respondieron 73 de 78"
+      },
+      "q": {
+        "en": "Would you like to help out in the community?",
+        "es": "¿Te gustaría colaborar con la comunidad?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "Give feedback on the platform",
+            "es": "Dar feedback de la plataforma"
+          },
+          "pct": 55,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "Help other members out",
+            "es": "Ayudar en soporte a compañeros"
+          },
+          "pct": 49
+        },
+        {
+          "label": {
+            "en": "Host something in my city",
+            "es": "Organizar algo en mi ciudad"
+          },
+          "pct": 36
+        },
+        {
+          "label": {
+            "en": "Give a talk or a workshop",
+            "es": "Dar una charla o un workshop"
+          },
+          "pct": 33
+        },
+        {
+          "label": {
+            "en": "No, thanks",
+            "es": "No, gracias"
+          },
+          "pct": 16,
+          "kind": "neg"
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of those who answered this question · grey = no thanks",
+        "es": "Eje: % de quienes respondieron a esta pregunta · gris = rechazo"
+      },
+      "note": {
+        "en": "The concrete offers range from running a hackathon in their city to contributing infrastructure, spreading the word or bringing in knowledge from fields that are not ours.",
+        "es": "Las ofertas concretas van desde montar un hackathon en su ciudad hasta aportar infraestructura, difundir la comunidad o traer conocimiento de sectores que no son el nuestro."
+      },
+      "chips": [
+        {
+          "en": "Almost half offer to speak or host",
+          "es": "Casi la mitad se ofrece a dar charla u organizar"
+        },
+        {
+          "en": "A third of them on LATAM hours",
+          "es": "Un tercio de ellos en horario LATAM"
+        },
+        {
+          "en": "Impostor syndrome comes up several times",
+          "es": "El síndrome del impostor aparece varias veces"
+        }
+      ],
+      "quotes": [
+        {
+          "text": {
+            "en": "I do not think I am good enough to give a talk, but I like being an active member of the community.",
+            "es": "No creo que tenga nivel para una charla, pero me gusta ser un miembro activo en la comunidad."
+          }
+        },
+        {
+          "text": {
+            "en": "I have run quite a few events... I have always wanted to organise a hackathon in my city. Maybe a talk too, though you always get a bit of impostor syndrome.",
+            "es": "He montado bastantes eventos... siempre he querido organizar un hackathon en mi ciudad. También quizá alguna charla, aunque siempre te da un poco de síndrome del impostor."
+          }
+        }
+      ],
+      "read": [
+        {
+          "en": "Almost half offer to step up. The bottleneck is not supply: it is that we had no process to take them up on it, and an offer left unanswered goes cold in weeks.",
+          "es": "Casi la mitad se ofrece a dar la cara. El cuello de botella no es la oferta: es que no teníamos un proceso para engancharla, y una oferta sin contestar se enfría en semanas."
+        },
+        {
+          "en": "The “I am not good enough” pattern shows up several times. It calls for low barrier formats: ten minute talks, showing your own project, question sessions instead of lectures.",
+          "es": "El patrón «no tengo nivel» se repite varias veces. Pide formatos de entrada baja: charlas de diez minutos, enseñar tu propio proyecto, sesiones de dudas en vez de conferencias."
+        }
+      ]
+    },
+    {
+      "id": "P14",
+      "base": {
+        "en": "Open text · 47% answered · grouped into themes",
+        "es": "Abierta · respondió el 47% · agrupada por temas"
+      },
+      "q": {
+        "en": "Anything else you want to tell us?",
+        "es": "¿Algo más que quieras decirnos?"
+      },
+      "bars": [
+        {
+          "label": {
+            "en": "Thanks and support for the project",
+            "es": "Agradecimiento y apoyo al proyecto"
+          },
+          "pct": 43,
+          "kind": "hi"
+        },
+        {
+          "label": {
+            "en": "More workshops and training",
+            "es": "Más workshops y formación"
+          },
+          "pct": 24
+        },
+        {
+          "label": {
+            "en": "Limits and concurrent requests",
+            "es": "Límites y peticiones en paralelo"
+          },
+          "pct": 22
+        },
+        {
+          "label": {
+            "en": "Offer to help or contribute infrastructure",
+            "es": "Ofrecen colaborar o aportar infraestructura"
+          },
+          "pct": 16
+        },
+        {
+          "label": {
+            "en": "Platform and website",
+            "es": "Plataforma y web"
+          },
+          "pct": 14
+        },
+        {
+          "label": {
+            "en": "More powerful models",
+            "es": "Modelos más potentes"
+          },
+          "pct": 8
+        },
+        {
+          "label": {
+            "en": "Organising the knowledge",
+            "es": "Organización del conocimiento"
+          },
+          "pct": 5
+        }
+      ],
+      "axis": {
+        "en": "Axis: % of the comments collected · themes not mutually exclusive",
+        "es": "Eje: % de los comentarios recogidos · temas no excluyentes"
+      },
+      "quotes": [
+        {
+          "text": {
+            "en": "The community cannot be organised over Discord: we have threads duplicated and quintuplicated between the forum and support. People cannot search properly; Discord is not for documentation.",
+            "es": "La comunidad no puede organizarse por Discord: tenemos hilos duplicados y quintuplicados entre el foro y el support. La gente no puede buscar bien; Discord no es para documentar."
+          }
+        },
+        {
+          "text": {
+            "en": "I miss some care on each video page: an executive summary, highlights, links to repos and a full transcript with timestamps.",
+            "es": "Echo en falta cariño en la página de cada vídeo: resumen ejecutivo, highlights, enlaces a repos y transcripción completa con minutado."
+          }
+        },
+        {
+          "text": {
+            "en": "Having a fixed cost and predictable spend is a game changer for me... if an agent gets stuck in a loop I do not have to worry about losing half my salary.",
+            "es": "Poder disfrutar de coste fijo y gasto predecible me resulta un game-changer... si un agente entra en bucle no tengo que preocuparme por dejarme medio sueldo."
+          }
+        },
+        {
+          "text": {
+            "en": "There are not many of us catching this first wave (we live in the NaN bubble). It is hard to juggle work and keeping up: more simple workshops would be great.",
+            "es": "No somos muchos los que estamos cogiendo esta primera ola (vivimos en la NaNBurbuja). Es difícil compaginar trabajo con estar al día: más workshops sencillos vendrían genial."
+          }
+        },
+        {
+          "text": {
+            "en": "I would love it to become an academy... an incubator, even a co investor using pure inference. An accelerator for AI businesses.",
+            "es": "Me encantaría que se convirtiera en una academia... un semillero, incluso coinversionista con la pura inferencia. Una aceleradora de negocios de IA."
+          }
+        }
+      ],
+      "read": [
+        {
+          "en": "The general tone is supportive: 43% of the comments are spontaneous thanks. Underneath there are three debts that have nothing to do with inference: <b>a training calendar, the limits, and knowledge living outside Discord</b>.",
+          "es": "El tono general es de apoyo: el 43% de los comentarios son agradecimientos espontáneos. Debajo hay tres deudas que no son de inferencia: <b>calendario de formación, límites y conocimiento fuera de Discord</b>."
+        },
+        {
+          "en": "And there are one off requests that show up in no chart but do show up on our list: giving each video page some care, following up the offers of help with infrastructure, and answering the people with a project waiting on a reply from us.",
+          "es": "Y hay peticiones sueltas que no salen en ningún gráfico y sí en nuestra lista: mimar la página de cada vídeo, dar salida a las ofertas de ayuda con infraestructura y contestar a quien tiene un proyecto esperando una respuesta nuestra."
+        }
+      ]
+    }
+  ],
+  "roadmap": [
+    {
+      "area": {
+        "en": "Limits",
+        "es": "Límites"
+      },
+      "title": {
+        "en": "Raising the limits whenever we can",
+        "es": "Aumentar los límites siempre que podamos"
+      },
+      "body": {
+        "en": "For the community to be sustainable we need limits on the heaviest models, but once they are optimised and their load improved, we will raise the limits whenever we can. This is going to be a priority, as you have already seen with the new DeepSeek 0731.",
+        "es": "Para que la comunidad sea sostenible tenemos que tener límites en los modelos más pesados, pero una vez optimizados y mejorada su carga, ampliaremos los límites siempre que podamos. Esto va a ser prioridad, tal y como habéis visto con el nuevo DeepSeek 0731."
+      }
+    },
+    {
+      "area": {
+        "en": "Agents",
+        "es": "Agentes"
+      },
+      "title": {
+        "en": "v2 of agents",
+        "es": "v2 de agentes"
+      },
+      "body": {
+        "en": "Cristian is working to ship the v2 of agents as soon as possible, and it comes with changes and new features.",
+        "es": "Cristian está trabajando para sacar lo antes posible la v2 de agentes, que viene con cambios y novedades."
+      }
+    },
+    {
+      "area": {
+        "en": "Platform",
+        "es": "Plataforma"
+      },
+      "title": {
+        "en": "See your usage in detail, and from the API too",
+        "es": "Ver tu consumo con detalle, y también desde la API"
+      }
+    },
+    {
+      "area": {
+        "en": "Community",
+        "es": "Comunidad"
+      },
+      "title": {
+        "en": "Built with NaN starts in September",
+        "es": "Built with NaN arrancará en septiembre"
+      }
+    },
+    {
+      "area": {
+        "en": "Community",
+        "es": "Comunidad"
+      },
+      "title": {
+        "en": "We will go through every offer of help, one by one",
+        "es": "Revisaremos una por una las ofertas de ayuda"
+      },
+      "body": {
+        "en": "We are going to reply to every one of you who offered to lend a hand.",
+        "es": "Vamos a contestar a todas las personas que os habéis propuesto para echar un cable."
+      }
+    },
+    {
+      "area": {
+        "en": "Events",
+        "es": "Eventos"
+      },
+      "title": {
+        "en": "A monthly workshop calendar",
+        "es": "Calendario mensual de workshops"
+      },
+      "body": {
+        "en": "We are kicking off September with a couple of cracking workshops, and we want you to know the calendar of workshops and events well in advance.",
+        "es": "Vamos a arrancar septiembre con un par de workshops brutales, y queremos que sepáis con tiempo el calendario de workshops y eventos que vamos a tener."
+      }
+    },
+    {
+      "area": {
+        "en": "Programme",
+        "es": "Programa"
+      },
+      "title": {
+        "en": "NaN Combinator: we are going to build the programme",
+        "es": "NaN Combinator: vamos a crear el programa"
+      },
+      "body": {
+        "en": "Before launching it we want to build the programme and have you tell us whether it makes sense and whether it is something you want to take part in. It is not for everyone, and the first cohort will be selected.",
+        "es": "Antes de lanzarlo queremos crear el programa y que nos digáis si tiene sentido y si es algo en lo que queréis participar. No es para todo el mundo, y haremos una primera promoción seleccionada."
+      }
+    },
+    {
+      "area": {
+        "en": "Community",
+        "es": "Comunidad"
+      },
+      "title": {
+        "en": "Ambassador programme",
+        "es": "Plan de embajadores"
+      },
+      "body": {
+        "en": "We are working on the first NaN ambassadors: a small cohort of three to five people who will help us out with regional events, brand reach and builders coffees.",
+        "es": "Estamos trabajando en los primeros embajadores de NaN: una pequeña cohorte de tres a cinco personas que nos echarán un cable con eventos regionales, expansión de marca y cafés de builders."
+      }
+    },
+    {
+      "area": {
+        "en": "Catalogue",
+        "es": "Catálogo"
+      },
+      "title": {
+        "en": "A public catalogue roadmap",
+        "es": "Roadmap de catálogo público"
+      },
+      "body": {
+        "en": "It makes no sense to put every model that comes out into NaN. First, because our compute is not infinite, and second, because we have to properly assess quality and whether people will still be using it a week later. We will add as many models as we can, so we are going to plan a public roadmap for improving the platform.",
+        "es": "No tiene sentido meter en NaN todos los modelos que salen. Primero, porque no tenemos capacidad de cómputo infinita, y segundo, porque hay que analizar bien su calidad y que no dejen de usarse en una semana. Intentaremos agregar la mayor cantidad de modelos siempre que se pueda, así que vamos a planificar un roadmap público de mejora de la plataforma."
+      }
+    },
+    {
+      "area": {
+        "en": "Product",
+        "es": "Producto"
+      },
+      "title": {
+        "en": "Somewhere to run what you build",
+        "es": "Dónde ejecutar lo que construyes"
+      },
+      "body": {
+        "en": "You already have Spaces available to put your apps and projects on, and the v2 of agents is heading in that direction too.",
+        "es": "Ya sabéis que tenéis los Spaces disponibles para subir vuestras apps y proyectos, y la v2 de agentes también irá en esa dirección."
+      }
+    },
+    {
+      "area": {
+        "en": "Community",
+        "es": "Comunidad"
+      },
+      "title": {
+        "en": "The community is starting to open up to English",
+        "es": "La comunidad va a empezar a abrirse al inglés"
+      },
+      "body": {
+        "en": "We already have English speaking members who miss a lot of what we say here, so we need to start opening new channels in English little by little. You will see us start to communicate things in both languages.",
+        "es": "Ya tenemos compañeros de habla inglesa que no se enteran mucho de lo que contamos aquí, así que hay que empezar a abrir nuevos canales en inglés poco a poco. Veréis que empezamos a comunicar las cosas en los dos idiomas."
+      }
+    },
+    {
+      "area": {
+        "en": "Catalogue",
+        "es": "Catálogo"
+      },
+      "title": {
+        "en": "NaN Bench or Arena",
+        "es": "NaN Bench o Arena"
+      },
+      "body": {
+        "en": "Cristian is working on a model arena where the exact same tests can be run against several models at once, so we can choose which models come in and publish everything that comes out of it in the community.",
+        "es": "Cristian está trabajando en una arena de modelos donde poder comparar pruebas exactas lanzadas a varios modelos a la vez, para que podamos escoger qué modelos entran y publicar en la comunidad todo lo que salga de ahí."
+      }
+    }
+  ],
+  "others": {
+    "title": {
+      "en": "Other options we are weighing up",
+      "es": "Otras opciones que estamos barajando"
+    },
+    "body": {
+      "en": "These are not a commitment yet. They are here because we want to know what you think.",
+      "es": "Todavía no son un compromiso. Están aquí porque queremos saber qué opináis."
+    },
+    "items": [
+      {
+        "en": "Several keys per person",
+        "es": "Varias claves por persona"
+      },
+      {
+        "en": "A new 120 € tier with wider model limits, for those of you who need more tokens on the top end models",
+        "es": "Un nuevo tier de 120 € con límites de modelos ampliados, para quienes necesitáis más tokens de los modelos punteros"
+      },
+      {
+        "en": "The option of more than one agent per person",
+        "es": "Posibilidad de tener más de un agente por persona"
+      },
+      {
+        "en": "Rolling over the tokens you do not spend to the next month",
+        "es": "Guardar los tokens que no gastas para el mes siguiente"
+      }
+    ]
+  }
+}

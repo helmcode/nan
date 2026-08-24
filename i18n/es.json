@@ -878,6 +878,50 @@
       "closeTitle": "Construye acompañado",
       "closeText": "Si estás construyendo con IA abierta, o quieres empezar, este es tu sitio. Entra, preséntate y enséñanos lo que traes entre manos.",
       "closeCta": "Únete a la comunidad"
+    },
+    "survey": {
+      "metaTitle": "Las respuestas de los builders de NaN",
+      "metaDesc": "Os preguntamos qué necesitáis en NaN. Y esto es lo que habéis respondido. En la pestaña de arriba tenéis parte del roadmap que vamos a trabajar en los próximos meses.",
+      "kicker": "Encuesta de comunidad · del 13 al 20 de agosto de 2026",
+      "titleA": "Las respuestas",
+      "titleB": "de los builders de NaN",
+      "lead": "Os preguntamos qué necesitáis en NaN. Y esto es lo que habéis respondido. En la pestaña de arriba tenéis parte del roadmap que vamos a trabajar en los próximos meses.",
+      "stats": [
+        {
+          "n": "78",
+          "k": "respuestas en 8 días"
+        },
+        {
+          "n": "85%",
+          "k": "usa NaN para coding agéntico"
+        },
+        {
+          "n": "37%",
+          "k": "se iría por los límites"
+        },
+        {
+          "n": "88%",
+          "k": "quiere workshops online"
+        },
+        {
+          "n": "55%",
+          "k": "resume NaN en «tokens ilimitados»"
+        }
+      ],
+      "tabData": "Pregunta a pregunta",
+      "tabRoadmap": "Lo que vamos a hacer",
+      "tabsLabel": "Secciones del informe",
+      "dataHead": "Pregunta a pregunta",
+      "dataLead": "Las preguntas de opción múltiple permitían varias respuestas, así que los porcentajes suman más de 100. En las abiertas, el texto libre se ha agrupado por temas y una respuesta puede contar en varios. La base está indicada en cada gráfico.",
+      "readLabel": "Lectura",
+      "roadmapHead": "Lo que vamos a hacer",
+      "roadmapLead": "Parte del roadmap de los próximos meses, salido de lo que habéis respondido. Al final están las opciones que todavía estamos barajando: esas no son un compromiso, son las que queremos comentar con vosotros.",
+      "method": [
+        "<b>Método.</b> 78 respuestas recogidas entre el 13 y el 20 de agosto de 2026 en el formulario «Estamos planificando el futuro de NaN». Los gráficos muestran solo porcentaje sobre la base indicada en cada cabecera. Las preguntas de opción múltiple se han tabulado contra la lista de opciones del formulario, separando el texto libre que se mezcla en la misma celda; por eso «otros» se comenta aparte en lugar de contarse como opción. Las abiertas se han agrupado a mano por temas y una respuesta puede caer en varios, así que esos porcentajes no suman 100.",
+        "<b>Privacidad.</b> Las citas van sin nombre y sin número de respuesta, y se han dejado fuera las que permitirían reconocer a alguien. No se publican proyectos, direcciones, correos ni datos de contacto: el permiso que se dio era para Built with NaN, no para este informe.",
+        "<b>Sesgos a tener presentes.</b> La muestra es autoseleccionada, así que responde quien está más implicado y el descontento callado está subrepresentado. El motivo de baja era de opción única, lo que fuerza a elegir uno solo cuando casi una cuarta parte necesitó escribir el suyo. Y los cruces por huso horario o por producto en producción descansan en grupos pequeños: la dirección es clara, la magnitud no es precisa."
+      ],
+      "closing": "Esto no es una lista cerrada. Si algo que os importa no está aquí, decidlo: la encuesta fue el punto de partida, no el final. Lo que se vaya terminando lo contamos por los canales de siempre."
     }
   }
 }
