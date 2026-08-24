@@ -16,7 +16,16 @@ export const prerender = false;
 const SITE = 'https://nan.builders';
 
 /** Rutas con versión en los dos idiomas. */
-const BILINGUAL = ['/', '/events', '/projects', '/community', '/privacy', '/terms', '/cookies'];
+const BILINGUAL = [
+  '/',
+  '/events',
+  '/projects',
+  '/community',
+  '/survey',
+  '/privacy',
+  '/terms',
+  '/cookies',
+];
 
 /**
  * Fuera del sitemap a propósito:

@@ -617,6 +617,50 @@
       "closeTitle": "Build together",
       "closeText": "If you are building with open AI, or you want to start, this is your place. Come in, introduce yourself and show us what you are working on.",
       "closeCta": "Join the community"
+    },
+    "survey": {
+      "metaTitle": "The answers from the NaN builders",
+      "metaDesc": "We asked what you need in NaN. And this is what you answered. In the tab above you will find part of the roadmap we are going to work on over the coming months.",
+      "kicker": "Community survey · 13 to 20 August 2026",
+      "titleA": "The answers from",
+      "titleB": "the NaN builders",
+      "lead": "We asked what you need in NaN. And this is what you answered. In the tab above you will find part of the roadmap we are going to work on over the coming months.",
+      "stats": [
+        {
+          "n": "78",
+          "k": "answers in 8 days"
+        },
+        {
+          "n": "85%",
+          "k": "use NaN for agentic coding"
+        },
+        {
+          "n": "37%",
+          "k": "would leave over the limits"
+        },
+        {
+          "n": "88%",
+          "k": "want online workshops"
+        },
+        {
+          "n": "55%",
+          "k": "sum NaN up as “unlimited tokens”"
+        }
+      ],
+      "tabData": "Question by question",
+      "tabRoadmap": "What we will do",
+      "tabsLabel": "Report sections",
+      "dataHead": "Question by question",
+      "dataLead": "Multi-select questions allowed several answers, so the percentages add up to more than 100. In the open questions, free text has been grouped into themes and one answer can count in several. The base is stated on every chart.",
+      "readLabel": "Reading",
+      "roadmapHead": "What we are going to do",
+      "roadmapLead": "Part of the roadmap for the coming months, taken from what you answered. At the end you will find the options we are still weighing up: those are not a commitment, they are the ones we want to talk through with you.",
+      "method": [
+        "<b>Method.</b> 78 answers collected between 13 and 20 August 2026 in the form “We are planning the future of NaN”. The charts show percentages only, over the base stated in each header. Multi-select questions were tabulated against the form's option list, separating the free text that gets mixed into the same cell; that is why “others” is commented separately instead of counted as an option. Open questions were grouped into themes by hand and one answer can fall into several, so those percentages do not add up to 100.",
+        "<b>Privacy.</b> Quotes carry no name and no response number, and any quote that would make someone recognisable has been left out. No projects, addresses, emails or contact details are published here: the permission given was for Built with NaN, not for this report.",
+        "<b>Biases to keep in mind.</b> The sample is self selected, so the people who answer are the most involved and quiet discontent is under represented. The cancellation reason was single choice, which forces one pick when almost a quarter needed to write their own. And the cross tabs by time zone or by product in production rest on small groups: the direction is clear, the magnitude is not precise."
+      ],
+      "closing": "This is not a closed list. If something you care about is missing, say so: the survey was the starting point, not the end. We will announce things as they land, through the usual channels."
     }
   }
 }
