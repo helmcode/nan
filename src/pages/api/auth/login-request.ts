@@ -11,7 +11,7 @@ function json(body: unknown, status = 200): Response {
 }
 
 // Proxy same-origin para iniciar el login por magic link de NaN desde la landing
-// del hackatón. El formulario de email vive en /hackaton (no tenemos el frontend
+// de eventos (/events/{slug}). El formulario de email vive ahí (no tenemos el frontend
 // de cloud), pero usa el MISMO endpoint de auth que la plataforma: reenvía a
 // /api/auth/login/request del backend, que envía el enlace y, al validarlo,
 // emite la cookie nan_session habitual (Domain=.nan.builders).
