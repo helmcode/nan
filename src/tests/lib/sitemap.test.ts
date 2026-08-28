@@ -57,17 +57,22 @@ describe('sitemap.xml', () => {
     expect(locs(xml)).toContain(`${SITE}/gauntlet`);
   });
 
-  test('el hackatón queda fuera entero, en los dos idiomas', async () => {
+  test('las pantallas de los eventos quedan fuera enteras, en los dos idiomas', async () => {
     const { xml } = await sitemap();
     const urls = locs(xml);
 
-    // El evento ya pasó y ninguna página lo enlaza: o entrada en la nav, o
-    // fuera del sitemap con noindex. Lo que no vale es declararlo indexable
-    // sin que se pueda llegar. Las cinco pantallas van con noindex.
-    for (const path of ['/hackaton', '/hackaton/me', '/hackaton/submission', '/hackaton/leaderboard', '/hackaton/projects']) {
-      expect(urls).not.toContain(`${SITE}${path}`);
-      expect(urls).not.toContain(`${SITE}/es${path}`);
+    // Son dinámicas (copy y fase desde la API) y parte va detrás de sesión: o
+    // entrada en la nav, o fuera del sitemap con noindex. Las cinco pantallas
+    // de cada evento van con noindex; la entrada pública es /events y /gauntlet.
+    for (const slug of ['hackaton-2026-1', 'gauntlet-2026-08']) {
+      for (const sub of ['', '/me', '/submission', '/leaderboard', '/projects']) {
+        expect(urls).not.toContain(`${SITE}/events/${slug}${sub}`);
+        expect(urls).not.toContain(`${SITE}/es/events/${slug}${sub}`);
+      }
     }
+    // Las URLs antiguas redirigen; tampoco entran.
+    expect(urls).not.toContain(`${SITE}/hackaton`);
+    expect(urls).not.toContain(`${SITE}/es/hackaton`);
   });
 
   test('el informe de la encuesta queda fuera, en los dos idiomas', async () => {

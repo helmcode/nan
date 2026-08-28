@@ -30,15 +30,14 @@ const BILINGUAL = [
 
 /**
  * Fuera del sitemap a propósito:
- *   /hackaton y sus 4 pantallas -> el hackatón #1 ya pasó (7-13 jun) y el
- *                                  registro está cerrado, así que es el
- *                                  registro de un evento, no contenido vivo.
- *                                  Ninguna página lo enlaza, y declararlo
- *                                  indexable sin entrada era pedir que se
- *                                  indexara algo a lo que solo se llega
- *                                  escribiendo la URL. Van todas con noindex.
- *                                  Cuando haya un #2 se rediseñan las cinco
- *                                  pantallas y se le da entrada, en su PR.
+ *   /events/{slug} y sus 4 pantallas -> las pantallas de cada evento (hackatón,
+ *                                  challenge…) son dinámicas: el copy y la fase
+ *                                  vienen de la API y detrás hay sesión (me,
+ *                                  submission). Van todas con noindex; la
+ *                                  entrada pública es la agenda (/events) y la
+ *                                  landing del evento (p. ej. /gauntlet).
+ *                                  /hackaton/* redirige (301) a
+ *                                  /events/hackaton-2026-1/*.
  *   /survey y /es/survey        -> el informe de la encuesta va con noindex y
  *                                  nofollow: es un documento que se reparte por
  *                                  enlace a la comunidad, no contenido que

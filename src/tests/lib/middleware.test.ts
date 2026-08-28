@@ -89,6 +89,26 @@ describe('middleware — enlaces del esquema ?lang=', () => {
   });
 });
 
+describe('middleware — rutas antiguas del hackatón', () => {
+  test('/hackaton lleva al evento hackaton-2026-1 con 301', async () => {
+    const r = await run('https://nan.builders/hackaton');
+    expect(r.status).toBe(301);
+    expect(r.location).toBe('/events/hackaton-2026-1');
+    expect(r.passedThrough).toBe(false);
+  });
+
+  test('conserva la subpantalla y el prefijo de idioma', async () => {
+    expect((await run('https://nan.builders/hackaton/me')).location).toBe('/events/hackaton-2026-1/me');
+    expect((await run('https://nan.builders/es/hackaton/submission')).location).toBe('/es/events/hackaton-2026-1/submission');
+  });
+
+  test('no toca rutas que solo empiezan igual', async () => {
+    const r = await run('https://nan.builders/hackatones');
+    expect(r.location).toBeNull();
+    expect(r.passedThrough).toBe(true);
+  });
+});
+
 describe('middleware — cabeceras de seguridad', () => {
   test('las emite en las páginas', async () => {
     const { res } = await run('https://nan.builders/community');

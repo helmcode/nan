@@ -58,17 +58,17 @@ const [leadShot, ...restShots] = GAUNTLET_SHOWCASE;
 type ShotCopy = { title: string; desc: string };
 const shotCopy = (id: string): ShotCopy => (tt.showcase.items as Record<string, ShotCopy>)[id];
 
-// El botón de inscripción solo existe si hay formulario al otro lado. Mientras
-// `form.url` esté vacío, la página dice cuándo abre en vez de enseñar un botón
-// que no lleva a ningún sitio.
-const formUrl = tt.form.url;
+// La entrega vive en el propio sitio (SPEC §8.3): /events/gauntlet-2026-08/submission.
+// La página del evento decide qué enseñar según la fase real de la API; aquí
+// solo se enlaza.
+const submissionHref = withLang('/events/gauntlet-2026-08/submission', lang);
 const signupOpen = state.phase === 'pre' || state.phase === 'live';
 
-// CTA principal por fase. En `pre` y `live` empuja al formulario; después, al
+// CTA principal por fase. En `pre` y `live` empuja a la entrega; después, al
 // sitio donde la cosa ocurre de verdad.
 const cta =
-  signupOpen && formUrl
-    ? { href: formUrl, label: tt.form.cta, external: true }
+  signupOpen
+    ? { href: submissionHref, label: tt.form.cta, external: false }
     : state.phase === 'voting'
       ? { href: communityHref, label: tt.ctaVote, external: false }
       : state.phase === 'closed'
@@ -102,7 +102,7 @@ const cta =
         <a class="btn btn-ghost" href="#join">{tt.join.label} →</a>
       </div>
 
-      {signupOpen && formUrl && <p class="ghero__note mono">{tt.form.note}</p>}
+      {signupOpen && <p class="ghero__note mono">{tt.form.note}</p>}
     </div>
   </header>
 
@@ -237,9 +237,9 @@ const cta =
         <p class="panel__t mono">{tt.join.signupTitle}</p>
         <p class="panel__b">{tt.join.signupBody}</p>
 
-        {formUrl ? (
+        {signupOpen ? (
           <>
-            <a class="btn btn-primary panel__cta" href={formUrl} target="_blank" rel="noopener">
+            <a class="btn btn-primary panel__cta" href={submissionHref}>
               {tt.form.cta} →
             </a>
             <p class="panel__note mono">{tt.form.note}</p>
