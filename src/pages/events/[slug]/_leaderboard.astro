@@ -1,0 +1,58 @@
+---
+// Clasificación (SPEC §8.2): filas vacías hasta que `windows.leaderboard.visible`.
+import '../../../styles/global.css';
+import NanPage from '../../../layouts/NanPage.astro';
+import EventHeader from '../../../components/events/EventHeader.astro';
+import { getLocale, tObj } from '../../../lib/i18n';
+import { fetchPublic, hasSessionCookie, type LeaderboardRow, type EventInfo } from '../../../lib/events';
+
+const locale = getLocale(Astro.url);
+// El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
+interface Props {
+  event: EventInfo;
+}
+const ev = Astro.props.event;
+const slug = ev.slug;
+
+const lb = (await fetchPublic<{ rows: LeaderboardRow[]; public: boolean }>(slug, 'leaderboard')) ?? { rows: [], public: false };
+const rows = lb.rows ?? [];
+const l = tObj<Record<string, string>>('events.leaderboard', locale);
+const hasSession = hasSessionCookie(Astro.request);
+---
+<NanPage scale={false} noindex title={`${l.title} · ${ev.name} — nan.builders`}>
+  <main class="px-6 pt-24 pb-32 mx-auto max-w-3xl">
+    <EventHeader event={ev} locale={locale} current="leaderboard" hasSession={hasSession} />
+    <h2 class="mt-8 font-mono text-xl text-white">{l.title}</h2>
+    {!lb.public || rows.length === 0 ? (
+      <p class="mt-6 text-neutral-400">{lb.public ? l.empty : l.hidden}</p>
+    ) : (
+      <>
+        <table class="mt-6 w-full text-sm font-mono text-neutral-300">
+          <thead class="text-[10px] uppercase tracking-widest text-violet-400">
+            <tr><th class="text-left py-2">{l.rank}</th>
+                <th class="text-left">{ev.format === 'team' ? l.team : l.participant}</th>
+                <th class="text-left">{l.project}</th>
+                <th class="text-right">{l.votes}</th>
+                {ev.submission.checks.length > 0 && <th class="text-right">{l.auto}</th>}
+                <th class="text-right">{l.total}</th></tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr class="border-t border-neutral-800">
+                <td class="py-2">{r.rank === 1 ? l.winner : r.rank}</td>
+                <td>{r.owner.name}{r.not_prize_eligible ? ' *' : ''}</td>
+                <td class="text-neutral-400">{r.title}</td>
+                <td class="text-right">{r.votes}</td>
+                {ev.submission.checks.length > 0 && <td class="text-right">{r.auto_points}</td>}
+                <td class="text-right text-white">{r.total}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {rows.some((r) => r.not_prize_eligible) && (
+          <p class="mt-4 text-xs text-neutral-500 font-mono">* {l.notPrizeNote}</p>
+        )}
+      </>
+    )}
+  </main>
+</NanPage>

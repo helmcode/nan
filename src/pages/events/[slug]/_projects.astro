@@ -1,0 +1,74 @@
+---
+// Galería pública de entregas (SPEC §8.2). Vacía hasta que `windows.gallery.visible`.
+import '../../../styles/global.css';
+import NanPage from '../../../layouts/NanPage.astro';
+import EventHeader from '../../../components/events/EventHeader.astro';
+import VoteButton from '../../../components/events/VoteButton.tsx';
+import { getLocale, tObj, withLang } from '../../../lib/i18n';
+import { fetchMe, fetchPublic, hasSessionCookie, type PublicSubmission, type EventInfo } from '../../../lib/events';
+
+const locale = getLocale(Astro.url);
+// El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
+interface Props {
+  event: EventInfo;
+}
+const ev = Astro.props.event;
+const slug = ev.slug;
+
+const hasSession = hasSessionCookie(Astro.request);
+// Entregas + voto actual del visitante en paralelo (el voto permite marcar la
+// tarjeta votada y ofrecer cambiarlo; sin sesión queda null).
+const [projects, meRes] = await Promise.all([
+  ev.windows.gallery.visible ? fetchPublic<PublicSubmission[]>(slug, 'submissions') : Promise.resolve([]),
+  hasSession ? fetchMe(slug, Astro.request.headers.get('cookie') ?? '') : Promise.resolve({ me: null, unauthorized: false }),
+]);
+const list = projects ?? [];
+const sessionOk = hasSession && !meRes.unauthorized;
+const myVote = meRes.me?.my_vote ?? null;
+const canVote = ev.windows.voting.open;
+const pr = tObj<Record<string, string>>('events.projects', locale);
+
+// Solo http/https en enlaces de proyecto (defensa en profundidad frente a
+// javascript:, data:, etc. aunque el backend ya valide).
+const safeUrl = (u?: string): string | null =>
+  u && /^https?:\/\//i.test(u) ? u : null;
+---
+
+<NanPage scale={false} noindex title={`${pr.title} · ${ev.name} — nan.builders`}>
+  <main class="px-6 pt-24 pb-32 mx-auto max-w-4xl">
+    <EventHeader event={ev} locale={locale} current="projects" hasSession={sessionOk} />
+    <h2 class="mt-8 font-mono text-xl text-white">{pr.title}</h2>
+    {!ev.windows.gallery.visible ? (
+      <p class="mt-8 text-sm text-neutral-400">{pr.hidden}</p>
+    ) : list.length === 0 ? (
+      <p class="mt-8 text-sm text-neutral-400">{pr.empty}</p>
+    ) : (
+      <div class="mt-8 grid gap-4 md:grid-cols-2">
+        {list.map((p) => (
+          <article class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-5">
+            {safeUrl(p.image_url) && <img src={safeUrl(p.image_url)} alt={`${p.title} — ${p.owner.name}`} class="mb-4 aspect-video w-full rounded-lg object-cover" loading="lazy" decoding="async" />}
+            <h3 class="font-mono text-base text-white">{p.title}</h3>
+            <p class="mt-1 font-mono text-xs text-violet-400">{p.owner.name}</p>
+            {p.description && <p class="mt-3 text-sm text-neutral-300 whitespace-pre-line">{p.description}</p>}
+            <div class="mt-4 flex flex-wrap gap-3 font-mono text-xs">
+              {safeUrl(p.public_url) && <a href={safeUrl(p.public_url)} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">Live</a>}
+              {safeUrl(p.space_url) && <a href={safeUrl(p.space_url)} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">Space</a>}
+              {safeUrl(p.repo_url) && <a href={safeUrl(p.repo_url)} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">Repo</a>}
+              {safeUrl(p.video_url) && (
+                <a href={safeUrl(p.video_url)} target="_blank" rel="noreferrer" class="text-violet-400 hover:text-violet-300">
+                  ▶ {pr.presentationVideo}
+                </a>
+              )}
+            </div>
+            {canVote && (
+              <div class="mt-5">
+                <VoteButton client:visible slug={slug} submissionId={p.id} votedSubmissionId={myVote}
+                  loginHref={withLang(`/events/${slug}`, locale)} t={pr} />
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    )}
+  </main>
+</NanPage>

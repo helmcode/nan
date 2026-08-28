@@ -2,9 +2,15 @@
 // Envoltorio de ruta: el cuerpo vive en el fichero _ vecino, fuera del árbol
 // de rutas. Una página que importa otra página pierde la atribución del CSS y
 // la ruta se sirve sin <link rel="stylesheet"> (lo guarda routeWrappers.test.ts).
+// El evento se resuelve AQUÍ (fichero de ruta) para que el 404 de slug
+// desconocido funcione: Astro.rewrite no surte efecto desde el cuerpo.
 import Page from './_submission.astro';
+import { resolveEventRoute } from '../../../lib/events';
 
 export const prerender = false;
+
+const route = await resolveEventRoute(Astro);
+if (route.notFound) return route.notFound;
 ---
 
-<Page />
+<Page event={route.event} />

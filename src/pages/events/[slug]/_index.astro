@@ -1,0 +1,204 @@
+---
+// Landing de un evento (SPEC §8.2): copy desde la API, CTA según fase/ventanas.
+// El marcado sigue escrito con utilidades de Tailwind (tema → tokens, ver styles/global.css).
+import '../../../styles/global.css';
+import NanPage from '../../../layouts/NanPage.astro';
+import EventHeader from '../../../components/events/EventHeader.astro';
+import RegisterForm, { type FormStrings } from '../../../components/events/RegisterForm.tsx';
+import LoginForm, { type LoginStrings } from '../../../components/events/LoginForm.tsx';
+import RegistrationBar from '../../../components/events/RegistrationBar.astro';
+import { getLocale, t, tObj, withLang } from '../../../lib/i18n';
+import { fetchMe, fmtDate, fmtRange, hasSessionCookie, type EventInfo } from '../../../lib/events';
+
+const locale = getLocale(Astro.url);
+// El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
+interface Props {
+  event: EventInfo;
+}
+const ev = Astro.props.event;
+const slug = ev.slug;
+
+// Sesión: /me solo si hay cookie. Si el backend devuelve 401, la sesión caducó.
+const hasSession = hasSessionCookie(Astro.request);
+const { me, unauthorized } = hasSession
+  ? await fetchMe(slug, Astro.request.headers.get('cookie') ?? '')
+  : { me: null, unauthorized: false };
+const sessionOk = hasSession && !unauthorized;
+const participant = me?.participant ?? null;
+const registered = !!participant && participant.status !== 'withdrawn';
+const hasSubmission = !!me?.submission;
+
+const isTeam = ev.format === 'team';
+const base = `/events/${slug}`;
+const meUrl = withLang(`${base}/me`, locale);
+const submissionUrl = withLang(`${base}/submission`, locale);
+const projectsUrl = withLang(`${base}/projects`, locale);
+const leaderboardUrl = withLang(`${base}/leaderboard`, locale);
+
+const capacity = ev.registration.capacity;
+const reserve = ev.registration.reserve_capacity;
+const hasCapacity = capacity > 0;
+const full = hasCapacity && ev.registered >= capacity + reserve;
+
+const form = tObj<FormStrings>('events.form', locale);
+const options = tObj<Record<string, string>>('events.options', locale);
+const already = tObj<Record<string, string>>('events.alreadyRegistered', locale);
+const login = tObj<LoginStrings>('events.login', locale);
+const cap = tObj<Record<string, string>>('events.capacity', locale);
+const phase = tObj<Record<string, string>>('events.phase', locale);
+const dl = tObj<Record<string, string>>('events.dates', locale);
+const fill = (s: string, vars: Record<string, string | number>) =>
+  Object.entries(vars).reduce((acc, [k, v]) => acc.replaceAll(`{${k}}`, String(v)), s);
+
+// Fechas a mostrar (solo las definidas).
+const dates: { label: string; value: string }[] = [];
+if (isTeam && (ev.dates.registration_open || ev.dates.registration_close))
+  dates.push({ label: dl.registration, value: fmtRange(ev.dates.registration_open, ev.dates.registration_close, locale) });
+if (ev.dates.submission_open || ev.dates.submission_close)
+  dates.push({ label: dl.submission, value: fmtRange(ev.dates.submission_open, ev.dates.submission_close, locale) });
+if (ev.voting.enabled && (ev.dates.voting_open || ev.dates.voting_close))
+  dates.push({ label: dl.voting, value: fmtRange(ev.dates.voting_open, ev.dates.voting_close, locale) });
+if (ev.dates.demo_day) dates.push({ label: dl.demoDay, value: fmtDate(ev.dates.demo_day, locale) });
+
+// Panel principal por fase (§8.2). `null` → se pinta el bloque de inscripción.
+type Panel = { title: string; body: string; href?: string; cta?: string; tone?: 'muted' | 'accent' };
+let panel: Panel | null = null;
+const closeAt = fmtDate(ev.dates.submission_close, locale, true);
+const openAt = fmtDate(ev.dates.submission_open, locale, true);
+switch (ev.phase) {
+  case 'draft':
+  case 'registration':
+    if (isTeam) panel = null; // bloque de inscripción
+    else panel = { title: phase.notOpenTitle, body: fill(phase.submissionNotOpen, { date: openAt }), tone: 'muted' };
+    break;
+  case 'building_pending':
+    panel = isTeam && registered
+      ? { title: phase.inProgressTitle, body: phase.inProgress, href: meUrl, cta: already.cta, tone: 'accent' }
+      : isTeam
+        ? { title: phase.closedTitle, body: phase.closed, tone: 'muted' }
+        : { title: phase.notOpenTitle, body: fill(phase.submissionNotOpen, { date: openAt }), tone: 'muted' };
+    break;
+  case 'building':
+    if (isTeam) {
+      panel = registered
+        ? { title: phase.inProgressTitle, body: phase.inProgress, href: meUrl, cta: already.cta, tone: 'accent' }
+        : { title: phase.closedTitle, body: phase.closed, tone: 'muted' };
+    } else if (hasSubmission) {
+      panel = { title: phase.submittedTitle, body: fill(phase.submitted, { date: closeAt }), href: submissionUrl, cta: phase.submittedCta, tone: 'accent' };
+    } else {
+      panel = { title: phase.buildingTitle, body: fill(phase.building, { date: closeAt }), href: submissionUrl, cta: phase.buildingCta, tone: 'accent' };
+    }
+    break;
+  case 'submission':
+    panel = ev.windows.gallery.visible
+      ? { title: phase.submissionClosedTitle, body: phase.submissionClosedGallery, href: projectsUrl, cta: phase.galleryCta, tone: 'muted' }
+      : { title: phase.submissionClosedTitle, body: phase.submissionClosed, tone: 'muted' };
+    break;
+  case 'voting':
+    panel = { title: phase.votingTitle, body: phase.voting, href: projectsUrl, cta: phase.votingCta, tone: 'accent' };
+    break;
+  case 'closed_pending':
+  case 'closed':
+    panel = ev.windows.leaderboard.visible
+      ? { title: phase.resultsTitle, body: phase.results, href: leaderboardUrl, cta: phase.resultsCta, tone: 'accent' }
+      : ev.windows.gallery.visible
+        ? { title: phase.closedEventTitle, body: phase.closedEvent, href: projectsUrl, cta: phase.galleryCta, tone: 'muted' }
+        : { title: phase.closedEventTitle, body: phase.closedEvent, tone: 'muted' };
+    break;
+}
+
+const pageTitle = `${ev.name} — nan.builders`;
+const closedNote = fill(cap.closedNote, { cap: capacity, res: reserve });
+---
+
+<NanPage scale={false} noindex title={pageTitle} description={ev.description}>
+  <main class="px-6 pt-24 pb-32 md:pt-32">
+    <div class="mx-auto max-w-2xl">
+      <EventHeader event={ev} locale={locale} current="index" hasSession={sessionOk} />
+
+      <section class="mt-6">
+        {ev.description && (
+          <p class="text-sm md:text-base text-neutral-300 leading-relaxed whitespace-pre-line">{ev.description}</p>
+        )}
+        {dates.length > 0 && (
+          <dl class="mt-5 grid gap-2 font-mono text-xs">
+            {dates.map((d) => (
+              <div class="flex flex-wrap gap-x-3 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 text-violet-300">
+                <dt class="uppercase tracking-widest text-violet-400">{d.label}</dt>
+                <dd>{d.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {ev.prize && (
+          <p class="mt-4 text-sm text-neutral-300"><span class="font-mono text-xs uppercase tracking-widest text-violet-400">{t('events.prize', locale)}</span> · {ev.prize}</p>
+        )}
+        {ev.rules && (
+          <p class="mt-3 text-xs text-neutral-500 font-mono whitespace-pre-line">{ev.rules}</p>
+        )}
+      </section>
+
+      <section class="mt-12">
+        {panel ? (
+          <div class={panel.tone === 'accent'
+            ? 'rounded-xl border border-violet-500/30 bg-violet-500/10 p-6'
+            : 'rounded-xl border border-neutral-800 bg-neutral-900/30 p-6'}>
+            <p class={`font-mono text-xs uppercase tracking-widest ${panel.tone === 'accent' ? 'text-violet-300' : 'text-neutral-400'}`}>
+              {panel.title}
+            </p>
+            <p class="mt-2 text-sm text-neutral-200 leading-relaxed">{panel.body}</p>
+            {panel.href && panel.cta && (
+              /* En solo, entregar requiere sesión: si no la hay, enseñamos el login en vez del CTA. */
+              !isTeam && ev.phase === 'building' && !sessionOk ? (
+                <div class="mt-5">
+                  <p class="mb-3 text-xs text-neutral-400">{t('events.submission.loginNote', locale)}</p>
+                  <LoginForm client:load t={login} />
+                </div>
+              ) : (
+                <a href={panel.href}
+                   class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500">
+                  {panel.cta}
+                </a>
+              )
+            )}
+          </div>
+        ) : !ev.windows.registration.open ? (
+          <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+            <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">{phase.notOpenTitle}</p>
+            <p class="mt-2 text-sm text-neutral-300 leading-relaxed">{phase.notOpen}</p>
+          </div>
+        ) : (
+          <div class="space-y-6">
+            {hasCapacity && (
+              <RegistrationBar registered={ev.registered} capacity={capacity} reserve={reserve} locale={locale} />
+            )}
+            {registered ? (
+              <div class="rounded-xl border border-violet-500/30 bg-violet-500/10 p-6">
+                <p class="font-mono text-xs uppercase tracking-widest text-violet-300">{already.title}</p>
+                <p class="mt-2 text-sm text-neutral-200 leading-relaxed">
+                  {participant?.is_reserve ? already.reserve : already.confirmed}
+                </p>
+                <a href={meUrl}
+                   class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500">
+                  {already.cta}
+                </a>
+              </div>
+            ) : full ? (
+              <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+                <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">{cap.closedTitle}</p>
+                <p class="mt-2 text-sm text-neutral-300 leading-relaxed">{closedNote}</p>
+              </div>
+            ) : !sessionOk ? (
+              <LoginForm client:load t={login} />
+            ) : (
+              <RegisterForm client:load slug={slug} t={form} meHref={meUrl}
+                discordMode={ev.registration.discord_user}
+                specialties={ev.registration.specialties} levels={ev.registration.levels}
+                options={options} />
+            )}
+          </div>
+        )}
+      </section>
+    </div>
+  </main>
+</NanPage>

@@ -1,0 +1,110 @@
+---
+// Alta/edición de la entrega (SPEC §8.2). Solo edita mientras `windows.submission.open`.
+import '../../../styles/global.css';
+import NanPage from '../../../layouts/NanPage.astro';
+import EventHeader from '../../../components/events/EventHeader.astro';
+import SubmissionForm from '../../../components/events/SubmissionForm.tsx';
+import LoginForm, { type LoginStrings } from '../../../components/events/LoginForm.tsx';
+import { getLocale, tObj } from '../../../lib/i18n';
+import { fetchMe, fmtDate, hasSessionCookie, type EventInfo } from '../../../lib/events';
+
+const locale = getLocale(Astro.url);
+// El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
+interface Props {
+  event: EventInfo;
+}
+const ev = Astro.props.event;
+const slug = ev.slug;
+
+const hasSession = hasSessionCookie(Astro.request);
+const { me, unauthorized } = hasSession
+  ? await fetchMe(slug, Astro.request.headers.get('cookie') ?? '')
+  : { me: null, unauthorized: false };
+const sessionOk = hasSession && !unauthorized;
+const isTeam = ev.format === 'team';
+const hasTeam = Boolean(me?.team?.id);
+const hasParticipant = Boolean(me?.participant && me.participant.status !== 'withdrawn');
+const existing = me?.submission ?? null;
+const canEdit = ev.windows.submission.open;
+const beforeOpen = ev.phase === 'draft' || ev.phase === 'registration' || ev.phase === 'building_pending';
+
+const s = tObj<Record<string, string>>('events.submission', locale);
+const options = tObj<Record<string, string>>('events.options', locale);
+const login = tObj<LoginStrings>('events.login', locale);
+const fill = (str: string, vars: Record<string, string>) =>
+  Object.entries(vars).reduce((acc, [k, v]) => acc.replaceAll(`{${k}}`, v), str);
+const fields = ev.submission.fields;
+const readonlyRows = existing
+  ? [
+      { label: s.fTitle, value: existing.title },
+      { label: s.description, value: existing.description },
+      { label: s.publicUrl, value: existing.public_url },
+      { label: s.spaceUrl, value: existing.space_url },
+      { label: s.repoUrl, value: existing.repo_url },
+      { label: s.imageUrl, value: existing.image_url },
+      { label: s.videoUrl, value: existing.video_url },
+    ].filter((r) => r.value)
+  : [];
+---
+
+{/* Detrás de sesión: fuera del sitemap y también fuera del índice. */}
+<NanPage scale={false} noindex title={`${s.title} · ${ev.name} — nan.builders`}>
+  <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
+    <EventHeader event={ev} locale={locale} current="submission" hasSession={sessionOk} />
+    <h2 class="mt-8 font-mono text-xl text-white">{s.title}</h2>
+    <section class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+      {!sessionOk ? (
+        <div>
+          <p class="mb-4 text-sm text-neutral-300">{s.loginNote}</p>
+          <LoginForm client:load t={login} />
+        </div>
+      ) : isTeam && !hasTeam ? (
+        <p class="text-sm text-neutral-400">{s.noTeam}</p>
+      ) : canEdit ? (
+        <SubmissionForm client:load slug={slug} t={s} existing={existing}
+          fields={fields} format={ev.format} hasParticipant={hasParticipant}
+          checks={ev.submission.checks} autoMax={ev.voting.auto_max}
+          discordMode={ev.registration.discord_user}
+          specialties={ev.registration.specialties} levels={ev.registration.levels}
+          options={options} />
+      ) : (
+        <div class="space-y-4">
+          <div class="rounded-lg border border-neutral-700/60 bg-neutral-900/50 p-4">
+            <p class="font-mono text-sm text-neutral-200">{beforeOpen ? s.notOpenTitle : s.closedTitle}</p>
+            <p class="mt-1 text-xs leading-relaxed text-neutral-400">
+              {beforeOpen
+                ? fill(s.notOpen, { date: fmtDate(ev.dates.submission_open, locale, true) })
+                : fill(s.closedNote, { date: fmtDate(ev.dates.submission_close, locale, true) })}
+            </p>
+          </div>
+          {existing ? (
+            <div class="space-y-3">
+              <p class="font-mono text-xs uppercase tracking-widest text-violet-400">{s.alreadyTitle}</p>
+              <dl class="space-y-2 text-sm">
+                {readonlyRows.map((r) => (
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-wide text-neutral-500">{r.label}</dt>
+                    <dd class="font-mono text-neutral-200 break-all">{r.value}</dd>
+                  </div>
+                ))}
+              </dl>
+              {ev.submission.checks.length > 0 && (
+                <div class="mt-2 text-sm font-mono text-neutral-300">
+                  <p>{s.checks}: {existing.auto_points ?? 0}/{ev.voting.auto_max}</p>
+                  <ul class="mt-1 space-y-1">
+                    {ev.submission.checks.map((k) => (
+                      <li>{existing.checks?.[k]?.pass ? '✓' : '✗'} {options[k] ?? k}</li>
+                    ))}
+                  </ul>
+                  {existing.not_prize_eligible && <p class="mt-2 text-red-400">{s.notPrizeEligible}</p>}
+                </div>
+              )}
+            </div>
+          ) : (
+            !beforeOpen && <p class="text-sm text-neutral-400">{s.notSubmitted}</p>
+          )}
+        </div>
+      )}
+    </section>
+  </main>
+</NanPage>

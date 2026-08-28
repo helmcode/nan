@@ -24,11 +24,13 @@ interface ReassignLabels {
 }
 
 export default function ReassignForm({
+  slug,
   members,
   ctaLabel,
   info,
   labels,
 }: {
+  slug: string;
   members: Member[];
   ctaLabel: string;
   info: ReassignInfo;
@@ -43,7 +45,7 @@ export default function ReassignForm({
     if (!ghostId) return;
     setState('busy');
     try {
-      const resp = await fetch('/api/hackaton/reassign', {
+      const resp = await fetch(`/api/events/${slug}/reassign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ghost_id: ghostId }),

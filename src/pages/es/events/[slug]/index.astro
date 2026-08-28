@@ -1,0 +1,15 @@
+---
+// Envoltorio de ruta (variante /es): el cuerpo vive en el fichero _ de la
+// versión inglesa; el idioma lo decide getLocale(Astro.url).
+// El evento se resuelve AQUÍ (fichero de ruta) para que el 404 de slug
+// desconocido funcione: Astro.rewrite no surte efecto desde el cuerpo.
+import Page from '../../../events/[slug]/_index.astro';
+import { resolveEventRoute } from '../../../../lib/events';
+
+export const prerender = false;
+
+const route = await resolveEventRoute(Astro);
+if (route.notFound) return route.notFound;
+---
+
+<Page event={route.event} />

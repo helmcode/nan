@@ -26,7 +26,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Formulario de acceso al hackatón por magic link. Dispara el MISMO login de
 // NaN que usa la plataforma (POST /api/auth/login/request vía proxy same-origin)
 // y produce una sesión nan_session completa. Una vez validado el email, al
-// volver a /hackaton el usuario ya tiene sesión y puede inscribirse / votar.
+// volver a la página del evento el usuario ya tiene sesión y puede inscribirse / votar.
 export default function LoginForm({ t }: { t: LoginStrings }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
