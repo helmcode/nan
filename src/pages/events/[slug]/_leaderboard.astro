@@ -4,7 +4,7 @@ import '../../../styles/global.css';
 import NanPage from '../../../layouts/NanPage.astro';
 import EventHeader from '../../../components/events/EventHeader.astro';
 import { getLocale, tObj } from '../../../lib/i18n';
-import { fetchPublic, hasSessionCookie, type LeaderboardRow, type EventInfo } from '../../../lib/events';
+import { fetchMe, fetchPublic, hasSessionCookie, type LeaderboardRow, type EventInfo } from '../../../lib/events';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -14,14 +14,21 @@ interface Props {
 const ev = Astro.props.event;
 const slug = ev.slug;
 
-const lb = (await fetchPublic<{ rows: LeaderboardRow[]; public: boolean }>(slug, 'leaderboard')) ?? { rows: [], public: false };
-const rows = lb.rows ?? [];
-const l = tObj<Record<string, string>>('events.leaderboard', locale);
 const hasSession = hasSessionCookie(Astro.request);
+// Clasificación + validación de la sesión en paralelo, como en el resto de
+// páginas: la cabecera solo muestra "mi zona" si la cookie sigue siendo válida.
+const [lbRes, meRes] = await Promise.all([
+  fetchPublic<{ rows: LeaderboardRow[]; public: boolean }>(slug, 'leaderboard'),
+  hasSession ? fetchMe(slug, Astro.request.headers.get('cookie') ?? '') : Promise.resolve({ me: null, unauthorized: false }),
+]);
+const lb = lbRes ?? { rows: [], public: false };
+const rows = lb.rows ?? [];
+const sessionOk = hasSession && !meRes.unauthorized;
+const l = tObj<Record<string, string>>('events.leaderboard', locale);
 ---
 <NanPage scale={false} noindex title={`${l.title} · ${ev.name} — nan.builders`}>
   <main class="px-6 pt-24 pb-32 mx-auto max-w-3xl">
-    <EventHeader event={ev} locale={locale} current="leaderboard" hasSession={hasSession} />
+    <EventHeader event={ev} locale={locale} current="leaderboard" hasSession={sessionOk} />
     <h2 class="mt-8 font-mono text-xl text-white">{l.title}</h2>
     {!lb.public || rows.length === 0 ? (
       <p class="mt-6 text-neutral-400">{lb.public ? l.empty : l.hidden}</p>

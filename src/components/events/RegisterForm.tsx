@@ -26,7 +26,7 @@ export default function RegisterForm({ slug, t, meHref, discordMode, specialties
   slug: string;
   t: FormStrings;
   meHref: string;
-  discordMode: 'required' | 'optional' | 'hidden';
+  discordMode: 'required' | 'optional' | 'none';
   specialties: string[];
   levels: string[];
   options: Record<string, string>;
@@ -49,7 +49,7 @@ export default function RegisterForm({ slug, t, meHref, discordMode, specialties
     setStatus({ kind: 'submitting' });
 
     const payload: Record<string, string> = { name: name.trim() };
-    if (discordMode !== 'hidden' && discord.trim()) payload.discord_user = discord.trim();
+    if (discordMode !== 'none' && discord.trim()) payload.discord_user = discord.trim();
     if (askSpecialty && specialty) payload.specialty = specialty;
     if (askLevel && level) payload.level = level;
 
@@ -108,7 +108,7 @@ export default function RegisterForm({ slug, t, meHref, discordMode, specialties
         <input id="ev-name" required disabled={submitting} value={name}
                onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)} class={inputCls} />
       </div>
-      {discordMode !== 'hidden' && (
+      {discordMode !== 'none' && (
         <div>
           <label class={labelCls} for="ev-discord">
             {t.discord} {discordMode === 'required' && <span class="text-neutral-500">*</span>}

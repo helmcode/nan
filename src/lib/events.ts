@@ -99,6 +99,8 @@ export type EventPhase =
   | 'draft' | 'registration' | 'building_pending' | 'building'
   | 'submission' | 'voting' | 'closed_pending' | 'closed';
 export type FieldMode = 'required' | 'optional' | 'hidden';
+/** registration.discord_user (SPEC §3.1): `none` = no se pide. */
+export type DiscordMode = 'required' | 'optional' | 'none';
 
 export interface EventDates {
   registration_open?: string | null;
@@ -136,22 +138,24 @@ export interface EventInfo {
   registration: {
     capacity: number;
     reserve_capacity: number;
-    discord_user: 'required' | 'optional' | 'hidden';
+    discord_user: DiscordMode;
     specialties: string[];
     levels: string[];
   };
-  team: { size: number; min_size: number; max_teams: number };
+  /** Solo presente en formato `team` (SPEC §6.1). */
+  team?: { size: number; min_size: number; max_teams: number };
   submission: {
     fields: SubmissionFields;
     checks: string[];
     prize_requires: string[];
     gallery_visibility: string;
   };
-  voting: { enabled: boolean; open: boolean; leaderboard_public: boolean; vote_weight: number; auto_max: number };
+  /** Sin los interruptores de admin (open, leaderboard_public): lo que manda es `windows`. */
+  voting: { enabled: boolean; vote_weight: number; auto_max: number };
   phase: EventPhase;
   windows: Windows;
-  registered: number;
-  submissions: number;
+  /** Activos no retirados (SPEC §6.1). */
+  counts: { registered: number; submissions: number };
 }
 export interface Participant {
   id: string;

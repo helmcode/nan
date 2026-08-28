@@ -38,7 +38,7 @@ const leaderboardUrl = withLang(`${base}/leaderboard`, locale);
 const capacity = ev.registration.capacity;
 const reserve = ev.registration.reserve_capacity;
 const hasCapacity = capacity > 0;
-const full = hasCapacity && ev.registered >= capacity + reserve;
+const full = hasCapacity && ev.counts.registered >= capacity + reserve;
 
 const form = tObj<FormStrings>('events.form', locale);
 const options = tObj<Record<string, string>>('events.options', locale);
@@ -170,7 +170,7 @@ const closedNote = fill(cap.closedNote, { cap: capacity, res: reserve });
         ) : (
           <div class="space-y-6">
             {hasCapacity && (
-              <RegistrationBar registered={ev.registered} capacity={capacity} reserve={reserve} locale={locale} />
+              <RegistrationBar registered={ev.counts.registered} capacity={capacity} reserve={reserve} locale={locale} />
             )}
             {registered ? (
               <div class="rounded-xl border border-violet-500/30 bg-violet-500/10 p-6">

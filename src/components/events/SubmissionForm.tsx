@@ -52,7 +52,7 @@ interface Props {
   /** Checks configurados en el evento, en orden (§3.4). */
   checks: string[];
   autoMax: number;
-  discordMode: 'required' | 'optional' | 'hidden';
+  discordMode: 'required' | 'optional' | 'none';
   specialties: string[];
   levels: string[];
   /** Etiquetas traducidas de especialidades/niveles y de los checks. */
@@ -104,7 +104,7 @@ export default function SubmissionForm({
     const body: Record<string, unknown> = { ...f };
     if (askParticipant) {
       const part: Record<string, string> = { name: p.name.trim() };
-      if (discordMode !== 'hidden' && p.discord_user.trim()) part.discord_user = p.discord_user.trim();
+      if (discordMode !== 'none' && p.discord_user.trim()) part.discord_user = p.discord_user.trim();
       if (specialties.length > 0 && p.specialty) part.specialty = p.specialty;
       if (levels.length > 0 && p.level) part.level = p.level;
       body.participant = part;
@@ -187,7 +187,7 @@ export default function SubmissionForm({
             <label class={labelCls} for="sub-p-name">{t.pName} <Req /></label>
             <input id="sub-p-name" required value={p.name} onInput={setPart('name')} class={inputCls} />
           </div>
-          {discordMode !== 'hidden' && (
+          {discordMode !== 'none' && (
             <div>
               <label class={labelCls} for="sub-p-discord">{t.pDiscord} {discordMode === 'required' && <Req />}</label>
               <input id="sub-p-discord" required={discordMode === 'required'} value={p.discord_user} onInput={setPart('discord_user')} class={inputCls} />
