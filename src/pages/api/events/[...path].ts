@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { backendURL, forwardHeaders, isAdminPath } from '../../../lib/hackaton';
+import { backendURL, forwardHeaders, isAdminPath } from '../../../lib/events';
 
 export const prerender = false;
 
@@ -10,17 +10,24 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+/**
+ * Proxy same-origin `/api/events/*` → `${CLOUD_API_URL}/api/events/*` (SPEC §8.1).
+ *
+ * Existe porque la CSP de la landing es `connect-src 'self'`: las islas solo
+ * pueden hacer fetch a este origen. Reenvía cookie de sesión e IP real; nunca
+ * la admin key, y nunca rutas con un segmento `admin`.
+ */
 const handler: APIRoute = async ({ params, request, url }) => {
   const path = (params.path ?? '').toString();
 
-  // No exponer endpoints de operación desde el navegador público (§9.2).
-  // Se mantiene como primera barrera aunque `backendURL` ya acote la ruta: dice
+  // No exponer endpoints de operación desde el navegador público. Se mantiene
+  // como primera barrera aunque `backendURL` ya acote la ruta: dice
   // explícitamente qué es lo que no debe atravesar el proxy.
   if (isAdminPath(path)) {
     return json({ ok: false, error: 'not_found' }, 404);
   }
 
-  // `null` = la ruta pedida no es una ruta simple bajo /api/hackaton/. No se
+  // `null` = la ruta pedida no es una ruta simple bajo /api/events/. No se
   // toca el backend: un `..` codificado se resolvía fuera del prefijo.
   const target = backendURL(path, url.search);
   if (target === null) {
@@ -39,7 +46,7 @@ const handler: APIRoute = async ({ params, request, url }) => {
   try {
     resp = await fetch(target, init);
   } catch (err) {
-    console.error('[api/hackaton] upstream error', err);
+    console.error('[api/events] upstream error', err);
     return json({ ok: false, error: 'server_error' }, 500);
   }
 

@@ -21,7 +21,7 @@ interface CapacityStrings {
 }
 
 const { registered, capacity, reserve, locale } = Astro.props;
-const cap = tObj<CapacityStrings>('hackaton.capacity', locale);
+const cap = tObj<CapacityStrings>('events.capacity', locale);
 
 // Tramos: normal (r < capacity) y pool (capacity <= r < capacity+reserve).
 // El caso "completo" (r >= capacity+reserve) lo gestiona la página, no este componente.

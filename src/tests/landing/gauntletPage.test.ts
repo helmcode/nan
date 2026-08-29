@@ -51,9 +51,10 @@ describe('la landing no guarda datos', () => {
     expect(page).not.toMatch(/client:(load|idle|visible|only|media)/);
   });
 
-  test('no hay formulario propio: la inscripción es un Google Form externo', () => {
+  test('no hay formulario propio: la entrega vive en /events/{slug}/submission', () => {
     expect(page).not.toContain('<form');
     expect(page).not.toContain('<input');
+    expect(page).toContain("withLang('/events/gauntlet-2026-08/submission', lang)");
   });
 
   test('no llama a ningún endpoint', () => {
@@ -64,7 +65,7 @@ describe('la landing no guarda datos', () => {
 
 describe('enlaces de la landing', () => {
   test('lo que se abre fuera lleva rel="noopener"', () => {
-    // El único salto de dominio es el Google Form.
+    // Los únicos saltos de dominio son los enlaces del showcase.
     const external = page.includes("target: '_blank'") || page.includes('target="_blank"');
     expect(external).toBe(true);
     expect(page).toContain("rel: 'noopener'");
@@ -80,14 +81,13 @@ describe('enlaces de la landing', () => {
 
 describe('copy del gauntlet', () => {
   for (const lang of ['en', 'es'] as const) {
-    test(`la URL del formulario en ${lang} es el Google Form publicado`, () => {
-      const url = tObj<{ url: string }>('nan.gauntlet.form', lang).url;
-      // El CTA principal de la landing. Tiene que ser el enlace público del
-      // formulario: `/viewform` a secas, sin el `?usp=publish-editor` que
-      // añade el editor de Google al copiarlo —ese parámetro no rompe nada,
-      // pero delata de dónde salió y no pinta en una URL que se comparte.
-      expect(url.startsWith('https://docs.google.com/forms/')).toBe(true);
-      expect(url.endsWith('/viewform')).toBe(true);
+    test(`el CTA de entrega en ${lang} apunta al evento del propio sitio`, () => {
+      const form = tObj<{ cta: string; note: string; soon: string }>('nan.gauntlet.form', lang);
+      // La entrega ya no es un Google Form: es /events/gauntlet-2026-08/submission
+      // (SPEC §8.3), y el copy no debe volver a mencionar un enlace externo.
+      expect(form.cta.length).toBeGreaterThan(0);
+      expect(form.note).not.toMatch(/google/i);
+      expect(form.soon).not.toMatch(/google/i);
     });
 
     test(`la entrega en ${lang} lista los 8 campos obligatorios`, () => {

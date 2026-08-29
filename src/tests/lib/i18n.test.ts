@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { t, tArr, tObj, getLocale, withLang, switchLocalePath } from '../../lib/i18n';
 
 /**
- * Los asserts de t/tArr/tObj se anclan a `hackaton.*` a propósito: es copy que
+ * Los asserts de t/tArr/tObj se anclan a `events.*` a propósito: es copy que
  * las páginas del hackatón renderizan de verdad. Antes apuntaban a `founder.*`,
  * que se quedó huérfano al retirar la landing anterior y era lo único que
  * mantenía vivo aquel bloque del diccionario. Si hay que reapuntarlos otra vez,
@@ -12,15 +12,15 @@ import { t, tArr, tObj, getLocale, withLang, switchLocalePath } from '../../lib/
 describe('i18n', () => {
   describe('t()', () => {
     test('returns English string by default (no locale arg)', () => {
-      expect(t('hackaton.label')).toBe('// hackathon');
+      expect(t('events.kindHackathon')).toBe('hackathon');
     });
 
     test('returns Spanish string when locale is "es"', () => {
-      expect(t('hackaton.label', 'es')).toBe('// hackatón');
+      expect(t('events.kindHackathon', 'es')).toBe('hackatón');
     });
 
     test('returns English string when locale is "en"', () => {
-      expect(t('hackaton.label', 'en')).toBe('// hackathon');
+      expect(t('events.kindHackathon', 'en')).toBe('hackathon');
     });
 
     test('returns the key string for missing keys', () => {
@@ -29,7 +29,7 @@ describe('i18n', () => {
 
     test('falls back to Spanish for unknown locale', () => {
       // The i18n fallback is translations.es, so unknown locales return Spanish
-      expect(t('hackaton.label', 'fr')).toBe('// hackatón');
+      expect(t('events.kindHackathon', 'fr')).toBe('hackatón');
     });
 
     test('returns the key string for missing keys regardless of locale', () => {
@@ -40,14 +40,14 @@ describe('i18n', () => {
 
   describe('tArr()', () => {
     test('returns array of strings by default', () => {
-      const points = tArr('hackaton.me.reassignInfo.points');
+      const points = tArr('events.me.reassignInfo.points');
       expect(Array.isArray(points)).toBe(true);
       expect(points.length).toBeGreaterThan(0);
       points.forEach((item) => expect(typeof item).toBe('string'));
     });
 
     test('returns Spanish array when locale is "es"', () => {
-      const points = tArr('hackaton.me.reassignInfo.points', 'es');
+      const points = tArr('events.me.reassignInfo.points', 'es');
       expect(Array.isArray(points)).toBe(true);
       expect(points.length).toBeGreaterThan(0);
     });
@@ -55,14 +55,14 @@ describe('i18n', () => {
 
   describe('tObj()', () => {
     test('returns object by default', () => {
-      const obj = tObj('hackaton');
+      const obj = tObj('events');
       expect(typeof obj).toBe('object');
       expect(obj).not.toBeNull();
-      expect(obj.label).toBeDefined();
+      expect(obj.kindHackathon).toBeDefined();
     });
 
     test('returns object for Spanish locale', () => {
-      const obj = tObj('hackaton', 'es');
+      const obj = tObj('events', 'es');
       expect(typeof obj).toBe('object');
       expect(obj).not.toBeNull();
     });

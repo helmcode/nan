@@ -72,6 +72,24 @@ function langRedirect(context: Parameters<MiddlewareHandler>[0]): Response | nul
 }
 
 /**
+ * Redirección de las URLs del hackatón #1 (SPEC §8.4).
+ *
+ * Las pantallas del hackatón vivían en `/hackaton/*`; ahora cada evento vive en
+ * `/events/{slug}/*`, y el #1 es `hackaton-2026-1`. Los enlaces antiguos
+ * (Discord, correos) siguen circulando: 301 a la ruta nueva, conservando el
+ * prefijo de idioma y la subpantalla (`/es/hackaton/me` → `/es/events/hackaton-2026-1/me`).
+ */
+const LEGACY_HACKATON_SLUG = 'hackaton-2026-1';
+
+function hackatonRedirect(context: Parameters<MiddlewareHandler>[0]): Response | null {
+  const { url } = context;
+  const m = /^(\/es)?\/hackaton(?=\/|$)(.*)$/.exec(url.pathname);
+  if (!m) return null;
+  const [, prefix = '', rest = ''] = m;
+  return context.redirect(`${prefix}/events/${LEGACY_HACKATON_SLUG}${rest}${url.search}`, 301);
+}
+
+/**
  * OJO con prerenderizar: el middleware NO corre en las rutas prerenderizadas
  * (Astro lo ejecuta en tiempo de build para esas), así que activar
  * `prerender = true` en una página la deja a la vez sin la redirección de
@@ -79,7 +97,7 @@ function langRedirect(context: Parameters<MiddlewareHandler>[0]): Response | nul
  * Hoy no hay ninguna prerenderizada, y por eso esto vale para todo el sitio.
  */
 export const onRequest: MiddlewareHandler = async (context, next) => {
-  const response = langRedirect(context) ?? (await next());
+  const response = langRedirect(context) ?? hackatonRedirect(context) ?? (await next());
 
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
     response.headers.set(name, value);

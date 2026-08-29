@@ -1,0 +1,46 @@
+---
+/**
+ * Cabecera común de las pantallas de un evento: enlace atrás, etiqueta del
+ * tipo de evento, nombre y navegación entre pantallas (solo las que aplican
+ * al formato/fase).
+ */
+import { t, withLang } from '../../lib/i18n';
+import type { EventInfo } from '../../lib/events';
+
+interface Props {
+  event: EventInfo;
+  locale: string;
+  /** Pantalla actual: se resalta y no se enlaza. */
+  current: 'index' | 'me' | 'submission' | 'projects' | 'leaderboard';
+  hasSession?: boolean;
+}
+const { event, locale, current, hasSession = false } = Astro.props;
+const base = `/events/${event.slug}`;
+const kindLabel = event.kind === 'hackathon'
+  ? t('events.kindHackathon', locale)
+  : event.kind === 'challenge' ? t('events.kindChallenge', locale) : t('events.kindEvent', locale);
+
+const nav: { key: Props['current']; href: string; label: string }[] = [];
+if (hasSession) nav.push({ key: 'me', href: `${base}/me`, label: t('events.nav.me', locale) });
+if (hasSession && event.phase !== 'registration') nav.push({ key: 'submission', href: `${base}/submission`, label: t('events.nav.submission', locale) });
+if (event.windows.gallery.visible) nav.push({ key: 'projects', href: `${base}/projects`, label: t('events.nav.projects', locale) });
+if (event.windows.leaderboard.visible) nav.push({ key: 'leaderboard', href: `${base}/leaderboard`, label: t('events.nav.leaderboard', locale) });
+---
+
+<a href={withLang(current === 'index' ? '/events' : base, locale)}
+   class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400">
+  {current === 'index' ? t('events.backToEvents', locale) : t('events.backToEvent', locale)}
+</a>
+<header class="mt-8">
+  <p class="font-mono text-xs uppercase tracking-widest text-violet-400">// {kindLabel}</p>
+  <h1 class="mt-3 font-mono text-2xl md:text-3xl text-white tracking-tight leading-snug">
+    {event.name}
+  </h1>
+  {nav.length > 0 && (
+    <nav class="mt-5 flex flex-wrap gap-4 font-mono text-xs" aria-label={t('events.nav.aria', locale)}>
+      {nav.map((n) => n.key === current
+        ? <span class="text-white">{n.label}</span>
+        : <a href={withLang(n.href, locale)} class="text-neutral-400 hover:text-violet-400">{n.label}</a>)}
+    </nav>
+  )}
+</header>

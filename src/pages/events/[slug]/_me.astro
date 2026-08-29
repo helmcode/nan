@@ -1,0 +1,110 @@
+---
+// Estado del participante (SPEC §8.2): equipo en `team`, ficha + entrega en `solo`.
+import '../../../styles/global.css';
+import NanPage from '../../../layouts/NanPage.astro';
+import EventHeader from '../../../components/events/EventHeader.astro';
+import ReassignForm from '../../../components/events/ReassignForm.tsx';
+import LoginForm, { type LoginStrings } from '../../../components/events/LoginForm.tsx';
+import { getLocale, t, tObj, withLang } from '../../../lib/i18n';
+import { fetchMe, hasSessionCookie, type EventInfo } from '../../../lib/events';
+
+const locale = getLocale(Astro.url);
+// El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
+interface Props {
+  event: EventInfo;
+}
+const ev = Astro.props.event;
+const slug = ev.slug;
+
+const hasSession = hasSessionCookie(Astro.request);
+const { me, unauthorized } = hasSession
+  ? await fetchMe(slug, Astro.request.headers.get('cookie') ?? '')
+  : { me: null, unauthorized: false };
+const sessionOk = hasSession && !unauthorized;
+const participant = me?.participant ?? null;
+const team = me?.team ?? null;
+const submission = me?.submission ?? null;
+const isTeam = ev.format === 'team';
+const options = tObj<Record<string, string>>('events.options', locale);
+const label = (v?: string | null) => (v ? options[v] ?? v : '');
+const m = tObj<Record<string, string>>('events.me', locale);
+const login = tObj<LoginStrings>('events.login', locale);
+const submissionUrl = withLang(`/events/${slug}/submission`, locale);
+const title = isTeam ? m.title : m.titleSolo;
+const statusLabel = participant?.status === 'withdrawn'
+  ? m.statusWithdrawn
+  : participant?.is_reserve ? m.statusReserve : m.statusRegistered;
+---
+{/* Detrás de sesión: fuera del sitemap y también fuera del índice. */}
+<NanPage scale={false} noindex title={`${title} · ${ev.name} — nan.builders`}>
+  <main class="px-6 pt-24 pb-32 mx-auto max-w-2xl">
+    <EventHeader event={ev} locale={locale} current="me" hasSession={sessionOk} />
+    <h2 class="mt-8 font-mono text-xl text-white">{title}</h2>
+
+    {!sessionOk ? (
+      <div class="mt-6"><LoginForm client:load t={login} /></div>
+    ) : !participant ? (
+      <div class="mt-6 rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+        <p class="text-sm text-neutral-300">{isTeam ? m.notRegistered : m.notRegisteredSolo}</p>
+        {!isTeam && ev.windows.submission.open && (
+          <a href={submissionUrl} class="mt-4 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-500">
+            {m.submissionCta}
+          </a>
+        )}
+      </div>
+    ) : (
+      <section class="mt-6 space-y-6">
+        <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+          <p class="font-mono text-[10px] uppercase tracking-widest text-violet-400">{m.status}</p>
+          <p class="mt-2 text-sm text-neutral-200">{participant.name} · <span class="text-neutral-400">{statusLabel}</span></p>
+          {(participant.discord_user || participant.specialty || participant.level) && (
+            <p class="mt-1 text-xs text-neutral-500 font-mono">
+              {[participant.discord_user, label(participant.specialty), label(participant.level)].filter(Boolean).join(' · ')}
+            </p>
+          )}
+        </div>
+
+        {isTeam ? (
+          !team ? (
+            <p class="text-neutral-400">{m.noTeam}</p>
+          ) : (
+            <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+              <h3 class="font-mono text-white">{team.name}</h3>
+              <p class="mt-2 text-[10px] uppercase tracking-widest text-violet-400">{m.teammates}</p>
+              <ul class="mt-2 space-y-1 text-sm text-neutral-300">
+                {team.members?.map((mb) => (
+                  <li>{mb.name}{mb.discord_user && <> · <span class="text-neutral-500">{mb.discord_user}</span></>}{(mb.specialty || mb.level) && <> · {[label(mb.specialty), label(mb.level)].filter(Boolean).join('/')}</>}</li>
+                ))}
+              </ul>
+              {ev.rules && <p class="mt-4 text-xs text-neutral-500 font-mono whitespace-pre-line">{ev.rules}</p>}
+              <div class="mt-6 flex gap-3">
+                <a href={submissionUrl} class="font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-500">
+                  {submission ? m.submissionCta : m.submissionCreateCta}
+                </a>
+              </div>
+              {ev.phase === 'building' && team.members && (
+                <div class="mt-6">
+                  <ReassignForm client:visible slug={slug} members={team.members.map((x) => ({ id: x.id, name: x.name, discord_user: x.discord_user ?? undefined }))}
+                    ctaLabel={m.reassignCta} info={tObj('events.me.reassignInfo', locale)}
+                    labels={{ pending: m.reassignPending, filled: m.reassignFilled, noPool: m.reassignNoPool, already: m.reassignAlready, selectAbsent: m.reassignSelectAbsent, errorSubmit: m.reassignErrorSubmit, sending: m.reassignSending }} />
+                </div>
+              )}
+            </div>
+          )
+        ) : (
+          <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+            <p class="font-mono text-[10px] uppercase tracking-widest text-violet-400">{t('events.submission.title', locale)}</p>
+            {submission ? (
+              <p class="mt-2 text-sm text-neutral-200">{submission.title}</p>
+            ) : (
+              <p class="mt-2 text-sm text-neutral-400">{m.noSubmission}</p>
+            )}
+            <a href={submissionUrl} class="mt-4 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-500">
+              {submission ? m.submissionCta : m.submissionCreateCta}
+            </a>
+          </div>
+        )}
+      </section>
+    )}
+  </main>
+</NanPage>

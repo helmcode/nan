@@ -55,10 +55,10 @@ describe('paridad de los diccionarios', () => {
     expect(diffs).toEqual([]);
   });
 
-  // Root-level subtrees (community, hackaton) are consumed directly by
-  // t('community.*', lang) / t('hackaton.*', lang) — a key that exists only
+  // Root-level subtrees (community, events) are consumed directly by
+  // t('community.*', lang) / t('events.*', lang) — a key that exists only
   // in en renders the raw key path in /es. Parity must cover them too.
-  test.each(['community', 'hackaton'])('en.%s y es.%s tienen la misma forma', (key) => {
+  test.each(['community', 'events'])('en.%s y es.%s tienen la misma forma', (key) => {
     const enSub = (en as Record<string, unknown>)[key];
     const esSub = (es as Record<string, unknown>)[key];
     const diffs: string[] = [];
