@@ -5,25 +5,25 @@ import {
 } from '../../lib/email';
 
 describe('buildConfirmationBody', () => {
-  it('mentions Europa for EU region', () => {
+  it('mentions Europe for EU region', () => {
     const body = buildConfirmationBody('EU');
-    expect(body).toContain('Europa');
-    expect(body).not.toContain('Latinoamérica');
+    expect(body).toContain('Europe');
+    expect(body).not.toContain('Latin America');
   });
 
-  it('mentions Latinoamérica for LATAM region', () => {
+  it('mentions Latin America for LATAM region', () => {
     const body = buildConfirmationBody('LATAM');
-    expect(body).toContain('Latinoamérica');
+    expect(body).toContain('Latin America');
   });
 
-  it('mentions Estados Unidos for USA region', () => {
+  it('mentions United States for USA region', () => {
     const body = buildConfirmationBody('USA');
-    expect(body).toContain('Estados Unidos');
+    expect(body).toContain('United States');
   });
 
-  it('is written in Spanish', () => {
+  it('is written in English', () => {
     const body = buildConfirmationBody('EU');
-    expect(body).toContain('lista de espera');
+    expect(body).toContain('waitlist');
     expect(body).toContain('Cristian');
     expect(body).toContain('nan.builders');
   });
@@ -65,8 +65,8 @@ describe('sendConfirmationEmail', () => {
     const body = JSON.parse(options.body);
     expect(body.to).toBe('alice@acme.co');
     expect(body.from).toBe('Cristian · NaN <cristian@nan.builders>');
-    expect(body.subject).toContain('lista de espera');
-    expect(body.text).toContain('Europa');
+    expect(body.subject).toContain('waitlist');
+    expect(body.text).toContain('Europe');
   });
 
   it('returns error on non-2xx response', async () => {

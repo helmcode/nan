@@ -10,17 +10,17 @@ const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
 export function buildConfirmationBody(region: WaitlistRegion): string {
   const regionLabel =
-    region === 'EU' ? 'Europa' : region === 'USA' ? 'Estados Unidos' : 'Latinoamérica';
+    region === 'EU' ? 'Europe' : region === 'USA' ? 'United States' : 'Latin America';
 
   return [
-    'Hola,',
+    'Hi,',
     '',
-    '¡Gracias por apuntarte a la lista de espera de NaN Community!',
+    'Thank you for joining the NaN Community waitlist!',
     '',
-    `Tu solicitud para la región ${regionLabel} ha sido registrada correctamente.`,
-    'Te avisaremos por email en cuanto haya una plaza disponible para ti.',
+    `Your request for the ${regionLabel} region has been registered successfully.`,
+    'We will email you as soon as a spot opens up for you.',
     '',
-    'Si tienes cualquier duda, responde directo a este correo.',
+    'If you have any questions, just reply to this email.',
     '',
     '— Cristian',
     'nan.builders',
@@ -45,7 +45,7 @@ export async function sendConfirmationEmail(
   params: SendEmailParams,
 ): Promise<SendEmailOutcome> {
   const { to, region, apiKey, from } = params;
-  const subject = 'NaN Community — Estás en la lista de espera';
+  const subject = 'NaN Community — You are on the waitlist';
   const text = buildConfirmationBody(region);
 
   try {

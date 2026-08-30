@@ -255,7 +255,7 @@ describe('POST /api/waitlist', () => {
     expect(resendCall).toBeDefined();
     const body = JSON.parse(resendCall![1].body);
     expect(body.to).toBe('new@acme.co');
-    expect(body.subject).toContain('lista de espera');
+    expect(body.subject).toContain('waitlist');
   });
 
   it('does not send confirmation email for honeypot submissions', async () => {
