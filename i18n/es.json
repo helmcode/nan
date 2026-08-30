@@ -599,11 +599,11 @@
     },
     "gauntlet": {
       "metaTitle": "Gauntlet Challenge · NaN",
-      "metaDesc": "Agosto en NaN: un prompt activa un sistema que construye, critica y se corrige solo. Construye hasta el 28 de agosto y después vota la comunidad.",
+      "metaDesc": "Agosto en NaN: un prompt activa un sistema que construye, critica y se corrige solo. Construye hasta el 3 de septiembre y después vota la comunidad.",
       "heroEyebrow": "// gauntlet challenge",
       "heroTitle1": "Gauntlet",
       "heroTitle2": "Challenge.",
-      "heroSub": "Un prompt. Un sistema que construye, critica y se corrige solo. Construye hasta el 28 de agosto. Después vota la comunidad.",
+      "heroSub": "Un prompt. Un sistema que construye, critica y se corrige solo. Construye hasta el 3 de septiembre. Después vota la comunidad.",
       "status": {
         "pre": "Empieza en {n} días",
         "preOne": "Empieza mañana",
@@ -615,7 +615,7 @@
         "closed": "Edición cerrada"
       },
       "ctaSecondary": "Únete a la comunidad",
-      "ctaVote": "La votación es en Discord",
+      "ctaVote": "Vota en esta web",
       "ctaClosed": "Ver los proyectos de la comunidad",
       "form": {
         "cta": "Entrega tu proyecto",
@@ -814,14 +814,14 @@
         "sub": "Sin jurado. Lo entregado se enseña, la comunidad vota y los proyectos más votados se presentan en directo.",
         "steps": [
           {
-            "when": "28 ago",
+            "when": "3 sept",
             "name": "Se cierra la entrada",
             "body": "Se paran las inscripciones y las entregas."
           },
           {
-            "when": "Unos días",
+            "when": "4–6 sept",
             "name": "Votaciones de la comunidad",
-            "body": "Se enseña todo lo entregado y la comunidad vota."
+            "body": "Se enseña todo lo entregado y la comunidad vota aquí, en nan.builders, con su cuenta de NaN."
           },
           {
             "when": "Por concretar",
@@ -831,11 +831,11 @@
         ],
         "tbdLabel": "fecha por confirmar",
         "tbdBody": "Buscamos un día que le venga bien a todo el mundo, así que se anuncia en Discord en vez de fijarlo ahora.",
-        "note": "La votación no vive en esta página: pasa en el Discord de NaN."
+        "note": "La votación se hace en esta web, con tu cuenta de NaN, del 4 al 6 de septiembre."
       },
       "close": {
         "title": "Un prompt. Un sistema entero.",
-        "text": "Agosto en NaN es una temporada: construye, deja que te critiquen, corrige y entrega algo que se pueda probar. La inscripción está abierta hasta el 28."
+        "text": "Agosto en NaN es una temporada: construye, deja que te critiquen, corrige y entrega algo que se pueda probar. La inscripción está abierta hasta el 3 de septiembre."
       }
     },
     "community": {

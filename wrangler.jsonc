@@ -27,6 +27,8 @@
 	// missing.
 	"vars": {
 		"RATE_LIMIT_RPM": "60",
-		"RATE_LIMIT_PARALLEL": "5"
+		"RATE_LIMIT_PARALLEL": "5",
+		// Backend de eventos (/api/events/*). Si falta, se usa CLOUD_API_URL.
+		"EVENTS_API_URL": "https://events-server-production-c65e.up.railway.app"
 	}
 }

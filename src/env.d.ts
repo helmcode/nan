@@ -9,6 +9,8 @@ declare namespace Cloudflare {
     RESEND_API_KEY: string;
     RESEND_FROM_EMAIL: string;
     CLOUD_API_URL: string;
+    // Backend de eventos (/api/events/*); si falta, cae a CLOUD_API_URL.
+    EVENTS_API_URL?: string;
     CLOUD_API_WAITLIST_KEY: string;
     // Optional: both fall back to the defaults in src/lib/rateLimits.ts.
     RATE_LIMIT_RPM?: string;

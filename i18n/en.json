@@ -599,11 +599,11 @@
     },
     "gauntlet": {
       "metaTitle": "Gauntlet Challenge · NaN",
-      "metaDesc": "August at NaN: one prompt fires up a system that builds, critiques and corrects itself. Build until August 28, then the community votes.",
+      "metaDesc": "August at NaN: one prompt fires up a system that builds, critiques and corrects itself. Build until September 3, then the community votes.",
       "heroEyebrow": "// gauntlet challenge",
       "heroTitle1": "Gauntlet",
       "heroTitle2": "Challenge.",
-      "heroSub": "One prompt. A system that builds, critiques and corrects itself. Build until August 28. Then the community votes.",
+      "heroSub": "One prompt. A system that builds, critiques and corrects itself. Build until September 3. Then the community votes.",
       "status": {
         "pre": "Starts in {n} days",
         "preOne": "Starts tomorrow",
@@ -615,7 +615,7 @@
         "closed": "This edition is closed"
       },
       "ctaSecondary": "Join the community",
-      "ctaVote": "Voting is on Discord",
+      "ctaVote": "Vote on this site",
       "ctaClosed": "See community projects",
       "form": {
         "cta": "Submit your project",
@@ -814,14 +814,14 @@
         "sub": "No jury. What you ship gets shown, the community votes, and the most-voted projects present live.",
         "steps": [
           {
-            "when": "Aug 28",
+            "when": "Sept 3",
             "name": "Entry closes",
             "body": "Signup and submissions stop."
           },
           {
-            "when": "A few days",
+            "when": "Sept 4–6",
             "name": "Community voting",
-            "body": "Everything submitted gets shown, and the community votes."
+            "body": "Everything submitted gets shown, and the community votes right here on nan.builders with their NaN account."
           },
           {
             "when": "To be confirmed",
@@ -831,11 +831,11 @@
         ],
         "tbdLabel": "date to be confirmed",
         "tbdBody": "We're looking for a day that works for everyone, so it gets announced on Discord rather than pinned down now.",
-        "note": "Voting doesn't live on this page: it happens on NaN's Discord."
+        "note": "Voting happens on this site, with your NaN account, from September 4 to 6."
       },
       "close": {
         "title": "One prompt. A whole system.",
-        "text": "August at NaN is a season: build it, let it be critiqued, correct it and ship something you can prove. Signup is open until the 28th."
+        "text": "August at NaN is a season: build it, let it be critiqued, correct it and ship something you can prove. Signup is open until September 3."
       }
     },
     "community": {

@@ -62,6 +62,9 @@ const shotCopy = (id: string): ShotCopy => (tt.showcase.items as Record<string, 
 // La página del evento decide qué enseñar según la fase real de la API; aquí
 // solo se enlaza.
 const submissionHref = withLang('/events/gauntlet-2026-08/submission', lang);
+// La votación también vive en el sitio: la página del evento enseña la galería
+// y el botón de votar cuando la fase real de la API es `voting`.
+const eventHref = withLang('/events/gauntlet-2026-08', lang);
 const signupOpen = state.phase === 'pre' || state.phase === 'live';
 
 // CTA principal por fase. En `pre` y `live` empuja a la entrega; después, al
@@ -70,7 +73,7 @@ const cta =
   signupOpen
     ? { href: submissionHref, label: tt.form.cta, external: false }
     : state.phase === 'voting'
-      ? { href: communityHref, label: tt.ctaVote, external: false }
+      ? { href: eventHref, label: tt.ctaVote, external: false }
       : state.phase === 'closed'
         ? { href: projectsHref, label: tt.ctaClosed, external: false }
         : { href: communityHref, label: tt.ctaSecondary, external: false };
@@ -425,10 +428,10 @@ const cta =
         <p class="panel__b">{tt.after.tbdBody}</p>
       </div>
 
-      {/* Sin botón de votar: la votación no está construida. El enlace lleva a
-          donde va a pasar de verdad. */}
+      {/* El voto se emite en la página del evento (con cuenta de NaN); aquí
+          solo se enlaza. */}
       <p class="gnote" data-reveal>{tt.after.note}</p>
-      <a class="glink mono" href={communityHref} data-reveal>{tt.ctaVote} →</a>
+      <a class="glink mono" href={eventHref} data-reveal>{tt.ctaVote} →</a>
     </div>
   </section>
 

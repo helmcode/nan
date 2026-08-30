@@ -11,7 +11,7 @@ function json(body: unknown, status = 200): Response {
 }
 
 /**
- * Proxy same-origin `/api/events/*` → `${CLOUD_API_URL}/api/events/*` (SPEC §8.1).
+ * Proxy same-origin `/api/events/*` → `${EVENTS_API_URL ?? CLOUD_API_URL}/api/events/*` (SPEC §8.1).
  *
  * Existe porque la CSP de la landing es `connect-src 'self'`: las islas solo
  * pueden hacer fetch a este origen. Reenvía cookie de sesión e IP real; nunca

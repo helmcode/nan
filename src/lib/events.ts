@@ -52,7 +52,7 @@ const SAFE_SEGMENT = /^[A-Za-z0-9._-]+$/;
  *      codificaciones de `..`.
  */
 export function backendURL(path: string, search: string): string | null {
-  const base = env.CLOUD_API_URL.replace(/\/$/, '');
+  const base = apiBase();
   const prefix = `${base}/api/events/`;
 
   const segments = (path ?? '').split('/').filter((s) => s !== '');
@@ -221,8 +221,13 @@ function ssrHeaders(cookie?: string): HeadersInit {
   return h;
 }
 
+/**
+ * Base del backend de eventos. `EVENTS_API_URL` apunta al events-server
+ * propio (Railway); si no está definida se usa `CLOUD_API_URL`
+ * (platform-api), que es el comportamiento anterior.
+ */
 function apiBase(): string {
-  return env.CLOUD_API_URL.replace(/\/$/, '');
+  return (env.EVENTS_API_URL || env.CLOUD_API_URL).replace(/\/$/, '');
 }
 
 /**
