@@ -28,6 +28,20 @@
           "mostUsed": true
         },
         {
+          "id": "qwen3.8-flash",
+          "by": "Alibaba",
+          "specs": "125B-6B MoE · 262K context · vision · tool calling · reasoning",
+          "cuota": "1B tokens/mes",
+          "frontier": true
+        },
+        {
+          "id": "glm5.3-flash",
+          "by": "Z.ai",
+          "specs": "320B-18B MoE · FP8 · 1M context · multimodal · tool calling · reasoning",
+          "cuota": "500M tokens/mes",
+          "frontier": true
+        },
+        {
           "id": "gemma4",
           "by": "Google",
           "specs": "26B-A4B MoE · FP8 · 256K context · tool calling · reasoning · vision",

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import spec from '../data/openapi.json';
+import modelos from '../data/modelos.json';
 import { resolveSpec } from './apiDoc';
 import { DEFAULT_RATE_LIMITS, formatTokens, getRateLimitsConfig } from './rateLimits';
 
@@ -39,6 +40,8 @@ const PUBLIC_SURFACE: Array<[string, string]> = [
 const NAN_MODELS = [
   'deepseek-v4-flash',
   'mimo-v2.5',
+  'qwen3.8-flash',
+  'glm5.3-flash',
   'qwen3.6',
   'gemma4',
   'glm5.2',
@@ -150,6 +153,18 @@ describe('openapi.json: the model catalogue', () => {
     );
     const unknown = [...cited].filter((m) => !NAN_MODELS.includes(m));
     expect(unknown).toEqual([]);
+  });
+
+  /**
+   * The home table (modelos.json) and this spec are written by hand on two
+   * different days, so a model can land on the cluster, get listed on the
+   * landing page and never reach the API reference. The chat models are the
+   * ones a member copies into the `model` field, so those are the ones checked.
+   */
+  it('documents every chat model the landing page lists', () => {
+    const llm = modelos.categorias.find((c) => c.id === 'llm')!;
+    const missing = llm.modelos.map((m) => m.id).filter((id) => !raw.includes(`\`${id}\``));
+    expect(missing).toEqual([]);
   });
 
   it('publishes glm5.2 as a premium-tier chat model', () => {

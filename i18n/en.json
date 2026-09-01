@@ -375,7 +375,7 @@
         },
         {
           "q": "Is it really unlimited tokens?",
-          "a": "On the cluster models, no counter. The frontier ones come with a token allowance per member so the plan holds up: 2B tokens per month on DeepSeek V4-Flash, 1.0B per month on MiMo v2.5, and 3,000M per billing period on GLM 5.2 for members on the premium tier. Those limits are published here, not in fine print. The bill is the fixed subscription price and it doesn’t move."
+          "a": "On the cluster models, no counter. The frontier ones come with a token allowance per member so the plan holds up: 2B tokens per month on DeepSeek V4-Flash, 1.0B per month on MiMo v2.5, 1B per month on Qwen 3.8 Flash, 500M per month on GLM 5.3 Flash, and 3,000M per billing period on GLM 5.2 for members on the premium tier. Those limits are published here, not in fine print. The bill is the fixed subscription price and it doesn’t move."
         },
         {
           "q": "How are the models chosen?",
