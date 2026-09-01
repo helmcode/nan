@@ -89,6 +89,55 @@ OpenAI y la misma `base URL`.
 />
 
 <ModelCard
+  id="qwen3-8-flash"
+  name="qwen3.8-flash"
+  tag="125B-6B"
+  leftLabel="generación de texto, chat y visión"
+  rightLabel="capacidades"
+  description="Modelo MoE de 125B parámetros (6B activos), multimodal con visión, tool calling y razonamiento activado por defecto. Contexto de 262K tokens, la ventana nativa del modelo. Cuota de 1B tokens al mes por miembro."
+  specs={[
+    { label: 'Tipo', value: 'MoE (125B total · 6B activos)' },
+    { label: 'Contexto', value: '262K tokens' },
+    { label: 'Modalidades de entrada', value: 'texto · imagen' },
+    { label: 'Modalidades de salida', value: 'texto' },
+    { label: 'Cuota mensual', value: '1B tokens / miembro' },
+    { label: 'Licencia', value: 'qwen-community-1.0' },
+  ]}
+  items={[
+    'Tool calling (formato XML)',
+    'Modo razonamiento (activado por defecto)',
+    'Visión (entrada de imagen)',
+    'Contexto de 262K tokens',
+    'Generación en streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="glm-5-3-flash"
+  name="glm5.3-flash"
+  tag="320B-18B"
+  leftLabel="generación de texto y chat multimodal"
+  rightLabel="capacidades"
+  description="Modelo MoE de 320B parámetros (18B activos), multimodal de forma nativa, con tool calling y razonamiento. Contexto de 1M tokens. Cuota de 500M tokens al mes por miembro. Licencia MIT."
+  specs={[
+    { label: 'Tipo', value: 'MoE (320B total · 18B activos)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Modalidades de entrada', value: 'texto · imagen' },
+    { label: 'Modalidades de salida', value: 'texto' },
+    { label: 'Cuota mensual', value: '500M tokens / miembro' },
+    { label: 'Licencia', value: 'MIT' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Modo razonamiento',
+    'Visión (entrada de imagen)',
+    'Contexto de 1M tokens',
+    'Generación en streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
   id="gemma4"
   name="gemma4"
   tag="26B-A4B"

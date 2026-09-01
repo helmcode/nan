@@ -89,6 +89,55 @@ with the same `base URL`.
 />
 
 <ModelCard
+  id="qwen3-8-flash"
+  name="qwen3.8-flash"
+  tag="125B-6B"
+  leftLabel="text generation, chat & vision"
+  rightLabel="capabilities"
+  description="125B parameter MoE model (6B active), multimodal with vision, tool calling and reasoning on by default. 262K token context, the model's native window. 1B token monthly quota per member."
+  specs={[
+    { label: 'Type', value: 'MoE (125B total · 6B active)' },
+    { label: 'Context', value: '262K tokens' },
+    { label: 'Input modalities', value: 'text · image' },
+    { label: 'Output modalities', value: 'text' },
+    { label: 'Monthly quota', value: '1B tokens / member' },
+    { label: 'License', value: 'qwen-community-1.0' },
+  ]}
+  items={[
+    'Tool calling (XML format)',
+    'Reasoning mode (on by default)',
+    'Vision (image input)',
+    '262K token context',
+    'Streaming generation (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="glm-5-3-flash"
+  name="glm5.3-flash"
+  tag="320B-18B"
+  leftLabel="multimodal text generation & chat"
+  rightLabel="capabilities"
+  description="320B parameter MoE model (18B active), natively multimodal, with tool calling and reasoning. 1M token context. 500M token monthly quota per member. MIT license."
+  specs={[
+    { label: 'Type', value: 'MoE (320B total · 18B active)' },
+    { label: 'Quantization', value: 'FP8' },
+    { label: 'Context', value: '1M tokens' },
+    { label: 'Input modalities', value: 'text · image' },
+    { label: 'Output modalities', value: 'text' },
+    { label: 'Monthly quota', value: '500M tokens / member' },
+    { label: 'License', value: 'MIT' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Reasoning mode',
+    'Vision (image input)',
+    '1M token context',
+    'Streaming generation (SSE)',
+  ]}
+/>
+
+<ModelCard
   id="gemma4"
   name="gemma4"
   tag="26B-A4B"
