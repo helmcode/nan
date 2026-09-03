@@ -45,7 +45,7 @@ describe('Pricing — no per-region tier', () => {
   });
 
   test('the premium tier still leads at 200€', () => {
-    const first = tiers.indexOf("name: 'nan_member · glm 5.2 premium'");
+    const first = tiers.indexOf("name: 'nan_member · glm 5.3 premium'");
     const member = tiers.indexOf("name: 'nan_member',");
     expect(first).toBeGreaterThan(-1);
     expect(first).toBeLessThan(member);
@@ -166,7 +166,7 @@ describe.each(locales)('Pricing copy — %s', (locale) => {
 
   test('publishes context and concurrency', () => {
     const copy = premium().join(' ');
-    expect(copy).toMatch(/500K/);
+    expect(copy).toMatch(/1M context|Contexto de 1M/);
     expect(copy).toMatch(/5 (concurrent requests|peticiones en paralelo)/);
   });
 
@@ -205,7 +205,7 @@ describe.each(locales)('Pricing copy — %s', (locale) => {
   });
 
   /**
-   * glm5.2's 3,000M is the one allowance that is NOT a calendar month: it resets
+   * glm5.3's 3,000M is the one allowance that is NOT a calendar month: it resets
    * with the Stripe billing period, which is why the portal and the docs stopped
    * saying "monthly". The answer used to lump it in with DeepSeek's and MiMo's
    * genuinely monthly quotas under a single "monthly allowance".

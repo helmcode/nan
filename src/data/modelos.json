@@ -28,6 +28,14 @@
           "mostUsed": true
         },
         {
+          "id": "glm5.3",
+          "by": "Z.ai",
+          "specs": "753B MoE · FP8 · sparse attention · 1M context · multimodal · tool calling · reasoning",
+          "cuota": "3B tokens/periodo de facturación",
+          "frontier": true,
+          "premium": true
+        },
+        {
           "id": "qwen3.8-flash",
           "by": "Alibaba",
           "specs": "125B-6B MoE · 262K context · vision · tool calling · reasoning",

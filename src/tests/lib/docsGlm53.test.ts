@@ -7,7 +7,7 @@ import { DEFAULT_RATE_LIMITS } from '../../lib/rateLimits';
 import { mdxToText } from '../../lib/mdxToText';
 
 /**
- * What docs/models#glm-5-2 and the API reference publish about glm5.2.
+ * What docs/models#glm-5-3 and the API reference publish about glm5.3.
  *
  * Both pages described a model that does not exist: "not available yet",
  * "requests naming it return a model error" and a 256K context, while the
@@ -17,7 +17,7 @@ import { mdxToText } from '../../lib/mdxToText';
  *
  * Since the Scalar migration, the `api` half no longer comes from `api.mdx` but
  * from the spec (src/data/openapi.json) via openapiToText. The wording changed
- * with it; what is asserted is still the same: that glm5.2 is published as
+ * with it; what is asserted is still the same: that glm5.3 is published as
  * callable, with its real limits and without saying where it is sourced from.
  */
 
@@ -37,16 +37,19 @@ beforeAll(async () => {
   api = getApiDocText(DEFAULT_RATE_LIMITS);
 });
 
-/** The glm5.2 card only, so a 256K from another model cannot pass for it. */
+/** The glm5.3 card only, so a 262K from another model cannot pass for it. */
 function glmSection(text: string): string {
-  const start = text.indexOf('### glm5.2');
+  // The heading carries the tag ("### glm5.3 - 753B MoE"), and the space is
+  // what separates it from `### glm5.3-flash`: a different model, different
+  // limits, and it would answer first to a plain indexOf.
+  const start = text.search(/^### glm5\.3 /m);
   expect(start).toBeGreaterThan(-1);
   const rest = text.slice(start + 1);
   const end = rest.indexOf('\n### ');
   return end === -1 ? rest : rest.slice(0, end);
 }
 
-describe('docs/models — the glm5.2 card', () => {
+describe('docs/models — the glm5.3 card', () => {
   test('does not say the model is unavailable', () => {
     const section = glmSection(models);
     expect(section).not.toMatch(/coming soon/i);
@@ -55,17 +58,25 @@ describe('docs/models — the glm5.2 card', () => {
     expect(section).not.toMatch(/return a model error/i);
   });
 
-  test('publishes the 500K context and not the old 256K', () => {
+  test('publishes the 1M context of 5.3 and not the 500K of 5.2', () => {
     const section = glmSection(models);
-    expect(section).toContain('500K token');
-    expect(section).toContain('Context: 500K tokens');
+    expect(section).toContain('1M token');
+    expect(section).toContain('Context: 1M tokens');
+    expect(section).not.toContain('500K');
     expect(section).not.toContain('256K');
+  });
+
+  /** 5.3 is multimodal; 5.2 was text only and the card said so. */
+  test('publishes the image input and no longer says text only', () => {
+    const section = glmSection(models);
+    expect(section).toContain('Input modalities: text · image');
+    expect(section).not.toMatch(/text only/i);
   });
 
   /**
    * The spec label named the wrong window: `Monthly quota` sat two lines under a
    * description saying the counter goes back to zero when the BILLING PERIOD
-   * starts. glm5.2 is the one model whose cap is not the calendar month
+   * starts. glm5.3 is the one model whose cap is not the calendar month
    * (usage_quota.go clears the month default and stamps the Stripe period), so
    * it uses the label RateLimits.astro already publishes for it.
    */
@@ -87,11 +98,11 @@ describe('docs/models — the glm5.2 card', () => {
   });
 });
 
-describe('docs/api — glm5.2 is callable', () => {
+describe('docs/api — glm5.3 is callable', () => {
   test('is listed among the chat models the `model` field accepts', () => {
     const row = api.split('\n').find((l) => /^\|\s*`model`\s*\|/.test(l));
     expect(row).toBeDefined();
-    expect(row).toContain('`glm5.2`');
+    expect(row).toContain('`glm5.3`');
   });
 
   test('no surface still says it is coming soon or not callable', () => {
@@ -101,9 +112,9 @@ describe('docs/api — glm5.2 is callable', () => {
   });
 
   test('the model catalog carries its context and the tier it needs', () => {
-    const row = api.split('\n').find((l) => /^\|\s*`glm5\.2`\s*\|/.test(l));
+    const row = api.split('\n').find((l) => /^\|\s*`glm5\.3`\s*\|/.test(l));
     expect(row).toBeDefined();
-    expect(row).toContain('500K-token context');
+    expect(row).toContain('1M-token context');
     expect(row).toMatch(/premium tier/i);
     expect(row).not.toContain('256K');
   });
@@ -125,7 +136,7 @@ describe('docs/api — glm5.2 is callable', () => {
       rows.find((l) => new RegExp(`^\\|\\s*\`${code}\`\\s*\\|`).test(l));
     expect(status('402')).toMatch(/token allowance for the billing period is spent/i);
     expect(status('402')).toContain('monthly_cap_reached');
-    expect(status('429')).toMatch(/rolling 4h token budget of `glm5\.2`/);
+    expect(status('429')).toMatch(/rolling 4h token budget of `glm5\.3`/);
   });
 
   /**
@@ -138,7 +149,7 @@ describe('docs/api — glm5.2 is callable', () => {
   });
 });
 
-describe('no published surface reveals how glm5.2 is sourced', () => {
+describe('no published surface reveals how glm5.3 is sourced', () => {
   test('neither page names an upstream provider or calls the model resold', () => {
     for (const [name, text] of [
       ['models', () => models],

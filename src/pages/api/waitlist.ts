@@ -48,7 +48,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const { email, region, honeypot } = validation.input;
-    // GLM 5.2 premium interest: signups from the premium pricing card
+    // GLM 5.3 premium interest: signups from the premium pricing card
     // (?premium=1) carry the flag through to the member row so the admin
     // panel can distinguish and invite them for the premium tier.
     const wantsPremium: boolean = !!(raw && typeof raw === 'object' && (raw as Record<string, unknown>).wantsPremium === true);

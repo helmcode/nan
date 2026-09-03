@@ -6,9 +6,17 @@ const lang = getLang(Astro.url);
 const tt = useT(lang).models;
 const home = lang === 'es' ? '/es' : '/';
 
-// la data es la fuente de verdad (ES); en EN traducimos la cuota al vuelo
+// la data es la fuente de verdad (ES); en EN traducimos la cuota al vuelo.
+// La cuota del premium va por periodo de facturación de Stripe, no por mes
+// natural, y por eso no se escribe como mensual en ninguna superficie. A 320px
+// la chip mide 231px de los 272 útiles, así que cabe sin recortar.
 const quota = (c: string) =>
-  lang === 'es' ? c : c.replace('sin contador', 'unmetered').replace('/mes', ' / mo');
+  lang === 'es'
+    ? c
+    : c
+        .replace('sin contador', 'unmetered')
+        .replace('/periodo de facturación', ' / billing period')
+        .replace('/mes', ' / mo');
 const total = modelos.categorias.reduce((n, c) => n + c.modelos.length, 0);
 ---
 
@@ -35,6 +43,7 @@ const total = modelos.categorias.reduce((n, c) => n + c.modelos.length, 0);
                   <span class="mrow__badges">
                     {m.mostUsed && <span class="badge badge--used">most used</span>}
                     {m.frontier && <span class="badge badge--frontier">frontier</span>}
+                    {m.premium && <span class="badge badge--premium">{tt.badgePremium}</span>}
                   </span>
                 </div>
                 <span class="mrow__by">{m.by}</span>
@@ -126,6 +135,9 @@ const total = modelos.categorias.reduce((n, c) => n + c.modelos.length, 0);
   }
   .badge--used { color: #fff; background: var(--color-violet); }
   .badge--frontier { color: var(--color-violet-2); border: 1px solid rgba(125, 57, 235, 0.5); }
+  /* Filled in white, not in a second accent: it has to read louder than
+     `frontier` because it is the one row a member cannot call by default. */
+  .badge--premium { color: var(--color-bg); background: var(--color-text); }
 
   .mrow__meta {
     display: flex;

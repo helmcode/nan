@@ -344,6 +344,7 @@
       "titleSuffix": "modelos.",
       "titleLine2": "Una API.",
       "sub": "Todo el stack de inferencia de modelos abiertos, votado por la comunidad cada trimestre. Los datos se quedan en la UE, sin registrar nada.",
+      "badgePremium": "tier premium",
       "unmetered": "sin contador",
       "cta": "Únete a la waitlist"
     },
@@ -366,7 +367,7 @@
       "label": "membresía",
       "title1": "Una comunidad.",
       "title2": "Dos tiers. Un camino premium.",
-      "sub": "La comunidad es el producto. La inferencia es el superpoder que le añades; GLM 5.2 es la opción frontier para miembros.",
+      "sub": "La comunidad es el producto. La inferencia es el superpoder que le añades; GLM 5.3 es la opción frontier para miembros.",
       "perVat": "/mes · IVA incluido",
       "perTaxes": "/mes · impuestos incluidos",
       "inferenceIncluded": "inferencia incluida",
@@ -391,16 +392,16 @@
       "communityCond": "Sin compromiso. Cancela cuando quieras. Se factura en euros desde cualquier región.",
       "communityCta": "Únete a la comunidad",
       "premiumIncludes": [
-        "GLM 5.2, modelo abierto frontier con razonamiento",
+        "GLM 5.3, modelo abierto frontier multimodal con razonamiento",
         "Asignación de 3.000M de tokens por periodo de facturación",
         "400M de tokens por ventana deslizante de 4h: el límite que un agente de código alcanza primero",
-        "Contexto de 500K · 5 peticiones en paralelo",
+        "Contexto de 1M · 5 peticiones en paralelo",
         "Todo lo incluido en nan_member",
         "El acceso se activa pocos minutos después del pago"
       ],
-      "premiumCond": "GLM 5.2 premium (200€/mes) se ofrece a miembros según haya plazas. Únete a la waitlist y te marcaremos para este tier.",
+      "premiumCond": "GLM 5.3 premium (200€/mes) se ofrece a miembros según haya plazas. Únete a la waitlist y te marcaremos para este tier.",
       "premiumCta": "Únete a la waitlist",
-      "premiumBadge": "glm 5.2 · premium"
+      "premiumBadge": "glm 5.3 · premium"
     },
     "who": {
       "label": "quién está detrás",
@@ -434,7 +435,7 @@
         },
         {
           "q": "¿De verdad son tokens ilimitados?",
-          "a": "En los modelos del cluster, sin contador. Los frontier llevan cuota de tokens por miembro para que el plan se sostenga: 2B tokens al mes en DeepSeek V4-Flash, 1.0B al mes en MiMo v2.5, 1B al mes en Qwen 3.8 Flash, 500M al mes en GLM 5.3 Flash y 3.000M por periodo de facturación en GLM 5.2 para los miembros del tier premium. Esos límites están publicados aquí, no en letra pequeña. La factura es el precio fijo de la suscripción y no se mueve."
+          "a": "En los modelos del cluster, sin contador. Los frontier llevan cuota de tokens por miembro para que el plan se sostenga: 2B tokens al mes en DeepSeek V4-Flash, 1.0B al mes en MiMo v2.5, 1B al mes en Qwen 3.8 Flash, 500M al mes en GLM 5.3 Flash y 3.000M por periodo de facturación en GLM 5.3 para los miembros del tier premium. Esos límites están publicados aquí, no en letra pequeña. La factura es el precio fijo de la suscripción y no se mueve."
         },
         {
           "q": "¿Cómo se eligen los modelos?",

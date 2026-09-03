@@ -1,5 +1,5 @@
 ---
-// Prices verified against nan.builders: Member 70€ · GLM 5.2 premium 200€ · Community 14,99€.
+// Prices verified against nan.builders: Member 70€ · GLM 5.3 premium 200€ · Community 14,99€.
 //
 // There is no per-region tier and no per-region currency any more. Every new
 // signup is charged in EUR from any region, on BOTH funnels: cloud-api's
@@ -17,10 +17,10 @@ const tt = useT(lang).pricing;
 const home = lang === 'es' ? '/es' : '/';
 
 const tiers = [
-  // GLM 5.2 premium — price swap on the existing nan_member
+  // GLM 5.3 premium — price swap on the existing nan_member
   // subscription (200€/mo, EUR only). Shown first as the flagship tier.
   {
-    name: 'nan_member · glm 5.2 premium',
+    name: 'nan_member · glm 5.3 premium',
     amount: '200€',
     per: tt.perVat,
     badge: tt.premiumBadge,

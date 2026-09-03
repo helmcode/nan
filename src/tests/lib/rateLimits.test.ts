@@ -9,14 +9,14 @@ import {
 } from '../../lib/rateLimits';
 
 /**
- * The published numbers for glm5.2, and the reason this file exists.
+ * The published numbers for glm5.3, and the reason this file exists.
  *
- * docs/api#rate-limits used to have no row at all for glm5.2 while the model
+ * docs/api#rate-limits used to have no row at all for glm5.3 while the model
  * was already being served, so the only limits a premium member could read
  * were the ones that do not apply to them. These asserts pin the four numbers
  * to what the platform actually enforces:
  *
- *   context 500,000        cloud-api usage_quota.go modelRateLimits
+ *   context 1,000,000      cloud-api usage_quota.go modelRateLimits
  *   concurrency 5          idem, and the ratelimit hook
  *   400M per rolling 4h    ratelimit hook ROLLING_WINDOW_S / rolling budget
  *   3,000M per period      cloud-api usage_quota.go monthlyTokenCaps
@@ -25,17 +25,17 @@ import {
  * change: the failure is the point.
  */
 const GLM = {
-  contextTokens: 500_000,
+  contextTokens: 1_000_000,
   maxParallel: 5,
   windowHours: 4,
   windowTokens: 400_000_000,
   periodCapTokens: 3_000_000_000,
 };
 
-describe('rateLimits — glm5.2 windowed limits', () => {
-  const glm = DEFAULT_RATE_LIMITS.windowedModels.find((m) => m.model === 'glm5.2');
+describe('rateLimits — glm5.3 windowed limits', () => {
+  const glm = DEFAULT_RATE_LIMITS.windowedModels.find((m) => m.model === 'glm5.3');
 
-  test('glm5.2 is published', () => {
+  test('glm5.3 is published', () => {
     expect(glm).toBeDefined();
   });
 
@@ -48,7 +48,7 @@ describe('rateLimits — glm5.2 windowed limits', () => {
       ...DEFAULT_RATE_LIMITS.tokensPerMinuteByModel,
       ...DEFAULT_RATE_LIMITS.requestsPerMinuteByModel,
     ];
-    expect(perMinute.map((m) => m.model)).not.toContain('glm5.2');
+    expect(perMinute.map((m) => m.model)).not.toContain('glm5.3');
   });
 
   test('getRateLimitsConfig keeps the windowed models when env overrides the per-key values', () => {
@@ -60,7 +60,8 @@ describe('rateLimits — glm5.2 windowed limits', () => {
 
 describe('formatTokens', () => {
   test('writes the numbers the way every surface publishes them', () => {
-    expect(formatTokens(GLM.contextTokens)).toBe('500K');
+    expect(formatTokens(GLM.contextTokens)).toBe('1M');
+    expect(formatTokens(500_000)).toBe('500K');
     expect(formatTokens(GLM.windowTokens)).toBe('400M');
     expect(formatTokens(GLM.periodCapTokens)).toBe('3,000M');
   });
