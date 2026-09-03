@@ -17,19 +17,22 @@ with the same `base URL`.
 <ModelCard
   id="deepseek-v4-flash"
   name="deepseek-v4-flash"
-  tag="284B-21B"
-  leftLabel="text generation & chat"
+  tag="305B MoE"
+  leftLabel="text generation, chat & vision"
   rightLabel="capabilities"
-  description="284B parameter MoE model (21B active). 1M token context. Tool calling and reasoning. 2B token monthly quota per member."
+  description="305B parameter MoE model, served as the Vision-Exp variant: it takes images as input. 1M token context. Tool calling and reasoning. 3B token monthly quota per member."
   specs={[
-    { label: 'Type', value: 'MoE (284B total · 21B active)' },
+    { label: 'Type', value: 'MoE (305B total)' },
     { label: 'Quantization', value: 'FP8' },
     { label: 'Context', value: '1M tokens' },
-    { label: 'Monthly quota', value: '2B tokens / member' },
+    { label: 'Input modalities', value: 'text · image' },
+    { label: 'Output modalities', value: 'text' },
+    { label: 'Monthly quota', value: '3B tokens / member' },
   ]}
   items={[
     'Tool calling',
     'Reasoning mode',
+    'Vision (image input)',
     '1M token context',
     'Streaming generation (SSE)',
   ]}
@@ -65,15 +68,15 @@ with the same `base URL`.
   id="glm-5-3"
   name="glm5.3"
   tag="753B MoE"
-  leftLabel="multimodal text generation & chat — agentic coding"
+  leftLabel="text generation & chat · agentic coding"
   rightLabel="capabilities"
-  description="Premium tier: callable only with a key on the GLM 5.3 premium membership. ~753B parameter MoE model, focused on coding and long-horizon agentic tasks. 1M token context. Multimodal, with tool calling and reasoning (emits a reasoning trace). 3,000M token quota per member, and the counter goes back to zero when your billing period starts. Also capped at 400M tokens per rolling 4h window, which is the limit a heavy coding-agent run reaches first."
+  description="Premium tier: callable only with a key on the GLM 5.3 premium membership. ~753B parameter MoE model, focused on coding and long-horizon agentic tasks. 1M token context. Text in, text out: it does not take images. Tool calling and reasoning (emits a reasoning trace). 3,000M token quota per member, and the counter goes back to zero when your billing period starts. Also capped at 400M tokens per rolling 4h window, which is the limit a heavy coding-agent run reaches first."
   specs={[
     { label: 'Type', value: 'MoE (~753B total)' },
     { label: 'Quantization', value: 'FP8' },
     { label: 'Attention', value: 'Sparse attention' },
     { label: 'Context', value: '1M tokens' },
-    { label: 'Input modalities', value: 'text · image' },
+    { label: 'Input modalities', value: 'text' },
     { label: 'Output modalities', value: 'text' },
     { label: 'Allowance / billing period', value: '3,000M tokens / member' },
     { label: 'Rolling 4h window', value: '400M tokens' },
@@ -82,7 +85,6 @@ with the same `base URL`.
     'Tool calling (function calling)',
     'Reasoning mode (reasoning trace)',
     'Coding and long-horizon agentic tasks',
-    'Vision (image input)',
     '1M token context',
     'Streaming generation (SSE)',
     'Requires the GLM 5.3 premium tier',
@@ -95,13 +97,13 @@ with the same `base URL`.
   tag="125B-6B"
   leftLabel="text generation, chat & vision"
   rightLabel="capabilities"
-  description="125B parameter MoE model (6B active), multimodal with vision, tool calling and reasoning on by default. 262K token context, the model's native window. 1B token monthly quota per member."
+  description="125B parameter MoE model (6B active), multimodal with vision, tool calling and reasoning on by default. 262K token context, the model's native window. 500M token monthly quota per member."
   specs={[
     { label: 'Type', value: 'MoE (125B total · 6B active)' },
     { label: 'Context', value: '262K tokens' },
     { label: 'Input modalities', value: 'text · image' },
     { label: 'Output modalities', value: 'text' },
-    { label: 'Monthly quota', value: '1B tokens / member' },
+    { label: 'Monthly quota', value: '500M tokens / member' },
     { label: 'License', value: 'qwen-community-1.0' },
   ]}
   items={[
@@ -119,14 +121,14 @@ with the same `base URL`.
   tag="320B-18B"
   leftLabel="multimodal text generation & chat"
   rightLabel="capabilities"
-  description="320B parameter MoE model (18B active), natively multimodal, with tool calling and reasoning. 1M token context. 500M token monthly quota per member. MIT license."
+  description="320B parameter MoE model (18B active), natively multimodal, with tool calling and reasoning. 1M token context. 2B token monthly quota per member. MIT license."
   specs={[
     { label: 'Type', value: 'MoE (320B total · 18B active)' },
     { label: 'Quantization', value: 'FP8' },
     { label: 'Context', value: '1M tokens' },
     { label: 'Input modalities', value: 'text · image' },
     { label: 'Output modalities', value: 'text' },
-    { label: 'Monthly quota', value: '500M tokens / member' },
+    { label: 'Monthly quota', value: '2B tokens / member' },
     { label: 'License', value: 'MIT' },
   ]}
   items={[

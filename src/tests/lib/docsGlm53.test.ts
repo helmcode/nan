@@ -66,11 +66,15 @@ describe('docs/models — the glm5.3 card', () => {
     expect(section).not.toContain('256K');
   });
 
-  /** 5.3 is multimodal; 5.2 was text only and the card said so. */
-  test('publishes the image input and no longer says text only', () => {
+  /**
+   * 5.3 is text in, text out. The card claimed image input for weeks, copied
+   * over from the 5.3 announcement; the multimodal one is `glm5.3-flash`.
+   */
+  test('does not claim image input', () => {
     const section = glmSection(models);
-    expect(section).toContain('Input modalities: text · image');
-    expect(section).not.toMatch(/text only/i);
+    expect(section).toContain('Input modalities: text');
+    expect(section).not.toContain('Input modalities: text · image');
+    expect(section).not.toMatch(/vision|image input/i);
   });
 
   /**
@@ -117,6 +121,8 @@ describe('docs/api — glm5.3 is callable', () => {
     expect(row).toContain('1M-token context');
     expect(row).toMatch(/premium tier/i);
     expect(row).not.toContain('256K');
+    // The catalog row listed vision too. It is the one chat model with none.
+    expect(row).not.toMatch(/vision/i);
   });
 
   test('the 4h window is spelled out, not left as small print', () => {

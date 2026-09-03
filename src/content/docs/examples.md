@@ -110,7 +110,7 @@ Install: `npm install openai`
           "name": "DeepSeek V4 Flash",
           "contextWindow": 500000,
           "modalities": {
-            "input": ["text"],
+            "input": ["text", "image"],
             "output": ["text"]
           }
         },
