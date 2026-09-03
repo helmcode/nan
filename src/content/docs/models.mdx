@@ -62,18 +62,18 @@ with the same `base URL`.
 />
 
 <ModelCard
-  id="glm-5-2"
-  name="glm5.2"
+  id="glm-5-3"
+  name="glm5.3"
   tag="753B MoE"
-  leftLabel="text generation & chat — agentic coding"
+  leftLabel="multimodal text generation & chat — agentic coding"
   rightLabel="capabilities"
-  description="Premium tier: callable only with a key on the GLM 5.2 premium membership. ~753B parameter MoE model, focused on coding and long-horizon agentic tasks. 500K token context. Tool calling and reasoning (emits a reasoning trace). Text only. 3,000M token quota per member, and the counter goes back to zero when your billing period starts. Also capped at 400M tokens per rolling 4h window, which is the limit a heavy coding-agent run reaches first."
+  description="Premium tier: callable only with a key on the GLM 5.3 premium membership. ~753B parameter MoE model, focused on coding and long-horizon agentic tasks. 1M token context. Multimodal, with tool calling and reasoning (emits a reasoning trace). 3,000M token quota per member, and the counter goes back to zero when your billing period starts. Also capped at 400M tokens per rolling 4h window, which is the limit a heavy coding-agent run reaches first."
   specs={[
     { label: 'Type', value: 'MoE (~753B total)' },
     { label: 'Quantization', value: 'FP8' },
     { label: 'Attention', value: 'Sparse attention' },
-    { label: 'Context', value: '500K tokens' },
-    { label: 'Input modalities', value: 'text' },
+    { label: 'Context', value: '1M tokens' },
+    { label: 'Input modalities', value: 'text · image' },
     { label: 'Output modalities', value: 'text' },
     { label: 'Allowance / billing period', value: '3,000M tokens / member' },
     { label: 'Rolling 4h window', value: '400M tokens' },
@@ -82,9 +82,10 @@ with the same `base URL`.
     'Tool calling (function calling)',
     'Reasoning mode (reasoning trace)',
     'Coding and long-horizon agentic tasks',
-    '500K token context',
+    'Vision (image input)',
+    '1M token context',
     'Streaming generation (SSE)',
-    'Requires the GLM 5.2 premium tier',
+    'Requires the GLM 5.3 premium tier',
   ]}
 />
 

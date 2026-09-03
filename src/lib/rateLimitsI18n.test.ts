@@ -22,11 +22,11 @@ import {
  */
 
 const model: WindowedModelLimits = {
-  model: 'glm5.2',
+  model: 'glm5.3',
   windowHours: 4,
   windowTokens: 400_000_000,
   periodCapTokens: 3_000_000_000,
-  contextTokens: 500_000,
+  contextTokens: 1_000_000,
   maxParallel: 5,
 };
 

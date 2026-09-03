@@ -111,7 +111,7 @@ describe('mdxToText rate limits', () => {
     const out = await mdxToText(input);
     expect(out).toContain('- Requests / min: 60 rpm');
     expect(out).toContain('- Max parallel: 5 concurrent');
-    // glm5.2 is gated by the window, not by a per-minute rate, and the docs
+    // glm5.3 is gated by the window, not by a per-minute rate, and the docs
     // had no row for it at all while the model was already being served.
     expect(out).toContain('- Rolling 4h window: 400M tokens');
     expect(out).toContain('- Allowance / billing period: 3,000M tokens');

@@ -44,7 +44,7 @@ const NAN_MODELS = [
   'glm5.3-flash',
   'qwen3.6',
   'gemma4',
-  'glm5.2',
+  'glm5.3',
   'qwen3-embedding',
   'rerank',
   'kokoro',
@@ -139,7 +139,7 @@ describe('openapi.json: the model catalogue', () => {
   /**
    * Every model-looking identifier appearing in the spec must be in the
    * catalogue. This is the net that stops us publishing a model that does not
-   * exist, which is exactly what happened once with glm5.2 the other way round.
+   * exist, which is exactly what happened once with glm5.3 the other way round.
    */
   it('cites no model identifier outside the catalogue', () => {
     const cited = new Set(
@@ -167,11 +167,11 @@ describe('openapi.json: the model catalogue', () => {
     expect(missing).toEqual([]);
   });
 
-  it('publishes glm5.2 as a premium-tier chat model', () => {
+  it('publishes glm5.3 as a premium-tier chat model', () => {
     const chat = (spec.paths as any)['/chat/completions'].post.requestBody.content[
       'application/json'
     ].schema.properties.model.description as string;
-    expect(chat).toContain('glm5.2');
+    expect(chat).toContain('`glm5.3`');
     expect(chat).toMatch(/premium tier/i);
   });
 });

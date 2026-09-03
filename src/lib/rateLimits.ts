@@ -60,15 +60,15 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
     { model: 'gemma4', label: '1.5M tpm' },
   ],
   requestsPerMinuteByModel: [{ model: 'rerank', label: '1000 rpm' }],
-  // glm5.2 (premium tier) is absent from the per-minute tables on purpose: its
+  // glm5.3 (premium tier) is absent from the per-minute tables on purpose: its
   // gate is the 4h sliding window plus the allowance per billing period. These
   // mirror the backend policy (cloud-api modelRateLimits + the token cap for
-  // glm5.2) and the usage hook's window budget, which is the same set of
+  // glm5.3) and the usage hook's window budget, which is the same set of
   // numbers the member portal publishes.
   windowedModels: [
     {
-      model: 'glm5.2',
-      contextTokens: 500_000,
+      model: 'glm5.3',
+      contextTokens: 1_000_000,
       maxParallel: 5,
       windowHours: 4,
       windowTokens: 400_000_000,
@@ -78,8 +78,8 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
 };
 
 /**
- * Formats a token count the way every published surface writes it: 500K,
- * 400M, 3,000M. Lives here so the docs page and /api/docs cannot drift from
+ * Formats a token count the way every published surface writes it: 1M, 400M,
+ * 3,000M. Lives here so the docs page and /api/docs cannot drift from
  * each other, which is the whole reason this module exists.
  */
 export type DocsLocale = 'en' | 'es';

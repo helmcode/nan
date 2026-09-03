@@ -62,18 +62,18 @@ OpenAI y la misma `base URL`.
 />
 
 <ModelCard
-  id="glm-5-2"
-  name="glm5.2"
+  id="glm-5-3"
+  name="glm5.3"
   tag="753B MoE"
-  leftLabel="generación de texto y chat: coding agéntico"
+  leftLabel="generación de texto y chat multimodal: coding agéntico"
   rightLabel="capacidades"
-  description="Tier premium: solo se puede llamar con una key de la membresía premium GLM 5.2. Modelo MoE de ~753B parámetros, enfocado a coding y a tareas agénticas de largo recorrido. Contexto de 500K tokens. Tool calling y razonamiento (emite una traza de razonamiento). Solo texto. Cuota de 3.000M tokens por miembro, y el contador vuelve a cero cuando empieza tu periodo de facturación. Además tiene un tope de 400M tokens por ventana móvil de 4h, que es el límite con el que topa antes una sesión intensiva de agente de código."
+  description="Tier premium: solo se puede llamar con una key de la membresía premium GLM 5.3. Modelo MoE de ~753B parámetros, enfocado a coding y a tareas agénticas de largo recorrido. Contexto de 1M tokens. Multimodal, con tool calling y razonamiento (emite una traza de razonamiento). Cuota de 3.000M tokens por miembro, y el contador vuelve a cero cuando empieza tu periodo de facturación. Además tiene un tope de 400M tokens por ventana móvil de 4h, que es el límite con el que topa antes una sesión intensiva de agente de código."
   specs={[
     { label: 'Tipo', value: 'MoE (~753B total)' },
     { label: 'Cuantización', value: 'FP8' },
     { label: 'Atención', value: 'Sparse attention' },
-    { label: 'Contexto', value: '500K tokens' },
-    { label: 'Modalidades de entrada', value: 'texto' },
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Modalidades de entrada', value: 'texto · imagen' },
     { label: 'Modalidades de salida', value: 'texto' },
     { label: 'Cuota / periodo de facturación', value: '3.000M tokens / miembro' },
     { label: 'Ventana móvil de 4h', value: '400M tokens' },
@@ -82,9 +82,10 @@ OpenAI y la misma `base URL`.
     'Tool calling (function calling)',
     'Modo razonamiento (traza de razonamiento)',
     'Coding y tareas agénticas de largo recorrido',
-    'Contexto de 500K tokens',
+    'Visión (entrada de imagen)',
+    'Contexto de 1M tokens',
     'Generación en streaming (SSE)',
-    'Requiere el tier premium GLM 5.2',
+    'Requiere el tier premium GLM 5.3',
   ]}
 />
 
