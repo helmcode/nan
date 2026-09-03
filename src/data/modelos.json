@@ -14,8 +14,8 @@
         {
           "id": "deepseek-v4-flash",
           "by": "DeepSeek",
-          "specs": "284B-21B MoE · FP8 · 1M context · tool calling · reasoning",
-          "cuota": "2B tokens/mes",
+          "specs": "305B MoE · FP8 · 1M context · vision · tool calling · reasoning",
+          "cuota": "3B tokens/mes",
           "frontier": true,
           "mostUsed": true
         },
@@ -30,7 +30,7 @@
         {
           "id": "glm5.3",
           "by": "Z.ai",
-          "specs": "753B MoE · FP8 · sparse attention · 1M context · multimodal · tool calling · reasoning",
+          "specs": "753B MoE · FP8 · sparse attention · 1M context · tool calling · reasoning",
           "cuota": "3B tokens/periodo de facturación",
           "frontier": true,
           "premium": true
@@ -39,14 +39,14 @@
           "id": "qwen3.8-flash",
           "by": "Alibaba",
           "specs": "125B-6B MoE · 262K context · vision · tool calling · reasoning",
-          "cuota": "1B tokens/mes",
+          "cuota": "500M tokens/mes",
           "frontier": true
         },
         {
           "id": "glm5.3-flash",
           "by": "Z.ai",
           "specs": "320B-18B MoE · FP8 · 1M context · multimodal · tool calling · reasoning",
-          "cuota": "500M tokens/mes",
+          "cuota": "2B tokens/mes",
           "frontier": true
         },
         {

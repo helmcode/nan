@@ -373,7 +373,7 @@
       "inferenceIncluded": "inference included",
       "memberIncludes": [
         "Access to the shared cluster. Open models, no token caps.",
-        "DeepSeek V4-Flash (frontier 284B, 1M context, reasoning). 2B tokens/month.",
+        "DeepSeek V4-Flash (frontier 305B, 1M context, vision, reasoning). 3B tokens/month.",
         "Open models chosen by the community",
         "Personal API key compatible with OpenAI",
         "Private Discord channels for members only",
@@ -392,7 +392,7 @@
       "communityCond": "No commitment. Cancel anytime. Billed in euros from any region.",
       "communityCta": "Join the community",
       "premiumIncludes": [
-        "GLM 5.3, frontier open multimodal model with reasoning",
+        "GLM 5.3, frontier open model with reasoning",
         "3,000M token allowance per billing period",
         "400M tokens per rolling 4h window: the limit a coding agent reaches first",
         "1M context · 5 concurrent requests",
@@ -435,7 +435,7 @@
         },
         {
           "q": "Is it really unlimited tokens?",
-          "a": "On the cluster models, no counter. The frontier ones come with a token allowance per member so the plan holds up: 2B tokens per month on DeepSeek V4-Flash, 1.0B per month on MiMo v2.5, 1B per month on Qwen 3.8 Flash, 500M per month on GLM 5.3 Flash, and 3,000M per billing period on GLM 5.3 for members on the premium tier. Those limits are published here, not in fine print. The bill is the fixed subscription price and it doesn’t move."
+          "a": "On the cluster models, no counter. The frontier ones come with a token allowance per member so the plan holds up: 3B tokens per month on DeepSeek V4-Flash, 2B per month on GLM 5.3 Flash, 1.0B per month on MiMo v2.5, 500M per month on Qwen 3.8 Flash, and 3,000M per billing period on GLM 5.3 for members on the premium tier. Those limits are published here, not in fine print. The bill is the fixed subscription price and it doesn’t move."
         },
         {
           "q": "How are the models chosen?",

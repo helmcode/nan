@@ -373,7 +373,7 @@
       "inferenceIncluded": "inferencia incluida",
       "memberIncludes": [
         "Acceso al cluster compartido. Modelos abiertos, sin límite de tokens.",
-        "DeepSeek V4-Flash (frontier 284B, contexto 1M, razonamiento). 2B tokens/mes.",
+        "DeepSeek V4-Flash (frontier 305B, contexto 1M, visión, razonamiento). 3B tokens/mes.",
         "Modelos abiertos elegidos por la comunidad",
         "API key personal compatible con OpenAI",
         "Canales privados de Discord solo para miembros",
@@ -392,7 +392,7 @@
       "communityCond": "Sin compromiso. Cancela cuando quieras. Se factura en euros desde cualquier región.",
       "communityCta": "Únete a la comunidad",
       "premiumIncludes": [
-        "GLM 5.3, modelo abierto frontier multimodal con razonamiento",
+        "GLM 5.3, modelo abierto frontier con razonamiento",
         "Asignación de 3.000M de tokens por periodo de facturación",
         "400M de tokens por ventana deslizante de 4h: el límite que un agente de código alcanza primero",
         "Contexto de 1M · 5 peticiones en paralelo",
@@ -435,7 +435,7 @@
         },
         {
           "q": "¿De verdad son tokens ilimitados?",
-          "a": "En los modelos del cluster, sin contador. Los frontier llevan cuota de tokens por miembro para que el plan se sostenga: 2B tokens al mes en DeepSeek V4-Flash, 1.0B al mes en MiMo v2.5, 1B al mes en Qwen 3.8 Flash, 500M al mes en GLM 5.3 Flash y 3.000M por periodo de facturación en GLM 5.3 para los miembros del tier premium. Esos límites están publicados aquí, no en letra pequeña. La factura es el precio fijo de la suscripción y no se mueve."
+          "a": "En los modelos del cluster, sin contador. Los frontier llevan cuota de tokens por miembro para que el plan se sostenga: 3B tokens al mes en DeepSeek V4-Flash, 2B al mes en GLM 5.3 Flash, 1.0B al mes en MiMo v2.5, 500M al mes en Qwen 3.8 Flash y 3.000M por periodo de facturación en GLM 5.3 para los miembros del tier premium. Esos límites están publicados aquí, no en letra pequeña. La factura es el precio fijo de la suscripción y no se mueve."
         },
         {
           "q": "¿Cómo se eligen los modelos?",
