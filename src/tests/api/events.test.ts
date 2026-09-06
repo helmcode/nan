@@ -8,7 +8,7 @@ import { GET, POST } from '../../pages/api/events/[...path]';
 import { POST as LOGIN_POST } from '../../pages/api/auth/login-request';
 
 describe('events proxy lib', () => {
-  it('bloquea paths admin, globales y por evento (SPEC §8.1)', () => {
+  it('detecta paths admin, globales y por evento (SPEC v3 §8)', () => {
     expect(isAdminPath('admin')).toBe(true);
     expect(isAdminPath('admin/reload')).toBe(true);
     expect(isAdminPath('gauntlet-2026-08/admin')).toBe(true);
@@ -98,13 +98,60 @@ function ctx(path: string, init?: { method?: string; cookie?: string; ip?: strin
 describe('events proxy handler', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('responde 404 a paths admin sin llamar al backend', async () => {
+  it('responde 404 a paths admin sin cookie de sesión, sin llamar al backend', async () => {
     const spy = vi.spyOn(globalThis, 'fetch');
     expect((await GET(ctx('admin/reload'))).status).toBe(404);
-    const resp = await GET(ctx('gauntlet-2026-08/admin/state'));
+    const resp = await GET(ctx('gauntlet-2026-08/admin/state', { cookie: 'otra=1' }));
     expect(resp.status).toBe(404);
     expect(spy).not.toHaveBeenCalled();
     expect(await resp.json()).toEqual({ ok: false, error: 'not_found' });
+  });
+
+  it('deja pasar paths admin con cookie de sesión y nunca reenvía la admin key (SPEC v3 §8)', async () => {
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{"ok":false,"error":"forbidden"}', { status: 403 }));
+    const headers = new Headers({ cookie: 'nan_session=xyz', 'x-hackaton-admin-key': 'no-debe-pasar', 'x-hackaton-actor': 'x' });
+    const request = new Request('https://nan.builders/api/events/gauntlet-2026-08/admin/state', {
+      method: 'POST', headers, body: '{"status":"registration","dry_run":true}',
+    });
+    const resp = await POST({ params: { path: 'gauntlet-2026-08/admin/state' }, request, url: new URL(request.url) } as never);
+    // La autorización la decide el backend: el proxy propaga su respuesta tal cual.
+    expect(resp.status).toBe(403);
+    expect(spy).toHaveBeenCalledOnce();
+    const [target, reqInit] = spy.mock.calls[0] as [string, RequestInit];
+    expect(target).toBe('https://api.test/api/events/gauntlet-2026-08/admin/state');
+    const h = reqInit.headers as Headers;
+    expect(h.get('cookie')).toBe('nan_session=xyz');
+    expect(h.get('origin')).toBe('https://nan.builders');
+    expect(h.get('x-hackaton-admin-key')).toBeNull();
+    expect(h.get('x-hackaton-actor')).toBeNull();
+    expect(reqInit.body).toBe('{"status":"registration","dry_run":true}');
+  });
+
+  it('conserva content-type y Content-Disposition (CSV de import/export del panel)', async () => {
+    const upstream = new Response('email,name\n', {
+      status: 200,
+      headers: { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="p.csv"' },
+    });
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(upstream);
+    const headers = new Headers({ cookie: 'nan_session=xyz', 'content-type': 'text/csv' });
+    const request = new Request('https://nan.builders/api/events/gauntlet-2026-08/admin/participants/import?dry_run=true', {
+      method: 'POST', headers, body: 'email\na@b.c\n',
+    });
+    const resp = await POST({ params: { path: 'gauntlet-2026-08/admin/participants/import' }, request, url: new URL(request.url) } as never);
+    const [target, reqInit] = spy.mock.calls[0] as [string, RequestInit];
+    expect(target).toBe('https://api.test/api/events/gauntlet-2026-08/admin/participants/import?dry_run=true');
+    expect((reqInit.headers as Headers).get('content-type')).toBe('text/csv');
+    expect(resp.headers.get('content-type')).toBe('text/csv; charset=utf-8');
+    expect(resp.headers.get('content-disposition')).toBe('attachment; filename="p.csv"');
+    expect(await resp.text()).toBe('email,name\n');
+  });
+
+  it('sigue enviando JSON por defecto a las rutas públicas', async () => {
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{"ok":true}', { status: 200 }));
+    const resp = await POST(ctx('gauntlet-2026-08/register', { method: 'POST', body: '{}' }));
+    expect((spy.mock.calls[0][1] as RequestInit).headers as Headers).toBeInstanceOf(Headers);
+    expect(((spy.mock.calls[0][1] as RequestInit).headers as Headers).get('content-type')).toBe('application/json');
+    expect(resp.headers.get('content-type')).toBe('application/json');
   });
 
   it('responde 404 a una ruta fuera del prefijo sin llamar al backend', async () => {

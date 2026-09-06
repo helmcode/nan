@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { backendURL, forwardHeaders, isAdminPath } from '../../../lib/events';
+import { backendURL, forwardHeaders, hasSessionCookie, isAdminPath } from '../../../lib/events';
 
 export const prerender = false;
 
@@ -15,15 +15,17 @@ function json(body: unknown, status = 200): Response {
  *
  * Existe porque la CSP de la landing es `connect-src 'self'`: las islas solo
  * pueden hacer fetch a este origen. Reenvía cookie de sesión e IP real; nunca
- * la admin key, y nunca rutas con un segmento `admin`.
+ * la admin key. Las rutas con un segmento `admin` solo pasan con cookie de
+ * sesión (SPEC v3 §8): el backend decide si esa sesión es de staff y responde
+ * 401/403 si no; el panel `/events/admin` es el que las usa.
  */
 const handler: APIRoute = async ({ params, request, url }) => {
   const path = (params.path ?? '').toString();
 
-  // No exponer endpoints de operación desde el navegador público. Se mantiene
-  // como primera barrera aunque `backendURL` ya acote la ruta: dice
-  // explícitamente qué es lo que no debe atravesar el proxy.
-  if (isAdminPath(path)) {
+  // Sin sesión, los endpoints de operación no existen de cara al exterior:
+  // 404 sin tocar el backend. Se mantiene como primera barrera aunque
+  // `backendURL` ya acote la ruta.
+  if (isAdminPath(path) && !hasSessionCookie(request)) {
     return json({ ok: false, error: 'not_found' }, 404);
   }
 
@@ -50,9 +52,17 @@ const handler: APIRoute = async ({ params, request, url }) => {
     return json({ ok: false, error: 'server_error' }, 500);
   }
 
-  // Reenviar cuerpo y status; normalizar a JSON. Propagar Set-Cookie si lo hubiera.
+  // Reenviar cuerpo y status; normalizar a JSON salvo el CSV de
+  // `participants/export.csv`. Content-Disposition se conserva para las
+  // descargas del panel (`export?download=1`). Propagar Set-Cookie.
   const text = await resp.text();
-  const headers = new Headers({ 'content-type': 'application/json', 'cache-control': 'no-store' });
+  const upstreamType = resp.headers.get('content-type') ?? '';
+  const headers = new Headers({
+    'content-type': /^text\/csv\b/i.test(upstreamType) ? upstreamType : 'application/json',
+    'cache-control': 'no-store',
+  });
+  const disposition = resp.headers.get('content-disposition');
+  if (disposition) headers.set('content-disposition', disposition);
   // getSetCookie() devuelve un array sin colapsar comas (WHATWG); preserva
   // múltiples cookies (login + refresh, handoff de onboarding, etc.).
   for (const cookie of resp.headers.getSetCookie()) headers.append('set-cookie', cookie);

@@ -1,8 +1,10 @@
 import { env } from 'cloudflare:workers';
 import { getLocale, withLang } from './i18n';
 
-// Paths admin nunca deben atravesar el proxy público (SPEC §8.1): ni
-// `admin/reload` (global) ni `{slug}/admin/*` (por evento).
+// Paths admin (`admin/*` global y `{slug}/admin/*` por evento) solo
+// atraviesan el proxy con cookie de sesión (SPEC v3 §8): la autorización
+// (staff o no) la decide el backend. Sin cookie no hay nada que autorizar y
+// el proxy responde 404 sin tocar el backend, como antes de la v3.
 const ADMIN_SEGMENT = 'admin';
 
 export function isAdminPath(path: string): boolean {
@@ -78,12 +80,17 @@ export function backendURL(path: string, search: string): string | null {
 }
 
 // Cabeceras a reenviar al backend: preserva cookie/sesión NaN; nunca reenvía la
-// admin key (§9.2). Fija Origin para la política CORS del backend (§13).
+// admin key (§9.2): esa vía es solo directa contra cloud-api. Fija Origin para
+// la política CORS del backend (§13). Siempre JSON salvo el CSV que sube el
+// panel de admin (`participants/import`): un fetch con cuerpo de texto y sin
+// content-type explícito llega como text/plain, y eso no debe cambiar lo que
+// recibe el backend.
 export function forwardHeaders(request: Request): Headers {
   const out = new Headers();
   const cookie = request.headers.get('cookie');
   if (cookie) out.set('cookie', cookie);
-  out.set('content-type', 'application/json');
+  const contentType = request.headers.get('content-type') ?? '';
+  out.set('content-type', /^text\/csv\b/i.test(contentType) ? contentType : 'application/json');
   out.set('origin', 'https://nan.builders');
   // Backend de eventos lee CF-Connecting-IP; otros endpoints X-Forwarded-For.
   // Reenviamos ambos para que el rate-limit por IP funcione en cualquier ruta.
