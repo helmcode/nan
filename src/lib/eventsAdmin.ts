@@ -87,6 +87,74 @@ export async function resolveAdminRoute(
   return { staff: null, cookie, notFound: await astro.rewrite('/404') };
 }
 
+/** Lo que devuelve `GET /{slug}/admin` (API.md §6.1); `event` es el `event.json` íntegro. */
+export interface AdminEventView {
+  event: {
+    slug: string;
+    kind: string;
+    name: string;
+    description: string;
+    rules: string;
+    prize: string;
+    format: string;
+    status: string;
+    archived_at: string | null;
+    modules: { registration: boolean; teams: boolean; submissions: boolean; voting: boolean };
+    automation: { date_transitions: boolean };
+    dates: Record<string, string | null>;
+    registration: { capacity: number; reserve_capacity: number; discord_user: string; specialties: string[]; levels: string[] };
+    team?: { size: number; min_size: number; max_teams: number } | null;
+    submission: { fields: Record<string, string>; checks: string[]; prize_requires: string[]; gallery_visibility: string };
+    voting: { enabled: boolean; open: boolean; leaderboard_public: boolean; vote_weight: number; auto_max: number };
+    created_at: string;
+    updated_at: string;
+    [k: string]: unknown;
+  };
+  phase: string;
+  windows: { registration: { open: boolean }; submission: { open: boolean }; voting: { open: boolean }; gallery: { visible: boolean }; leaderboard: { visible: boolean } };
+  counts: { registered: number; reserve: number; withdrawn: number; teams: number; submissions: number; votes: number };
+  warnings: string[];
+}
+
+/** Fila de `GET /admin/events` (API.md §5). */
+export interface AdminEventSummary {
+  slug: string;
+  kind: string;
+  name: string;
+  format: string;
+  status: string;
+  phase: string;
+  archived_at: string | null;
+  dates: Record<string, string | null>;
+  counts: AdminEventView['counts'];
+  warnings: string[];
+  updated_at: string;
+}
+
+/** Resultado de `resolveAdminEventRoute`: staff + ficha del evento, o Response 404. */
+export type AdminEventRoute =
+  | { staff: StaffSession; cookie: string; slug: string; view: AdminEventView; notFound: null }
+  | { staff: StaffSession | null; cookie: string; slug: string; view: null; notFound: Response };
+
+/**
+ * Guardia de las rutas `/events/admin/{slug}/*`: además del staff, carga la
+ * ficha del evento (`GET /{slug}/admin`, que ve `draft` y archivados) y
+ * responde 404 si no existe. Igual que `resolveAdminRoute`, solo desde el
+ * fichero de ruta.
+ */
+export async function resolveAdminEventRoute(
+  astro: { request: Request; rewrite: (to: string) => Promise<Response>; params: Record<string, string | undefined> },
+): Promise<AdminEventRoute> {
+  const slug = astro.params.slug ?? '';
+  const route = await resolveAdminRoute(astro);
+  if (route.notFound) return { ...route, slug, view: null };
+  const res = await adminFetch<AdminEventView>(route.cookie, `${slug}/admin`);
+  if (!res.ok || !res.data?.event) {
+    return { staff: route.staff, cookie: route.cookie, slug, view: null, notFound: await astro.rewrite('/404') };
+  }
+  return { staff: route.staff, cookie: route.cookie, slug: res.data.event.slug, view: res.data, notFound: null };
+}
+
 /** Envelope de la API de eventos (SPEC v3 §6), tal cual lo devuelve el backend. */
 export interface ApiResult<T> {
   ok: boolean;
@@ -172,4 +240,17 @@ export const STATUS_LABELS: Record<string, string> = {
   voting: 'Votación',
   closed: 'Cerrado',
   cancelled: 'Cancelado',
+};
+
+/** Etiquetas de la fase efectiva (estado + fechas, SPEC v3 §5). */
+export const PHASE_LABELS: Record<string, string> = {
+  draft: 'borrador',
+  registration: 'inscripción abierta',
+  building_pending: 'construcción, entregas aún cerradas',
+  building: 'construcción, entregas abiertas',
+  submission: 'entregas congeladas',
+  voting: 'votación abierta',
+  closed_pending: 'votación vencida, pendiente de cerrar',
+  closed: 'cerrado',
+  cancelled: 'cancelado',
 };

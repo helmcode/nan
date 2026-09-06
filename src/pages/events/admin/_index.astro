@@ -1,24 +1,88 @@
 ---
-// Portada del panel (SPEC v3 §8). La guardia y la cookie llegan del
-// envoltorio de ruta; este cuerpo no hace rewrite ni comprueba la sesión.
+// Lista de eventos del panel (SPEC v3 §8, W-03). La guardia y la cookie
+// llegan del envoltorio de ruta; este cuerpo no hace rewrite ni comprueba
+// la sesión. Datos: GET admin/events (todos, incluidos draft y archivados).
 import '../../../styles/global.css';
 import EventsAdmin from '../../../layouts/EventsAdmin.astro';
-import type { StaffSession } from '../../../lib/eventsAdmin';
+import AdminNotices from '../../../components/events/admin/AdminNotices.astro';
+import {
+  adminFetch, adminHref, fmtAdminDate, PHASE_LABELS, STATUS_LABELS,
+  type AdminEventSummary, type StaffSession,
+} from '../../../lib/eventsAdmin';
+import { readFlash } from '../../../lib/eventsAdminForms';
 
 interface Props {
   staff: StaffSession;
   cookie: string;
 }
-const { staff } = Astro.props;
+const { staff, cookie } = Astro.props;
+
+const filtro = Astro.url.searchParams.get('filtro') === 'archivados' ? 'archivados'
+  : Astro.url.searchParams.get('filtro') === 'todos' ? 'todos' : 'activos';
+const search = filtro === 'todos' ? '' : `?archived=${filtro === 'archivados'}`;
+const res = await adminFetch<AdminEventSummary[]>(cookie, 'admin/events', { search });
+const events = (res.data ?? []).slice().sort((a, b) => (a.updated_at < b.updated_at ? 1 : -1));
+const flash = readFlash(Astro.url);
+const FILTERS = [
+  { key: 'activos', label: 'Activos' },
+  { key: 'archivados', label: 'Archivados' },
+  { key: 'todos', label: 'Todos' },
+];
 ---
 
 <EventsAdmin title="Eventos" staff={staff}>
-  <section class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
-    <p class="text-sm text-neutral-300">
-      Desde aquí se gestionan los eventos de NaN: crear y editar, cambiar de estado,
-      participantes, equipos, entregas, votos y auditoría. Todo lo que hace el panel
-      se puede hacer también con la API (<code class="text-neutral-200">docs/API.md</code>
-      en el repositorio del servidor de eventos).
-    </p>
-  </section>
+  <AdminNotices ok={flash.ok} warnings={flash.warnings} result={res.ok ? undefined : res} />
+
+  <div class="adm-actions" style="justify-content:space-between">
+    <nav class="adm-filters" aria-label="Filtro de eventos">
+      {FILTERS.map((f) => f.key === filtro
+        ? <span aria-current="page">{f.label}</span>
+        : <a href={f.key === 'activos' ? adminHref() : `${adminHref()}?filtro=${f.key}`}>{f.label}</a>)}
+    </nav>
+    <a class="adm-btn adm-btn-primary" href={`${adminHref()}/nuevo`}>Nuevo evento</a>
+  </div>
+
+  {res.ok && events.length === 0 && (
+    <p class="adm-msg">No hay eventos {filtro === 'activos' ? 'activos' : filtro === 'archivados' ? 'archivados' : ''}.</p>
+  )}
+
+  {events.length > 0 && (
+    <div class="adm-table-wrap">
+      <table class="adm-table">
+        <thead>
+          <tr>
+            <th>Evento</th>
+            <th>Estado</th>
+            <th>Inscritos</th>
+            <th>Equipos</th>
+            <th>Entregas</th>
+            <th>Votos</th>
+            <th>Avisos</th>
+            <th>Actualizado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {events.map((e) => (
+            <tr>
+              <td>
+                <a href={adminHref(e.slug)}>{e.name}</a>
+                <div class="adm-muted" style="font-size:12px">{e.slug} · {e.kind} · {e.format === 'team' ? 'equipos' : 'individual'}</div>
+              </td>
+              <td>
+                <span class="adm-pill" data-status={e.status}>{STATUS_LABELS[e.status] ?? e.status}</span>
+                {e.archived_at && <span class="adm-pill">archivado</span>}
+                <div class="adm-muted" style="font-size:12px">{PHASE_LABELS[e.phase] ?? e.phase}</div>
+              </td>
+              <td>{e.counts.registered}{e.counts.reserve ? <span class="adm-muted"> +{e.counts.reserve} reserva</span> : null}</td>
+              <td>{e.counts.teams}</td>
+              <td>{e.counts.submissions}</td>
+              <td>{e.counts.votes}</td>
+              <td>{e.warnings.length ? <span class="adm-pill adm-pill-warn" title={e.warnings.join(', ')}>{e.warnings.length}</span> : <span class="adm-muted">—</span>}</td>
+              <td class="adm-muted">{fmtAdminDate(e.updated_at)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
 </EventsAdmin>

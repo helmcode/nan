@@ -1,0 +1,17 @@
+---
+// Envoltorio de ruta de la ficha del evento (SPEC v3 §8, W-03): guardia de
+// staff + carga del evento (404 si no existe) y procesado del POST aquí;
+// el cuerpo vive en _index.astro.
+import Page from './_index.astro';
+import { resolveAdminEventRoute } from '../../../../lib/eventsAdmin';
+import { handleEventForm } from '../../../../lib/eventsAdminForms';
+
+export const prerender = false;
+
+const route = await resolveAdminEventRoute(Astro);
+if (route.notFound) return route.notFound;
+const outcome = await handleEventForm(Astro.request, route.cookie, route.slug);
+if (outcome.redirect) return Astro.redirect(outcome.redirect, 303);
+---
+
+<Page staff={route.staff} cookie={route.cookie} view={route.view} outcome={outcome} />

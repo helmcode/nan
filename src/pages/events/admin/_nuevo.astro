@@ -1,0 +1,31 @@
+---
+// Alta de un evento (SPEC v3 §8, W-03): formulario del event.json con los
+// valores del ejemplo v3; "Simular" valida sin crear. El POST lo procesa
+// el envoltorio de ruta y llega aquí como `outcome`.
+import '../../../styles/global.css';
+import EventsAdmin from '../../../layouts/EventsAdmin.astro';
+import AdminNotices from '../../../components/events/admin/AdminNotices.astro';
+import EventForm from '../../../components/events/admin/EventForm.astro';
+import type { StaffSession } from '../../../lib/eventsAdmin';
+import { eventToForm, NEW_EVENT_DEFAULTS, type FormOutcome } from '../../../lib/eventsAdminForms';
+
+interface Props {
+  staff: StaffSession;
+  cookie: string;
+  outcome: FormOutcome;
+}
+const { staff, outcome } = Astro.props;
+const values = outcome.values ?? eventToForm(NEW_EVENT_DEFAULTS);
+---
+
+<EventsAdmin title="Nuevo evento" staff={staff}>
+  <p class="adm-muted" style="margin-top:1rem;font-family:var(--font-mono);font-size:13px">
+    El evento se crea en borrador: no es visible hasta pasarlo a inscripción. Todo se puede cambiar después desde su ficha.
+  </p>
+  <AdminNotices
+    result={outcome.result}
+    forbidden={outcome.forbidden}
+    warningsTitle={outcome.action === 'simulate' && outcome.result?.ok ? 'Simulación: el evento se crearía sin errores. No se ha guardado nada.' : undefined}
+  />
+  <EventForm values={values} mode="new" />
+</EventsAdmin>

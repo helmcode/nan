@@ -38,7 +38,8 @@ describe('rutas de /events/admin', () => {
 
   test.each(routes)('%s resuelve la guardia de staff y es SSR', (route) => {
     const src = readFileSync(route, 'utf-8');
-    expect(src).toMatch(/const route = await resolveAdminRoute\(Astro\);/);
+    // Rutas globales: resolveAdminRoute; rutas por evento: resolveAdminEventRoute (añade la ficha y el 404 de slug).
+    expect(src).toMatch(/const route = await resolveAdmin(Event)?Route\(Astro\);/);
     expect(src).toMatch(/if \(route\.notFound\) return route\.notFound;/);
     expect(src).toMatch(/export const prerender = false;/);
     expect(src).toMatch(/staff=\{route\.staff\}/);
@@ -48,8 +49,9 @@ describe('rutas de /events/admin', () => {
   test.each(bodies)('%s no hace rewrite ni consulta la sesión', (body) => {
     const src = readFileSync(body, 'utf-8');
     expect(src).not.toMatch(/Astro\.rewrite/);
-    expect(src).not.toMatch(/resolveAdminRoute/);
+    expect(src).not.toMatch(/resolveAdmin(Event)?Route/);
     expect(src).not.toMatch(/fetchStaffSession/);
+    expect(src).not.toMatch(/handle\w+Form\(/);
   });
 
   test('el panel no tiene variante /es/', () => {
