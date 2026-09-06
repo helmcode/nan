@@ -135,6 +135,8 @@ export function statusSequence(m: { registration: boolean; teams: boolean; submi
     if (m.voting) seq.push('voting');
   } else if (m.registration && !m.teams) {
     seq.push('registration'); // workshop: solo inscripción
+  } else if (!m.registration) {
+    seq.push('published'); // informativo: se anuncia y se cierra (B-26)
   }
   seq.push('closed');
   return seq;

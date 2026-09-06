@@ -103,7 +103,10 @@
       "results": "The event has ended. Check out the final leaderboard.",
       "resultsCta": "View leaderboard",
       "closedEventTitle": "Event closed",
-      "closedEvent": "This event has ended. Thanks to everyone who took part!"
+      "closedEvent": "This event has ended. Thanks to everyone who took part!",
+      "publishedTitle": "Open to everyone",
+      "published": "No registration needed. Add it to your calendar and join through the link on the day.",
+      "publishedCta": "Join the event"
     },
     "alreadyRegistered": {
       "title": "You're already registered",

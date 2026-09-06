@@ -236,6 +236,7 @@ export function fmtAdminDate(iso?: string | null, withTime = true): string {
 /** Etiquetas en español de los estados del evento (SPEC v3 §4). */
 export const STATUS_LABELS: Record<string, string> = {
   draft: 'Borrador',
+  published: 'Publicado',
   registration: 'Inscripción',
   building: 'Construcción',
   submission: 'Entrega',
@@ -247,6 +248,7 @@ export const STATUS_LABELS: Record<string, string> = {
 /** Etiquetas de la fase efectiva (estado + fechas, SPEC v3 §5). */
 export const PHASE_LABELS: Record<string, string> = {
   draft: 'borrador',
+  published: 'publicado, sin inscripción',
   registration: 'inscripción abierta',
   building_pending: 'construcción, entregas aún cerradas',
   building: 'construcción, entregas abiertas',

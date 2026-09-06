@@ -103,7 +103,7 @@ export function forwardHeaders(request: Request): Headers {
 // que consume el SSR; el backend es la fuente de verdad.
 export type EventFormat = 'solo' | 'team';
 export type EventPhase =
-  | 'draft' | 'registration' | 'building_pending' | 'building'
+  | 'draft' | 'published' | 'registration' | 'building_pending' | 'building'
   | 'submission' | 'voting' | 'closed_pending' | 'closed';
 export type FieldMode = 'required' | 'optional' | 'hidden';
 /** registration.discord_user (SPEC §3.1): `none` = no se pide. */

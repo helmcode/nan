@@ -233,7 +233,7 @@ describe('máquina de estados (SPEC v3 §4)', () => {
     expect(statusSequence(full)).toEqual(['draft', 'registration', 'building', 'submission', 'voting', 'closed']);
     expect(statusSequence(solo)).toEqual(['draft', 'building', 'submission', 'closed']);
     expect(statusSequence(workshop)).toEqual(['draft', 'registration', 'closed']);
-    expect(statusSequence(info)).toEqual(['draft', 'closed']);
+    expect(statusSequence(info)).toEqual(['draft', 'published', 'closed']);
   });
 
   it('stateTargets: avanzar libre, retroceder uno, cancelar salvo desde closed', () => {
@@ -244,7 +244,17 @@ describe('máquina de estados (SPEC v3 §4)', () => {
       { status: 'closed', move: 'forward' },
       { status: 'cancelled', move: 'cancel' },
     ]);
-    expect(stateTargets('draft', info)).toEqual([{ status: 'closed', move: 'forward' }, { status: 'cancelled', move: 'cancel' }]);
+    expect(stateTargets('draft', info)).toEqual([
+      { status: 'published', move: 'forward' },
+      { status: 'closed', move: 'forward' },
+      { status: 'cancelled', move: 'cancel' },
+    ]);
+    // Informativo publicado: un paso atrás a draft, adelante a closed.
+    expect(stateTargets('published', info)).toEqual([
+      { status: 'draft', move: 'back' },
+      { status: 'closed', move: 'forward' },
+      { status: 'cancelled', move: 'cancel' },
+    ]);
     expect(stateTargets('closed', full)).toEqual([{ status: 'voting', move: 'back' }]);
   });
 

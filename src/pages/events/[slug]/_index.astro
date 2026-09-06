@@ -79,6 +79,12 @@ let panel: Panel | null = null;
 const closeAt = fmtDate(ev.dates.submission_close, locale, true);
 const openAt = fmtDate(ev.dates.submission_open, locale, true);
 switch (ev.phase) {
+  case 'published':
+    // Informativo anunciado (B-26): no hay inscripción; el CTA es el enlace del evento si lo tiene.
+    panel = ev.url
+      ? { title: phase.publishedTitle, body: phase.published, href: ev.url, cta: phase.publishedCta, tone: 'accent' }
+      : { title: phase.publishedTitle, body: phase.published, tone: 'accent' };
+    break;
   case 'draft':
   case 'registration':
     if (isTeam) panel = null; // bloque de inscripción

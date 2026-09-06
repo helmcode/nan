@@ -103,7 +103,10 @@
       "results": "El evento ha terminado. Consulta la clasificación final.",
       "resultsCta": "Ver clasificación",
       "closedEventTitle": "Evento cerrado",
-      "closedEvent": "Este evento ha terminado. ¡Gracias a todos los que habéis participado!"
+      "closedEvent": "Este evento ha terminado. ¡Gracias a todos los que habéis participado!",
+      "publishedTitle": "Abierto a todos",
+      "published": "Este evento no necesita inscripción. Apúntalo en tu calendario y entra por el enlace el día del evento.",
+      "publishedCta": "Ir al evento"
     },
     "alreadyRegistered": {
       "title": "Ya estás inscrito",

@@ -26,7 +26,7 @@ const hasTeam = Boolean(me?.team?.id);
 const hasParticipant = Boolean(me?.participant && me.participant.status !== 'withdrawn');
 const existing = me?.submission ?? null;
 const canEdit = ev.windows.submission.open;
-const beforeOpen = ev.phase === 'draft' || ev.phase === 'registration' || ev.phase === 'building_pending';
+const beforeOpen = ev.phase === 'draft' || ev.phase === 'published' || ev.phase === 'registration' || ev.phase === 'building_pending';
 
 const s = tObj<Record<string, string>>('events.submission', locale);
 const options = tObj<Record<string, string>>('events.options', locale);
