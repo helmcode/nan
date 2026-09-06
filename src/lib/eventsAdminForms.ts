@@ -112,6 +112,14 @@ export const FLASH_LABELS: Record<string, string> = {
   movido: 'Participante movido de equipo.',
   quitado: 'Participante sacado del equipo (sigue inscrito).',
   generado: 'Equipos generados.',
+  entrega_editada: 'Entrega actualizada.',
+  entrega_retirada: 'Entrega retirada (se conserva; se puede restaurar).',
+  entrega_restaurada: 'Entrega restaurada.',
+  check_forzado: 'Check fijado a mano: verify no lo pisará.',
+  check_reiniciado: 'Check devuelto al resultado automático.',
+  premio: 'Elegibilidad de premio fijada a mano.',
+  premio_automatico: 'Elegibilidad de premio devuelta al cálculo automático.',
+  verificado: 'Checks verificados en todas las entregas activas.',
 };
 
 /**
