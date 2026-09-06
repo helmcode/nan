@@ -1,0 +1,293 @@
+---
+// Participantes del evento (SPEC v3 §6.2 y §8, W-05): tabla con filtros,
+// acciones por fila (baja, reincorporar, promover, reserva, editar), alta
+// manual, importación CSV con previsualización y exportación. El POST lo
+// procesa el envoltorio de ruta; aquí solo se consulta y se pinta.
+import '../../../../styles/global.css';
+import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
+import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
+import { adminFetch, adminHref, fmtAdminDate, type AdminEventView, type StaffSession } from '../../../../lib/eventsAdmin';
+import { readFlash, warningLabel, type FormOutcome } from '../../../../lib/eventsAdminForms';
+import {
+  IMPORT_ACTION_LABELS, PARTICIPANT_SOURCE_LABELS, PARTICIPANT_STATUS_LABELS, participantsSearch, readParticipantFilters,
+  type AdminParticipantRow, type ImportReport,
+} from '../../../../lib/eventsAdminParticipants';
+
+interface Props {
+  staff: StaffSession;
+  cookie: string;
+  view: AdminEventView;
+  outcome: FormOutcome;
+}
+const { staff, cookie, view, outcome } = Astro.props;
+const ev = view.event;
+const archived = Boolean(ev.archived_at);
+const isTeam = ev.format === 'team';
+const flash = readFlash(Astro.url);
+const filters = readParticipantFilters(Astro.url);
+const here = adminHref(ev.slug, 'participantes');
+
+const res = await adminFetch<AdminParticipantRow[]>(cookie, `${ev.slug}/admin/participants`, { search: participantsSearch(filters) });
+const rows = (res.data ?? []).slice().sort((a, b) => a.position - b.position);
+const teams = [...new Map(rows.filter((r) => r.team_id).map((r) => [r.team_id as string, r.team_name ?? r.team_id])).entries()];
+
+// Edición: ?editar=<id> abre la tarjeta con los datos de esa fila (o los que se escribieron si falló).
+const editId = outcome.action === 'update' && outcome.values ? String(outcome.values.id ?? '') : (Astro.url.searchParams.get('editar') ?? '');
+const editRow = rows.find((r) => r.id === editId) ?? null;
+const ev2 = (k: string, fallback: string) => (outcome.action === 'update' && outcome.values ? String(outcome.values[k] ?? '') : fallback);
+const addV = (k: string) => (outcome.action === 'add' && outcome.values ? String(outcome.values[k] ?? '') : '');
+
+const importing = outcome.action === 'import_preview' || outcome.action === 'import';
+const report = importing && outcome.result?.ok ? (outcome.result.data as ImportReport | null) : null;
+// Un error de importación (csv_invalid…) y el informe los pinta esta página; arriba van el resto de errores.
+const topResult = importing && outcome.result?.ok ? undefined : outcome.result;
+const hasSpecialties = ev.registration.specialties.length > 0;
+const hasLevels = ev.registration.levels.length > 0;
+const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status] ?? r.status;
+---
+
+<EventsAdmin title={`Participantes · ${ev.name}`} staff={staff} event={{ slug: ev.slug, name: ev.name, status: ev.status }} current="participantes">
+  <AdminNotices ok={flash.ok} warnings={flash.warnings} result={topResult} forbidden={outcome.forbidden} />
+
+  <section class="adm-card">
+    <dl class="adm-facts">
+      <div><dt>Inscritos</dt><dd>{view.counts.registered} <span class="adm-muted">/ {ev.registration.capacity || '∞'}</span></dd></div>
+      <div><dt>Reserva</dt><dd>{view.counts.reserve} <span class="adm-muted">/ {ev.registration.reserve_capacity || '∞'}</span></dd></div>
+      <div><dt>Bajas</dt><dd>{view.counts.withdrawn}</dd></div>
+      <div><dt>Inscripción</dt><dd>{view.windows.registration.open ? 'abierta' : 'cerrada'}</dd></div>
+      <div><dt>Formato</dt><dd>{isTeam ? 'equipos' : 'individual'}</dd></div>
+    </dl>
+    <form method="get" class="adm-actions" style="margin-top:1rem;align-items:end">
+      <label>
+        <span class="adm-label">Estado</span>
+        <select class="adm-input" name="estado">
+          <option value="">todos</option>
+          {Object.entries(PARTICIPANT_STATUS_LABELS).map(([k, l]) => <option value={k} selected={filters.status === k}>{l}</option>)}
+        </select>
+      </label>
+      <label>
+        <span class="adm-label">Reserva</span>
+        <select class="adm-input" name="reserva">
+          <option value="">indiferente</option>
+          <option value="si" selected={filters.reserve === 'si'}>solo reserva</option>
+          <option value="no" selected={filters.reserve === 'no'}>sin reserva</option>
+        </select>
+      </label>
+      {isTeam && (
+        <label>
+          <span class="adm-label">Equipo</span>
+          <select class="adm-input" name="equipo">
+            <option value="">todos</option>
+            <option value="none" selected={filters.team === 'none'}>sin equipo</option>
+            {teams.map(([id, name]) => <option value={id} selected={filters.team === id}>{name}</option>)}
+          </select>
+        </label>
+      )}
+      <label style="flex:1;min-width:12rem">
+        <span class="adm-label">Buscar</span>
+        <input class="adm-input" name="q" value={filters.q} placeholder="nombre, email o Discord" maxlength="100" />
+      </label>
+      <button class="adm-btn" type="submit">Filtrar</button>
+      {(filters.status || filters.reserve || filters.team || filters.q) && <a class="adm-btn" href={here}>Quitar filtros</a>}
+      <a class="adm-btn" href={`/api/events/${ev.slug}/admin/participants/export.csv`} download={`${ev.slug}-participants.csv`}>Exportar CSV</a>
+    </form>
+  </section>
+
+  {!res.ok && <AdminNotices result={res} />}
+  {res.ok && rows.length === 0 && <p class="adm-msg">No hay participantes con ese filtro.</p>}
+
+  {rows.length > 0 && (
+    <div class="adm-table-wrap" style="margin-top:1.5rem">
+      <table class="adm-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Participante</th>
+            {(hasSpecialties || hasLevels) && <th>Perfil</th>}
+            <th>Estado</th>
+            {isTeam && <th>Equipo</th>}
+            <th>Entrega</th>
+            <th>Origen</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <td class="adm-muted">{r.position}</td>
+              <td>
+                <a href={`${here}?editar=${r.id}#editar`}>{r.name}</a>
+                <div class="adm-muted" style="font-size:12px">{r.email}{r.discord_user ? ` · ${r.discord_user}` : ''}</div>
+                {r.notes && <div class="adm-muted" style="font-size:12px" title="Notas (solo admin)">✎ {r.notes}</div>}
+              </td>
+              {(hasSpecialties || hasLevels) && <td class="adm-muted">{[r.specialty, r.level].filter(Boolean).join(' · ') || '—'}</td>}
+              <td>
+                <span class:list={['adm-pill', { 'adm-pill-warn': r.status === 'withdrawn' }]} data-status={r.status}>{statusOf(r)}</span>
+                {r.is_reserve && r.status !== 'withdrawn' && <span class="adm-pill">reserva</span>}
+                {r.status === 'withdrawn' && r.withdrawn_reason && <div class="adm-muted" style="font-size:12px">motivo: {r.withdrawn_reason}</div>}
+              </td>
+              {isTeam && <td>{r.team_name ?? <span class="adm-muted">—</span>}</td>}
+              <td>{r.submission_id ? <a href={adminHref(ev.slug, 'entregas')}>sí</a> : <span class="adm-muted">no</span>}</td>
+              <td class="adm-muted" style="font-size:12px">{PARTICIPANT_SOURCE_LABELS[r.source] ?? r.source}<br />{fmtAdminDate(r.created_at)}</td>
+              <td class="adm-actions-cell">
+                {!archived && r.status !== 'withdrawn' && (
+                  <form method="post" class="adm-inline">
+                    <input type="hidden" name="action" value="withdraw" />
+                    <input type="hidden" name="id" value={r.id} />
+                    <button class="adm-btn adm-btn-sm adm-btn-danger" type="submit">Dar de baja</button>
+                  </form>
+                )}
+                {!archived && r.is_reserve && r.status !== 'withdrawn' && (
+                  <form method="post" class="adm-inline">
+                    <input type="hidden" name="action" value="promote" />
+                    <input type="hidden" name="id" value={r.id} />
+                    <button class="adm-btn adm-btn-sm adm-btn-primary" type="submit">Promover</button>
+                  </form>
+                )}
+                {!archived && !r.is_reserve && r.status !== 'withdrawn' && !r.team_id && !r.submission_id && (
+                  <form method="post" class="adm-inline">
+                    <input type="hidden" name="action" value="demote" />
+                    <input type="hidden" name="id" value={r.id} />
+                    <button class="adm-btn adm-btn-sm" type="submit">A reserva</button>
+                  </form>
+                )}
+                {!archived && r.status === 'withdrawn' && (
+                  <form method="post" class="adm-inline">
+                    <input type="hidden" name="action" value="reinstate" />
+                    <input type="hidden" name="id" value={r.id} />
+                    <button class="adm-btn adm-btn-sm adm-btn-primary" type="submit">Reincorporar</button>
+                    <label class="adm-check" style="font-size:12px"><input type="checkbox" name="reserve" /> como reserva</label>
+                    {!isTeam && <label class="adm-check" style="font-size:12px"><input type="checkbox" name="restore_submission" /> recuperar entrega</label>}
+                  </form>
+                )}
+                {archived && <span class="adm-muted">solo lectura</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+
+  {editRow && !archived && (
+    <section class="adm-card" id="editar">
+      <h2 class="adm-h2">Editar: {editRow.name}</h2>
+      <p class="adm-muted" style="font-family:var(--font-mono);font-size:12px">{editRow.email} · {statusOf(editRow)} · inscrito el {fmtAdminDate(editRow.created_at)}</p>
+      <form method="post">
+        <input type="hidden" name="action" value="update" />
+        <input type="hidden" name="id" value={editRow.id} />
+        <div class="adm-grid">
+          <label><span class="adm-label">Nombre</span><input class="adm-input" name="name" value={ev2('name', editRow.name)} required /></label>
+          <label><span class="adm-label">Discord</span><input class="adm-input" name="discord_user" value={ev2('discord_user', editRow.discord_user)} /></label>
+          {hasSpecialties && (
+            <label><span class="adm-label">Especialidad</span>
+              <select class="adm-input" name="specialty" required>
+                <option value="">elige…</option>
+                {ev.registration.specialties.map((s) => <option value={s} selected={ev2('specialty', editRow.specialty ?? '') === s}>{s}</option>)}
+              </select>
+            </label>
+          )}
+          {hasLevels && (
+            <label><span class="adm-label">Nivel</span>
+              <select class="adm-input" name="level" required>
+                <option value="">elige…</option>
+                {ev.registration.levels.map((s) => <option value={s} selected={ev2('level', editRow.level ?? '') === s}>{s}</option>)}
+              </select>
+            </label>
+          )}
+          <label class="adm-span"><span class="adm-label">Notas (solo admin)</span><textarea class="adm-input" name="notes" rows="2">{ev2('notes', editRow.notes)}</textarea></label>
+        </div>
+        <div class="adm-actions">
+          <button class="adm-btn adm-btn-primary" type="submit">Guardar</button>
+          <a class="adm-btn" href={here}>Cancelar</a>
+        </div>
+      </form>
+    </section>
+  )}
+
+  {!archived && (
+    <details class="adm-details" open={outcome.action === 'add'}>
+      <summary>Alta manual</summary>
+      <div class="adm-details-body">
+        <p class="adm-muted" style="font-family:var(--font-mono);font-size:12px">
+          Solo cuentas de NaN: el email tiene que existir en la plataforma. No hace falta que la inscripción esté abierta; por encima del aforo se crea con aviso.
+        </p>
+        <form method="post">
+          <input type="hidden" name="action" value="add" />
+          <div class="adm-grid">
+            <label><span class="adm-label">Email de la cuenta de NaN</span><input class="adm-input" type="email" name="email" value={addV('email')} required /></label>
+            <label><span class="adm-label">Nombre <span class="adm-muted">(vacío: el de la cuenta)</span></span><input class="adm-input" name="name" value={addV('name')} /></label>
+            <label><span class="adm-label">Discord <span class="adm-muted">(vacío: el de la cuenta)</span></span><input class="adm-input" name="discord_user" value={addV('discord_user')} /></label>
+            {hasSpecialties && (
+              <label><span class="adm-label">Especialidad</span>
+                <select class="adm-input" name="specialty" required>
+                  <option value="">elige…</option>
+                  {ev.registration.specialties.map((s) => <option value={s} selected={addV('specialty') === s}>{s}</option>)}
+                </select>
+              </label>
+            )}
+            {hasLevels && (
+              <label><span class="adm-label">Nivel</span>
+                <select class="adm-input" name="level" required>
+                  <option value="">elige…</option>
+                  {ev.registration.levels.map((s) => <option value={s} selected={addV('level') === s}>{s}</option>)}
+                </select>
+              </label>
+            )}
+            <label class="adm-span"><span class="adm-label">Notas (solo admin)</span><input class="adm-input" name="notes" value={addV('notes')} /></label>
+            <label class="adm-check"><input type="checkbox" name="reserve" checked={addV('reserve') !== ''} /> Dar de alta como reserva</label>
+          </div>
+          <div class="adm-actions"><button class="adm-btn adm-btn-primary" type="submit">Dar de alta</button></div>
+        </form>
+      </div>
+    </details>
+  )}
+
+  {!archived && (
+    <details class="adm-details" open={importing}>
+      <summary>Importar CSV</summary>
+      <div class="adm-details-body">
+        <p class="adm-muted" style="font-family:var(--font-mono);font-size:12px">
+          Cabecera obligatoria; columnas <code>email,name,discord_user,specialty,level,reserve</code> en cualquier orden (solo <code>email</code> es imprescindible).
+          Emails sin cuenta de NaN se rechazan; los ya inscritos se actualizan. Previsualiza primero: no escribe nada.
+        </p>
+        <form method="post" enctype="multipart/form-data" class="adm-actions" style="align-items:end">
+          <label style="flex:1;min-width:14rem">
+            <span class="adm-label">Fichero CSV</span>
+            <input class="adm-input" type="file" name="csv" accept=".csv,text/csv" required />
+          </label>
+          <button class="adm-btn" type="submit" name="action" value="import_preview">Previsualizar</button>
+          <button class="adm-btn adm-btn-danger" type="submit" name="action" value="import">Importar</button>
+        </form>
+        {report && (
+          <div class:list={['adm-msg', outcome.action === 'import' ? 'adm-msg-ok' : 'adm-msg-warn']} style="margin-top:1rem">
+            <p>
+              {outcome.action === 'import' ? 'Importación aplicada' : 'Previsualización (no se ha escrito nada)'}:
+              {' '}{report.created} nuevas, {report.updated} actualizadas, {report.restored} reincorporadas, {report.unchanged} sin cambios, {report.rejected} rechazadas.
+            </p>
+            {report.rows.length > 0 && (
+              <div class="adm-table-wrap" style="margin-top:.75rem">
+                <table class="adm-table">
+                  <thead><tr><th>Línea</th><th>Email</th><th>Resultado</th><th>Detalle</th></tr></thead>
+                  <tbody>
+                    {report.rows.map((row) => (
+                      <tr>
+                        <td class="adm-muted">{row.line}</td>
+                        <td>{row.email}</td>
+                        <td><span class:list={['adm-pill', { 'adm-pill-warn': row.action === 'rejected' }]}>{IMPORT_ACTION_LABELS[row.action] ?? row.action}</span></td>
+                        <td class="adm-muted" style="font-size:12px">
+                          {row.error ? warningLabel(row.error) : ''}
+                          {(row.warnings ?? []).map((w) => <span> {warningLabel(w)}</span>)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </details>
+  )}
+</EventsAdmin>

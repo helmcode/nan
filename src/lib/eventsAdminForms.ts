@@ -1,4 +1,4 @@
-import { adminFetch, adminHref, type ApiResult } from './eventsAdmin';
+import { adminFetch, adminHref, type AdminScreen, type ApiResult } from './eventsAdmin';
 
 /**
  * Formularios del panel de eventos (SPEC v3 §8, W-03): lista, alta, edición,
@@ -75,6 +75,9 @@ export const WARNING_LABELS: Record<string, string> = {
   archive_active: 'El evento no está cerrado ni cancelado: solo se archiva forzando.',
   event_archived: 'El evento está archivado.',
   seat_free: 'Se libera una plaza y nadie sube de reserva automáticamente.',
+  member_not_found: 'Ese email no tiene cuenta de NaN.',
+  invalid_email: 'Email mal formado.',
+  participant_exists: 'Esa cuenta ya está inscrita.',
   team_under_min: 'Equipo por debajo del mínimo.',
   team_over_size: 'Equipo por encima del tamaño.',
   team_empty: 'Equipo vacío.',
@@ -96,6 +99,13 @@ export const FLASH_LABELS: Record<string, string> = {
   desarchivado: 'Evento desarchivado.',
   estado: 'Estado cambiado.',
   sweep: 'Sweep ejecutado: el estado ha avanzado por fecha.',
+  alta: 'Participante dado de alta.',
+  editado: 'Participante actualizado.',
+  baja: 'Participante dado de baja (se conserva el historial).',
+  reincorporado: 'Participante reincorporado.',
+  promovido: 'Participante promovido de reserva a inscrito.',
+  reserva: 'Participante pasado a reserva.',
+  importado: 'Importación aplicada.',
 };
 
 /**
@@ -270,13 +280,13 @@ export function formValues(fd: FormData): EventFormValues {
   return v;
 }
 
-const str = (v: EventFormValues, k: string) => (typeof v[k] === 'string' ? (v[k] as string).trim() : '');
+export const str = (v: EventFormValues, k: string) => (typeof v[k] === 'string' ? (v[k] as string).trim() : '');
 const list = (v: EventFormValues, k: string) => (Array.isArray(v[k]) ? (v[k] as string[]) : []);
 const num = (v: EventFormValues, k: string) => {
   const n = Number(str(v, k));
   return Number.isFinite(n) ? Math.trunc(n) : 0;
 };
-const on = (v: EventFormValues, k: string) => str(v, k) !== '';
+export const on = (v: EventFormValues, k: string) => str(v, k) !== '';
 
 /**
  * Valores del formulario → cuerpo de `POST admin/events` / `PUT {slug}/admin`
@@ -365,7 +375,7 @@ export interface FormOutcome {
   forbidden?: boolean;
 }
 
-async function readForm(request: Request): Promise<{ fd: FormData | null; forbidden: boolean }> {
+export async function readForm(request: Request): Promise<{ fd: FormData | null; forbidden: boolean }> {
   if (request.method !== 'POST') return { fd: null, forbidden: false };
   if (!sameOrigin(request)) return { fd: null, forbidden: true };
   try {
@@ -375,12 +385,12 @@ async function readForm(request: Request): Promise<{ fd: FormData | null; forbid
   }
 }
 
-/** URL de vuelta tras un cambio: `/events/admin/{slug}?ok=…&warn=a,b`. */
-export function doneHref(slug: string, ok: string, warnings: string[] = []): string {
+/** URL de vuelta tras un cambio: `/events/admin/{slug}[/pantalla]?ok=…&warn=a,b`. */
+export function doneHref(slug: string, ok: string, warnings: string[] = [], screen: AdminScreen = 'evento'): string {
   const q = new URLSearchParams({ ok });
   const warn = warnings.filter((w) => w !== 'no_change');
   if (warn.length) q.set('warn', warn.join(','));
-  return `${adminHref(slug)}?${q.toString()}`;
+  return `${adminHref(slug, screen)}?${q.toString()}`;
 }
 
 /** Lee `?ok=` y `?warn=` de una URL y los convierte en textos; ignora lo desconocido. */
