@@ -98,6 +98,8 @@ export interface AdminEventView {
     prize: string;
     format: string;
     status: string;
+    /** Solo en `cancelled`: estado al que se puede volver (SPEC v3 §4.2). */
+    previous_status?: string;
     archived_at: string | null;
     modules: { registration: boolean; teams: boolean; submissions: boolean; voting: boolean };
     automation: { date_transitions: boolean };

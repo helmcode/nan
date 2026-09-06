@@ -4,7 +4,7 @@ vi.mock('cloudflare:workers', () => ({ env: { CLOUD_API_URL: 'https://api.test' 
 
 import {
   doneHref, eventToForm, formToEventBody, formValues, handleEventForm, handleNewEventForm,
-  isoToLocal, localToIso, NEW_EVENT_DEFAULTS, readFlash, sameOrigin, splitList,
+  isoToLocal, localToIso, NEW_EVENT_DEFAULTS, readFlash, sameOrigin, splitList, stateTargets, statusSequence,
 } from '../../lib/eventsAdminForms';
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
@@ -220,5 +220,86 @@ describe('handleEventForm', () => {
     const out = await handleEventForm(post({ action: 'unarchive' }), 'c', 'demo');
     expect(out.redirect).toBe('/events/admin/demo?ok=desarchivado');
     expect(spy.mock.calls[0][0]).toBe('https://api.test/api/events/demo/admin/unarchive');
+  });
+});
+
+describe('máquina de estados (SPEC v3 §4)', () => {
+  const full = { registration: true, teams: true, submissions: true, voting: true };
+  const solo = { registration: true, teams: false, submissions: true, voting: false };
+  const workshop = { registration: true, teams: false, submissions: false, voting: false };
+  const info = { registration: false, teams: false, submissions: false, voting: false };
+
+  it('statusSequence sigue el orden canónico según módulos', () => {
+    expect(statusSequence(full)).toEqual(['draft', 'registration', 'building', 'submission', 'voting', 'closed']);
+    expect(statusSequence(solo)).toEqual(['draft', 'building', 'submission', 'closed']);
+    expect(statusSequence(workshop)).toEqual(['draft', 'registration', 'closed']);
+    expect(statusSequence(info)).toEqual(['draft', 'closed']);
+  });
+
+  it('stateTargets: avanzar libre, retroceder uno, cancelar salvo desde closed', () => {
+    expect(stateTargets('building', full)).toEqual([
+      { status: 'registration', move: 'back' },
+      { status: 'submission', move: 'forward' },
+      { status: 'voting', move: 'forward' },
+      { status: 'closed', move: 'forward' },
+      { status: 'cancelled', move: 'cancel' },
+    ]);
+    expect(stateTargets('draft', info)).toEqual([{ status: 'closed', move: 'forward' }, { status: 'cancelled', move: 'cancel' }]);
+    expect(stateTargets('closed', full)).toEqual([{ status: 'voting', move: 'back' }]);
+  });
+
+  it('stateTargets: desde cancelled solo se vuelve al estado previo', () => {
+    expect(stateTargets('cancelled', full, 'submission')).toEqual([{ status: 'submission', move: 'restore' }]);
+    expect(stateTargets('cancelled', full, null)).toEqual([]);
+  });
+
+  it('readFlash conoce estado y sweep', () => {
+    expect(readFlash(new URL('https://x/e?ok=estado&warn=voting_not_open')).ok).toMatch(/Estado cambiado/);
+    expect(readFlash(new URL('https://x/e?ok=sweep')).ok).toMatch(/Sweep/);
+  });
+});
+
+describe('handleEventForm: estado y sweep', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('state_preview: POST admin/state con dry_run y sin redirección', async () => {
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(json({ ok: true, data: { status: 'voting', phase: 'voting' }, warnings: ['voting_not_open'], dry_run: true }));
+    const out = await handleEventForm(post({ action: 'state_preview', status: 'voting' }), 'c', 'demo');
+    expect(out.redirect).toBeUndefined();
+    expect(out.action).toBe('state_preview');
+    expect(out.result?.warnings).toEqual(['voting_not_open']);
+    expect(out.values?.status).toBe('voting');
+    const [url, init] = spy.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://api.test/api/events/demo/admin/state');
+    expect(JSON.parse(init.body as string)).toEqual({ status: 'voting', dry_run: true });
+  });
+
+  it('state: confirma la transición y redirige con los avisos', async () => {
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(json({ ok: true, data: { status: 'voting', phase: 'voting' }, warnings: ['voting_not_open'] }));
+    const out = await handleEventForm(post({ action: 'state', status: 'voting' }), 'c', 'demo');
+    expect(out.redirect).toBe('/events/admin/demo?ok=estado&warn=voting_not_open');
+    expect(JSON.parse((spy.mock.calls[0][1] as RequestInit).body as string)).toEqual({ status: 'voting', dry_run: false });
+  });
+
+  it('state: una transición no permitida vuelve con el error', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(json({ ok: false, error: 'invalid_transition', message: 'transición de estado no permitida' }, 400));
+    const out = await handleEventForm(post({ action: 'state', status: 'draft' }), 'c', 'demo');
+    expect(out.redirect).toBeUndefined();
+    expect(out.result?.ok).toBe(false);
+    expect(out.result?.error).toBe('invalid_transition');
+  });
+
+  it('sweep: redirige solo si hubo transición', async () => {
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(json({ ok: true, data: { automation: false, from: 'registration', status: 'registration', transitions: [], teams_created: 0 }, warnings: ['automation_off'] }));
+    const out = await handleEventForm(post({ action: 'sweep' }), 'c', 'demo');
+    expect(out.redirect).toBeUndefined();
+    expect(out.action).toBe('sweep');
+    expect(out.result?.warnings).toEqual(['automation_off']);
+    expect(spy.mock.calls[0][0]).toBe('https://api.test/api/events/demo/admin/sweep');
+
+    vi.restoreAllMocks();
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(json({ ok: true, data: { automation: true, from: 'registration', status: 'building', transitions: ['registration→building'], teams_created: 2 }, warnings: [] }));
+    const out2 = await handleEventForm(post({ action: 'sweep' }), 'c', 'demo');
+    expect(out2.redirect).toBe('/events/admin/demo?ok=sweep');
   });
 });

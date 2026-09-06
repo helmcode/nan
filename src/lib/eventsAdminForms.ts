@@ -94,6 +94,67 @@ export const FLASH_LABELS: Record<string, string> = {
   clonado: 'Evento clonado en borrador, sin participantes ni fechas.',
   archivado: 'Evento archivado: queda en solo lectura.',
   desarchivado: 'Evento desarchivado.',
+  estado: 'Estado cambiado.',
+  sweep: 'Sweep ejecutado: el estado ha avanzado por fecha.',
+};
+
+/**
+ * Orden canónico de estados según los módulos (SPEC v3 §4.1; espejo de
+ * `EventModules.StatusSequence` del backend). `cancelled` no está en la
+ * secuencia.
+ */
+export function statusSequence(m: { registration: boolean; teams: boolean; submissions: boolean; voting: boolean }): string[] {
+  const seq = ['draft'];
+  if (m.registration && m.teams) seq.push('registration');
+  if (m.submissions) {
+    seq.push('building', 'submission');
+    if (m.voting) seq.push('voting');
+  } else if (m.registration && !m.teams) {
+    seq.push('registration'); // workshop: solo inscripción
+  }
+  seq.push('closed');
+  return seq;
+}
+
+export type StateMove = 'forward' | 'back' | 'cancel' | 'restore';
+
+/** Un destino de transición permitido por §4.2 y cómo se llega a él. */
+export interface StateTarget {
+  status: string;
+  move: StateMove;
+}
+
+/**
+ * Destinos a los que se puede pasar desde `status` (SPEC v3 §4.2): avanzar
+ * a cualquier estado posterior, retroceder solo uno, cancelar salvo desde
+ * `closed`, y desde `cancelled` solo volver a `previous_status`. Es el mismo
+ * cálculo que hace el backend; el panel lo usa para no ofrecer botones que
+ * fallarían con `invalid_transition`.
+ */
+export function stateTargets(
+  status: string,
+  modules: Parameters<typeof statusSequence>[0],
+  previousStatus?: string | null,
+): StateTarget[] {
+  if (status === 'cancelled') {
+    return previousStatus ? [{ status: previousStatus, move: 'restore' }] : [];
+  }
+  const seq = statusSequence(modules);
+  const at = seq.indexOf(status);
+  const out: StateTarget[] = [];
+  if (at >= 0) {
+    if (at > 0) out.push({ status: seq[at - 1], move: 'back' });
+    for (const s of seq.slice(at + 1)) out.push({ status: s, move: 'forward' });
+  }
+  if (status !== 'closed') out.push({ status: 'cancelled', move: 'cancel' });
+  return out;
+}
+
+export const STATE_MOVE_LABELS: Record<StateMove, string> = {
+  forward: 'avanzar a',
+  back: 'retroceder a',
+  cancel: 'cancelar el evento',
+  restore: 'volver a',
 };
 
 /** Fecha RFC 3339 → valor de `<input type="datetime-local">` en UTC (`2027-01-10T00:00`). */
@@ -294,7 +355,7 @@ export function sameOrigin(request: Request): boolean {
 export interface FormOutcome {
   /** Adónde ir (303) tras un cambio real. */
   redirect?: string;
-  /** Qué botón se pulsó (`save`, `simulate`, `create`, `clone`, `archive`, `unarchive`). */
+  /** Qué botón se pulsó (`save`, `simulate`, `create`, `clone`, `archive`, `unarchive`, `state_preview`, `state`, `sweep`). */
   action?: string;
   /** Respuesta del backend cuando no hay redirección (error o simulación). */
   result?: ApiResult<unknown>;
@@ -349,7 +410,7 @@ export async function handleNewEventForm(request: Request, cookie: string): Prom
   return { action, result, values };
 }
 
-/** `/events/admin/{slug}`: guardar, simular, clonar, archivar o desarchivar. */
+/** `/events/admin/{slug}`: guardar, simular, clonar, archivar, desarchivar, cambiar de estado (con previsualización) o forzar el sweep. */
 export async function handleEventForm(request: Request, cookie: string, slug: string): Promise<FormOutcome> {
   const { fd, forbidden } = await readForm(request);
   if (forbidden) return { forbidden: true };
@@ -370,6 +431,21 @@ export async function handleEventForm(request: Request, cookie: string, slug: st
     if (result.ok && result.data?.archived === (action === 'archive')) {
       return { redirect: doneHref(slug, action === 'archive' ? 'archivado' : 'desarchivado', result.warnings) };
     }
+    return { action, result, values };
+  }
+  if (action === 'state_preview' || action === 'state') {
+    // Control de estado (SPEC v3 §4.2): primero se previsualizan los avisos
+    // con dry_run y solo después se confirma la transición.
+    const body = { status: str(values, 'status'), dry_run: action === 'state_preview' };
+    const result = await adminFetch<{ status?: string }>(cookie, `${slug}/admin/state`, { method: 'POST', body });
+    if (result.ok && action === 'state') return { redirect: doneHref(slug, 'estado', result.warnings) };
+    return { action, result, values };
+  }
+  if (action === 'sweep') {
+    // Solo redirige si el sweep ha movido el estado; si no, se enseña el
+    // resultado (automation_off o nada que hacer) sin salir de la página.
+    const result = await adminFetch<{ transitions?: string[] }>(cookie, `${slug}/admin/sweep`, { method: 'POST', body: {} });
+    if (result.ok && (result.data?.transitions?.length ?? 0) > 0) return { redirect: doneHref(slug, 'sweep', result.warnings) };
     return { action, result, values };
   }
 

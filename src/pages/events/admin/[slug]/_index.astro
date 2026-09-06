@@ -1,11 +1,12 @@
 ---
 // Ficha del evento (SPEC v3 §8, W-03): resumen (fase, ventanas, contadores,
-// avisos de coherencia), editor del event.json, clonado y archivado. El
-// control de estado llega en W-04. El POST lo procesa el envoltorio de ruta.
+// avisos de coherencia), control de estado (W-04), editor del event.json,
+// clonado y archivado. El POST lo procesa el envoltorio de ruta.
 import '../../../../styles/global.css';
 import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
 import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
 import EventForm from '../../../../components/events/admin/EventForm.astro';
+import StateControl from '../../../../components/events/admin/StateControl.astro';
 import { adminHref, fmtAdminDate, PHASE_LABELS, type AdminEventView, type StaffSession } from '../../../../lib/eventsAdmin';
 import { eventToForm, readFlash, warningLabel, type FormOutcome } from '../../../../lib/eventsAdminForms';
 
@@ -22,6 +23,8 @@ const flash = readFlash(Astro.url);
 const values = outcome.values && ['save', 'simulate'].includes(outcome.action ?? '') ? outcome.values : eventToForm(ev);
 const cloneSlug = outcome.action === 'clone' && outcome.values ? String(outcome.values.clone_slug ?? '') : '';
 const canArchiveDirect = ev.status === 'closed' || ev.status === 'cancelled';
+// La previsualización de estado y el sweep sin transición los pinta StateControl; arriba solo van los errores.
+const topResult = ['state_preview', 'sweep'].includes(outcome.action ?? '') && outcome.result?.ok ? undefined : outcome.result;
 const windows = [
   { label: 'Inscripción', open: view.windows.registration.open },
   { label: 'Entregas', open: view.windows.submission.open },
@@ -35,7 +38,7 @@ const windows = [
   <AdminNotices
     ok={flash.ok}
     warnings={flash.warnings}
-    result={outcome.result}
+    result={topResult}
     forbidden={outcome.forbidden}
     warningsTitle={outcome.action === 'simulate' && outcome.result?.ok
       ? 'Simulación: los cambios serían válidos. No se ha guardado nada.'
@@ -75,6 +78,8 @@ const windows = [
   </section>
 
   {archived && <p class="adm-msg adm-msg-warn">Evento archivado: solo lectura. Para editarlo hay que desarchivarlo.</p>}
+
+  <StateControl view={view} outcome={outcome} disabled={archived} />
 
   <EventForm values={values} mode="edit" disabled={archived} slugLocked={ev.status !== 'draft'} />
 

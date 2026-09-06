@@ -1,0 +1,106 @@
+---
+/**
+ * Control de estado del evento (SPEC v3 §4.2 y §8, W-04): estado actual,
+ * destinos permitidos, previsualización de avisos con `dry_run` y
+ * confirmación explícita; además el sweep manual (§4.3). El POST lo procesa
+ * el envoltorio de ruta; aquí solo se pinta lo que devolvió.
+ */
+import { STATUS_LABELS, type AdminEventView } from '../../../lib/eventsAdmin';
+import { STATE_MOVE_LABELS, stateTargets, warningLabel, type FormOutcome } from '../../../lib/eventsAdminForms';
+
+interface Props {
+  view: AdminEventView;
+  outcome: FormOutcome;
+  disabled?: boolean;
+}
+const { view, outcome, disabled = false } = Astro.props;
+const ev = view.event;
+const label = (s: string) => STATUS_LABELS[s] ?? s;
+const targets = stateTargets(ev.status, ev.modules, ev.previous_status);
+const chosen = outcome.values ? String(outcome.values.status ?? '') : '';
+
+const preview = outcome.action === 'state_preview' && outcome.result?.ok ? outcome.result : null;
+const previewWarnings = preview?.warnings ?? [];
+const previewNoChange = previewWarnings.includes('no_change');
+const previewTarget = targets.find((t) => t.status === chosen);
+
+const sweep = outcome.action === 'sweep' && outcome.result?.ok ? outcome.result : null;
+const automation = ev.automation?.date_transitions ?? false;
+---
+
+<section class="adm-card">
+  <h2 class="adm-h2">Estado</h2>
+  <dl class="adm-facts">
+    <div><dt>Estado actual</dt><dd>{label(ev.status)}</dd></div>
+    {ev.status === 'cancelled' && ev.previous_status && <div><dt>Estado previo</dt><dd>{label(ev.previous_status)}</dd></div>}
+    <div><dt>Automatización por fechas</dt><dd>{automation ? 'activa' : 'apagada'}</dd></div>
+  </dl>
+
+  {disabled ? (
+    <p class="adm-muted" style="font-family:var(--font-mono);font-size:13px">Evento archivado: no se puede cambiar de estado.</p>
+  ) : targets.length === 0 ? (
+    <p class="adm-muted" style="font-family:var(--font-mono);font-size:13px">No hay transiciones posibles desde este estado.</p>
+  ) : (
+    <form method="post" class="adm-actions">
+      <input type="hidden" name="action" value="state_preview" />
+      <label style="flex:1;min-width:14rem">
+        <span class="adm-label">Transición</span>
+        <select class="adm-input" name="status" required>
+          {targets.map((t) => (
+            <option value={t.status} selected={t.status === chosen}>
+              {t.move === 'cancel' ? STATE_MOVE_LABELS.cancel : `${STATE_MOVE_LABELS[t.move]} ${label(t.status)}`}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button class="adm-btn" type="submit" style="align-self:end">Previsualizar avisos</button>
+    </form>
+  )}
+  <p class="adm-muted" style="font-family:var(--font-mono);font-size:12px;margin-top:.5rem">
+    Avanzar puede saltar pasos; retroceder solo un paso. Nunca se borran datos: votos, entregas y equipos se conservan.
+    Cancelar guarda el estado actual para poder volver a él.
+  </p>
+
+  {preview && (
+    <div class="adm-msg adm-msg-warn">
+      {previewNoChange ? (
+        <p>El evento ya está en <strong>{label(chosen)}</strong>: no hay nada que cambiar.</p>
+      ) : (
+        <p>
+          Previsualización de <strong>{label(ev.status)} → {label(chosen)}</strong>{previewWarnings.length ? ': consecuencias.' : ': sin avisos.'} No se ha cambiado nada todavía.
+        </p>
+      )}
+      {previewWarnings.length > 0 && !previewNoChange && (
+        <ul>{previewWarnings.map((w) => <li><code>{w}</code> — {warningLabel(w)}</li>)}</ul>
+      )}
+      {!previewNoChange && previewTarget && (
+        <form method="post" class="adm-actions" style="margin-top:.75rem">
+          <input type="hidden" name="action" value="state" />
+          <input type="hidden" name="status" value={chosen} />
+          <button class={`adm-btn ${previewTarget.move === 'cancel' || previewTarget.move === 'back' ? 'adm-btn-danger' : 'adm-btn-primary'}`} type="submit">
+            Confirmar: {previewTarget.move === 'cancel' ? 'cancelar el evento' : `pasar a ${label(chosen)}`}
+          </button>
+        </form>
+      )}
+    </div>
+  )}
+
+  {sweep && (
+    <div class="adm-msg adm-msg-warn">
+      <p>El sweep no ha cambiado el estado.</p>
+      {sweep.warnings.length > 0 && <ul>{sweep.warnings.map((w) => <li><code>{w}</code> — {warningLabel(w)}</li>)}</ul>}
+    </div>
+  )}
+
+  {!disabled && (
+    <form method="post" class="adm-actions" style="margin-top:1rem">
+      <input type="hidden" name="action" value="sweep" />
+      <p class="adm-muted" style="font-family:var(--font-mono);font-size:13px;flex-basis:100%">
+        {automation
+          ? 'El sweep aplica ahora las transiciones cuyas fechas ya han pasado (inscripción → construcción, construcción → entrega, votación → cerrado).'
+          : 'Con la automatización apagada el sweep no cambia nada; actívala en el editor si quieres transiciones por fecha.'}
+      </p>
+      <button class="adm-btn" type="submit">Ejecutar sweep ahora</button>
+    </form>
+  )}
+</section>
