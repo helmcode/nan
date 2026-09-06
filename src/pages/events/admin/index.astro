@@ -1,0 +1,14 @@
+---
+// Envoltorio de ruta del panel (SPEC v3 §8): la guardia de staff se resuelve
+// AQUÍ (fichero de ruta) para que el 404 funcione; el cuerpo vive en el
+// fichero _ vecino, fuera del árbol de rutas (ver routeWrappers.test.ts).
+import Page from './_index.astro';
+import { resolveAdminRoute } from '../../../lib/eventsAdmin';
+
+export const prerender = false;
+
+const route = await resolveAdminRoute(Astro);
+if (route.notFound) return route.notFound;
+---
+
+<Page staff={route.staff} cookie={route.cookie} />

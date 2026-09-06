@@ -1,0 +1,24 @@
+---
+// Portada del panel (SPEC v3 §8). La guardia y la cookie llegan del
+// envoltorio de ruta; este cuerpo no hace rewrite ni comprueba la sesión.
+import '../../../styles/global.css';
+import EventsAdmin from '../../../layouts/EventsAdmin.astro';
+import type { StaffSession } from '../../../lib/eventsAdmin';
+
+interface Props {
+  staff: StaffSession;
+  cookie: string;
+}
+const { staff } = Astro.props;
+---
+
+<EventsAdmin title="Eventos" staff={staff}>
+  <section class="mt-8 rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
+    <p class="text-sm text-neutral-300">
+      Desde aquí se gestionan los eventos de NaN: crear y editar, cambiar de estado,
+      participantes, equipos, entregas, votos y auditoría. Todo lo que hace el panel
+      se puede hacer también con la API (<code class="text-neutral-200">docs/API.md</code>
+      en el repositorio del servidor de eventos).
+    </p>
+  </section>
+</EventsAdmin>
