@@ -154,3 +154,14 @@ textarea.adm-input { min-height: 5.5rem; resize: vertical; }
 .adm-inline { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.375rem; margin: 0; }
 .adm-btn-sm { padding: 0.25rem 0.625rem; font-size: 12px; }
 .adm-table td.adm-actions-cell { white-space: normal; min-width: 14rem; }
+
+/* Tablero de equipos (W-06): una columna por equipo más la de "sin equipo". */
+.adm-board { margin-top: 1.5rem; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); align-items: start; }
+.adm-col { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; border: 1px solid #262626; border-radius: 0.5rem; background: #0a0a0a; }
+.adm-col-free { border-style: dashed; }
+.adm-col h3 { margin: 0; font-family: var(--font-mono); font-size: 0.875rem; color: #f5f5f5; }
+.adm-members { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.5rem; font-size: 13px; color: #e5e5e5; }
+.adm-members li { padding-top: 0.5rem; border-top: 1px solid #1f1f1f; }
+.adm-members li form { margin-top: 0.25rem; }
+.adm-col-foot { margin-top: auto; padding-top: 0.75rem; border-top: 1px solid #262626; display: grid; gap: 0.5rem; }
+.adm-input-sm { padding: 0.25rem 0.5rem; font-size: 12px; }

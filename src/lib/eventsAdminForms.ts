@@ -106,6 +106,12 @@ export const FLASH_LABELS: Record<string, string> = {
   promovido: 'Participante promovido de reserva a inscrito.',
   reserva: 'Participante pasado a reserva.',
   importado: 'Importación aplicada.',
+  equipo_creado: 'Equipo creado.',
+  renombrado: 'Equipo renombrado.',
+  disuelto: 'Equipo disuelto: sus miembros siguen inscritos, sin equipo.',
+  movido: 'Participante movido de equipo.',
+  quitado: 'Participante sacado del equipo (sigue inscrito).',
+  generado: 'Equipos generados.',
 };
 
 /**
@@ -388,7 +394,8 @@ export async function readForm(request: Request): Promise<{ fd: FormData | null;
 /** URL de vuelta tras un cambio: `/events/admin/{slug}[/pantalla]?ok=…&warn=a,b`. */
 export function doneHref(slug: string, ok: string, warnings: string[] = [], screen: AdminScreen = 'evento'): string {
   const q = new URLSearchParams({ ok });
-  const warn = warnings.filter((w) => w !== 'no_change');
+  // Sin repetidos: al mover entre equipos el backend puede avisar lo mismo del origen y del destino.
+  const warn = [...new Set(warnings)].filter((w) => w !== 'no_change');
   if (warn.length) q.set('warn', warn.join(','));
   return `${adminHref(slug, screen)}?${q.toString()}`;
 }
