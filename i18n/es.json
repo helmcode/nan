@@ -58,6 +58,13 @@
       "voting": "Votación",
       "demoDay": "Demo Day"
     },
+    "where": {
+      "label": "Dónde",
+      "link": "Enlace",
+      "calendar": "Añadir a mi calendario",
+      "calendarTitle": "Añadir este evento a Google Calendar",
+      "ics": "o descarga el .ics"
+    },
     "login": {
       "prompt": "Entra con tu cuenta NaN",
       "description": "Introduce el email de tu cuenta NaN y te enviaremos un enlace para iniciar sesión. Es el mismo acceso que la plataforma.",
@@ -578,8 +585,18 @@
       "types": {
         "workshop": "workshop",
         "event": "evento",
-        "hackathon": "hackathon"
+        "hackathon": "hackathon",
+        "challenge": "reto",
+        "other": "evento"
       },
+      "calendarTitle": "Llévate la agenda a tu calendario.",
+      "calendarBody": "Añade el calendario de NaN una vez y te aparecerán los eventos publicados y los que vayamos anunciando, sin volver aquí.",
+      "calendarGoogle": "Añadir a Google Calendar",
+      "calendarIcs": "Apple, Outlook u otro (.ics)",
+      "calendarFeedLabel": "URL del calendario",
+      "calendarAdd": "+ calendario",
+      "calendarAddTitle": "Añadir este evento a Google Calendar",
+      "calendarTz": "Horas en Europe/Madrid.",
       "workshopsLabel": "workshops",
       "workshopsTitle": "Workshops.",
       "workshopsSub": "Sesiones prácticas sobre agentes, tooling y lanzar con modelos abiertos. Grabadas para miembros.",

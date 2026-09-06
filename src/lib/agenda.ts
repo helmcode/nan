@@ -27,6 +27,10 @@ export type AgendaItem = {
    * tienen página propia y siguen siendo texto.
    */
   href?: string;
+  /** Hora de inicio `HH:MM` (Europe/Madrid). Solo las entradas que vienen de la API la tienen. */
+  time?: string;
+  /** Enlace "añadir a Google Calendar" de esta entrada (W-10). */
+  calendar?: string;
 };
 
 export const loc = (v: Localized, lang: Locale): string => (typeof v === 'string' ? v : v[lang]);

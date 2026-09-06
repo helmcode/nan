@@ -53,13 +53,17 @@ const handler: APIRoute = async ({ params, request, url }) => {
   }
 
   // Reenviar cuerpo y status; normalizar a JSON salvo el CSV de
-  // `participants/export.csv`. Content-Disposition se conserva para las
-  // descargas del panel (`export?download=1`). Propagar Set-Cookie.
+  // `participants/export.csv` y el feed iCalendar (`calendar.ics`, W-10).
+  // Content-Disposition se conserva para las descargas del panel
+  // (`export?download=1`). Propagar Set-Cookie.
   const text = await resp.text();
   const upstreamType = resp.headers.get('content-type') ?? '';
+  const passthrough = /^text\/(csv|calendar)\b/i.test(upstreamType);
   const headers = new Headers({
-    'content-type': /^text\/csv\b/i.test(upstreamType) ? upstreamType : 'application/json',
-    'cache-control': 'no-store',
+    'content-type': passthrough ? upstreamType : 'application/json',
+    // El feed es público y lo releen los clientes de calendario: se respeta
+    // la caché corta que fija el backend. Todo lo demás, sin caché.
+    'cache-control': (/^text\/calendar\b/i.test(upstreamType) && resp.headers.get('cache-control')) || 'no-store',
   });
   const disposition = resp.headers.get('content-disposition');
   if (disposition) headers.set('content-disposition', disposition);

@@ -58,6 +58,13 @@
       "voting": "Voting",
       "demoDay": "Demo Day"
     },
+    "where": {
+      "label": "Where",
+      "link": "Link",
+      "calendar": "Add to my calendar",
+      "calendarTitle": "Add this event to Google Calendar",
+      "ics": "or download the .ics"
+    },
     "login": {
       "prompt": "Sign in with your NaN account",
       "description": "Enter your NaN account email and we'll send you a link to sign in. It's the same access as the platform.",
@@ -578,8 +585,18 @@
       "types": {
         "workshop": "workshop",
         "event": "event",
-        "hackathon": "hackathon"
+        "hackathon": "hackathon",
+        "challenge": "challenge",
+        "other": "event"
       },
+      "calendarTitle": "Take the agenda to your calendar.",
+      "calendarBody": "Add the NaN calendar once and the published events, plus the ones we announce later, show up on their own.",
+      "calendarGoogle": "Add to Google Calendar",
+      "calendarIcs": "Apple, Outlook or other (.ics)",
+      "calendarFeedLabel": "Calendar URL",
+      "calendarAdd": "+ calendar",
+      "calendarAddTitle": "Add this event to Google Calendar",
+      "calendarTz": "Times in Europe/Madrid.",
       "workshopsLabel": "workshops",
       "workshopsTitle": "Workshops.",
       "workshopsSub": "Hands-on sessions on agents, tooling and shipping with open models. Recorded for members.",

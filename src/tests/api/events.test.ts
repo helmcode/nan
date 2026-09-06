@@ -146,6 +146,22 @@ describe('events proxy handler', () => {
     expect(await resp.text()).toBe('email,name\n');
   });
 
+  it('deja pasar el feed iCalendar con su content-type y su caché (W-10)', async () => {
+    const upstream = new Response('BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n', {
+      status: 200,
+      headers: { 'content-type': 'text/calendar; charset=utf-8', 'cache-control': 'public, max-age=300', 'content-disposition': 'inline; filename="nan-eventos.ics"' },
+    });
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(upstream);
+    const resp = await GET(ctx('calendar.ics'));
+    expect(spy.mock.calls[0][0]).toBe('https://api.test/api/events/calendar.ics');
+    expect(resp.headers.get('content-type')).toBe('text/calendar; charset=utf-8');
+    expect(resp.headers.get('cache-control')).toBe('public, max-age=300');
+    expect(resp.headers.get('content-disposition')).toBe('inline; filename="nan-eventos.ics"');
+    expect(await resp.text()).toBe('BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n');
+    // Por evento, mismo camino.
+    expect(backendURL('taller-agentes/calendar.ics', '')).toBe('https://api.test/api/events/taller-agentes/calendar.ics');
+  });
+
   it('sigue enviando JSON por defecto a las rutas públicas', async () => {
     const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{"ok":true}', { status: 200 }));
     const resp = await POST(ctx('gauntlet-2026-08/register', { method: 'POST', body: '{}' }));

@@ -9,6 +9,7 @@ import LoginForm, { type LoginStrings } from '../../../components/events/LoginFo
 import RegistrationBar from '../../../components/events/RegistrationBar.astro';
 import { getLocale, t, tObj, withLang } from '../../../lib/i18n';
 import { fetchMe, fmtDate, fmtRange, hasSessionCookie, type EventInfo } from '../../../lib/events';
+import { eventCalendarPath, googleEventURL } from '../../../lib/eventsCalendar';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -58,7 +59,19 @@ if (ev.dates.submission_open || ev.dates.submission_close)
   dates.push({ label: dl.submission, value: fmtRange(ev.dates.submission_open, ev.dates.submission_close, locale) });
 if (ev.voting.enabled && (ev.dates.voting_open || ev.dates.voting_close))
   dates.push({ label: dl.voting, value: fmtRange(ev.dates.voting_open, ev.dates.voting_close, locale) });
-if (ev.dates.demo_day) dates.push({ label: dl.demoDay, value: fmtDate(ev.dates.demo_day, locale) });
+if (ev.dates.demo_day)
+  dates.push({
+    label: dl.demoDay,
+    // Con hora (y fin si lo tiene): es la cita a la que hay que ir.
+    value: ev.dates.demo_day_end
+      ? `${fmtDate(ev.dates.demo_day, locale, true)} – ${fmtDate(ev.dates.demo_day_end, locale, true)}`
+      : fmtDate(ev.dates.demo_day, locale, true),
+  });
+
+// Dónde, enlace y "añadir a mi calendario" (W-10): solo si el evento tiene fecha.
+const where = tObj<Record<string, string>>('events.where', locale);
+const calendarLink = googleEventURL(ev, Astro.site);
+const icsHref = eventCalendarPath(ev);
 
 // Panel principal por fase (§8.2). `null` → se pinta el bloque de inscripción.
 type Panel = { title: string; body: string; href?: string; cta?: string; tone?: 'muted' | 'accent' };
@@ -129,6 +142,31 @@ const closedNote = fill(cap.closedNote, { cap: capacity, res: reserve });
               </div>
             ))}
           </dl>
+        )}
+        {(ev.location || ev.url) && (
+          <dl class="mt-3 grid gap-1 font-mono text-xs text-neutral-300">
+            {ev.location && (
+              <div class="flex flex-wrap gap-x-3">
+                <dt class="uppercase tracking-widest text-violet-400">{where.label}</dt>
+                <dd>{ev.location}</dd>
+              </div>
+            )}
+            {ev.url && (
+              <div class="flex flex-wrap gap-x-3">
+                <dt class="uppercase tracking-widest text-violet-400">{where.link}</dt>
+                <dd><a href={ev.url} rel="noopener" target="_blank" class="underline decoration-violet-500/50 underline-offset-4 hover:text-violet-300 break-all">{ev.url}</a></dd>
+              </div>
+            )}
+          </dl>
+        )}
+        {calendarLink && (
+          <p class="mt-4 font-mono text-xs text-neutral-400">
+            <a href={calendarLink} rel="noopener" target="_blank" title={where.calendarTitle}
+               class="inline-block rounded-lg border border-violet-500/30 px-3 py-1.5 text-violet-300 transition-colors hover:bg-violet-500/10">
+              {where.calendar}
+            </a>
+            <a href={icsHref} class="ml-3 underline decoration-neutral-700 underline-offset-4 hover:text-neutral-200">{where.ics}</a>
+          </p>
         )}
         {ev.prize && (
           <p class="mt-4 text-sm text-neutral-300"><span class="font-mono text-xs uppercase tracking-widest text-violet-400">{t('events.prize', locale)}</span> · {ev.prize}</p>

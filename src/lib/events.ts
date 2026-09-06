@@ -117,6 +117,8 @@ export interface EventDates {
   voting_open?: string | null;
   voting_close?: string | null;
   demo_day?: string | null;
+  /** Fin del demo day (W-10); sin él, el calendario asume dos horas. */
+  demo_day_end?: string | null;
 }
 export interface SubmissionFields {
   description: FieldMode;
@@ -139,6 +141,9 @@ export interface EventInfo {
   description: string;
   rules: string;
   prize: string;
+  /** Dónde se celebra (texto libre) y enlace de acceso; opcionales (SPEC v3 §3.1, B-25). */
+  location: string;
+  url: string;
   format: EventFormat;
   status: string;
   dates: EventDates;
@@ -221,14 +226,15 @@ export async function jsonData<T = unknown>(res: Response): Promise<T | null> {
   catch { return null; }
 }
 
-// Cabeceras para las llamadas SSR al backend (mismo Origin que el proxy).
-function ssrHeaders(cookie?: string): HeadersInit {
+/** Cabeceras para las llamadas SSR al backend (mismo Origin que el proxy). */
+export function ssrHeaders(cookie?: string): HeadersInit {
   const h: Record<string, string> = { origin: 'https://nan.builders' };
   if (cookie) h.cookie = cookie;
   return h;
 }
 
-function apiBase(): string {
+/** Base del backend sin barra final, para las llamadas SSR. */
+export function apiBase(): string {
   return env.CLOUD_API_URL.replace(/\/$/, '');
 }
 
