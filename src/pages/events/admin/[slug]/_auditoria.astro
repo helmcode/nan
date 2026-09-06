@@ -1,0 +1,163 @@
+---
+// Auditoría y backups del evento (SPEC v3 §6.6, §6.7 y §8, W-09): las
+// líneas de audit.jsonl con filtros (desde, acción, límite), más recientes
+// primero, con antes/después desplegable; y la lista de backups con
+// restaurar en dos pasos (previsualización dry_run y confirmación). El POST
+// lo procesa el envoltorio de ruta; aquí solo se consulta y se pinta.
+import '../../../../styles/global.css';
+import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
+import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
+import { adminFetch, adminHref, fmtAdminDate, type AdminEventView, type StaffSession } from '../../../../lib/eventsAdmin';
+import { readFlash, type FormOutcome } from '../../../../lib/eventsAdminForms';
+import {
+  actorLabel, auditSearch, backupDate, fmtBytes, readAuditFilters,
+  AUDIT_ACTION_GROUPS, AUDIT_DEFAULT_LIMIT, AUDIT_MAX_LIMIT,
+  type AuditEntry, type BackupInfo, type RestoreResult,
+} from '../../../../lib/eventsAdminAudit';
+
+interface Props {
+  staff: StaffSession;
+  cookie: string;
+  view: AdminEventView;
+  outcome: FormOutcome;
+}
+const { staff, cookie, view, outcome } = Astro.props;
+const ev = view.event;
+const archived = Boolean(ev.archived_at);
+const flash = readFlash(Astro.url);
+const filters = readAuditFilters(Astro.url);
+
+const [auditRes, backupsRes] = await Promise.all([
+  adminFetch<AuditEntry[]>(cookie, `${ev.slug}/admin/audit`, { search: auditSearch(filters) }),
+  adminFetch<BackupInfo[]>(cookie, `${ev.slug}/admin/backups`),
+]);
+const entries = auditRes.data ?? [];
+const backups = backupsRes.data ?? [];
+
+// Previsualización de restaurar: la respuesta de dry_run se queda en la página con el botón de confirmar.
+const preview = outcome.result?.ok && outcome.action === 'restore_preview' ? (outcome.result.data as RestoreResult | null) : null;
+const previewWarnings = outcome.action === 'restore_preview' && outcome.result?.ok ? outcome.result.warnings : [];
+
+const json = (v: unknown) => (v === null || v === undefined ? '—' : JSON.stringify(v, null, 2));
+const fileLabel = (f: string) => f.replace(/\.json$/, '');
+// Las acciones con sujeto van con el id del sujeto en `target`; las del evento llevan el slug.
+const targetText = (e: AuditEntry) => (e.target && e.target !== ev.slug ? e.target : '');
+const inputValue = (iso: string) => (iso ? iso.slice(0, 16) : '');
+---
+
+<EventsAdmin title={`Auditoría · ${ev.name}`} staff={staff} event={{ slug: ev.slug, name: ev.name, status: ev.status }} current="auditoria">
+  <AdminNotices ok={flash.ok} warnings={flash.warnings} result={preview ? undefined : outcome.result} forbidden={outcome.forbidden} />
+
+  {preview && (
+    <div class="adm-msg adm-msg-warn">
+      <p>
+        Simulación de <strong>restaurar {fileLabel(preview.file)}</strong> desde el backup <code>{preview.timestamp}</code>: el fichero valida y no se ha cambiado nada todavía.
+        Al confirmar, el fichero actual se guarda como backup nuevo y se sustituye por el elegido; si el resultado no valida, se deshace.
+      </p>
+      {previewWarnings.length > 0 && <AdminNotices warnings={previewWarnings} warningsTitle="Consecuencias" />}
+      <form method="post" class="adm-actions" style="margin-top:.75rem">
+        <input type="hidden" name="action" value="restore" />
+        <input type="hidden" name="file" value={preview.file} />
+        <input type="hidden" name="timestamp" value={preview.timestamp} />
+        <button class="adm-btn adm-btn-danger" type="submit">Restaurar {fileLabel(preview.file)}</button>
+        <a class="adm-btn" href={adminHref(ev.slug, 'auditoria')}>Cancelar</a>
+      </form>
+    </div>
+  )}
+
+  <section class="adm-card">
+    <h2 class="adm-h2" style="margin-top:0">Auditoría <span class="adm-muted">({entries.length}{entries.length >= filters.limit ? `, límite ${filters.limit}` : ''})</span></h2>
+    <form method="get" class="adm-actions" style="align-items:end">
+      <label>
+        <span class="adm-label">Desde (UTC)</span>
+        <input class="adm-input" type="datetime-local" name="desde" value={inputValue(filters.since)} />
+      </label>
+      <label>
+        <span class="adm-label">Acción</span>
+        <select class="adm-input" name="accion">
+          {AUDIT_ACTION_GROUPS.map((g) => <option value={g.key} selected={filters.action === g.key}>{g.label}</option>)}
+          {filters.action && !AUDIT_ACTION_GROUPS.some((g) => g.key === filters.action) && <option value={filters.action} selected>{filters.action}</option>}
+        </select>
+      </label>
+      <label>
+        <span class="adm-label">Límite</span>
+        <input class="adm-input" type="number" name="limite" min="1" max={AUDIT_MAX_LIMIT} value={filters.limit} style="width:6rem" />
+      </label>
+      <button class="adm-btn" type="submit">Filtrar</button>
+      {(filters.since || filters.action || filters.limit !== AUDIT_DEFAULT_LIMIT) && <a class="adm-btn" href={adminHref(ev.slug, 'auditoria')}>Quitar filtros</a>}
+    </form>
+    <p class="adm-muted" style="margin-top:.75rem;font-family:var(--font-mono);font-size:12px">
+      Cada línea es un cambio hecho por la API o el panel: quién, qué y el antes y después. Más recientes primero. También se puede leer con
+      <code>GET /api/events/{ev.slug}/admin/audit?since=&amp;action=&amp;limit=</code>.
+    </p>
+  </section>
+
+  {!auditRes.ok && <AdminNotices result={auditRes} />}
+
+  {auditRes.ok && entries.length === 0 && <p class="adm-msg" style="margin-top:1rem">No hay líneas de auditoría{filters.since || filters.action ? ' con estos filtros' : ''}.</p>}
+
+  {entries.length > 0 && (
+    <div class="adm-table-wrap" style="margin-top:1rem">
+      <table class="adm-table">
+        <thead><tr><th>Fecha</th><th>Actor</th><th>Acción</th><th>Sujeto</th><th>Avisos</th><th>Cambio</th></tr></thead>
+        <tbody>
+          {entries.map((e) => (
+            <tr>
+              <td class="adm-muted" style="white-space:nowrap">{fmtAdminDate(e.ts)}</td>
+              <td>{actorLabel(e.actor)}</td>
+              <td><code>{e.action}</code></td>
+              <td>{targetText(e) ? <code>{targetText(e)}</code> : <span class="adm-muted">—</span>}</td>
+              <td>{e.warnings.length ? <span class="adm-pill adm-pill-warn" title={e.warnings.join(', ')}>{e.warnings.join(', ')}</span> : <span class="adm-muted">—</span>}</td>
+              <td>
+                <details>
+                  <summary class="adm-muted" style="cursor:pointer;font-size:12px">antes / después</summary>
+                  <div class="adm-grid" style="margin-top:.5rem;gap:.5rem">
+                    <pre style="margin:0;font-size:11px;white-space:pre-wrap;word-break:break-all">{json(e.before)}</pre>
+                    <pre style="margin:0;font-size:11px;white-space:pre-wrap;word-break:break-all">{json(e.after)}</pre>
+                  </div>
+                </details>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+
+  <section style="margin-top:1.5rem">
+    <h2 class="adm-h2">Backups <span class="adm-muted">({backups.length})</span></h2>
+    <p class="adm-muted" style="font-family:var(--font-mono);font-size:12px">
+      Antes de cada escritura el backend guarda una copia del fichero que va a cambiar. Restaurar hace backup del fichero actual,
+      sustituye, recarga y valida; si no valida, lo deshace. {archived && 'Evento archivado: no se puede restaurar.'}
+    </p>
+    {!backupsRes.ok && <AdminNotices result={backupsRes} />}
+    {backupsRes.ok && backups.length === 0 && <p class="adm-msg">Todavía no hay backups.</p>}
+    {backups.length > 0 && (
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead><tr><th>Fichero</th><th>Copia</th><th>Fecha</th><th>Tamaño</th>{!archived && <th></th>}</tr></thead>
+          <tbody>
+            {backups.map((b) => (
+              <tr>
+                <td>{fileLabel(b.file)}</td>
+                <td><code>{b.timestamp}</code></td>
+                <td class="adm-muted" style="white-space:nowrap">{fmtAdminDate(backupDate(b.timestamp)) || '—'}</td>
+                <td class="adm-muted">{fmtBytes(b.size)}</td>
+                {!archived && (
+                  <td>
+                    <form method="post" class="adm-inline">
+                      <input type="hidden" name="action" value="restore_preview" />
+                      <input type="hidden" name="file" value={b.file} />
+                      <input type="hidden" name="timestamp" value={b.timestamp} />
+                      <button class="adm-btn adm-btn-sm" type="submit">Previsualizar restauración</button>
+                    </form>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+</EventsAdmin>

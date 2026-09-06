@@ -120,6 +120,7 @@ export const FLASH_LABELS: Record<string, string> = {
   premio: 'Elegibilidad de premio fijada a mano.',
   premio_automatico: 'Elegibilidad de premio devuelta al cálculo automático.',
   verificado: 'Checks verificados en todas las entregas activas.',
+  restaurado: 'Backup restaurado: el fichero anterior queda guardado como backup nuevo.',
   votacion_abierta: 'Votación abierta.',
   votacion_cerrada: 'Votación cerrada: el ranking queda congelado y publicado.',
 };

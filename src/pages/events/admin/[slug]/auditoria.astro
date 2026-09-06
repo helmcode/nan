@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+import { resolveAdminEventRoute } from '../../../../lib/eventsAdmin';
+import { handleAuditForm } from '../../../../lib/eventsAdminAudit';
+import Page from './_auditoria.astro';
+
+const route = await resolveAdminEventRoute(Astro);
+if (route.notFound) return route.notFound;
+const outcome = await handleAuditForm(Astro.request, route.cookie, route.slug);
+if (outcome.redirect) return Astro.redirect(outcome.redirect, 303);
+---
+
+<Page staff={route.staff} cookie={route.cookie} view={route.view} outcome={outcome} />
