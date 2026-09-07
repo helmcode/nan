@@ -244,7 +244,7 @@ const closedNote = fill(cap.closedNote, { cap: capacity, res: reserve });
             ) : (
               <RegisterForm client:load slug={slug} t={form} meHref={meUrl}
                 discordMode={ev.registration.discord_user}
-                specialties={ev.registration.specialties} levels={ev.registration.levels}
+                specialties={ev.registration.specialties ?? []} levels={ev.registration.levels ?? []}
                 options={options} />
             )}
           </div>

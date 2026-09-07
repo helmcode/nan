@@ -41,8 +41,12 @@ const importing = outcome.action === 'import_preview' || outcome.action === 'imp
 const report = importing && outcome.result?.ok ? (outcome.result.data as ImportReport | null) : null;
 // Un error de importación (csv_invalid…) y el informe los pinta esta página; arriba van el resto de errores.
 const topResult = importing && outcome.result?.ok ? undefined : outcome.result;
-const hasSpecialties = ev.registration.specialties.length > 0;
-const hasLevels = ev.registration.levels.length > 0;
+// La API devuelve listas, pero un event.json editado a mano (o una versión
+// vieja del backend) puede traer null: nunca reventamos la pantalla por eso.
+const specialties = ev.registration.specialties ?? [];
+const levels = ev.registration.levels ?? [];
+const hasSpecialties = specialties.length > 0;
+const hasLevels = levels.length > 0;
 const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status] ?? r.status;
 ---
 
@@ -183,7 +187,7 @@ const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status]
             <label><span class="adm-label">Especialidad</span>
               <select class="adm-input" name="specialty" required>
                 <option value="">elige…</option>
-                {ev.registration.specialties.map((s) => <option value={s} selected={ev2('specialty', editRow.specialty ?? '') === s}>{s}</option>)}
+                {specialties.map((s) => <option value={s} selected={ev2('specialty', editRow.specialty ?? '') === s}>{s}</option>)}
               </select>
             </label>
           )}
@@ -191,7 +195,7 @@ const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status]
             <label><span class="adm-label">Nivel</span>
               <select class="adm-input" name="level" required>
                 <option value="">elige…</option>
-                {ev.registration.levels.map((s) => <option value={s} selected={ev2('level', editRow.level ?? '') === s}>{s}</option>)}
+                {levels.map((s) => <option value={s} selected={ev2('level', editRow.level ?? '') === s}>{s}</option>)}
               </select>
             </label>
           )}
@@ -222,7 +226,7 @@ const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status]
               <label><span class="adm-label">Especialidad</span>
                 <select class="adm-input" name="specialty" required>
                   <option value="">elige…</option>
-                  {ev.registration.specialties.map((s) => <option value={s} selected={addV('specialty') === s}>{s}</option>)}
+                  {specialties.map((s) => <option value={s} selected={addV('specialty') === s}>{s}</option>)}
                 </select>
               </label>
             )}
@@ -230,7 +234,7 @@ const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status]
               <label><span class="adm-label">Nivel</span>
                 <select class="adm-input" name="level" required>
                   <option value="">elige…</option>
-                  {ev.registration.levels.map((s) => <option value={s} selected={addV('level') === s}>{s}</option>)}
+                  {levels.map((s) => <option value={s} selected={addV('level') === s}>{s}</option>)}
                 </select>
               </label>
             )}
