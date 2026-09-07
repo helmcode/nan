@@ -33,6 +33,12 @@ const options = tObj<Record<string, string>>('events.options', locale);
 const login = tObj<LoginStrings>('events.login', locale);
 const fill = (str: string, vars: Record<string, string>) =>
   Object.entries(vars).reduce((acc, [k, v]) => acc.replaceAll(`{${k}}`, v), str);
+// Las fechas son opcionales (v3): sin ellas la frase que las nombra queda coja,
+// así que cada aviso tiene gemelo sin fecha.
+const openAt = fmtDate(ev.dates.submission_open, locale, true);
+const closeAt = fmtDate(ev.dates.submission_close, locale, true);
+const windowNotOpen = openAt ? fill(s.notOpen, { date: openAt }) : s.notOpenNoDate;
+const windowClosed = closeAt ? fill(s.closedNote, { date: closeAt }) : s.closedNoteNoDate;
 const fields = ev.submission.fields;
 const readonlyRows = existing
   ? [
@@ -72,9 +78,7 @@ const readonlyRows = existing
           <div class="rounded-lg border border-neutral-700/60 bg-neutral-900/50 p-4">
             <p class="font-mono text-sm text-neutral-200">{beforeOpen ? s.notOpenTitle : s.closedTitle}</p>
             <p class="mt-1 text-xs leading-relaxed text-neutral-400">
-              {beforeOpen
-                ? fill(s.notOpen, { date: fmtDate(ev.dates.submission_open, locale, true) })
-                : fill(s.closedNote, { date: fmtDate(ev.dates.submission_close, locale, true) })}
+              {beforeOpen ? windowNotOpen : windowClosed}
             </p>
           </div>
           {existing ? (

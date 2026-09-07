@@ -78,6 +78,11 @@ type Panel = { title: string; body: string; href?: string; cta?: string; tone?: 
 let panel: Panel | null = null;
 const closeAt = fmtDate(ev.dates.submission_close, locale, true);
 const openAt = fmtDate(ev.dates.submission_open, locale, true);
+// En v3 todas las fechas son opcionales, así que la copia que las nombra tiene
+// gemela sin fecha: si no, la frase queda coja ("entrega antes del .").
+const notOpenBody = openAt ? fill(phase.submissionNotOpen, { date: openAt }) : phase.submissionNotOpenNoDate;
+const buildingBody = closeAt ? fill(phase.building, { date: closeAt }) : phase.buildingNoDate;
+const submittedBody = closeAt ? fill(phase.submitted, { date: closeAt }) : phase.submittedNoDate;
 switch (ev.phase) {
   case 'published':
     // Informativo anunciado (B-26): no hay inscripción; el CTA es el enlace del evento si lo tiene.
@@ -88,14 +93,14 @@ switch (ev.phase) {
   case 'draft':
   case 'registration':
     if (isTeam) panel = null; // bloque de inscripción
-    else panel = { title: phase.notOpenTitle, body: fill(phase.submissionNotOpen, { date: openAt }), tone: 'muted' };
+    else panel = { title: phase.notOpenTitle, body: notOpenBody, tone: 'muted' };
     break;
   case 'building_pending':
     panel = isTeam && registered
       ? { title: phase.inProgressTitle, body: phase.inProgress, href: meUrl, cta: already.cta, tone: 'accent' }
       : isTeam
         ? { title: phase.closedTitle, body: phase.closed, tone: 'muted' }
-        : { title: phase.notOpenTitle, body: fill(phase.submissionNotOpen, { date: openAt }), tone: 'muted' };
+        : { title: phase.notOpenTitle, body: notOpenBody, tone: 'muted' };
     break;
   case 'building':
     if (isTeam) {
@@ -103,9 +108,9 @@ switch (ev.phase) {
         ? { title: phase.inProgressTitle, body: phase.inProgress, href: meUrl, cta: already.cta, tone: 'accent' }
         : { title: phase.closedTitle, body: phase.closed, tone: 'muted' };
     } else if (hasSubmission) {
-      panel = { title: phase.submittedTitle, body: fill(phase.submitted, { date: closeAt }), href: submissionUrl, cta: phase.submittedCta, tone: 'accent' };
+      panel = { title: phase.submittedTitle, body: submittedBody, href: submissionUrl, cta: phase.submittedCta, tone: 'accent' };
     } else {
-      panel = { title: phase.buildingTitle, body: fill(phase.building, { date: closeAt }), href: submissionUrl, cta: phase.buildingCta, tone: 'accent' };
+      panel = { title: phase.buildingTitle, body: buildingBody, href: submissionUrl, cta: phase.buildingCta, tone: 'accent' };
     }
     break;
   case 'submission':
