@@ -219,7 +219,15 @@ export async function adminFetch<T = unknown>(
   if (!body || typeof body !== 'object') {
     return fail(res.status, res.ok ? 'invalid_response' : 'server_error');
   }
-  const errData = (body.data ?? {}) as { fields?: unknown; detail?: unknown };
+  // `invalid_url` señala un solo campo en `data.field` (SPEC v3 §6.4 paso 6);
+  // el resto de errores mandan la lista en `data.fields`. Aquí se unifican para
+  // que el aviso pueda decir cuál es la URL que no vale.
+  const errData = (body.data ?? {}) as { fields?: unknown; field?: unknown; detail?: unknown };
+  const errFields = Array.isArray(errData.fields)
+    ? (errData.fields as string[])
+    : typeof errData.field === 'string' && errData.field !== ''
+      ? [errData.field]
+      : [];
   const ok = body.ok === true;
   return {
     ok,
@@ -229,7 +237,7 @@ export async function adminFetch<T = unknown>(
     message: typeof body.message === 'string' ? body.message : undefined,
     warnings: Array.isArray(body.warnings) ? (body.warnings as string[]) : [],
     dryRun: body.dry_run === true,
-    fields: !ok && Array.isArray(errData.fields) ? (errData.fields as string[]) : [],
+    fields: ok ? [] : errFields,
     detail: !ok && typeof errData.detail === 'string' ? errData.detail : undefined,
   };
 }
