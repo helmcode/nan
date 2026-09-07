@@ -34,6 +34,11 @@ const title = isTeam ? m.title : m.titleSolo;
 const statusLabel = participant?.status === 'withdrawn'
   ? m.statusWithdrawn
   : participant?.is_reserve ? m.statusReserve : m.statusRegistered;
+// Candidatos a ausente: los compañeros, nunca uno mismo. El backend rechaza
+// señalarse a sí mismo (§7.6.3) con un error genérico, así que la opción no
+// llega a ofrecerse; si no queda nadie más en el equipo, no hay a quién
+// reasignar y el formulario sobra.
+const absent = (team?.members ?? []).filter((x) => x.id !== participant?.id);
 ---
 {/* Detrás de sesión: fuera del sitemap y también fuera del índice. */}
 <NanPage scale={false} noindex title={`${title} · ${ev.name} — nan.builders`}>
@@ -82,11 +87,11 @@ const statusLabel = participant?.status === 'withdrawn'
                   {submission ? m.submissionCta : m.submissionCreateCta}
                 </a>
               </div>
-              {ev.phase === 'building' && team.members && (
+              {ev.phase === 'building' && absent.length > 0 && (
                 <div class="mt-6">
-                  <ReassignForm client:visible slug={slug} members={team.members.map((x) => ({ id: x.id, name: x.name, discord_user: x.discord_user ?? undefined }))}
+                  <ReassignForm client:visible slug={slug} members={absent.map((x) => ({ id: x.id, name: x.name, discord_user: x.discord_user ?? undefined }))}
                     ctaLabel={m.reassignCta} info={tObj('events.me.reassignInfo', locale)}
-                    labels={{ pending: m.reassignPending, filled: m.reassignFilled, noPool: m.reassignNoPool, already: m.reassignAlready, selectAbsent: m.reassignSelectAbsent, errorSubmit: m.reassignErrorSubmit, sending: m.reassignSending }} />
+                    labels={{ pending: m.reassignPending, filled: m.reassignFilled, noPool: m.reassignNoPool, already: m.reassignAlready, selectAbsent: m.reassignSelectAbsent, errorSubmit: m.reassignErrorSubmit, sending: m.reassignSending, refresh: m.reassignRefresh }} />
                 </div>
               )}
             </div>

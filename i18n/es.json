@@ -175,11 +175,12 @@
       "reassignCta": "Convocar reasignación",
       "reassignPending": "Convocatoria registrada. Hace falta que otro compañero la confirme ({have}/{need}).",
       "reassignFilled": "Reasignación completada: se ha incorporado un miembro de la pool de reservas.",
-      "reassignNoPool": "Reasignación completada: no quedaba nadie en la pool, el equipo continúa con 3 miembros.",
+      "reassignNoPool": "Reasignación completada: no quedaba nadie en la pool, el equipo sigue con los miembros que quedan.",
       "reassignAlready": "Ya has convocado esta reasignación. Falta que otro compañero la confirme.",
       "reassignSelectAbsent": "Selecciona ausente",
       "reassignErrorSubmit": "No se pudo registrar.",
       "reassignSending": "Enviando…",
+      "reassignRefresh": "Ver el equipo actualizado",
       "reassignInfo": {
         "label": "Reasignar miembro ausente",
         "toggleAria": "Más información sobre la reasignación",
@@ -189,7 +190,7 @@
           "Hacen falta DOS miembros del equipo: la convocatoria no se ejecuta hasta que un segundo compañero confirma la misma reasignación.",
           "Cuando se alcanza ese acuerdo, esa persona se marca como ausente y sale de tu equipo y del hackatón. La acción es inmediata e irreversible.",
           "El sistema busca automáticamente al primer candidato de la pool de reservas (por orden de inscripción) y lo añade a tu equipo en su lugar.",
-          "Si no queda nadie en la pool, tu equipo continúa con 3 miembros (el mínimo permitido) y se avisa a la organización.",
+          "Si no queda nadie en la pool, tu equipo sigue con los miembros que quedan y se avisa a la organización.",
           "Solo está disponible durante la fase de construcción."
         ]
       }
