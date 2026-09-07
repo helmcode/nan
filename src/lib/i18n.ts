@@ -96,3 +96,17 @@ export function useT(locale: string): NanDict {
 
 /** Alias del nombre que usaban los componentes de nan-site. */
 export const getLang = getLocale;
+
+/**
+ * Etiqueta de una especialidad o un nivel. En v3 las especialidades y los
+ * niveles los escribe quien organiza el evento, así que `events.options` solo
+ * traduce los de siempre; el resto se enseña tal cual, pero con la inicial en
+ * mayúscula para que "devops" no desentone al lado de "Frontend" en la misma
+ * lista. Los valores que ya vienen con mayúscula ("ML/IA") no se tocan.
+ */
+export function optionLabel(options: Record<string, string>, value?: string | null): string {
+  if (!value) return '';
+  const known = options[value];
+  if (known) return known;
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}

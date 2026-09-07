@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { TargetedSubmitEvent } from 'preact';
+import { optionLabel } from '../../lib/i18n';
 
 export interface FormStrings {
   name: string; discord: string; discordHelp: string; discordOptional: string;
@@ -20,7 +21,8 @@ type Status =
  * Inscripción a un evento (SPEC §6.3 `POST /api/events/{slug}/register`).
  * Los campos se muestran según la configuración del evento (§3.2):
  * `discordMode` (`required|optional|hidden`), `specialties` y `levels` (vacío =
- * no se pregunta). `options` traduce cada valor; si falta, se muestra el valor.
+ * no se pregunta). `options` traduce cada valor; los que no conoce (v3 los deja
+ * escribir a quien organiza) salen tal cual, con la inicial en mayúscula.
  */
 export default function RegisterForm({ slug, t, meHref, discordMode, specialties, levels, options }: {
   slug: string;
@@ -38,7 +40,7 @@ export default function RegisterForm({ slug, t, meHref, discordMode, specialties
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const askSpecialty = specialties.length > 0;
   const askLevel = levels.length > 0;
-  const label = (v: string) => options[v] ?? v;
+  const label = (v: string) => optionLabel(options, v);
 
   async function onSubmit(e: TargetedSubmitEvent<HTMLFormElement>) {
     e.preventDefault();

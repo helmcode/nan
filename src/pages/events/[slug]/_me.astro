@@ -5,7 +5,7 @@ import NanPage from '../../../layouts/NanPage.astro';
 import EventHeader from '../../../components/events/EventHeader.astro';
 import ReassignForm from '../../../components/events/ReassignForm.tsx';
 import LoginForm, { type LoginStrings } from '../../../components/events/LoginForm.tsx';
-import { getLocale, t, tObj, withLang } from '../../../lib/i18n';
+import { getLocale, optionLabel, t, tObj, withLang } from '../../../lib/i18n';
 import { fetchMe, hasSessionCookie, type EventInfo } from '../../../lib/events';
 
 const locale = getLocale(Astro.url);
@@ -26,7 +26,7 @@ const team = me?.team ?? null;
 const submission = me?.submission ?? null;
 const isTeam = ev.format === 'team';
 const options = tObj<Record<string, string>>('events.options', locale);
-const label = (v?: string | null) => (v ? options[v] ?? v : '');
+const label = (v?: string | null) => optionLabel(options, v);
 const m = tObj<Record<string, string>>('events.me', locale);
 const login = tObj<LoginStrings>('events.login', locale);
 const submissionUrl = withLang(`/events/${slug}/submission`, locale);
