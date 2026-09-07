@@ -256,15 +256,21 @@ export const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Cancelado',
 };
 
-/** Etiquetas de la fase efectiva (estado + fechas, SPEC v3 §5). */
+/**
+ * Etiquetas de la fase efectiva (estado + fechas, SPEC v3 §5). Solo dicen
+ * "abierta" las fases que garantizan la ventana: `registration` y `voting`
+ * no la garantizan (la inscripción depende además de sus fechas y la
+ * votación del interruptor de la votación), y decirlo ahí contradecía a la
+ * lista de ventanas de al lado, que ponía "Inscripción: cerrada".
+ */
 export const PHASE_LABELS: Record<string, string> = {
   draft: 'borrador',
   published: 'publicado, sin inscripción',
-  registration: 'inscripción abierta',
+  registration: 'inscripción',
   building_pending: 'construcción, entregas aún cerradas',
   building: 'construcción, entregas abiertas',
   submission: 'entregas congeladas',
-  voting: 'votación abierta',
+  voting: 'votación',
   closed_pending: 'votación vencida, pendiente de cerrar',
   closed: 'cerrado',
   cancelled: 'cancelado',
