@@ -43,43 +43,43 @@ const remainingLabel = lowSeats
 const poolNote = fill(cap.poolNote, { cap: capacity, taken: poolTaken, res: reserve });
 ---
 
-<div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-5">
-  <div class="flex items-baseline justify-between gap-3">
-    <span class="font-mono text-xs text-neutral-300">{takenLabel}</span>
-    <span class={`font-mono text-xs ${lowSeats ? 'text-amber-400' : 'text-neutral-500'}`}>
+<div class="border border-neutral-800 bg-neutral-900/40 p-6 md:p-8">
+  <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+    <span class="font-mono text-base text-white">{takenLabel}</span>
+    <span class={`font-mono text-sm ${lowSeats ? 'text-amber-400' : 'text-neutral-500'}`}>
       {!inPool && remainingLabel}
     </span>
   </div>
 
-  {/* Barra principal: 40 plazas */}
-  <div class="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-neutral-800">
+  {/* Barra principal: las plazas del evento */}
+  <div class="mt-4 h-3 w-full overflow-hidden bg-neutral-800">
     <div
-      class="h-full rounded-full bg-violet-500 transition-all"
+      class="h-full bg-violet-500 transition-all"
       style={`width: ${mainPct}%`}
     >
     </div>
   </div>
 
   {inPool && (
-    <div class="mt-4">
-      <div class="flex items-baseline justify-between gap-3">
-        <span class="font-mono text-xs text-amber-400">{cap.poolBarLabel}</span>
-        <span class="font-mono text-xs text-neutral-500">{poolTaken} / {reserve}</span>
+    <div class="mt-6">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <span class="font-mono text-sm text-amber-400">{cap.poolBarLabel}</span>
+        <span class="font-mono text-sm text-neutral-500">{poolTaken} / {reserve}</span>
       </div>
-      <div class="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-neutral-800">
+      <div class="mt-3 h-3 w-full overflow-hidden bg-neutral-800">
         <div
-          class="h-full rounded-full bg-amber-500 transition-all"
+          class="h-full bg-amber-500 transition-all"
           style={`width: ${poolPct}%`}
         >
         </div>
       </div>
 
-      <div class="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
-        <p class="font-mono text-xs uppercase tracking-widest text-amber-400">
+      <div class="mt-6 border border-amber-500/30 bg-amber-500/10 p-5">
+        <p class="font-mono text-xs uppercase tracking-[0.2em] text-amber-400">
           {cap.poolTitle}
         </p>
-        <p class="mt-2 text-sm text-neutral-200 leading-relaxed">{poolNote}</p>
-        <p class="mt-2 text-xs text-neutral-400 leading-relaxed">{cap.poolExplain}</p>
+        <p class="mt-2 text-base leading-relaxed text-white">{poolNote}</p>
+        <p class="mt-2 text-sm leading-relaxed text-neutral-400">{cap.poolExplain}</p>
       </div>
     </div>
   )}

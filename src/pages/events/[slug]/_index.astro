@@ -130,107 +130,114 @@ const pageTitle = `${ev.name} — nan.builders`;
 const closedNote = fill(cap.closedNote, { cap: capacity, res: reserve });
 ---
 
+{/* Ficha: una columna centrada (max-w-3xl) con aire entre bloques. Las tarjetas
+    siguen la casa: esquina recta (la impone nan-system.css), hairline y tinte
+    violeta para lo que importa (fechas, premio, CTA). Botones = .btn de la casa. */}
 <NanPage scale={false} noindex title={pageTitle} description={ev.description}>
-  <main class="px-6 pt-24 pb-32 md:pt-32">
-    <div class="mx-auto max-w-2xl">
+  <main class="px-6 pt-28 pb-32 md:pt-36 md:pb-40">
+    <div class="mx-auto w-full max-w-3xl">
       <EventHeader event={ev} locale={locale} current="index" hasSession={sessionOk} />
 
-      <section class="mt-6">
+      <section class="mt-10 md:mt-12">
         {ev.description && (
-          <p class="text-sm md:text-base text-neutral-300 leading-relaxed whitespace-pre-line">{ev.description}</p>
+          <p class="max-w-prose text-lg leading-relaxed text-neutral-300 whitespace-pre-line md:text-xl">{ev.description}</p>
         )}
+
         {dates.length > 0 && (
-          <dl class="mt-5 grid gap-2 font-mono text-xs">
+          <dl class="mt-10 grid gap-3 sm:grid-cols-2">
             {dates.map((d) => (
-              <div class="flex flex-wrap gap-x-3 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 text-violet-300">
-                <dt class="uppercase tracking-widest text-violet-400">{d.label}</dt>
-                <dd>{d.value}</dd>
+              <div class="border border-violet-500/30 bg-violet-500/10 p-5">
+                <dt class="font-mono text-xs uppercase tracking-[0.2em] text-violet-400">{d.label}</dt>
+                <dd class="mt-2 font-mono text-base leading-snug text-white">{d.value}</dd>
               </div>
             ))}
           </dl>
         )}
+
         {(ev.location || ev.url) && (
-          <dl class="mt-3 grid gap-1 font-mono text-xs text-neutral-300">
+          <dl class="mt-3 grid gap-3 sm:grid-cols-2">
             {ev.location && (
-              <div class="flex flex-wrap gap-x-3">
-                <dt class="uppercase tracking-widest text-violet-400">{where.label}</dt>
-                <dd>{ev.location}</dd>
+              <div class="border border-neutral-800 bg-neutral-900/40 p-5">
+                <dt class="font-mono text-xs uppercase tracking-[0.2em] text-neutral-500">{where.label}</dt>
+                <dd class="mt-2 text-base leading-snug text-white">{ev.location}</dd>
               </div>
             )}
             {ev.url && (
-              <div class="flex flex-wrap gap-x-3">
-                <dt class="uppercase tracking-widest text-violet-400">{where.link}</dt>
-                <dd><a href={ev.url} rel="noopener" target="_blank" class="underline decoration-violet-500/50 underline-offset-4 hover:text-violet-300 break-all">{ev.url}</a></dd>
+              <div class="border border-neutral-800 bg-neutral-900/40 p-5">
+                <dt class="font-mono text-xs uppercase tracking-[0.2em] text-neutral-500">{where.link}</dt>
+                <dd class="mt-2 font-mono text-sm leading-snug">
+                  <a href={ev.url} rel="noopener" target="_blank"
+                     class="break-all text-violet-300 underline decoration-violet-500/50 underline-offset-4 transition-colors hover:text-white">{ev.url}</a>
+                </dd>
               </div>
             )}
           </dl>
         )}
+
         {calendarLink && (
-          <p class="mt-4 font-mono text-xs text-neutral-400">
-            <a href={calendarLink} rel="noopener" target="_blank" title={where.calendarTitle}
-               class="inline-block rounded-lg border border-violet-500/30 px-3 py-1.5 text-violet-300 transition-colors hover:bg-violet-500/10">
+          <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <a href={calendarLink} rel="noopener" target="_blank" title={where.calendarTitle} class="btn btn-ghost">
               {where.calendar}
             </a>
-            <a href={icsHref} class="ml-3 underline decoration-neutral-700 underline-offset-4 hover:text-neutral-200">{where.ics}</a>
-          </p>
+            <a href={icsHref} class="font-mono text-sm text-neutral-400 underline decoration-neutral-700 underline-offset-4 transition-colors hover:text-white">{where.ics}</a>
+          </div>
         )}
+
         {ev.prize && (
-          <p class="mt-4 text-sm text-neutral-300"><span class="font-mono text-xs uppercase tracking-widest text-violet-400">{t('events.prize', locale)}</span> · {ev.prize}</p>
+          <div class="mt-10 border-l-2 border-violet-500 pl-5">
+            <p class="font-mono text-xs uppercase tracking-[0.2em] text-violet-400">{t('events.prize', locale)}</p>
+            <p class="mt-2 text-lg leading-relaxed text-white">{ev.prize}</p>
+          </div>
         )}
+
         {ev.rules && (
-          <p class="mt-3 text-xs text-neutral-500 font-mono whitespace-pre-line">{ev.rules}</p>
+          <p class="mt-8 max-w-prose font-mono text-sm leading-relaxed text-neutral-500 whitespace-pre-line">{ev.rules}</p>
         )}
       </section>
 
-      <section class="mt-12">
+      <section class="mt-16 md:mt-20">
         {panel ? (
           <div class={panel.tone === 'accent'
-            ? 'rounded-xl border border-violet-500/30 bg-violet-500/10 p-6'
-            : 'rounded-xl border border-neutral-800 bg-neutral-900/30 p-6'}>
-            <p class={`font-mono text-xs uppercase tracking-widest ${panel.tone === 'accent' ? 'text-violet-300' : 'text-neutral-400'}`}>
+            ? 'border border-violet-500/40 bg-violet-500/10 p-8 md:p-10'
+            : 'border border-neutral-800 bg-neutral-900/40 p-8 md:p-10'}>
+            <p class={`font-mono text-sm uppercase tracking-[0.2em] ${panel.tone === 'accent' ? 'text-violet-300' : 'text-neutral-400'}`}>
               {panel.title}
             </p>
-            <p class="mt-2 text-sm text-neutral-200 leading-relaxed">{panel.body}</p>
+            <p class="mt-3 max-w-prose text-lg leading-relaxed text-white">{panel.body}</p>
             {panel.href && panel.cta && (
               /* En solo, entregar requiere sesión: si no la hay, enseñamos el login en vez del CTA. */
               !isTeam && ev.phase === 'building' && !sessionOk ? (
-                <div class="mt-5">
-                  <p class="mb-3 text-xs text-neutral-400">{t('events.submission.loginNote', locale)}</p>
+                <div class="mt-8">
+                  <p class="mb-4 text-base text-neutral-400">{t('events.submission.loginNote', locale)}</p>
                   <LoginForm client:load t={login} />
                 </div>
               ) : (
-                <a href={panel.href}
-                   class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500">
-                  {panel.cta}
-                </a>
+                <a href={panel.href} class="btn btn-primary mt-8">{panel.cta}</a>
               )
             )}
           </div>
         ) : !ev.windows.registration.open ? (
-          <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
-            <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">{phase.notOpenTitle}</p>
-            <p class="mt-2 text-sm text-neutral-300 leading-relaxed">{phase.notOpen}</p>
+          <div class="border border-neutral-800 bg-neutral-900/40 p-8 md:p-10">
+            <p class="font-mono text-sm uppercase tracking-[0.2em] text-neutral-400">{phase.notOpenTitle}</p>
+            <p class="mt-3 max-w-prose text-lg leading-relaxed text-neutral-300">{phase.notOpen}</p>
           </div>
         ) : (
-          <div class="space-y-6">
+          <div class="grid gap-6">
             {hasCapacity && (
               <RegistrationBar registered={ev.counts.registered} capacity={capacity} reserve={reserve} locale={locale} />
             )}
             {registered ? (
-              <div class="rounded-xl border border-violet-500/30 bg-violet-500/10 p-6">
-                <p class="font-mono text-xs uppercase tracking-widest text-violet-300">{already.title}</p>
-                <p class="mt-2 text-sm text-neutral-200 leading-relaxed">
+              <div class="border border-violet-500/40 bg-violet-500/10 p-8 md:p-10">
+                <p class="font-mono text-sm uppercase tracking-[0.2em] text-violet-300">{already.title}</p>
+                <p class="mt-3 max-w-prose text-lg leading-relaxed text-white">
                   {participant?.is_reserve ? already.reserve : already.confirmed}
                 </p>
-                <a href={meUrl}
-                   class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500">
-                  {already.cta}
-                </a>
+                <a href={meUrl} class="btn btn-primary mt-8">{already.cta}</a>
               </div>
             ) : full ? (
-              <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
-                <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">{cap.closedTitle}</p>
-                <p class="mt-2 text-sm text-neutral-300 leading-relaxed">{closedNote}</p>
+              <div class="border border-neutral-800 bg-neutral-900/40 p-8 md:p-10">
+                <p class="font-mono text-sm uppercase tracking-[0.2em] text-neutral-400">{cap.closedTitle}</p>
+                <p class="mt-3 max-w-prose text-lg leading-relaxed text-neutral-300">{closedNote}</p>
               </div>
             ) : !sessionOk ? (
               <LoginForm client:load t={login} />

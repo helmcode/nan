@@ -84,12 +84,12 @@ export default function RegisterForm({ slug, t, meHref, discordMode, specialties
 
   if (status.kind === 'success') {
     return (
-      <div role="status" class="rounded-xl border border-violet-500/30 bg-violet-950/20 p-6 text-center">
-        <p class="text-sm text-white leading-relaxed">
+      <div role="status" class="border border-violet-500/40 bg-violet-500/10 p-8 text-center md:p-10">
+        <p class="text-lg leading-relaxed text-white">
           {status.reserve ? t.successReserve : t.success}
         </p>
-        <a href={meHref} class="mt-4 inline-block font-mono text-xs text-violet-400 hover:text-violet-300">
-          → {t.successCta}
+        <a href={meHref} class="btn btn-primary mt-6">
+          {t.successCta}
         </a>
       </div>
     );
@@ -97,12 +97,12 @@ export default function RegisterForm({ slug, t, meHref, discordMode, specialties
 
   const submitting = status.kind === 'submitting';
   const err = status.kind === 'error' ? status.message : null;
-  const inputCls =
-    'w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-3 text-sm text-white font-mono placeholder-neutral-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/40 transition-colors';
-  const labelCls = 'block font-mono text-[10px] uppercase tracking-widest text-violet-400 mb-2';
+  // .field y .btn son los controles de la casa (styles/nan-system.css).
+  const inputCls = 'field w-full';
+  const labelCls = 'mb-2 block font-mono text-xs uppercase tracking-[0.2em] text-violet-400';
 
   return (
-    <form onSubmit={onSubmit} noValidate class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6 md:p-8 space-y-5">
+    <form onSubmit={onSubmit} noValidate class="grid gap-6 border border-neutral-800 bg-neutral-900/40 p-8 md:p-10">
       <div>
         <label class={labelCls} for="ev-name">{t.name} <span class="text-neutral-500">*</span></label>
         <input id="ev-name" required disabled={submitting} value={name}
@@ -115,7 +115,7 @@ export default function RegisterForm({ slug, t, meHref, discordMode, specialties
           </label>
           <input id="ev-discord" required={discordMode === 'required'} disabled={submitting} value={discord}
                  onInput={(e) => setDiscord((e.currentTarget as HTMLInputElement).value)} class={inputCls} />
-          <p class="mt-1 text-[10px] text-neutral-500 font-mono">
+          <p class="mt-2 font-mono text-sm text-neutral-500">
             {discordMode === 'required' ? t.discordHelp : t.discordOptional}
           </p>
         </div>
@@ -140,9 +140,8 @@ export default function RegisterForm({ slug, t, meHref, discordMode, specialties
           </select>
         </div>
       )}
-      {err && <p role="alert" class="text-sm text-red-400 font-mono">{err}</p>}
-      <button type="submit" disabled={submitting}
-        class="w-full font-mono text-sm px-8 py-3 rounded-lg bg-violet-600 text-white hover:bg-violet-500 hover:shadow-[0_0_24px_rgba(139,92,246,0.4)] transition-all disabled:opacity-50">
+      {err && <p role="alert" class="font-mono text-sm text-red-400">{err}</p>}
+      <button type="submit" disabled={submitting} class="btn btn-primary w-full disabled:opacity-50">
         {submitting ? t.submitting : t.submit}
       </button>
     </form>
