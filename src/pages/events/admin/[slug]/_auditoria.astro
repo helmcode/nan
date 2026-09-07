@@ -24,7 +24,7 @@ interface Props {
 const { staff, cookie, view, outcome } = Astro.props;
 const ev = view.event;
 const archived = Boolean(ev.archived_at);
-const flash = readFlash(Astro.url);
+const flash = readFlash(Astro.url, outcome);
 const filters = readAuditFilters(Astro.url);
 
 const [auditRes, backupsRes] = await Promise.all([

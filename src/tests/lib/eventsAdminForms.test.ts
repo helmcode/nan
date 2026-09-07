@@ -129,6 +129,15 @@ describe('sameOrigin y flash', () => {
     expect(readFlash(new URL('https://nan.builders/events/admin/demo?ok=guardado&warn=slug_changed,x-y'))).toEqual({ ok: 'Cambios guardados.', warnings: ['slug_changed'] });
     expect(readFlash(new URL('https://nan.builders/events/admin/demo?ok=<script>'))).toEqual({ ok: null, warnings: [] });
   });
+
+  it('readFlash calla el aviso anterior si en este render se ha atendido un POST', () => {
+    const url = new URL('https://nan.builders/events/admin/demo/participantes?ok=alta&warn=slug_changed');
+    // Sin POST el flash de la redirección anterior se pinta igual que siempre.
+    expect(readFlash(url, {})).toEqual({ ok: 'Participante dado de alta.', warnings: ['slug_changed'] });
+    // Con POST (la importación se pinta sin redirigir) el `?ok=` es de antes.
+    expect(readFlash(url, { action: 'import' })).toEqual({ ok: null, warnings: [] });
+    expect(readFlash(url, { forbidden: true })).toEqual({ ok: null, warnings: [] });
+  });
 });
 
 describe('handleNewEventForm', () => {

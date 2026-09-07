@@ -157,6 +157,17 @@ export async function resolveAdminEventRoute(
   return { staff: route.staff, cookie: route.cookie, slug: res.data.event.slug, view: res.data, notFound: null };
 }
 
+/**
+ * Recarga la ficha después de un POST que escribe y pinta el resultado en la
+ * misma respuesta, sin redirigir (la importación CSV): `resolveAdminEventRoute`
+ * la cargó antes de la escritura, así que sus contadores irían atrasados. Si
+ * la recarga falla se queda la anterior: un contador viejo es mejor que un 500.
+ */
+export async function reloadAdminEventView(cookie: string, slug: string, previous: AdminEventView): Promise<AdminEventView> {
+  const res = await adminFetch<AdminEventView>(cookie, `${slug}/admin`);
+  return res.ok && res.data?.event ? res.data : previous;
+}
+
 /** Envelope de la API de eventos (SPEC v3 §6), tal cual lo devuelve el backend. */
 export interface ApiResult<T> {
   ok: boolean;

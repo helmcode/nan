@@ -21,7 +21,7 @@ const { staff, cookie, view, outcome } = Astro.props;
 const ev = view.event;
 const archived = Boolean(ev.archived_at);
 const enabled = ev.modules.voting;
-const flash = readFlash(Astro.url);
+const flash = readFlash(Astro.url, outcome);
 
 const [votesRes, boardRes] = enabled
   ? await Promise.all([

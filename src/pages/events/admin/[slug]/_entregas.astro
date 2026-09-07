@@ -21,7 +21,7 @@ const { staff, cookie, view, outcome } = Astro.props;
 const ev = view.event;
 const archived = Boolean(ev.archived_at);
 const enabled = ev.modules.submissions;
-const flash = readFlash(Astro.url);
+const flash = readFlash(Astro.url, outcome);
 const here = adminHref(ev.slug, 'entregas');
 
 const res = enabled ? await adminFetch<AdminSubmissionRow[]>(cookie, `${ev.slug}/admin/submissions`) : null;

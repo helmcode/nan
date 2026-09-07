@@ -413,8 +413,15 @@ export function doneHref(slug: string, ok: string, warnings: string[] = [], scre
   return `${adminHref(slug, screen)}?${q.toString()}`;
 }
 
-/** Lee `?ok=` y `?warn=` de una URL y los convierte en textos; ignora lo desconocido. */
-export function readFlash(url: URL): { ok: string | null; warnings: string[] } {
+/**
+ * Lee `?ok=` y `?warn=` de una URL y los convierte en textos; ignora lo
+ * desconocido. Si en este mismo render se ha atendido un POST (`outcome`),
+ * el flash se descarta: viene del cambio anterior (el formulario envía a la
+ * URL actual, `?ok=` incluido) y contarlo otra vez encima del resultado
+ * nuevo miente sobre lo que acaba de pasar.
+ */
+export function readFlash(url: URL, outcome?: FormOutcome): { ok: string | null; warnings: string[] } {
+  if (outcome && (outcome.action || outcome.forbidden)) return { ok: null, warnings: [] };
   const okKey = url.searchParams.get('ok') ?? '';
   const ok = FLASH_LABELS[okKey] ?? null;
   const warnings = (url.searchParams.get('warn') ?? '')

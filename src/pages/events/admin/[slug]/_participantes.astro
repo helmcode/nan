@@ -23,7 +23,7 @@ const { staff, cookie, view, outcome } = Astro.props;
 const ev = view.event;
 const archived = Boolean(ev.archived_at);
 const isTeam = ev.format === 'team';
-const flash = readFlash(Astro.url);
+const flash = readFlash(Astro.url, outcome);
 const filters = readParticipantFilters(Astro.url);
 const here = adminHref(ev.slug, 'participantes');
 
