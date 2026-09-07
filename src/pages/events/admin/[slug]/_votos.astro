@@ -69,10 +69,16 @@ const num = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
         Total = peso · votos / máximo de votos + puntos por checks. Los votos a entregas retiradas no cuentan ni fijan el máximo.
         Los votos no se anulan ni se editan (decisión 23). Cerrar la votación congela el ranking y lo publica.
       </p>
+      {/*
+        Los dos atajos pueden convivir: en `voting` con la votación todavía
+        cerrada se puede abrir Y se puede cerrar (que congela el ranking). Antes
+        se pintaba solo uno y ganaba el de cerrar, así que desde ese estado —el
+        que deja `voting_not_open`— no había forma de abrir la votación.
+      */}
       {(canOpen || canClose) && (
         <form method="post" class="adm-actions" style="margin-top:.5rem">
-          <input type="hidden" name="action" value={canClose ? 'close_preview' : 'open_preview'} />
-          <button class="adm-btn" type="submit">{canClose ? 'Previsualizar cierre de la votación' : 'Previsualizar apertura de la votación'}</button>
+          {canOpen && <button class="adm-btn" type="submit" name="action" value="open_preview">Previsualizar apertura de la votación</button>}
+          {canClose && <button class="adm-btn" type="submit" name="action" value="close_preview">Previsualizar cierre de la votación</button>}
         </form>
       )}
       {!archived && enabled && !canOpen && !canClose && (
