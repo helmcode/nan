@@ -8,7 +8,7 @@ import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
 import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
 import { adminFetch, adminHref, type AdminEventView, type StaffSession } from '../../../../lib/eventsAdmin';
 import { readFlash, warningLabel, type FormOutcome } from '../../../../lib/eventsAdminForms';
-import { type AdminParticipantRow } from '../../../../lib/eventsAdminParticipants';
+import { adminOptionLabel, participantProfile, type AdminParticipantRow } from '../../../../lib/eventsAdminParticipants';
 import { NO_TEAM, TEAM_ORIGIN_LABELS, type AdminTeamRow, type GenerateReport } from '../../../../lib/eventsAdminTeams';
 
 interface Props {
@@ -37,9 +37,9 @@ const topResult = previewing ? undefined : outcome.result;
 const v = (k: string, action: string, fallback = '') => (outcome.action === action && outcome.values ? String(outcome.values[k] ?? '') : fallback);
 
 const SIZE_PILLS: Record<string, string> = { team_empty: 'vacío', team_under_min: 'bajo mínimo', team_over_size: 'sobre tamaño' };
-const profile = (m: { specialty: string | null; level: string | null }) => [m.specialty, m.level].filter(Boolean).join(' · ');
+const profile = participantProfile;
 const balance = (t: AdminTeamRow) => {
-  const parts = Object.entries(t.balance_score.specialties ?? {}).map(([k, n]) => `${k}×${n}`);
+  const parts = Object.entries(t.balance_score.specialties ?? {}).map(([k, n]) => `${adminOptionLabel(k)}×${n}`);
   return [t.balance_score.avg_level ? `nivel medio ${t.balance_score.avg_level.toFixed(1)}` : '', ...parts].filter(Boolean).join(' · ');
 };
 ---

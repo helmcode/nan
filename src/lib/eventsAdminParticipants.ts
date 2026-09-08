@@ -1,5 +1,6 @@
 import { adminFetch } from './eventsAdmin';
 import { doneHref, formValues, on, readForm, str, type FormOutcome } from './eventsAdminForms';
+import { optionLabel, tObj } from './i18n';
 
 /**
  * Pantalla de participantes del panel (SPEC v3 §6.2 y §8, W-05): tabla con
@@ -30,6 +31,33 @@ export interface AdminParticipantRow {
   withdrawn_reason: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/**
+ * Etiquetas de especialidad y nivel dentro del panel.
+ *
+ * El vocabulario lo escribe quien organiza el evento (SPEC §3.2), así que
+ * `events.options` solo traduce el fijo de v2 y el resto sale con la inicial
+ * en mayúscula: sin esto, "devops" aparecía en minúscula al lado de
+ * "Frontend" en la misma lista. La parte pública ya lo hacía; el panel no, y
+ * el mismo dato se veía de dos formas según la pantalla.
+ *
+ * El panel es solo español (no tiene variante `/es/`), de ahí el locale fijo.
+ * El diccionario se resuelve una vez: es constante en todo el proceso.
+ */
+const ADMIN_OPTIONS = tObj<Record<string, string>>('events.options', 'es');
+
+export function adminOptionLabel(value?: string | null): string {
+  return optionLabel(ADMIN_OPTIONS, value);
+}
+
+/**
+ * Especialidad y nivel de un participante, ya etiquetados, para las fichas
+ * del panel. Devuelve cadena vacía si no tiene ninguno de los dos: quien
+ * llama decide el relleno ("—", el email…).
+ */
+export function participantProfile(m: { specialty?: string | null; level?: string | null }): string {
+  return [adminOptionLabel(m.specialty), adminOptionLabel(m.level)].filter(Boolean).join(' · ');
 }
 
 export const PARTICIPANT_STATUS_LABELS: Record<string, string> = {

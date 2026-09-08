@@ -9,8 +9,8 @@ import AdminNotices from '../../../../components/events/admin/AdminNotices.astro
 import { adminFetch, adminHref, fmtAdminDate, type AdminEventView, type StaffSession } from '../../../../lib/eventsAdmin';
 import { readFlash, warningLabel, type FormOutcome } from '../../../../lib/eventsAdminForms';
 import {
-  IMPORT_ACTION_LABELS, PARTICIPANT_SOURCE_LABELS, PARTICIPANT_STATUS_LABELS, participantsSearch, readParticipantFilters,
-  type AdminParticipantRow, type ImportReport,
+  adminOptionLabel, IMPORT_ACTION_LABELS, participantProfile, PARTICIPANT_SOURCE_LABELS, PARTICIPANT_STATUS_LABELS,
+  participantsSearch, readParticipantFilters, type AdminParticipantRow, type ImportReport,
 } from '../../../../lib/eventsAdminParticipants';
 
 interface Props {
@@ -124,7 +124,7 @@ const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status]
                 <div class="adm-muted" style="font-size:12px">{r.email}{r.discord_user ? ` · ${r.discord_user}` : ''}</div>
                 {r.notes && <div class="adm-muted" style="font-size:12px" title="Notas (solo admin)">✎ {r.notes}</div>}
               </td>
-              {(hasSpecialties || hasLevels) && <td class="adm-muted">{[r.specialty, r.level].filter(Boolean).join(' · ') || '—'}</td>}
+              {(hasSpecialties || hasLevels) && <td class="adm-muted">{participantProfile(r) || '—'}</td>}
               <td>
                 <span class:list={['adm-pill', { 'adm-pill-warn': r.status === 'withdrawn' }]} data-status={r.status}>{statusOf(r)}</span>
                 {r.is_reserve && r.status !== 'withdrawn' && <span class="adm-pill">reserva</span>}
@@ -187,7 +187,7 @@ const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status]
             <label><span class="adm-label">Especialidad</span>
               <select class="adm-input" name="specialty" required>
                 <option value="">elige…</option>
-                {specialties.map((s) => <option value={s} selected={ev2('specialty', editRow.specialty ?? '') === s}>{s}</option>)}
+                {specialties.map((s) => <option value={s} selected={ev2('specialty', editRow.specialty ?? '') === s}>{adminOptionLabel(s)}</option>)}
               </select>
             </label>
           )}
@@ -195,7 +195,7 @@ const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status]
             <label><span class="adm-label">Nivel</span>
               <select class="adm-input" name="level" required>
                 <option value="">elige…</option>
-                {levels.map((s) => <option value={s} selected={ev2('level', editRow.level ?? '') === s}>{s}</option>)}
+                {levels.map((s) => <option value={s} selected={ev2('level', editRow.level ?? '') === s}>{adminOptionLabel(s)}</option>)}
               </select>
             </label>
           )}
@@ -226,7 +226,7 @@ const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status]
               <label><span class="adm-label">Especialidad</span>
                 <select class="adm-input" name="specialty" required>
                   <option value="">elige…</option>
-                  {specialties.map((s) => <option value={s} selected={addV('specialty') === s}>{s}</option>)}
+                  {specialties.map((s) => <option value={s} selected={addV('specialty') === s}>{adminOptionLabel(s)}</option>)}
                 </select>
               </label>
             )}
@@ -234,7 +234,7 @@ const statusOf = (r: AdminParticipantRow) => PARTICIPANT_STATUS_LABELS[r.status]
               <label><span class="adm-label">Nivel</span>
                 <select class="adm-input" name="level" required>
                   <option value="">elige…</option>
-                  {levels.map((s) => <option value={s} selected={addV('level') === s}>{s}</option>)}
+                  {levels.map((s) => <option value={s} selected={addV('level') === s}>{adminOptionLabel(s)}</option>)}
                 </select>
               </label>
             )}

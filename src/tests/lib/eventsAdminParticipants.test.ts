@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 
 vi.mock('cloudflare:workers', () => ({ env: { CLOUD_API_URL: 'https://api.test' } }));
 
-import { handleParticipantsForm, participantsSearch, readParticipantFilters } from '../../lib/eventsAdminParticipants';
+import { adminOptionLabel, handleParticipantsForm, participantProfile, participantsSearch, readParticipantFilters } from '../../lib/eventsAdminParticipants';
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 const PAGE = 'https://nan.builders/events/admin/demo/participantes';
@@ -152,5 +152,40 @@ describe('handleParticipantsForm', () => {
     const empty = await handleParticipantsForm(postCsv('import_preview', '   \n'), 'c', 'demo');
     expect(empty.result?.error).toBe('csv_invalid');
     expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * El panel enseña el mismo vocabulario que la parte pública. Antes no: la web
+ * pasaba especialidad y nivel por `optionLabel` y el panel los pintaba en
+ * crudo, así que el organizador leía "devops" donde el participante leía
+ * "Devops". Ahora los nueve puntos del panel pasan por estos dos helpers, que
+ * son lo que se prueba aquí.
+ */
+describe('etiquetas del vocabulario en el panel', () => {
+  it('traduce lo que el diccionario conoce y capitaliza lo que no', () => {
+    // "frontend" está en `events.options`; "devops" lo escribió quien organiza.
+    expect(adminOptionLabel('frontend')).toBe('Frontend');
+    expect(adminOptionLabel('devops')).toBe('Devops');
+    // Lo que ya viene con mayúscula no se toca.
+    expect(adminOptionLabel('ML/IA')).toBe('ML/IA');
+  });
+
+  it('sin valor no imprime nada (ni "null" ni "undefined")', () => {
+    expect(adminOptionLabel(null)).toBe('');
+    expect(adminOptionLabel(undefined)).toBe('');
+    expect(adminOptionLabel('')).toBe('');
+  });
+
+  it('la ficha junta especialidad y nivel ya etiquetados', () => {
+    expect(participantProfile({ specialty: 'devops', level: 'junior' })).toBe('Devops · Junior');
+  });
+
+  it('la ficha omite el que falte y queda vacía si no hay ninguno', () => {
+    // Quien llama decide el relleno ("—", el email…), así que aquí sale vacío
+    // y no un separador suelto.
+    expect(participantProfile({ specialty: 'devops', level: null })).toBe('Devops');
+    expect(participantProfile({ specialty: null, level: 'junior' })).toBe('Junior');
+    expect(participantProfile({ specialty: null, level: null })).toBe('');
   });
 });
