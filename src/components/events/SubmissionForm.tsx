@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { TargetedSubmitEvent } from 'preact';
+import { optionLabel } from '../../lib/i18n';
 
 type FieldMode = 'required' | 'optional' | 'hidden';
 interface Fields {
@@ -55,7 +56,11 @@ interface Props {
   discordMode: 'required' | 'optional' | 'none';
   specialties: string[];
   levels: string[];
-  /** Etiquetas traducidas de especialidades/niveles y de los checks. */
+  /**
+   * Etiquetas traducidas de especialidades/niveles y de los checks. Solo
+   * traduce el vocabulario fijo de v2: el de especialidades y niveles lo
+   * escribe quien organiza (§3.2) y lo que no conoce pasa por `optionLabel`.
+   */
   options: Record<string, string>;
 }
 
@@ -91,7 +96,11 @@ export default function SubmissionForm({
     setF({ ...f, [k]: (e.currentTarget as HTMLInputElement | HTMLTextAreaElement).value });
   const setPart = (k: keyof typeof p) => (e: Event) =>
     setP({ ...p, [k]: (e.currentTarget as HTMLInputElement | HTMLSelectElement).value });
-  const label = (v: string) => options[v] ?? v;
+  // Especialidades y niveles: vocabulario libre del evento, igual que en el
+  // alta, así que lo que no está en el diccionario sale con la inicial en
+  // mayúscula. Los checks no: ese vocabulario lo fija el backend.
+  const label = (v: string) => optionLabel(options, v);
+  const checkLabel = (v: string) => options[v] ?? v;
   const fieldLabel: Record<string, string> = {
     title: t.fTitle, description: t.description, public_url: t.publicUrl, space_url: t.spaceUrl,
     repo_url: t.repoUrl, image_url: t.imageUrl, video_url: t.videoUrl,
@@ -293,7 +302,7 @@ export default function SubmissionForm({
           <p>{t.checks}: {result.auto_points}/{autoMax}</p>
           <ul class="mt-1 space-y-1">
             {checks.map((k) => (
-              <li>{result.checks[k]?.pass ? '✓' : '✗'} {label(k)}</li>
+              <li>{result.checks[k]?.pass ? '✓' : '✗'} {checkLabel(k)}</li>
             ))}
           </ul>
           {result.not_prize_eligible && <p class="mt-2 text-red-400">{t.notPrizeEligible}</p>}

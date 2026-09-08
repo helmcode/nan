@@ -29,8 +29,13 @@ const res = enabled ? await adminFetch<AdminSubmissionRow[]>(cookie, `${ev.slug}
 const rows = (res?.data ?? []).slice().sort((a, b) =>
   Number(Boolean(a.withdrawn_at)) - Number(Boolean(b.withdrawn_at)) || a.submitted_at.localeCompare(b.submitted_at));
 const active = rows.filter((r) => !r.withdrawn_at);
-const checks = ev.submission.checks;
-const prizeRequires = ev.submission.prize_requires;
+// Las listas del evento llegan como null cuando el slice va nil en el backend
+// (ver EventInfo): nunca reventamos la pantalla por eso, y el tipo obliga.
+const checks = ev.submission.checks ?? [];
+const prizeRequires = ev.submission.prize_requires ?? [];
+// fields NO necesita guarda: es un struct por valor en el backend y siempre
+// llega como objeto. El `?? 'optional'` de fieldOn cubre el modo vacío.
+const fieldModes: Record<string, string> = ev.submission.fields;
 
 // Edición: ?editar=<id> abre la tarjeta con los datos de esa fila (o los que se escribieron si falló).
 const editId = outcome.action && outcome.action !== 'verify' && outcome.values ? String(outcome.values.id ?? '') : (Astro.url.searchParams.get('editar') ?? '');
@@ -39,7 +44,7 @@ const ev2 = (k: string, fallback: string) => (outcome.action === 'update' && out
 const rv = (action: string, k: string) => (outcome.action === action && outcome.values ? String(outcome.values[k] ?? '') : '');
 
 // Campos que el evento muestra (título y URL pública siempre; el resto según `submission.fields`).
-const fieldOn = (key: string) => key === 'title' || key === 'public_url' || (ev.submission.fields[key] ?? 'optional') !== 'hidden';
+const fieldOn = (key: string) => key === 'title' || key === 'public_url' || (fieldModes[key] ?? 'optional') !== 'hidden';
 const fields = SUBMISSION_EDIT_FIELDS.filter((f) => fieldOn(f.key));
 const urlKeys = ['public_url', 'space_url', 'repo_url', 'image_url', 'video_url'] as const;
 const URL_LABELS: Record<string, string> = { public_url: 'pública', space_url: 'space', repo_url: 'repo', image_url: 'imagen', video_url: 'vídeo' };
@@ -173,7 +178,7 @@ const prizeText = (r: AdminSubmissionRow) => {
         <div class="adm-grid">
           {fields.map((f) => f.kind === 'textarea'
             ? <label class="adm-span"><span class="adm-label">{f.label}</span><textarea class="adm-input" name={f.key} rows="3">{ev2(f.key, editRow[f.key])}</textarea></label>
-            : <label><span class="adm-label">{f.label}</span><input class="adm-input" name={f.key} type={f.kind} value={ev2(f.key, editRow[f.key])} required={f.key === 'title' || f.key === 'public_url' || ev.submission.fields[f.key] === 'required'} /></label>)}
+            : <label><span class="adm-label">{f.label}</span><input class="adm-input" name={f.key} type={f.kind} value={ev2(f.key, editRow[f.key])} required={f.key === 'title' || f.key === 'public_url' || fieldModes[f.key] === 'required'} /></label>)}
         </div>
         <p class="adm-muted" style="font-size:12px">Cambiar la URL pública, la del space o la del repo vuelve a ejecutar los checks (salvo los fijados a mano).</p>
         <div class="adm-actions">

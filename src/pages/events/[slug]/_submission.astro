@@ -6,7 +6,7 @@ import EventHeader from '../../../components/events/EventHeader.astro';
 import SubmissionForm from '../../../components/events/SubmissionForm.tsx';
 import LoginForm, { type LoginStrings } from '../../../components/events/LoginForm.tsx';
 import { getLocale, tObj } from '../../../lib/i18n';
-import { fetchMe, fmtDate, hasSessionCookie, type EventInfo } from '../../../lib/events';
+import { fetchMe, fmtDate, hasSessionCookie, type EventInfo, type SubmissionFields } from '../../../lib/events';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -39,7 +39,15 @@ const openAt = fmtDate(ev.dates.submission_open, locale, true);
 const closeAt = fmtDate(ev.dates.submission_close, locale, true);
 const windowNotOpen = openAt ? fill(s.notOpen, { date: openAt }) : s.notOpenNoDate;
 const windowClosed = closeAt ? fill(s.closedNote, { date: closeAt }) : s.closedNoteNoDate;
-const fields = ev.submission.fields;
+// Las listas del evento llegan como null cuando el slice va nil en el backend
+// (ver EventInfo): nunca reventamos la pantalla por eso, y el tipo obliga.
+const specialties = ev.registration.specialties ?? [];
+const levels = ev.registration.levels ?? [];
+const checks = ev.submission.checks ?? [];
+// fields NO necesita guarda: en el backend es un struct por valor, así que
+// siempre se serializa como objeto. Un modo en cadena vacía (event.json v2)
+// cae en "visible y opcional", que es el trato correcto.
+const fields: SubmissionFields = ev.submission.fields;
 const readonlyRows = existing
   ? [
       { label: s.fTitle, value: existing.title },
@@ -69,9 +77,9 @@ const readonlyRows = existing
       ) : canEdit ? (
         <SubmissionForm client:load slug={slug} t={s} existing={existing}
           fields={fields} format={ev.format} hasParticipant={hasParticipant}
-          checks={ev.submission.checks} autoMax={ev.voting.auto_max}
+          checks={checks} autoMax={ev.voting.auto_max}
           discordMode={ev.registration.discord_user}
-          specialties={ev.registration.specialties} levels={ev.registration.levels}
+          specialties={specialties} levels={levels}
           options={options} />
       ) : (
         <div class="space-y-4">
@@ -92,11 +100,11 @@ const readonlyRows = existing
                   </div>
                 ))}
               </dl>
-              {ev.submission.checks.length > 0 && (
+              {checks.length > 0 && (
                 <div class="mt-2 text-sm font-mono text-neutral-300">
                   <p>{s.checks}: {existing.auto_points ?? 0}/{ev.voting.auto_max}</p>
                   <ul class="mt-1 space-y-1">
-                    {ev.submission.checks.map((k) => (
+                    {checks.map((k) => (
                       <li>{existing.checks?.[k]?.pass ? '✓' : '✗'} {options[k] ?? k}</li>
                     ))}
                   </ul>

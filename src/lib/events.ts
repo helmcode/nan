@@ -151,15 +151,25 @@ export interface EventInfo {
     capacity: number;
     reserve_capacity: number;
     discord_user: DiscordMode;
-    specialties: string[];
-    levels: string[];
+    /**
+     * Listas que el backend serializa como `null` cuando el slice va nil
+     * (event.json escrito a mano, o un evento anterior al saneo de
+     * `applyCreateDefaults`). El `| null` no es defensivo: es lo que llega por
+     * el cable, y tiparlo así hace que `astro check` marque en rojo cualquier
+     * lectura sin `?? []`, incluidas las que pasan por una desestructuración
+     * y que ningún barrido de texto puede ver.
+     */
+    specialties: string[] | null;
+    levels: string[] | null;
   };
   /** Solo presente en formato `team` (SPEC §6.1). */
   team?: { size: number; min_size: number; max_teams: number };
   submission: {
+    /** Struct por valor en el backend: siempre llega como objeto, nunca null. */
     fields: SubmissionFields;
-    checks: string[];
-    prize_requires: string[];
+    /** Ver el comentario de `registration.specialties`. */
+    checks: string[] | null;
+    prize_requires: string[] | null;
     gallery_visibility: string;
   };
   /** Sin los interruptores de admin (open, leaderboard_public): lo que manda es `windows`. */

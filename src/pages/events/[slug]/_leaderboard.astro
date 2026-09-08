@@ -24,6 +24,9 @@ const [lbRes, meRes] = await Promise.all([
 const lb = lbRes ?? { rows: [], public: false };
 const rows = lb.rows ?? [];
 const sessionOk = hasSession && !meRes.unauthorized;
+// La API devuelve lista, pero un event.json editado a mano (o una versión
+// vieja del backend) puede traer null: nunca reventamos la pantalla por eso.
+const checks = ev.submission.checks ?? [];
 const l = tObj<Record<string, string>>('events.leaderboard', locale);
 ---
 <NanPage scale={false} noindex title={`${l.title} · ${ev.name} — nan.builders`}>
@@ -40,7 +43,7 @@ const l = tObj<Record<string, string>>('events.leaderboard', locale);
                 <th class="text-left">{ev.format === 'team' ? l.team : l.participant}</th>
                 <th class="text-left">{l.project}</th>
                 <th class="text-right">{l.votes}</th>
-                {ev.submission.checks.length > 0 && <th class="text-right">{l.auto}</th>}
+                {checks.length > 0 && <th class="text-right">{l.auto}</th>}
                 <th class="text-right">{l.total}</th></tr>
           </thead>
           <tbody>
@@ -50,7 +53,7 @@ const l = tObj<Record<string, string>>('events.leaderboard', locale);
                 <td>{r.owner.name}{r.not_prize_eligible ? ' *' : ''}</td>
                 <td class="text-neutral-400">{r.title}</td>
                 <td class="text-right">{r.votes}</td>
-                {ev.submission.checks.length > 0 && <td class="text-right">{r.auto_points}</td>}
+                {checks.length > 0 && <td class="text-right">{r.auto_points}</td>}
                 <td class="text-right text-white">{r.total}</td>
               </tr>
             ))}
