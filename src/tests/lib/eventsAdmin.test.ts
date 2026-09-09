@@ -14,6 +14,7 @@ describe('fetchStaffSession (guardia SSR, SPEC v3 §8)', () => {
     const spy = vi.spyOn(globalThis, 'fetch');
     expect(await fetchStaffSession('')).toBeNull();
     expect(await fetchStaffSession('otra=1')).toBeNull();
+    expect(await fetchStaffSession('basura=xx-nan_session-xx')).toBeNull();
     expect(spy).not.toHaveBeenCalled();
   });
 

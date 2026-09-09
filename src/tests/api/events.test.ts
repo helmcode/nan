@@ -3,11 +3,23 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 // Mock de cloudflare:workers env (patrón del repo).
 vi.mock('cloudflare:workers', () => ({ env: { CLOUD_API_URL: 'https://api.test' } }));
 
-import { isAdminPath, backendURL } from '../../lib/events';
+import { isAdminPath, backendURL, hasSessionCookie } from '../../lib/events';
 import { GET, POST } from '../../pages/api/events/[...path]';
 import { POST as LOGIN_POST } from '../../pages/api/auth/login-request';
 
 describe('events proxy lib', () => {
+  it('hasSessionCookie mira el nombre de la cookie, no la subcadena', () => {
+    const req = (cookie?: string) => new Request('https://nan.builders/api/events/admin', { headers: cookie ? { cookie } : {} });
+    expect(hasSessionCookie(req())).toBe(false);
+    expect(hasSessionCookie(req('nan_session=abc'))).toBe(true);
+    expect(hasSessionCookie(req('otra=1; nan_session=abc; mas=2'))).toBe(true);
+    expect(hasSessionCookie(req('  nan_session=abc'))).toBe(true);
+    // Señuelos: el texto aparece, la cookie no.
+    expect(hasSessionCookie(req('basura=xx-nan_session-xx'))).toBe(false);
+    expect(hasSessionCookie(req('no_es_nan_session_de_verdad=1'))).toBe(false);
+    expect(hasSessionCookie(req('nan_session_old=1'))).toBe(false);
+  });
+
   it('detecta paths admin, globales y por evento (SPEC v3 §8)', () => {
     expect(isAdminPath('admin')).toBe(true);
     expect(isAdminPath('admin/reload')).toBe(true);
@@ -103,6 +115,8 @@ describe('events proxy handler', () => {
     expect((await GET(ctx('admin/reload'))).status).toBe(404);
     const resp = await GET(ctx('gauntlet-2026-08/admin/state', { cookie: 'otra=1' }));
     expect(resp.status).toBe(404);
+    // El texto `nan_session` dentro de otra cookie no es la cookie de sesión.
+    expect((await GET(ctx('admin/events', { cookie: 'basura=xx-nan_session-xx' }))).status).toBe(404);
     expect(spy).not.toHaveBeenCalled();
     expect(await resp.json()).toEqual({ ok: false, error: 'not_found' });
   });

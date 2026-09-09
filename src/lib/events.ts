@@ -315,9 +315,23 @@ export async function fetchPublic<T>(slug: string, resource: string): Promise<T 
   }
 }
 
-/** ¿Hay cookie de sesión NaN? Heurística: el backend es la autoridad real. */
+/** Nombre de la cookie de sesión de NaN, la que emite platform-api. */
+export const SESSION_COOKIE = 'nan_session';
+
+/**
+ * ¿Trae la cabecera `Cookie` una cookie llamada `nan_session`? Se compara el
+ * NOMBRE de cada cookie, no la subcadena: `basura=xx-nan_session-xx` no cuenta.
+ * Es una heurística para no molestar al backend; la autoridad es el backend.
+ */
+export function cookieHeaderHasSession(cookie: string): boolean {
+  return cookie.split(';').some((c) => {
+    const eq = c.indexOf('=');
+    return (eq === -1 ? c : c.slice(0, eq)).trim() === SESSION_COOKIE;
+  });
+}
+
 export function hasSessionCookie(request: Request): boolean {
-  return (request.headers.get('cookie') ?? '').includes('nan_session');
+  return cookieHeaderHasSession(request.headers.get('cookie') ?? '');
 }
 
 /** Fecha ISO → texto corto en el idioma del visitante (UTC, como el backend). */

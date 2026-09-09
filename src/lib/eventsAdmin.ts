@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers';
+import { cookieHeaderHasSession } from './events';
 
 /**
  * Panel de administración de eventos (SPEC v3 §8): guardia SSR de staff y
@@ -52,7 +53,7 @@ function ssrHeaders(cookie: string, extra?: Record<string, string>): Record<stri
  * responde: en todos los casos el panel no existe para ese visitante.
  */
 export async function fetchStaffSession(cookie: string): Promise<StaffSession | null> {
-  if (!cookie || !cookie.includes('nan_session')) return null;
+  if (!cookieHeaderHasSession(cookie)) return null;
   try {
     const res = await fetch(`${apiBase()}/api/auth/me`, { headers: ssrHeaders(cookie) });
     if (!res.ok) return null;
