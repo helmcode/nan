@@ -228,9 +228,9 @@ export interface EventLike {
   modules?: { registration?: boolean; teams?: boolean; submissions?: boolean; voting?: boolean };
   automation?: { date_transitions?: boolean };
   dates?: Record<string, string | null>;
-  registration?: { capacity?: number; reserve_capacity?: number; discord_user?: string; specialties?: string[]; levels?: string[] };
+  registration?: { capacity?: number; reserve_capacity?: number; discord_user?: string; specialties?: string[] | null; levels?: string[] | null };
   team?: { size?: number; min_size?: number; max_teams?: number } | null;
-  submission?: { fields?: Record<string, string>; checks?: string[]; prize_requires?: string[]; gallery_visibility?: string };
+  submission?: { fields?: Record<string, string>; checks?: string[] | null; prize_requires?: string[] | null; gallery_visibility?: string };
   voting?: { enabled?: boolean; vote_weight?: number; auto_max?: number };
 }
 
