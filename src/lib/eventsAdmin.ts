@@ -1,5 +1,4 @@
-import { env } from 'cloudflare:workers';
-import { cookieHeaderHasSession } from './events';
+import { apiBase, cookieHeaderHasSession, fmtUTC, safeSegments, ssrHeaders, type Windows } from './events';
 
 /**
  * Panel de administración de eventos (SPEC v3 §8): guardia SSR de staff y
@@ -10,8 +9,6 @@ import { cookieHeaderHasSession } from './events';
  * existe para que un visitante sin sesión de staff vea un 404 en vez del
  * esqueleto de una pantalla que después falla en cada llamada.
  */
-
-const SAFE_SEGMENT = /^[A-Za-z0-9._-]+$/;
 
 export const ADMIN_BASE = '/events/admin';
 
@@ -37,14 +34,6 @@ export function adminHref(slug?: string, screen: AdminScreen = 'evento'): string
 export interface StaffSession {
   email: string;
   userUUID: string;
-}
-
-function apiBase(): string {
-  return env.CLOUD_API_URL.replace(/\/$/, '');
-}
-
-function ssrHeaders(cookie: string, extra?: Record<string, string>): Record<string, string> {
-  return { origin: 'https://nan.builders', cookie, ...extra };
 }
 
 /**
@@ -115,7 +104,7 @@ export interface AdminEventView {
     [k: string]: unknown;
   };
   phase: string;
-  windows: { registration: { open: boolean }; submission: { open: boolean }; voting: { open: boolean }; gallery: { visible: boolean }; leaderboard: { visible: boolean } };
+  windows: Windows;
   counts: { registered: number; reserve: number; withdrawn: number; teams: number; submissions: number; votes: number };
   warnings: string[];
 }
@@ -198,16 +187,13 @@ export async function adminFetch<T = unknown>(
   const fail = (status: number, error: string, message?: string): ApiResult<T> =>
     ({ ok: false, status, data: null, error, message, warnings: [], dryRun: false, fields: [] });
 
-  const segments = path.split('/').filter((s) => s !== '');
-  if (segments.length === 0 || !segments.every((s) => SAFE_SEGMENT.test(s) && s !== '.' && s !== '..')) {
-    return fail(404, 'not_found');
-  }
+  const segments = safeSegments(path);
+  if (!segments) return fail(404, 'not_found');
   const url = `${apiBase()}/api/events/${segments.join('/')}${init?.search ?? ''}`;
-  const req: RequestInit = { method: init?.method ?? 'GET', headers: ssrHeaders(cookie) };
+  const req: RequestInit & { headers: Record<string, string> } = { method: init?.method ?? 'GET', headers: ssrHeaders(cookie) };
   if (init?.body !== undefined) {
     req.body = typeof init.body === 'string' ? init.body : JSON.stringify(init.body);
-    (req.headers as Record<string, string>)['content-type'] =
-      typeof init.body === 'string' ? 'text/csv' : 'application/json';
+    req.headers['content-type'] = typeof init.body === 'string' ? 'text/csv' : 'application/json';
   }
 
   let res: Response;
@@ -244,14 +230,9 @@ export async function adminFetch<T = unknown>(
   };
 }
 
-/** Fecha ISO → "12 feb 2027, 18:00 UTC" (UTC, como el backend); vacío si no hay fecha. */
+/** Fecha del panel → "12 feb 2027, 18:00 UTC": siempre en español y con año. */
 export function fmtAdminDate(iso?: string | null, withTime = true): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' };
-  if (withTime) { opts.hour = '2-digit'; opts.minute = '2-digit'; }
-  return d.toLocaleString('es-ES', opts) + (withTime ? ' UTC' : '');
+  return fmtUTC(iso, { locale: 'es', withTime, withYear: true });
 }
 
 /** Etiquetas en español de los estados del evento (SPEC v3 §4). */

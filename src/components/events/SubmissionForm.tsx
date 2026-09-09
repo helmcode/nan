@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import type { TargetedSubmitEvent } from 'preact';
 import { optionLabel } from '../../lib/i18n';
+import type { Check } from '../../lib/events';
 
 type FieldMode = 'required' | 'optional' | 'hidden';
 interface Fields {
@@ -10,7 +11,6 @@ interface Fields {
   image_url: FieldMode;
   video_url: FieldMode;
 }
-interface CheckItem { pass: boolean }
 interface Existing {
   title?: string;
   description?: string;
@@ -21,12 +21,12 @@ interface Existing {
   video_url?: string;
   auto_points?: number;
   not_prize_eligible?: boolean;
-  checks?: Record<string, CheckItem>;
+  checks?: Record<string, Check>;
 }
 interface Result {
   auto_points: number;
   not_prize_eligible: boolean;
-  checks: Record<string, CheckItem>;
+  checks: Record<string, Check>;
 }
 
 // Convierte la respuesta del backend en el resumen de checks que pinta la UI.

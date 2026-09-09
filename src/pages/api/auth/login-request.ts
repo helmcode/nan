@@ -1,14 +1,8 @@
 import type { APIRoute } from 'astro';
-import { env } from 'cloudflare:workers';
+import { apiBase, ssrHeaders } from '../../../lib/events';
+import { json } from '../../../lib/apiResponse';
 
 export const prerender = false;
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
-  });
-}
 
 // Proxy same-origin para iniciar el login por magic link de NaN desde la landing
 // de eventos (/events/{slug}). El formulario de email vive ahí (no tenemos el frontend
@@ -19,13 +13,9 @@ function json(body: unknown, status = 200): Response {
 // Es necesario un proxy porque la CSP de la landing es `connect-src 'self'`: el
 // navegador solo puede hacer fetch a este mismo origen, no a cloud-api.
 export const POST: APIRoute = async ({ request }) => {
-  const base = env.CLOUD_API_URL.replace(/\/$/, '');
-  const target = `${base}/api/auth/login/request`;
+  const target = `${apiBase()}/api/auth/login/request`;
 
-  const headers = new Headers({
-    'content-type': 'application/json',
-    origin: 'https://nan.builders',
-  });
+  const headers = new Headers({ ...ssrHeaders(), 'content-type': 'application/json' });
   // El backend limita por IP usando X-Forwarded-For; sin esto, todas las
   // peticiones compartirían la IP del worker. Propagamos la IP real del cliente.
   const ip = request.headers.get('cf-connecting-ip');

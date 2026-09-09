@@ -4,7 +4,7 @@ import '../../../styles/global.css';
 import NanPage from '../../../layouts/NanPage.astro';
 import EventHeader from '../../../components/events/EventHeader.astro';
 import { getLocale, tObj } from '../../../lib/i18n';
-import { fetchMe, fetchPublic, hasSessionCookie, type LeaderboardRow, type EventInfo } from '../../../lib/events';
+import { fetchMe, fetchPublic, hasSessionCookie, type LeaderboardView, type EventInfo } from '../../../lib/events';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -18,7 +18,7 @@ const hasSession = hasSessionCookie(Astro.request);
 // Clasificación + validación de la sesión en paralelo, como en el resto de
 // páginas: la cabecera solo muestra "mi zona" si la cookie sigue siendo válida.
 const [lbRes, meRes] = await Promise.all([
-  fetchPublic<{ rows: LeaderboardRow[]; public: boolean }>(slug, 'leaderboard'),
+  fetchPublic<LeaderboardView>(slug, 'leaderboard'),
   hasSession ? fetchMe(slug, Astro.request.headers.get('cookie') ?? '') : Promise.resolve({ me: null, unauthorized: false }),
 ]);
 const lb = lbRes ?? { rows: [], public: false };

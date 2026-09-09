@@ -1,14 +1,8 @@
 import type { APIRoute } from 'astro';
 import { backendURL, forwardHeaders, hasSessionCookie, isAdminPath } from '../../../lib/events';
+import { json } from '../../../lib/apiResponse';
 
 export const prerender = false;
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
-  });
-}
 
 /**
  * Proxy same-origin `/api/events/*` → `${CLOUD_API_URL}/api/events/*` (SPEC §8.1).

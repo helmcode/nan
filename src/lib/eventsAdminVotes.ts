@@ -1,3 +1,4 @@
+import type { LeaderboardRow, LeaderboardView, Owner } from './events';
 import { adminFetch } from './eventsAdmin';
 import { doneHref, formValues, readForm, str, type FormOutcome } from './eventsAdminForms';
 
@@ -18,27 +19,12 @@ export interface AdminVoteRow {
   submission_title: string;
   /** La entrega votada está retirada: el voto no cuenta en el ranking. */
   withdrawn: boolean;
-  owner: { type: string; id: string; name: string } | null;
+  owner: Owner | null;
   created_at: string;
 }
 
-/** Fila de `GET /{slug}/admin/leaderboard` (B-23; mismo formato que el público). */
-export interface LeaderboardRow {
-  rank: number;
-  submission_id: string;
-  owner: { type: string; id: string; name: string };
-  title: string;
-  votes: number;
-  vote_points: number;
-  auto_points: number;
-  total: number;
-  not_prize_eligible: boolean;
-}
-
-export interface LeaderboardView {
-  rows: LeaderboardRow[];
-  public: boolean;
-}
+/** `GET /{slug}/admin/leaderboard` (B-23) tiene el mismo formato que el público: se re-exporta de `events.ts`. */
+export type { LeaderboardRow, LeaderboardView };
 
 /** Resumen de los votos: cuántos cuentan y cuántos no (entrega retirada o desaparecida). */
 export function voteStats(votes: AdminVoteRow[]): { total: number; counted: number; discarded: number; voters: number } {

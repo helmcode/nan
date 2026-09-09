@@ -29,6 +29,18 @@ export function isAdminPath(path: string): boolean {
 const SAFE_SEGMENT = /^[A-Za-z0-9._-]+$/;
 
 /**
+ * Parte una ruta relativa al backend en segmentos y devuelve `null` si está
+ * vacía o algún segmento no es llano (ver SAFE_SEGMENT). Lo usan el proxy
+ * y `adminFetch`.
+ */
+export function safeSegments(path: string): string[] | null {
+  const segments = (path ?? '').split('/').filter((s) => s !== '');
+  if (segments.length === 0) return null;
+  if (!segments.every((s) => SAFE_SEGMENT.test(s) && s !== '.' && s !== '..')) return null;
+  return segments;
+}
+
+/**
  * Construye la URL destino en el backend conservando query string.
  *
  * Devuelve `null` si la ruta pedida no es una ruta simple bajo
@@ -54,12 +66,10 @@ const SAFE_SEGMENT = /^[A-Za-z0-9._-]+$/;
  *      codificaciones de `..`.
  */
 export function backendURL(path: string, search: string): string | null {
-  const base = env.CLOUD_API_URL.replace(/\/$/, '');
-  const prefix = `${base}/api/events/`;
+  const prefix = `${apiBase()}/api/events/`;
 
-  const segments = (path ?? '').split('/').filter((s) => s !== '');
-  if (segments.length === 0) return null;
-  if (!segments.every((s) => SAFE_SEGMENT.test(s) && s !== '.' && s !== '..')) return null;
+  const segments = safeSegments(path);
+  if (!segments) return null;
 
   let target: URL;
   let expected: URL;
@@ -193,7 +203,15 @@ export interface Team {
   name?: string;
   members?: Participant[];
 }
-export interface Check { pass: boolean; checked_at?: string | null; http_status?: number; host?: string }
+/** Un check de la entrega (`checks[name]`). `forced`/`reason` solo los pone el admin (§6.4). */
+export interface Check {
+  pass: boolean;
+  checked_at?: string | null;
+  http_status?: number;
+  host?: string;
+  forced?: boolean;
+  reason?: string;
+}
 export interface Submission {
   id: string;
   title: string;
@@ -221,6 +239,11 @@ export interface LeaderboardRow {
   total: number;
   not_prize_eligible: boolean;
 }
+/** Respuesta del ranking (público y admin): filas y si ya es público. */
+export interface LeaderboardView {
+  rows: LeaderboardRow[];
+  public: boolean;
+}
 export interface MeData {
   participant?: Participant | null;
   team?: Team | null;
@@ -237,7 +260,7 @@ export async function jsonData<T = unknown>(res: Response): Promise<T | null> {
 }
 
 /** Cabeceras para las llamadas SSR al backend (mismo Origin que el proxy). */
-export function ssrHeaders(cookie?: string): HeadersInit {
+export function ssrHeaders(cookie?: string): Record<string, string> {
   const h: Record<string, string> = { origin: 'https://nan.builders' };
   if (cookie) h.cookie = cookie;
   return h;
@@ -334,14 +357,20 @@ export function hasSessionCookie(request: Request): boolean {
   return cookieHeaderHasSession(request.headers.get('cookie') ?? '');
 }
 
-/** Fecha ISO → texto corto en el idioma del visitante (UTC, como el backend). */
-export function fmtDate(iso?: string | null, locale = 'en', withTime = false): string {
+/** Fecha ISO formateada en UTC (como el backend); `''` si no hay fecha o no es válida. */
+export function fmtUTC(iso: string | null | undefined, opts: { locale?: string; withTime?: boolean; withYear?: boolean } = {}): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', timeZone: 'UTC' };
-  if (withTime) { opts.hour = '2-digit'; opts.minute = '2-digit'; }
-  return d.toLocaleString(locale === 'es' ? 'es-ES' : 'en-GB', opts) + (withTime ? ' UTC' : '');
+  const o: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', timeZone: 'UTC' };
+  if (opts.withYear) o.year = 'numeric';
+  if (opts.withTime) { o.hour = '2-digit'; o.minute = '2-digit'; }
+  return d.toLocaleString(opts.locale === 'es' ? 'es-ES' : 'en-GB', o) + (opts.withTime ? ' UTC' : '');
+}
+
+/** Fecha ISO → texto corto en el idioma del visitante. */
+export function fmtDate(iso?: string | null, locale = 'en', withTime = false): string {
+  return fmtUTC(iso, { locale, withTime });
 }
 
 /** Rango "1 sept – 3 sept"; si falta un extremo, muestra el que haya. */

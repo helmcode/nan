@@ -1,3 +1,4 @@
+import type { Check, Owner } from './events';
 import { adminFetch } from './eventsAdmin';
 import { doneHref, formValues, readForm, str, type FormOutcome } from './eventsAdminForms';
 
@@ -10,15 +11,8 @@ import { doneHref, formValues, readForm, str, type FormOutcome } from './eventsA
  * con `?ok=`, o en la misma página con el error del backend.
  */
 
-/** Un check de la entrega (`checks[name]`). */
-export interface SubmissionCheck {
-  pass: boolean;
-  checked_at: string | null;
-  http_status?: number;
-  host?: string;
-  forced?: boolean;
-  reason?: string;
-}
+/** Un check de la entrega: el mismo `Check` de la web pública (con `forced`/`reason`). */
+export type SubmissionCheck = Check;
 
 /** Fila de `GET /{slug}/admin/submissions` (entrega más `owner` y `owner_emails`). */
 export interface AdminSubmissionRow {
@@ -42,7 +36,7 @@ export interface AdminSubmissionRow {
   /** Solo si el admin la ha fijado a mano (§6.4); sin ella manda `prize_requires`. */
   prize_eligible?: boolean;
   prize_reason?: string;
-  owner: { type: string; id: string; name: string };
+  owner: Owner;
   owner_emails: string[];
 }
 
