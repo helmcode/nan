@@ -17,8 +17,8 @@ export const GET: APIRoute = async ({ params, request }) => {
   }
 
   try {
-    // `api` is not in the collection now that Scalar serves the reference: its
-    // body is generated from the spec. See src/lib/apiDoc.ts.
+    // `api` no está en la colección ahora que Scalar sirve la referencia: su
+    // cuerpo se genera desde la spec. Ver src/lib/apiDoc.ts.
     let body: string;
     if (slug === API_DOC_SLUG) {
       body = getApiDocText(getRateLimitsConfig(env));

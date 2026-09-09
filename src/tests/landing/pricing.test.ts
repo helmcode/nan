@@ -7,30 +7,30 @@ import enData from '../../../i18n/en.json' with { type: 'json' };
 import esData from '../../../i18n/es.json' with { type: 'json' };
 
 /**
- * The pricing section is the surface a prospect reads BEFORE paying, so its
- * copy is the one that has to be true first. It was selling a product that no
- * longer exists:
+ * La sección de precios es lo que un prospecto lee ANTES de pagar, así que su
+ * copy es el que tiene que ser cierto primero. Estaba vendiendo un producto que
+ * ya no existe:
  *
- *   - "1,000M token monthly allowance" while the cap is 3,000M.
- *   - "Access granted immediately after billing", the exact promise removed
- *     from the member portal for being false (the grant can stay pending, and
- *     the API has an explicit state to say so).
- *   - a `nan_member · usa / latam — $75` tier, while every new signup is
- *     charged 70€ in any region, so the price and the currency changed between
- *     the card and the Checkout.
+ *   - "1,000M token monthly allowance" cuando el tope es 3,000M.
+ *   - "Access granted immediately after billing", la promesa exacta que se quitó
+ *     del portal de miembros por ser falsa (el grant puede quedarse pendiente, y
+ *     la API tiene un estado explícito para decirlo).
+ *   - un tier `nan_member · usa / latam — $75`, cuando a cada alta nueva se le
+ *     cobran 70€ en cualquier región, así que el precio y la moneda cambiaban
+ *     entre la tarjeta y el Checkout.
  *
- * That last one shipped TWICE because the currency asserts covered `memberCond`
- * only: community kept publishing `$14.99` after cloud-api's
- * communityPriceForNewCustomer started charging 14,99€ from every region. Every
- * paid tier of the section is asserted here now, amount and condition, so a
- * currency that only moves on one funnel cannot pass again.
+ * Ese último se coló DOS veces porque las comprobaciones de moneda solo cubrían
+ * `memberCond`: community siguió publicando `$14.99` después de que
+ * communityPriceForNewCustomer de cloud-api empezara a cobrar 14,99€ desde
+ * cualquier región. Ahora se comprueba cada tier de pago de la sección, importe y
+ * condición, para que una moneda que solo se mueve en un funnel no vuelva a pasar.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
 const source = readFileSync(resolve(here, '../../components/nan/home/Pricing.astro'), 'utf-8');
 const locales = ['en', 'es'] as const;
 
-/** The tier objects the section renders, as written in the frontmatter. */
+/** Los objetos de tier que renderiza la sección, tal como están escritos en el frontmatter. */
 const tiers = source.slice(0, source.indexOf('---', 4));
 
 describe('Pricing — no per-region tier', () => {
@@ -58,18 +58,18 @@ describe('Pricing — no per-region tier', () => {
   });
 
   test('the community card CTA routes to the /community signup form, not the portal', () => {
-    // The card must land on the restored form (with the #signup anchor),
-    // not on cloud.nan.builders (which has no signup form). Assert the full
-    // ternary so a regression on the EN branch (else '/#pricing') is caught,
-    // not masked by the ES substring also containing '/community#signup'.
+    // La tarjeta tiene que aterrizar en el formulario restaurado (con el ancla
+    // #signup), no en cloud.nan.builders (que no tiene formulario de alta). Se
+    // comprueba el ternario completo para cazar una regresión en la rama EN (else
+    // '/#pricing') y que no la tape la subcadena ES, que también lleva '/community#signup'.
     expect(tiers).toMatch(/href: lang === 'es' \? '\/es\/community#signup' : '\/community#signup'/);
     expect(tiers).not.toMatch(/cloud\.nan\.builders/);
   });
 
   /**
-   * Nothing in the section may quote a dollar amount: all three Checkouts are
-   * created in EUR for every region. The legacy USD subscriptions are true and
-   * stay explained in the payment-methods FAQ, which is not this file.
+   * Nada en la sección puede citar un importe en dólares: los tres Checkouts se
+   * crean en EUR para cualquier región. Las suscripciones legacy en USD son
+   * reales y siguen explicadas en la FAQ de métodos de pago, que no es este fichero.
    */
   test('no tier quotes a price in dollars', () => {
     expect(tiers).not.toMatch(/amount:\s*'\$/);
@@ -81,7 +81,7 @@ describe('Pricing — no per-region tier', () => {
   });
 });
 
-/** Every string of a dictionary, keyed by its dotted path. */
+/** Cada string de un diccionario, indexado por su ruta con puntos. */
 function flatten(node: unknown, path: string[] = [], out = new Map<string, string>()) {
   if (typeof node === 'string') out.set(path.join('.'), node);
   else if (Array.isArray(node)) node.forEach((v, i) => flatten(v, [...path, String(i)], out));
@@ -94,15 +94,16 @@ function flatten(node: unknown, path: string[] = [], out = new Map<string, strin
 const dictionaries = { en: flatten(enData), es: flatten(esData) };
 
 /**
- * The two fixes this file guards were both "a price card kept a currency the
- * Checkout had stopped using", found one tier at a time by a reviewer reading
- * the pages. So the sweep is on the whole dictionary, not on the keys that
- * happened to be reported: any NEW surface that quotes a dollar amount fails
- * here without anyone remembering to add an assert for it.
+ * Los dos arreglos que guarda este fichero fueron los dos "una tarjeta de precio
+ * conservaba una moneda que el Checkout había dejado de usar", encontrados tier
+ * a tier por un revisor leyendo las páginas. Por eso el barrido es sobre el
+ * diccionario entero, no sobre las claves que se reportaron: cualquier superficie
+ * NUEVA que cite un importe en dólares falla aquí sin que nadie tenga que
+ * acordarse de añadirle una comprobación.
  *
- * The word "dollars" in prose stays legal, because the legacy USD subscriptions
- * are real and the payment-methods FAQ has to keep saying so. What cannot
- * appear is an AMOUNT in dollars: every Checkout is created in EUR now.
+ * La palabra "dollars" en prosa sigue siendo legal, porque las suscripciones
+ * legacy en USD son reales y la FAQ de métodos de pago tiene que seguir diciéndolo.
+ * Lo que no puede aparecer es un IMPORTE en dólares: ahora todo Checkout se crea en EUR.
  */
 describe('i18n — no price is quoted in a currency we do not charge', () => {
   test.each(locales)('%s quotes no dollar amount anywhere', (locale) => {
@@ -113,11 +114,11 @@ describe('i18n — no price is quoted in a currency we do not charge', () => {
   });
 
   /**
-   * The top-level `community` dictionary has no consumer left: /community
-   * hardcodes its copy and links to the home `#pricing` section instead of
-   * printing an amount. These two keys still carried `$14.99` and the
-   * "(€14.99) in the EU" caveat, so they are fixed and asserted rather than
-   * left to ship stale the day that page grows a price card again.
+   * El diccionario `community` de primer nivel ya no tiene consumidor: /community
+   * lleva el copy hardcodeado y enlaza a la sección `#pricing` de la home en vez
+   * de imprimir un importe. Estas dos claves aún llevaban `$14.99` y la coletilla
+   * "(€14.99) in the EU", así que se arreglan y se comprueban en vez de dejar que
+   * salgan caducadas el día que esa página vuelva a tener tarjeta de precio.
    */
   test.each(locales)('%s community price card is in euros, for every region', (locale) => {
     expect(t('community.priceLabel', locale)).toMatch(/14,99€/);
@@ -134,7 +135,7 @@ interface FaqItem {
   a: string;
 }
 
-/** Every FAQ answer of a locale, joined. tArr() drops objects, so tObj(). */
+/** Todas las respuestas de la FAQ de un locale, unidas. tArr() descarta objetos, así que tObj(). */
 function faqAnswers(locale: string): string {
   const faq = tObj<{ items?: FaqItem[] }>('nan.faq', locale);
   expect(faq.items?.length ?? 0).toBeGreaterThan(0);
@@ -154,7 +155,7 @@ describe.each(locales)('Pricing copy — %s', (locale) => {
     const copy = premium().join(' ').toLowerCase();
     expect(copy).not.toContain('immediately');
     expect(copy).not.toContain('justo después');
-    // What it says instead, matching the portal's wording.
+    // Lo que dice en su lugar, con la misma redacción que el portal.
     expect(copy).toMatch(/few minutes after payment|pocos minutos después del pago/);
   });
 
@@ -181,10 +182,10 @@ describe.each(locales)('Pricing copy — %s', (locale) => {
   });
 
   /**
-   * Both paid funnels charge EUR from every region, so both conditions have to
-   * say so. Asserting `memberCond` alone is what let community keep the "in the
-   * EU" caveat, which told a prospect from outside the EU that the euro did not
-   * apply to them right before a EUR Checkout.
+   * Los dos funnels de pago cobran EUR desde cualquier región, así que las dos
+   * condiciones tienen que decirlo. Assertar solo `memberCond` es lo que dejó a
+   * community con la coletilla "in the EU", que a un prospecto de fuera de la UE
+   * le decía que el euro no iba con él justo antes de un Checkout en EUR.
    */
   test.each(['memberCond', 'communityCond'])('%s states the billing currency', (key) => {
     const cond = t(`nan.pricing.${key}`, locale);
@@ -205,10 +206,10 @@ describe.each(locales)('Pricing copy — %s', (locale) => {
   });
 
   /**
-   * glm5.3's 3,000M is the one allowance that is NOT a calendar month: it resets
-   * with the Stripe billing period, which is why the portal and the docs stopped
-   * saying "monthly". The answer used to lump it in with DeepSeek's and MiMo's
-   * genuinely monthly quotas under a single "monthly allowance".
+   * Los 3,000M de glm5.3 son la única cuota que NO es mes natural: se reinicia
+   * con el periodo de facturación de Stripe, y por eso el portal y las docs
+   * dejaron de decir "monthly". La respuesta lo metía en el mismo saco que las
+   * cuotas de DeepSeek y MiMo, que sí son mensuales, bajo un único "monthly allowance".
    */
   test('the allowance FAQ names the billing period for the premium quota', () => {
     const faq = tObj<{ items?: FaqItem[] }>('nan.faq', locale);

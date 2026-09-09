@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// astro:content and cloudflare:workers are virtual modules that only exist
-// under Astro's Vite plugin, so they must be mocked before the route import.
+// astro:content y cloudflare:workers son módulos virtuales que solo existen
+// bajo el plugin de Vite de Astro: hay que mockearlos antes de importar la ruta.
 vi.mock('cloudflare:workers', () => ({ env: {} }));
 vi.mock('astro:content', () => ({ getEntry: vi.fn() }));
 
@@ -42,9 +42,9 @@ describe('GET /api/docs/[slug].md', () => {
   });
 
   it('returns a loud 500 when mdxToText throws on a bare MDX expression', async () => {
-    // `{oops}` parses to an mdxFlowExpression/mdxTextExpression node, which the
-    // real mdxToText refuses rather than silently dropping — the genuine failure
-    // path, exercised without mocking mdxToText itself.
+    // `{oops}` se parsea como un nodo mdxFlowExpression/mdxTextExpression, que el
+    // mdxToText real rechaza en vez de descartarlo en silencio: el camino de fallo
+    // auténtico, ejercitado sin mockear el propio mdxToText.
     getEntryMock.mockResolvedValue({ body: 'before\n\n{oops}\n\nafter' });
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 

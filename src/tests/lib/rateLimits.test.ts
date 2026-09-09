@@ -9,20 +9,20 @@ import {
 } from '../../lib/rateLimits';
 
 /**
- * The published numbers for glm5.3, and the reason this file exists.
+ * Los números publicados para glm5.3, y la razón de que exista este fichero.
  *
- * docs/api#rate-limits used to have no row at all for glm5.3 while the model
- * was already being served, so the only limits a premium member could read
- * were the ones that do not apply to them. These asserts pin the four numbers
- * to what the platform actually enforces:
+ * docs/api#rate-limits no tenía ninguna fila para glm5.3 mientras el modelo ya
+ * se estaba sirviendo, así que los únicos límites que un miembro premium podía
+ * leer eran los que no le aplican. Estos asserts fijan los cuatro números a lo
+ * que la plataforma aplica de verdad:
  *
- *   context 1,000,000      cloud-api usage_quota.go modelRateLimits
- *   concurrency 5          idem, and the ratelimit hook
- *   400M per rolling 4h    ratelimit hook ROLLING_WINDOW_S / rolling budget
- *   3,000M per period      cloud-api usage_quota.go monthlyTokenCaps
+ *   contexto 1,000,000     cloud-api usage_quota.go modelRateLimits
+ *   concurrencia 5         ídem, y el hook de ratelimit
+ *   400M por 4h rolling    hook de ratelimit ROLLING_WINDOW_S / rolling budget
+ *   3,000M por periodo     cloud-api usage_quota.go monthlyTokenCaps
  *
- * If any of them moves upstream, this test has to be updated in the same
- * change: the failure is the point.
+ * Si alguno se mueve upstream, este test tiene que actualizarse en el mismo
+ * cambio: el fallo es el objetivo.
  */
 const GLM = {
   contextTokens: 1_000_000,
@@ -83,7 +83,7 @@ describe('the window wording', () => {
     expect(body).toContain('reaches first');
     expect(body).toContain('rolling window, not a daily reset');
     expect(body).toContain('when your billing period starts');
-    // The one case where the allowance is not the full 3,000M.
+    // El único caso en que la cuota no son los 3,000M completos.
     expect(body).toContain('prorated');
   });
 

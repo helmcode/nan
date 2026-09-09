@@ -48,8 +48,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     const { email, region, honeypot } = validation.input;
 
-    // Honeypot trap: reply 200 OK with a benign URL so bots get no signal.
-    // Real users never reach this branch. The URL is a no-op landing page.
+    // Trampa honeypot: responde 200 OK con una URL inocua para que los bots no
+    // reciban señal. Un usuario real nunca llega aquí. La URL es una landing sin efecto.
     if (honeypot) {
       return json({
         ok: true,
@@ -77,7 +77,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     return json({ ok: true, url: result.url });
   } catch (err) {
-    // Intentionally opaque — do not leak internals in the response body.
+    // Opaco a propósito: no filtrar internos en el cuerpo de la respuesta.
     console.error('[api/community-signup] unexpected error', err);
     return errorResponse('server_error', 500);
   }

@@ -3,18 +3,17 @@ import { openapiToText } from './openapiToText';
 import { rateLimitsToSpecMarkdown, type RateLimitsConfig } from './rateLimits';
 
 /**
- * The API reference as a docs entry, generated from the spec.
+ * La referencia de la API como entrada de docs, generada desde la spec.
  *
- * Since Scalar took over /docs/api, `api` is no longer a file in the
- * collection: it comes from src/data/openapi.json. Consumers of /api/docs
- * (the Discord bot today) have no reason to learn about that, so it keeps
- * being published under the same slug, the same order and the same shape it
- * had as `api.mdx`. The manifest contract does not change; only where the
- * text comes from does.
+ * Desde que Scalar se hizo cargo de /docs/api, `api` ya no es un fichero de la
+ * colección: sale de src/data/openapi.json. Los consumidores de /api/docs (hoy
+ * el bot de Discord) no tienen por qué enterarse, así que se sigue publicando
+ * con el mismo slug, el mismo orden y la misma forma que tenía como `api.mdx`.
+ * El contrato del manifest no cambia; solo cambia de dónde sale el texto.
  *
- * The metadata mirrors the frontmatter `api.mdx` used to carry (`order: 2`
- * included) so that neither the manifest order nor the docs navigation moves
- * with the migration.
+ * Los metadatos replican el frontmatter que llevaba `api.mdx` (`order: 2`
+ * incluido) para que ni el orden del manifest ni la navegación de docs se
+ * muevan con la migración.
  */
 export const API_DOC_SLUG = 'api';
 
@@ -23,27 +22,27 @@ export const API_DOC_META = {
   description: 'Public API endpoint reference. OpenAI-compatible.',
   order: 2,
   /**
-   * The nav group, per locale.
+   * El grupo de navegación, por locale.
    *
-   * The reference is not in either collection, so its group label cannot come
-   * from frontmatter like every other page's. Hardcoding the English one split
-   * the Spanish sidebar into "Reference" and "Referencia", two sections where
-   * there should be one.
+   * La referencia no está en ninguna de las dos colecciones, así que su
+   * etiqueta de grupo no puede venir del frontmatter como la del resto de
+   * páginas. Hardcodear la inglesa partía la barra lateral en español en
+   * "Reference" y "Referencia", dos secciones donde debería haber una.
    */
   group: { en: 'Reference', es: 'Referencia' },
 } as const;
 
 /**
- * The placeholder the spec carries where the rate limits go.
+ * El placeholder que lleva la spec donde van los rate limits.
  *
- * They are not written into src/data/openapi.json because they already have a
- * single source of truth in rateLimits.ts, which is what /docs/models and
- * /api/docs/models.md publish and which reads RATE_LIMIT_RPM from the env. A
- * third hardcoded copy is precisely the drift that module exists to prevent.
+ * No se escriben en src/data/openapi.json porque ya tienen una única fuente de
+ * verdad en rateLimits.ts, que es lo que publican /docs/models y
+ * /api/docs/models.md y lo que lee RATE_LIMIT_RPM del env. Una tercera copia
+ * hardcodeada es precisamente la desviación que ese módulo existe para evitar.
  */
 const RATE_LIMITS_PLACEHOLDER = '{{RATE_LIMITS}}';
 
-/** The spec with its placeholders resolved, ready to serve or to render. */
+/** La spec con los placeholders resueltos, lista para servir o renderizar. */
 export function resolveSpec(rateLimits: RateLimitsConfig): typeof rawSpec {
   const description = rawSpec.info.description.replace(
     RATE_LIMITS_PLACEHOLDER,
@@ -55,13 +54,13 @@ export function resolveSpec(rateLimits: RateLimitsConfig): typeof rawSpec {
 let cache: { key: string; text: string } | null = null;
 
 /**
- * The canonical text of the reference.
+ * El texto canónico de la referencia.
  *
- * Memoised on the rate-limit values rather than unconditionally: the spec is
- * static within a deployment, but the limits come from the env, so a config
- * change has to produce different text. Walking 12 endpoints and 23 schemas on
- * every manifest request would otherwise be repeated work for an identical
- * result.
+ * Memoizado sobre los valores de rate limit y no de forma incondicional: la
+ * spec es estática dentro de un despliegue, pero los límites vienen del env,
+ * así que un cambio de config tiene que producir un texto distinto. Recorrer
+ * 12 endpoints y 23 esquemas en cada petición del manifest sería, si no,
+ * trabajo repetido para un resultado idéntico.
  */
 export function getApiDocText(rateLimits: RateLimitsConfig): string {
   const key = JSON.stringify(rateLimits);

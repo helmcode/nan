@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-// Note: this file lives in src/tests/api/ (NOT src/pages/api/) to avoid
-// Astro/Rollup bundling it as a route. Vitest picks it up via the
-// `src/**/*.test.ts` include in vitest.config.ts.
+// Nota: este fichero vive en src/tests/api/ (NO en src/pages/api/) para que
+// Astro/Rollup no lo empaquete como ruta. Vitest lo recoge por el include
+// `src/**/*.test.ts` de vitest.config.ts.
 
 vi.mock('cloudflare:workers', () => ({
   env: {
@@ -12,7 +12,7 @@ vi.mock('cloudflare:workers', () => ({
   },
 }));
 
-// Import AFTER vi.mock so the handler sees the mocked env.
+// Se importa DESPUÉS de vi.mock para que el handler vea el env mockeado.
 import { POST } from '../../pages/api/waitlist';
 
 let ipCounter = 0;
@@ -44,7 +44,7 @@ async function callPost(body: unknown, headers: Record<string, string> = {}) {
   return { status: response.status, payload };
 }
 
-/** Creates a mock fetch that simulates the cloud-api backend. */
+/** Crea un fetch mock que simula el backend de cloud-api. */
 function mockBackendFetch(overrides: {
   registerStatus?: number;
   registerOk?: boolean;
@@ -59,7 +59,7 @@ function mockBackendFetch(overrides: {
   } = overrides;
 
   return vi.fn().mockImplementation((url: string, init?: RequestInit) => {
-    // Resend email API
+    // API de email de Resend
     if (url === 'https://api.resend.com/emails') {
       return Promise.resolve({
         ok: true,
@@ -67,7 +67,7 @@ function mockBackendFetch(overrides: {
       });
     }
 
-    // cloud-api register endpoint
+    // Endpoint de registro de cloud-api
     if (url === 'https://cloud-api.nan.builders/api/waitlist/register') {
       if (registerOk) {
         const body = JSON.parse(init?.body as string);
@@ -224,7 +224,7 @@ describe('POST /api/waitlist', () => {
     expect(payload.ok).toBe(true);
     expect(payload.position).toBe(0);
 
-    // Backend register should not have been called (only Resend could be called)
+    // No debería haberse llamado al registro del backend (solo Resend podría llamarse)
     const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
     const registerCall = fetchMock.mock.calls.find(
       (call: unknown[]) =>
@@ -245,7 +245,7 @@ describe('POST /api/waitlist', () => {
   it('sends a confirmation email on successful signup', async () => {
     await callPost({ email: 'new@acme.co', region: 'EU' });
 
-    // Allow the email promise to resolve
+    // Dejar que la promesa del email se resuelva
     await new Promise((r) => setTimeout(r, 10));
 
     const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;

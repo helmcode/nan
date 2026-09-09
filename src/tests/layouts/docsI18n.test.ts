@@ -6,15 +6,15 @@ import { parseFrontmatter } from '@astrojs/markdown-remark';
 import { API_DOC_META } from '../../lib/apiDoc';
 
 /**
- * The Spanish guides.
+ * Las guías en español.
  *
- * They exist so the language switcher in the docs header is not a link into a
- * 404: before this, /es/docs and /es/docs/models answered 404 and only
- * /es/docs/api had a Spanish version.
+ * Existen para que el switcher de idioma de la cabecera de las docs no sea un
+ * enlace a un 404: antes de esto, /es/docs y /es/docs/models respondían 404 y
+ * solo /es/docs/api tenía versión en español.
  *
- * The Spanish copies ship as copies of the English ones, marked
- * `translated: false`, and the page says so rather than passing English off as
- * a translation. These tests guard the pairing and the marker, not the prose.
+ * Las copias en español salen como copias de las inglesas, marcadas con
+ * `translated: false`, y la página lo dice en vez de hacer pasar el inglés por
+ * una traducción. Estos tests guardan el emparejamiento y el marcador, no la prosa.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -33,8 +33,8 @@ describe('the two guide collections', () => {
   });
 
   /**
-   * A Spanish page missing from the English side would 404 from the switcher,
-   * which is the exact problem this exists to fix.
+   * Una página en español que faltara en el lado inglés daría 404 desde el
+   * switcher, que es exactamente el problema que esto existe para arreglar.
    */
   it('agree on order, so the nav lists pages in the same sequence', () => {
     for (const id of ids(enDir)) {
@@ -47,10 +47,10 @@ describe('the two guide collections', () => {
   });
 
   /**
-   * The group label is translated, so the two sides cannot be compared as
-   * strings. What has to hold is the SHAPE: pages grouped together in English
-   * stay together in Spanish. A typo that splits a group in two would leave
-   * the Spanish nav with a section of one.
+   * La etiqueta de grupo está traducida, así que los dos lados no se pueden
+   * comparar como strings. Lo que tiene que cumplirse es la FORMA: las páginas
+   * agrupadas juntas en inglés siguen juntas en español. Una errata que partiera
+   * un grupo en dos dejaría la nav española con una sección de uno.
    */
   it('group pages the same way, whatever the label says', () => {
     const groupsOf = (dir: string) => {
@@ -67,10 +67,10 @@ describe('the two guide collections', () => {
   });
 
   /**
-   * And the API reference lands in the same group as its collection siblings.
-   * Its label is not frontmatter, so it was hardcoded in English and the
-   * Spanish sidebar came out with "Reference" and "Referencia" as two separate
-   * sections. Counting groups per language catches that split.
+   * Y la referencia de la API cae en el mismo grupo que sus hermanas de la
+   * colección. Su etiqueta no es frontmatter, así que estaba hardcodeada en
+   * inglés y el sidebar español salía con "Reference" y "Referencia" como dos
+   * secciones separadas. Contar grupos por idioma caza esa división.
    */
   it('leaves both navs with the same number of groups', () => {
     const labels = (dir: string, apiGroup: string) => {
@@ -86,9 +86,9 @@ describe('the two guide collections', () => {
   });
 
   /**
-   * The Spanish pages are real translations, not copies of the English ones.
-   * They shipped as copies first, behind a notice; this catches a page that
-   * silently reverts to the English text.
+   * Las páginas en español son traducciones reales, no copias de las inglesas.
+   * Salieron primero como copias, detrás de un aviso; esto caza una página que
+   * vuelva en silencio al texto inglés.
    */
   it('holds Spanish prose, not the English original', () => {
     for (const f of readdirSync(esDir).filter((f) => /\.(md|mdx)$/.test(f))) {
@@ -108,8 +108,8 @@ describe('the docs layout', () => {
   });
 
   /**
-   * The breadcrumb is built from the locale-stripped path. Counting `/es` as a
-   * segment made every Spanish page show an extra crumb for the docs index.
+   * Las migas se construyen desde la ruta sin el locale. Contar `/es` como
+   * segmento hacía que cada página en español mostrara una miga de más para el índice de docs.
    */
   it('builds the breadcrumb from the path without the locale prefix', () => {
     expect(layout).toContain('const breadcrumb = enPath');
@@ -121,7 +121,7 @@ describe('the docs layout', () => {
     expect(layout).toContain('hreflang="x-default"');
   });
 
-  /** The notice, and the flag behind it, are gone now that the guides are translated. */
+  /** El aviso, y el flag que había detrás, ya no están ahora que las guías están traducidas. */
   it('carries no leftover of the untranslated notice', () => {
     expect(layout).not.toContain('docs-untranslated');
     expect(layout).not.toContain('translated');
@@ -129,11 +129,11 @@ describe('the docs layout', () => {
 });
 
 /**
- * The English slugs are what /api/docs publishes and the Discord bot indexes,
- * and SAFE_SLUG rejects slashes. Moving the guides under `docs/en/…` would
- * turn every id into `en/intro` and the manifest route would answer 500 on the
- * first one, taking the bot's whole knowledge base with it. That is why the
- * Spanish copies live in their own directory instead.
+ * Los slugs ingleses son lo que /api/docs publica y el bot de Discord indexa, y
+ * SAFE_SLUG rechaza barras. Mover las guías bajo `docs/en/…` convertiría cada
+ * id en `en/intro` y la ruta del manifest respondería 500 en el primero,
+ * llevándose por delante toda la base de conocimiento del bot. Por eso las
+ * copias en español viven en su propio directorio.
  */
 describe('the English collection is left where it is', () => {
   it('keeps flat, slug-safe ids', () => {

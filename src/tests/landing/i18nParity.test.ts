@@ -55,9 +55,9 @@ describe('paridad de los diccionarios', () => {
     expect(diffs).toEqual([]);
   });
 
-  // Root-level subtrees (community, events) are consumed directly by
-  // t('community.*', lang) / t('events.*', lang) — a key that exists only
-  // in en renders the raw key path in /es. Parity must cover them too.
+  // Los subárboles de raíz (community, events) los consumen directamente
+  // t('community.*', lang) / t('events.*', lang): una clave que solo exista
+  // en en pinta la ruta de la clave en crudo en /es. La paridad los cubre también.
   test.each(['community', 'events'])('en.%s y es.%s tienen la misma forma', (key) => {
     const enSub = (en as Record<string, unknown>)[key];
     const esSub = (es as Record<string, unknown>)[key];

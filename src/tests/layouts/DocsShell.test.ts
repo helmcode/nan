@@ -6,17 +6,17 @@ import { parseFrontmatter } from '@astrojs/markdown-remark';
 import { API_DOC_META } from '../../lib/apiDoc';
 
 /**
- * The documentation shell, guarded over the source.
+ * El shell de la documentación, guardado sobre el fuente.
  *
- * It exists because of a real case: porting helmcode's shell lost four things
- * from the previous layout (the breadcrumbs, the mobile drawer's close button,
- * the <body> layout utilities and the nav's prefix matching) and neither a test
- * nor the build failed. It only surfaced by diffing the two files by hand.
+ * Existe por un caso real: al portar el shell de helmcode se perdieron cuatro
+ * cosas del layout anterior (las migas, el botón de cerrar del drawer móvil,
+ * las utilidades de layout del <body> y el prefix matching de la nav) y no
+ * falló ni un test ni el build. Solo salió a la luz diffeando los dos ficheros a mano.
  *
- * The source is checked rather than the rendered HTML, as in NanBase.test.ts:
- * mounting these pages under SSR drags in the whole collection and the
- * Cloudflare bindings. It is a blunt guard, but it covers exactly the failure
- * mode that happened: a piece of the layout disappearing unnoticed.
+ * Se comprueba el fuente y no el HTML renderizado, como en NanBase.test.ts:
+ * montar estas páginas bajo SSR arrastra toda la colección y los bindings de
+ * Cloudflare. Es una guarda burda, pero cubre exactamente el modo de fallo que
+ * ocurrió: un trozo del layout desapareciendo sin que nadie lo note.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -33,13 +33,13 @@ describe('Docs.astro: pieces that must not disappear', () => {
   });
 
   /**
-   * And renders them INSIDE the <main>, not as its sibling.
+   * Y las renderiza DENTRO del <main>, no como hermano suyo.
    *
-   * `.docs-inner` is a two-column grid (content and TOC). When the breadcrumbs
-   * were restored they ended up as a third child of that grid, so they took the
-   * first column, the content landed in the TOC's 188px one and the page came
-   * out one word per line. Every element was present, which is precisely why an
-   * "does it exist?" check missed it: the fault was placement.
+   * `.docs-inner` es un grid de dos columnas (contenido y TOC). Cuando se
+   * restauraron las migas acabaron como tercer hijo de ese grid, así que se
+   * quedaron la primera columna, el contenido cayó en la de 188px del TOC y la
+   * página salió con una palabra por línea. Todos los elementos estaban, que es
+   * justo por lo que una comprobación de "¿existe?" no lo vio: el fallo era la colocación.
    */
   it('puts the breadcrumbs inside main, not as a third child of the grid', () => {
     const main = layout.indexOf('<main id="docs-main"');
@@ -59,7 +59,7 @@ describe('Docs.astro: pieces that must not disappear', () => {
   it('keeps the mobile drawer close button, and wired up', () => {
     expect(layout).toContain('id="docs-side-close"');
     expect(layout).toContain("getElementById('docs-side-close')");
-    // Without the rule that shows it on mobile, the button exists but is invisible.
+    // Sin la regla que lo muestra en móvil, el botón existe pero es invisible.
     expect(shellCss).toMatch(/\.docs-side-close\s*\{[^}]*display:\s*block/s);
   });
 
@@ -75,9 +75,9 @@ describe('Docs.astro: pieces that must not disappear', () => {
   });
 
   /**
-   * The index is built from the DOM rather than from Astro's `headings`
-   * because the h2s rendered by components such as ModelCard do not appear in
-   * that list: /docs/models would lose its whole index, and silently.
+   * El índice se construye desde el DOM y no desde los `headings` de Astro
+   * porque los h2 que renderizan componentes como ModelCard no aparecen en esa
+   * lista: /docs/models perdería el índice entero, y en silencio.
    */
   it('builds the index from the DOM and honours data-toc-text', () => {
     expect(layout).toContain(".docs-content h2, .docs-content h3");
@@ -93,10 +93,10 @@ describe('Docs.astro: pieces that must not disappear', () => {
 
 describe('body.docs: layout utilities', () => {
   /**
-   * The previous layout carried these as Tailwind utilities on the <body> and
-   * they were lost in the port: without `min-height` the background does not
-   * cover the viewport on a short page, and without `overflow-x` a horizontal
-   * overflow stops being clipped.
+   * El layout anterior las llevaba como utilidades de Tailwind en el <body> y
+   * se perdieron en el port: sin `min-height` el fondo no cubre el viewport en
+   * una página corta, y sin `overflow-x` un desbordamiento horizontal deja de
+   * recortarse.
    */
   it('declares min-height, overflow-x and the background', () => {
     const body = shellCss.slice(shellCss.indexOf('body.docs'));
@@ -109,7 +109,7 @@ describe('body.docs: layout utilities', () => {
     const body = shellCss.slice(shellCss.indexOf('body.docs'), shellCss.indexOf('.skip-link'));
     expect(body).toMatch(/--doc-bg:\s*var\(--color-bg\)/);
     expect(body).toMatch(/--doc-tx:\s*var\(--color-body\)/);
-    // One hex tolerated: the step above surface the system does not define.
+    // Se tolera un hex: el escalón por encima de surface que el sistema no define.
     expect((body.match(/#[0-9a-fA-F]{3,8}/g) ?? []).length).toBeLessThanOrEqual(1);
   });
 });
@@ -121,10 +121,10 @@ describe('DocsTopBar: shared chrome', () => {
   });
 
   /**
-   * Both surfaces are bilingual now that the guides have Spanish routes. The
-   * switcher stays opt-in through the prop rather than always-on, because a
-   * page whose Spanish counterpart does not exist would send readers to a 404,
-   * which is what it used to do before /es/docs existed.
+   * Las dos superficies son bilingües ahora que las guías tienen rutas en
+   * español. El switcher sigue siendo opt-in vía prop y no siempre activo,
+   * porque una página sin contraparte en español mandaría a los lectores a un
+   * 404, que es lo que hacía antes de que existiera /es/docs.
    */
   it('offers the language switcher on both surfaces', () => {
     expect(topBar).toContain('bilingual');
@@ -140,10 +140,10 @@ describe('DocsTopBar: shared chrome', () => {
   });
 
   /**
-   * Both links carrying ↗ leave the site, so they are absolute. A relative path
-   * keeps them on whatever domain you are browsing: on a Cloudflare preview,
-   * "nan.builders" left you on *.workers.dev. It came from porting helmcode's
-   * relative link, where it is correct because that is their own domain.
+   * Los dos enlaces que llevan ↗ salen del sitio, así que son absolutos. Una
+   * ruta relativa te deja en el dominio que estés navegando: en una preview de
+   * Cloudflare, "nan.builders" te dejaba en *.workers.dev. Venía de portar el
+   * enlace relativo de helmcode, donde es correcto porque ese es su propio dominio.
    */
   it('uses absolute URLs for the links that leave the site', () => {
     expect(topBar).toContain('https://nan.builders');
@@ -176,9 +176,9 @@ describe('frontmatter of the docs collection', () => {
   });
 
   /**
-   * A repeated `order` breaks neither the build nor any test: it just leaves
-   * the navigation in an arbitrary order, which is the kind of thing nobody
-   * looks at until a reader gets lost.
+   * Un `order` repetido no rompe ni el build ni ningún test: solo deja la
+   * navegación en un orden arbitrario, que es el tipo de cosa que nadie mira
+   * hasta que un lector se pierde.
    */
   it('repeats no order, counting the reference\'s synthetic entry', () => {
     const orders = [...metas.map((m) => m.data.order), API_DOC_META.order];

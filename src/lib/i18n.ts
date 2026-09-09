@@ -47,11 +47,12 @@ export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'en';
 
 /**
- * The locale lives in the PATH, not in a query param: English at `/`, Spanish
- * under `/es/`. Query params are invisible to crawlers as a language signal
- * and cannot carry hreflang, so `/es/...` is what we index and link.
+ * El idioma va en la RUTA, no en un query param: inglés en `/`, español bajo
+ * `/es/`. Los query params son invisibles para los buscadores como señal de
+ * idioma y no pueden llevar hreflang, así que `/es/...` es lo que se indexa
+ * y se enlaza.
  *
- * Accepts a URL or a pathname so callers can pass `Astro.url` directly.
+ * Acepta una URL o un pathname para poder pasarle `Astro.url` directamente.
  */
 export function getLocale(source: URL | string): Locale {
   const pathname = typeof source === 'string' ? source : source.pathname;
@@ -59,8 +60,8 @@ export function getLocale(source: URL | string): Locale {
 }
 
 /**
- * Keeps the locale in internal navigation: withLang('/hackaton/me', 'es')
- * → '/es/hackaton/me'. English is the default locale and has no prefix.
+ * Conserva el idioma en la navegación interna: withLang('/hackaton/me', 'es')
+ * → '/es/hackaton/me'. El inglés es el idioma por defecto y no lleva prefijo.
  */
 export function withLang(path: string, locale: string): string {
   if (locale !== 'es') return path;
@@ -68,7 +69,7 @@ export function withLang(path: string, locale: string): string {
   return clean === '/' ? '/es' : `/es${clean}`;
 }
 
-/** Same page in the other language, for the language switcher. */
+/** La misma página en el otro idioma, para el selector de idioma. */
 export function switchLocalePath(pathname: string, target: Locale): string {
   const stripped = pathname.replace(/^\/es(?=\/|$)/, '') || '/';
   return target === 'en' ? stripped : withLang(stripped, 'es');

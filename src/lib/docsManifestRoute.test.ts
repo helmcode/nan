@@ -8,34 +8,35 @@ import { globSync } from 'tinyglobby';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SAFE_SLUG } from './docsApi';
 
-// astro:content and cloudflare:workers are virtual modules that only exist
-// under Astro's Vite plugin, so the route module cannot be imported without
-// mocking them first. The factory references are hoisted with vi.hoisted so
-// they are available when vi.mock runs before the import below.
+// astro:content y cloudflare:workers son módulos virtuales que solo existen
+// bajo el plugin de Vite de Astro, así que el módulo de la ruta no se puede
+// importar sin mockearlos antes. Las referencias de la factoría se elevan con
+// vi.hoisted para que estén disponibles cuando vi.mock corre antes del import.
 const { getCollectionMock } = vi.hoisted(() => ({ getCollectionMock: vi.fn() }));
 vi.mock('astro:content', () => ({ getCollection: getCollectionMock }));
 vi.mock('cloudflare:workers', () => ({ env: {} }));
 
-// Import AFTER the mocks so the handler binds to them.
+// Se importa DESPUÉS de los mocks para que el handler se enlace a ellos.
 import { GET } from '../pages/api/docs/manifest.json';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const docsDir = path.join(here, '..', 'content', 'docs');
 
 /**
- * Astro's glob loader (base ./src/content/docs, pattern **\/*.{md,mdx}) derives
- * an entry id from the frontmatter `slug` if present — verbatim and BEFORE
- * schema parsing, so the collection schema cannot veto it (generateIdDefault in
- * astro/dist/content/loaders/glob.js) — and otherwise from the file path
- * relative to the base — each path segment slugified with github-slugger,
- * joined with '/', and a trailing '/index' collapsed (getContentEntryIdAndSlug
- * in astro/dist/content/utils.js). Both branches are mirrored here, using the
- * same frontmatter parser Astro itself uses for entries
- * (astro/dist/content/utils.js imports it from @astrojs/markdown-remark), so a
- * nested guides/foo.md and a flat doc declaring `slug: guides/foo` in any
- * YAML form each yield an id the route now rejects, and CI fails at PR time
- * the moment someone adds a doc whose effective id is not slug-safe — while a
- * doc that Astro itself would normalize to a safe id keeps passing.
+ * El glob loader de Astro (base ./src/content/docs, patrón **\/*.{md,mdx})
+ * deriva el id de una entrada del `slug` del frontmatter si existe: tal cual y
+ * ANTES de parsear el esquema, así que el esquema de la colección no puede
+ * vetarlo (generateIdDefault en astro/dist/content/loaders/glob.js). Si no, lo
+ * deriva de la ruta del fichero relativa a la base: cada segmento slugificado
+ * con github-slugger, unidos con '/' y con el '/index' final colapsado
+ * (getContentEntryIdAndSlug en astro/dist/content/utils.js). Aquí se replican
+ * las dos ramas, usando el mismo parser de frontmatter que Astro usa para las
+ * entradas (astro/dist/content/utils.js lo importa de @astrojs/markdown-remark),
+ * de modo que un guides/foo.md anidado y un doc plano que declare
+ * `slug: guides/foo` en cualquier forma YAML producen un id que la ruta ahora
+ * rechaza, y CI falla en el PR en cuanto alguien añade un doc cuyo id efectivo
+ * no es slug-safe, mientras que un doc que Astro normalizaría a un id seguro
+ * sigue pasando.
  */
 function frontmatterSlug(file: string): string | undefined {
   const { frontmatter } = parseFrontmatter(fs.readFileSync(file, 'utf8'));
@@ -43,9 +44,9 @@ function frontmatterSlug(file: string): string | undefined {
 }
 
 function collectDocIds(dir: string): string[] {
-  // Identical file discovery to the loader: same library, same pattern, same
-  // options (astro/dist/content/loaders/glob.js), so dotfile handling, symlink
-  // following and matching semantics cannot diverge.
+  // Descubrimiento de ficheros idéntico al del loader: misma librería, mismo
+  // patrón, mismas opciones (astro/dist/content/loaders/glob.js), así que el
+  // trato de dotfiles, el seguimiento de symlinks y el matching no pueden divergir.
   const files = globSync('**/*.{md,mdx}', { cwd: dir, expandDirectories: false });
   return files.map((rel) => {
     const pathId = rel
@@ -204,8 +205,8 @@ describe('GET /api/docs/manifest.json', () => {
     expect(typeof body.version).toBe('string');
     expect(body.version.startsWith('sha256:')).toBe(true);
     expect(Array.isArray(body.entries)).toBe(true);
-    // The two from the collection plus the API reference, generated from the
-    // spec and independent of it.
+    // Las dos de la colección más la referencia de la API, generada desde la
+    // spec e independiente de ella.
     expect(body.entries.length).toBe(3);
     for (const e of body.entries) {
       expect(e).toHaveProperty('slug');
@@ -217,11 +218,11 @@ describe('GET /api/docs/manifest.json', () => {
   });
 
   /**
-   * The Discord bot does not fail when a slug disappears from the manifest: it
-   * silently drops its chunks (bot/knowledge.py::load_documentation_from_remote,
-   * `stale_sources`). When /docs/api moved to Scalar, `api` left the collection,
-   * so without this synthetic entry the bot would have lost the API reference
-   * with no alarm going off.
+   * El bot de Discord no falla cuando un slug desaparece del manifest: descarta
+   * sus chunks en silencio (bot/knowledge.py::load_documentation_from_remote,
+   * `stale_sources`). Cuando /docs/api pasó a Scalar, `api` salió de la
+   * colección, así que sin esta entrada sintética el bot habría perdido la
+   * referencia de la API sin que saltara ninguna alarma.
    */
   it('publishes the API reference even though it is not in the collection', async () => {
     getCollectionMock.mockResolvedValue([entry('intro', '# Intro\n\nHola.\n')]);
@@ -236,7 +237,7 @@ describe('GET /api/docs/manifest.json', () => {
     expect(api.title).toBe('API');
   });
 
-  /** Two entries with the same slug would make the bot index it twice. */
+  /** Dos entradas con el mismo slug harían que el bot lo indexara dos veces. */
   it('keeps a single `api` entry if the collection ever gets one back', async () => {
     getCollectionMock.mockResolvedValue([
       entry('intro', '# Intro\n\nHola.\n'),
@@ -248,7 +249,7 @@ describe('GET /api/docs/manifest.json', () => {
 
     const apiEntries = body.entries.filter((e: { slug: string }) => e.slug === 'api');
     expect(apiEntries.length).toBe(1);
-    // The spec wins, not the file.
+    // Gana la spec, no el fichero.
     expect(apiEntries[0].title).toBe('API');
   });
 });

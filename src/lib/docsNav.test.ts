@@ -10,13 +10,13 @@ import {
 } from './docsNav';
 
 /**
- * The docs navigation and the search index.
+ * La navegación de docs y el índice de búsqueda.
  *
- * None of this had a test until the shell was ported, and the port lost four
- * things in one go without a single check failing. The anchors below are the
- * part that worries most: they are a contract with `@scalar/api-reference`,
- * verified once by hand against the rendered page, and nothing else in the
- * build would notice if a version of Scalar changed the scheme.
+ * Nada de esto tenía test hasta que se portó el shell, y el port perdió cuatro
+ * cosas de golpe sin que fallara ni una comprobación. Los anchors de abajo son
+ * la parte que más preocupa: son un contrato con `@scalar/api-reference`,
+ * verificado una vez a mano contra la página renderizada, y nada más en el
+ * build se enteraría si una versión de Scalar cambiara el esquema.
  */
 
 const item = (over: Partial<DocsNavItem> = {}): DocsNavItem => ({
@@ -39,9 +39,9 @@ describe('isActiveDocPath', () => {
   });
 
   /**
-   * The port replaced this with plain equality. With today's flat collection
-   * nothing looked broken, which is exactly what makes it worth pinning: the
-   * regression would only surface the day a guide gets nested.
+   * El port sustituyó esto por una igualdad simple. Con la colección plana de
+   * hoy nada parecía roto, que es justo lo que hace que merezca fijarlo: la
+   * regresión solo saldría el día que una guía se anide.
    */
   it('highlights a parent when the page is a nested route', () => {
     expect(isActiveDocPath('/docs/guides/deploy', '/docs/guides')).toBe(true);
@@ -94,10 +94,10 @@ describe('apiSearchHeadings', () => {
   const headings = apiSearchHeadings(spec);
 
   /**
-   * Scalar has TWO anchor namespaces and they are not interchangeable. The
-   * first version of the search index labelled everything `tag/`, so searching
-   * "Authentication" produced a link to an id that does not exist and the
-   * reader landed on the page without scrolling.
+   * Scalar tiene DOS espacios de nombres de anchors y no son intercambiables.
+   * La primera versión del índice de búsqueda etiquetaba todo como `tag/`, así
+   * que buscar "Authentication" producía un enlace a un id que no existe y el
+   * lector aterrizaba en la página sin hacer scroll.
    */
   it('addresses the overview sections as description/, not tag/', () => {
     const auth = headings.find((h) => h.text === 'Authentication');
@@ -118,13 +118,13 @@ describe('apiSearchHeadings', () => {
     expect(tagSlugs.sort()).toEqual((spec.tags ?? []).map((t) => t.name).sort());
   });
 
-  /** agents.md links here by hand; if the tag is renamed, that link dies. */
+  /** agents.md enlaza aquí a mano; si se renombra el tag, ese enlace muere. */
   it('keeps the MCP anchor that agents.md points at', () => {
     expect(headings.some((h) => h.slug === 'tag/mcp')).toBe(true);
   });
 
   it('takes only level-2 headings, not the level-3 ones nested under them', () => {
-    // "Use it as an agent tool" is a `#####` inside an operation description.
+    // "Use it as an agent tool" es un `#####` dentro de la descripción de una operación.
     expect(headings.some((h) => h.text === 'Use it as an agent tool')).toBe(false);
   });
 });

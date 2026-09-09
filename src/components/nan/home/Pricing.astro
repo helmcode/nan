@@ -1,15 +1,15 @@
 ---
-// Prices verified against nan.builders: Member 70€ · GLM 5.3 premium 200€ · Community 14,99€.
+// Precios verificados contra nan.builders: Member 70€ · GLM 5.3 premium 200€ · Community 14,99€.
 //
-// There is no per-region tier and no per-region currency any more. Every new
-// signup is charged in EUR from any region, on BOTH funnels: cloud-api's
-// inferencePriceForNewCustomer and communityPriceForNewCustomer each always
-// return the EU price. So the `nan_member · usa / latam — $75` tier was removed
-// AND community is published in euros here, for the same reason: a prospect
-// from outside the EU read a $ amount and landed on a EUR Checkout, a different
-// price in a different currency, at the payment step. Legacy USD subscriptions
-// still exist and keep their price; that is explained in the payment-methods
-// FAQ entry, not here.
+// Ya no hay tier por región ni moneda por región. Toda alta nueva se cobra en
+// EUR desde cualquier región, en LOS DOS funnels: inferencePriceForNewCustomer
+// y communityPriceForNewCustomer de cloud-api devuelven siempre el precio EU.
+// Por eso se quitó el tier `nan_member · usa / latam — $75` Y community se
+// publica aquí en euros, por el mismo motivo: un prospecto de fuera de la UE
+// leía un importe en $ y aterrizaba en un Checkout en EUR, otro precio en otra
+// moneda, en el paso del pago. Las suscripciones legacy en USD siguen
+// existiendo y conservan su precio; eso se explica en la entrada de la FAQ de
+// métodos de pago, no aquí.
 import { getLang, useT } from '../../../lib/i18n';
 
 const lang = getLang(Astro.url);
@@ -17,8 +17,8 @@ const tt = useT(lang).pricing;
 const home = lang === 'es' ? '/es' : '/';
 
 const tiers = [
-  // GLM 5.3 premium — price swap on the existing nan_member
-  // subscription (200€/mo, EUR only). Shown first as the flagship tier.
+  // GLM 5.3 premium: cambio de precio sobre la suscripción nan_member
+  // existente (200€/mes, solo EUR). Va primero como tier estrella.
   {
     name: 'nan_member · glm 5.3 premium',
     amount: '200€',

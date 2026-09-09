@@ -88,9 +88,10 @@ export default function CommunitySignupForm({ t }: Props) {
   async function onSubmit(e: TargetedSubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // No client-side honeypot field: a hidden _hp risks autofill by a
-    // password manager, and the server rate-limiter + the server-side honeypot
-    // (when _hp is sent) are the real bot defence. The form sends no _hp.
+    // Sin campo honeypot en el cliente: un _hp oculto corre el riesgo de que lo
+    // rellene un gestor de contraseñas, y el rate limiter del servidor + el
+    // honeypot del servidor (cuando se envía _hp) son la defensa real contra
+    // bots. El formulario no envía _hp.
 
     if (!isValidEmail(email)) {
       setStatus({ kind: 'error', message: t.errorInvalidEmail });

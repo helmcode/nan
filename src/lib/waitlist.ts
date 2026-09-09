@@ -1,27 +1,27 @@
 /**
- * Waitlist core logic — all member data lives in PostgreSQL via the cloud-api
- * backend. The landing page validates input on the edge and forwards valid
- * signups to the backend.
+ * Lógica central de la waitlist: todos los datos de miembros viven en
+ * PostgreSQL a través del backend cloud-api. La landing valida la entrada en
+ * el edge y reenvía las altas válidas al backend.
  *
- * Region model:
- *   EU signups take an arrival position (1, 2, 3…) assigned by the backend.
- *   LATAM and USA signups are stored as interest signals with position 0.
+ * Modelo de regiones:
+ *   Las altas EU reciben una posición de llegada (1, 2, 3…) que asigna el backend.
+ *   Las altas LATAM y USA se guardan como señales de interés con posición 0.
  */
 
 const RATE_LIMIT_TTL_MS = 60_000;
 
-// Practical upper bound per RFC 5321.
+// Límite práctico según la RFC 5321.
 const EMAIL_MAX_LENGTH = 254;
 
-// Intentionally simple — we're not reimplementing RFC 5322. No catastrophic
-// backtracking: bounded character classes, no nested quantifiers.
+// Simple a propósito: no estamos reimplementando la RFC 5322. Sin backtracking
+// catastrófico: clases de caracteres acotadas, sin cuantificadores anidados.
 const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
-// Reserved / documentation / test domains that should never appear in a real
-// signup. Covers RFC 2606 (example.com/net/org, .test/.invalid/.localhost/
-// .example) plus a couple of common disposable "throwaway" domains we've seen
-// hit the form. Server-side is the source of truth; the client mirrors this
-// list only to show an early error without a round-trip.
+// Dominios reservados, de documentación o de test que nunca deberían aparecer
+// en un alta real. Cubre la RFC 2606 (example.com/net/org, .test/.invalid/
+// .localhost/.example) más un par de dominios desechables habituales que hemos
+// visto llegar al formulario. El servidor es la fuente de verdad; el cliente
+// replica esta lista solo para mostrar un error temprano sin ida y vuelta.
 const BLOCKED_EMAIL_DOMAINS: ReadonlySet<string> = new Set([
   'example.com',
   'example.net',
@@ -59,13 +59,13 @@ export type WaitlistErrorCode =
   | 'server_error';
 
 /**
- * Member lifecycle states.
+ * Estados del ciclo de vida de un miembro.
  *
- *   waitlist   Default. Signed up but not invited yet.
- *   invited    Onboarding email sent, waiting for subscription.
- *   subscribed Active member with subscription.
- *   declined   Manual: test/junk entries we keep for audit instead of deleting.
- *   banned     Manual: membership revoked.
+ *   waitlist   Por defecto. Dado de alta pero aún sin invitar.
+ *   invited    Email de onboarding enviado, esperando la suscripción.
+ *   subscribed Miembro activo con suscripción.
+ *   declined   Manual: entradas de test o basura que guardamos para auditar en vez de borrar.
+ *   banned     Manual: membresía revocada.
  */
 export const MEMBER_STATES = [
   'waitlist',
@@ -116,9 +116,9 @@ export function validateWaitlistInput(raw: unknown): ValidationResult {
   }
   const region = obj.region;
 
-  // Honeypot trap: if a bot fills the hidden `_hp` field we still return
-  // 200 OK from the API layer but never persist. Defensive only — this is
-  // not primary bot protection, just a cheap filter.
+  // Trampa honeypot: si un bot rellena el campo oculto `_hp` la capa de API
+  // devuelve igualmente 200 OK pero nunca persiste. Solo defensivo: no es la
+  // protección principal contra bots, solo un filtro barato.
   const honeypot = typeof obj._hp === 'string' && obj._hp.trim().length > 0;
 
   return {
@@ -132,14 +132,14 @@ function isWaitlistRegion(value: string): value is WaitlistRegion {
 }
 
 /**
- * In-memory rate limiter. Entries auto-expire after RATE_LIMIT_TTL_MS.
- * Best-effort: state is lost when the Worker isolate is evicted, which is
- * acceptable — the backend has its own duplicate-email protection.
+ * Rate limiter en memoria. Las entradas caducan solas tras RATE_LIMIT_TTL_MS.
+ * Best-effort: el estado se pierde cuando se desaloja el isolate del Worker, y
+ * es aceptable: el backend tiene su propia protección contra emails duplicados.
  */
 const rateLimitMap = new Map<string, number>();
 
 export function checkRateLimit(ip: string): boolean {
-  if (!ip) return true; // cannot identify client — fail open
+  if (!ip) return true; // no se puede identificar al cliente: fail open
   const now = Date.now();
 
   const expiresAt = rateLimitMap.get(ip);
@@ -149,7 +149,7 @@ export function checkRateLimit(ip: string): boolean {
 
   rateLimitMap.set(ip, now + RATE_LIMIT_TTL_MS);
 
-  // Lazy cleanup: purge expired entries when map grows large
+  // Limpieza perezosa: purga las entradas caducadas cuando el mapa crece
   if (rateLimitMap.size > 1000) {
     for (const [key, exp] of rateLimitMap) {
       if (exp <= now) rateLimitMap.delete(key);
@@ -160,8 +160,8 @@ export function checkRateLimit(ip: string): boolean {
 }
 
 /**
- * Registers a waitlist member via the cloud-api backend (PostgreSQL).
- * Returns a JoinResult-compatible response or throws on network/server errors.
+ * Registra un miembro de la waitlist a través del backend cloud-api (PostgreSQL).
+ * Devuelve una respuesta compatible con JoinResult o lanza en errores de red o servidor.
  */
 export async function registerViaBackend(
   apiURL: string,
@@ -179,8 +179,8 @@ export async function registerViaBackend(
   });
 
   if (response.status === 409) {
-    // Already registered — return a synthetic success so the frontend
-    // shows the same "you're in" message rather than an error.
+    // Ya registrado: se devuelve un éxito sintético para que el frontend
+    // muestre el mismo mensaje de "you're in" en vez de un error.
     return {
       ok: true,
       position: 0,

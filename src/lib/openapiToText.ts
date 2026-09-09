@@ -1,29 +1,29 @@
 import { normalizeCanonicalText } from './mdxToText';
 
 /**
- * Turns the OpenAPI spec into the Markdown /api/docs serves as if it were one
- * more page of the collection.
+ * Convierte la spec OpenAPI en el Markdown que /api/docs sirve como si fuera
+ * una página más de la colección.
  *
- * It exists because of the Discord bot. When the API reference stopped being
- * `api.mdx`, the manifest would have lost its `api` entry, and the bot does
- * not fail on that: it silently drops the chunks of a source that disappears
- * (`stale_sources` in bot/knowledge.py::load_documentation_from_remote). We
- * would have lost the content it gets asked about the most without a single
- * alarm going off.
+ * Existe por el bot de Discord. Cuando la referencia de la API dejó de ser
+ * `api.mdx`, el manifest habría perdido su entrada `api`, y el bot no falla
+ * con eso: descarta en silencio los chunks de una fuente que desaparece
+ * (`stale_sources` en bot/knowledge.py::load_documentation_from_remote).
+ * Habríamos perdido el contenido por el que más le preguntan sin que saltara
+ * una sola alarma.
  *
- * Serving the raw JSON is no good either: the bot splits on PARAGRAPHS into
- * ~2000-character blocks (bot/knowledge.py::chunk_text) and embeds each one.
- * An openapi.json cut every 2000 characters yields fragments severed
- * mid-brace and meaningless embeddings. What the bot needs is prose in
- * paragraphs, and where that prose comes from is none of its concern.
+ * Servir el JSON en crudo tampoco vale: el bot parte por PÁRRAFOS en bloques
+ * de ~2000 caracteres (bot/knowledge.py::chunk_text) y genera un embedding de
+ * cada uno. Un openapi.json cortado cada 2000 caracteres da fragmentos partidos
+ * a mitad de llave y embeddings sin sentido. Lo que el bot necesita es prosa en
+ * párrafos, y de dónde sale esa prosa no es asunto suyo.
  *
- * The output goes through normalizeCanonicalText so it is a fixed point of
- * the bot's canonicaliser, exactly like mdxToText's: otherwise its hash would
- * never agree with ours and it would re-index the whole reference on every
- * manifest version.
+ * La salida pasa por normalizeCanonicalText para que sea un punto fijo del
+ * canonicalizador del bot, exactamente igual que la de mdxToText: si no, su
+ * hash nunca coincidiría con el nuestro y reindexaría toda la referencia en
+ * cada versión del manifest.
  */
 
-/** The subset of the spec read here. Everything else is ignored quietly. */
+/** El subconjunto de la spec que se lee aquí. Todo lo demás se ignora sin más. */
 interface Spec {
   info?: { title?: string; description?: string; version?: string };
   servers?: Array<{ url?: string; description?: string }>;
@@ -43,8 +43,8 @@ interface Operation {
   deprecated?: boolean;
   parameters?: Parameter[];
   requestBody?: { required?: boolean; content?: Record<string, MediaType> };
-  // A response is either a Response Object or a Reference Object into
-  // #/components/responses: shared codes (401, 429...) travel as a $ref.
+  // Una respuesta es un Response Object o un Reference Object hacia
+  // #/components/responses: los códigos compartidos (401, 429...) viajan como $ref.
   responses?: Record<string, ResponseOrRef>;
   'x-codeSamples'?: Array<{ lang?: string; label?: string; source?: string }>;
 }
@@ -67,18 +67,18 @@ interface MediaType {
 }
 
 interface SchemaLike {
-  // In OpenAPI 3.1 `type` may be a list: `["string", "null"]` is how a
-  // nullable field is declared (finish_reason, among others).
+  // En OpenAPI 3.1 `type` puede ser una lista: `["string", "null"]` es como se
+  // declara un campo nullable (finish_reason, entre otros).
   type?: string | string[];
   format?: string;
   enum?: unknown[];
   default?: unknown;
   description?: string;
   required?: string[];
-  // The value is optional because a `oneOf` of objects with different keys
-  // makes TypeScript infer `key?: undefined` on the branches that lack it
-  // (ContentPart: text | image_url). typeName and describeField already
-  // handle the undefined.
+  // El valor es opcional porque un `oneOf` de objetos con claves distintas
+  // hace que TypeScript infiera `key?: undefined` en las ramas que no la
+  // tienen (ContentPart: text | image_url). typeName y describeField ya
+  // manejan el undefined.
   properties?: Record<string, SchemaLike | undefined>;
   items?: SchemaLike;
   $ref?: string;
@@ -95,10 +95,10 @@ function refName(ref: string): string {
 }
 
 /**
- * Readable type name for a field, for the "Type" column of the tables.
- * It does not resolve the `$ref`: it names it and leaves the reader to the
- * schema, which is documented separately. Resolving it here would expand the
- * same object once per endpoint and multiply the size of the embedded text.
+ * Nombre de tipo legible para un campo, para la columna "Type" de las tablas.
+ * No resuelve el `$ref`: lo nombra y remite al lector al esquema, que se
+ * documenta aparte. Resolverlo aquí expandiría el mismo objeto una vez por
+ * endpoint y multiplicaría el tamaño del texto que se embebe.
  */
 function typeName(schema: SchemaLike | undefined): string {
   if (!schema) return 'any';
@@ -114,15 +114,15 @@ function typeName(schema: SchemaLike | undefined): string {
 }
 
 /**
- * Flattens text for a table cell: newlines would break the Markdown row and a
- * pipe would open a new column.
+ * Aplana el texto para una celda de tabla: los saltos de línea romperían la
+ * fila Markdown y una barra vertical abriría una columna nueva.
  */
 function cell(text: string | undefined): string {
   if (!text) return '';
   return text.replace(/\r?\n+/g, ' ').replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim();
 }
 
-/** Describes a field: description + enum + default, in a single cell. */
+/** Describe un campo: descripción + enum + default, en una sola celda. */
 function describeField(schema: SchemaLike | undefined, description?: string): string {
   const parts: string[] = [];
   const desc = description ?? schema?.description;
@@ -134,7 +134,7 @@ function describeField(schema: SchemaLike | undefined, description?: string): st
   return parts.join(' ');
 }
 
-/** Property table for an object. Returns '' when there are none. */
+/** Tabla de propiedades de un objeto. Devuelve '' cuando no hay ninguna. */
 function propertyTable(schema: SchemaLike | undefined): string {
   if (!schema?.properties) return '';
   const required = new Set(schema.required ?? []);
@@ -147,16 +147,17 @@ function propertyTable(schema: SchemaLike | undefined): string {
 }
 
 /**
- * Demotes any headings a spec description carries.
+ * Rebaja los encabezados que traiga la descripción de una spec.
  *
- * They are written for Scalar, which paints them inside the endpoint panel, so
- * they start at `##`. Dumped as-is into a flat document they would outrank the
- * `###` of the very endpoint they belong to: the `## Use it as an agent tool`
- * of /search read as a sibling section of "Search" instead of part of it. They
- * sink until they sit below, capped at `######`.
+ * Están escritos para Scalar, que los pinta dentro del panel del endpoint, así
+ * que empiezan en `##`. Volcados tal cual en un documento plano quedarían por
+ * encima del `###` del propio endpoint al que pertenecen: el
+ * `## Use it as an agent tool` de /search se leía como una sección hermana de
+ * "Search" en vez de como parte de ella. Se hunden hasta quedar por debajo,
+ * con tope en `######`.
  *
- * Only headings at the start of a line and outside a code fence count: inside
- * a ``` a `#` is usually a shell comment.
+ * Solo cuentan los encabezados al principio de línea y fuera de un bloque de
+ * código: dentro de un ``` un `#` suele ser un comentario de shell.
  */
 function demoteHeadings(markdown: string, by: number): string {
   let inFence = false;
@@ -177,12 +178,12 @@ function demoteHeadings(markdown: string, by: number): string {
 }
 
 /**
- * A response's description, resolving the $ref when it carries one.
+ * La descripción de una respuesta, resolviendo el $ref cuando lo lleva.
  *
- * The shared codes (401, 403, 429, 402) live in components.responses and each
- * endpoint references them. Without resolving them the response table came out
- * with an empty cell (`| 401 | |`) and whoever read the text (or the bot) had
- * no idea what each code means on that endpoint.
+ * Los códigos compartidos (401, 403, 429, 402) viven en components.responses y
+ * cada endpoint los referencia. Sin resolverlos la tabla de respuestas salía
+ * con una celda vacía (`| 401 | |`) y quien leyera el texto (o el bot) no
+ * tenía ni idea de qué significa cada código en ese endpoint.
  */
 function responseDescription(spec: Spec, res: ResponseOrRef | undefined): string {
   if (!res) return '';
@@ -202,8 +203,8 @@ function renderOperation(spec: Spec, path: string, method: string, op: Operation
 
   out.push(`### ${method.toUpperCase()} ${path}: ${title}`);
   if (op.deprecated) out.push('**Deprecated.**');
-  // The operation is a `###`, so its subsections drop to `#####` so they do
-  // not compete with the `####` this same function emits (Parameters, etc.).
+  // La operación es un `###`, así que sus subsecciones bajan a `#####` para no
+  // competir con los `####` que emite esta misma función (Parameters, etc.).
   if (op.description) out.push(demoteHeadings(op.description.trim(), 3));
 
   const params = op.parameters ?? [];
@@ -253,7 +254,7 @@ function renderOperation(spec: Spec, path: string, method: string, op: Operation
   return out.join('\n\n');
 }
 
-/** Documents the reusable schemas, which the endpoints only name. */
+/** Documenta los esquemas reutilizables, que los endpoints solo nombran. */
 function renderSchemas(spec: Spec): string {
   const schemas = spec.components?.schemas ?? {};
   const names = Object.keys(schemas).sort();
@@ -278,9 +279,9 @@ function renderSchemas(spec: Spec): string {
 }
 
 /**
- * The whole spec as Markdown. Grouped by tag, in the order the spec declares
- * them, which is the order Scalar paints them in: the text the bot reads and
- * the page a person reads walk the API in the same order.
+ * La spec entera como Markdown. Agrupada por tag, en el orden en que la spec
+ * los declara, que es el orden en que Scalar los pinta: el texto que lee el bot
+ * y la página que lee una persona recorren la API en el mismo orden.
  */
 export function openapiToText(spec: Spec): string {
   const out: string[] = [];
@@ -292,7 +293,7 @@ export function openapiToText(spec: Spec): string {
   if (server) out.push(`Base URL: \`${server}\``);
   if (info.description) out.push(info.description.trim());
 
-  // Operations indexed by tag, preserving order of appearance.
+  // Operaciones indexadas por tag, conservando el orden de aparición.
   const byTag = new Map<string, string[]>();
   const tagOrder: string[] = (spec.tags ?? []).map((t) => t.name ?? '').filter(Boolean);
 

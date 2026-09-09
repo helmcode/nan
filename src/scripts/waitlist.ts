@@ -97,10 +97,11 @@ function wire(form: HTMLFormElement): void {
 
     let res: Response;
     try {
-      // Premium pricing card lands here with ?premium=1: carry the interest
-      // flag so the member row is marked glm52_interested (the admin panel
-      // distinguishes and invites them for the premium tier; the backend field
-      // keeps the 5.2 name from when that was the model it served).
+      // La tarjeta de precio premium aterriza aquí con ?premium=1: se lleva el
+      // flag de interés para que la fila del miembro quede marcada como
+      // glm52_interested (el panel de admin las distingue e invita al tier
+      // premium; el campo del backend conserva el nombre 5.2 de cuando ese era
+      // el modelo que servía).
       const wantsPremium = new URLSearchParams(window.location.search).get('premium') === '1';
       res = await fetch('/api/waitlist', {
         method: 'POST',

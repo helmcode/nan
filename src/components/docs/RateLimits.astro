@@ -11,9 +11,9 @@ import {
 const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel, windowedModels } =
   getRateLimitsConfig(env);
 
-// This card is embedded from both the English and the Spanish guides, and MDX
-// content cannot pass props down from the layout, so the locale is read off the
-// route the page was rendered for.
+// Esta tarjeta se incrusta desde las guías en inglés y en español, y el
+// contenido MDX no puede pasar props desde el layout, así que el locale se lee
+// de la ruta para la que se renderizó la página.
 const lang = Astro.url.pathname.startsWith('/es/') ? 'es' : 'en';
 
 const T = rateLimitsLabels(lang);
@@ -36,10 +36,10 @@ const T = rateLimitsLabels(lang);
 </div>
 
 {
-  /* The premium models are gated by a sliding window, not by a per-minute
-     rate. The window is the limit an intensive coding-agent session reaches
-     first, so it gets its own highlighted block above the per-minute tables
-     instead of a line of small print underneath them. */
+  /* Los modelos premium van limitados por una sliding window, no por una tasa
+     por minuto. La ventana es el límite al que primero llega una sesión
+     intensiva de coding agent, así que tiene su propio bloque destacado encima
+     de las tablas por minuto en vez de una línea de letra pequeña debajo. */
 }
 {
   windowedModels.map((m) => (

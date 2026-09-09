@@ -48,12 +48,12 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const { email, region, honeypot } = validation.input;
-    // GLM 5.3 premium interest: signups from the premium pricing card
-    // (?premium=1) carry the flag through to the member row so the admin
-    // panel can distinguish and invite them for the premium tier.
+    // Interés en GLM 5.3 premium: las altas desde la tarjeta de precio premium
+    // (?premium=1) llevan el flag hasta la fila del miembro para que el panel
+    // de admin pueda distinguirlas e invitarlas al tier premium.
     const wantsPremium: boolean = !!(raw && typeof raw === 'object' && (raw as Record<string, unknown>).wantsPremium === true);
 
-    // Honeypot trap: reply 200 OK without persisting so bots get no signal.
+    // Trampa honeypot: responde 200 OK sin persistir para que los bots no reciban señal.
     if (honeypot) {
       return json({
         ok: true,
@@ -71,8 +71,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     const result = await registerViaBackend(env.CLOUD_API_URL, env.CLOUD_API_WAITLIST_KEY, { email, region, wantsPremium });
 
-    // Send confirmation email (best-effort — don't fail the signup if email fails).
-    // Must await: Workers terminate after the response, killing in-flight fetches.
+    // Envía el email de confirmación (best-effort: si el email falla, el alta no falla).
+    // Hay que hacer await: los Workers terminan tras la respuesta y matan los fetch en vuelo.
     if (result.ok && env.RESEND_API_KEY && env.RESEND_FROM_EMAIL) {
       try {
         await sendConfirmationEmail({
@@ -88,7 +88,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     return json(result);
   } catch (err) {
-    // Intentionally opaque — do not leak internals in the response body.
+    // Opaco a propósito: no filtrar internos en el cuerpo de la respuesta.
     console.error('[api/waitlist] unexpected error', err);
     return errorResponse('server_error', 500);
   }

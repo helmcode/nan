@@ -7,30 +7,30 @@ import { DEFAULT_RATE_LIMITS } from './rateLimits';
 import { mdxToText, normalizeCanonicalText } from './mdxToText';
 
 /**
- * The text we serve from /api/docs is re-canonicalised and re-hashed by the
- * Discord bot before it compares against our contentHash
- * (nan-discord-bot, bot/docs_client.py:265 and bot/knowledge.py:390).
+ * El texto que servimos desde /api/docs lo vuelve a canonicalizar y a hashear
+ * el bot de Discord antes de compararlo con nuestro contentHash
+ * (nan-discord-bot, bot/docs_client.py:265 y bot/knowledge.py:390).
  *
- * If our output is not already a fixed point of the bot's canonicaliser, the
- * two hashes never agree and every new manifest version re-indexes documents
- * that did not change.
+ * Si nuestra salida no es ya un punto fijo del canonicalizador del bot, los dos
+ * hashes no coinciden nunca y cada nueva versión del manifest reindexa
+ * documentos que no han cambiado.
  *
- * What follows is a deliberately INDEPENDENT transcription of
- * bot/knowledge.py::canonicalize_doc_text. It must not import our own
- * normalizeCanonicalText, or the test would only be comparing that function
- * against itself. The stripping is written as a code-point scan rather than a
- * regex so that a typo on our side cannot be mirrored here.
+ * Lo que sigue es una transcripción deliberadamente INDEPENDIENTE de
+ * bot/knowledge.py::canonicalize_doc_text. No debe importar nuestro propio
+ * normalizeCanonicalText, o el test solo estaría comparando esa función
+ * consigo misma. El recorte se escribe como un recorrido de code points en vez
+ * de una regex para que una errata de nuestro lado no pueda replicarse aquí.
  */
 
-// The 29 code points for which Python's str.isspace() is True. U+FEFF is not
-// among them, and U+001C..U+001F are.
+// Los 29 code points para los que str.isspace() de Python es True. U+FEFF no
+// está entre ellos, y U+001C..U+001F sí.
 const PYTHON_SPACE = new Set([
   0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x85, 0xa0, 0x1680, 0x2000, 0x2001,
   0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200a, 0x2028, 0x2029, 0x202f,
   0x205f, 0x3000,
 ]);
 
-/** Python's str.strip() with no argument. */
+/** El str.strip() de Python sin argumento. */
 function pyStrip(s: string): string {
   let start = 0;
   let end = s.length;
@@ -73,11 +73,11 @@ const corpus: Array<{ label: string; body: string }> = [
 ];
 
 /**
- * The API reference no longer goes through mdxToText: it is generated from the
- * spec. It still travels the same way (/api/docs/api.md) and is re-canonicalised
- * by the same bot, so it has to satisfy exactly the same properties. Without
- * this, the manifest hash and the one the bot computes would never agree and it
- * would re-index the whole reference on every version.
+ * La referencia de la API ya no pasa por mdxToText: se genera desde la spec.
+ * Sigue viajando por el mismo camino (/api/docs/api.md) y la vuelve a
+ * canonicalizar el mismo bot, así que tiene que cumplir exactamente las mismas
+ * propiedades. Sin esto, el hash del manifest y el que calcula el bot no
+ * coincidirían nunca y reindexaría toda la referencia en cada versión.
  */
 describe('openapiToText output is a fixed point of the bot canonicaliser', () => {
   const out = getApiDocText(DEFAULT_RATE_LIMITS);
@@ -101,21 +101,21 @@ describe('openapiToText output is a fixed point of the bot canonicaliser', () =>
 
 describe('mdxToText output is a fixed point of the bot canonicaliser', () => {
   for (const { label, body } of corpus) {
-    // The happy path documented in canonicalize_doc_text's docstring.
+    // El camino feliz documentado en el docstring de canonicalize_doc_text.
     it(`${label}: canonicalize(mdxToText(x)) === mdxToText(x)`, async () => {
       const out = await mdxToText(body);
       expect(canonicalizeDocText(out, { stripFrontmatter: false })).toBe(out);
     });
 
-    // What docs_client.py actually calls on a fetched body.
+    // Lo que docs_client.py llama de verdad sobre un cuerpo descargado.
     it(`${label}: stable under strip_frontmatter=True too`, async () => {
       const out = await mdxToText(body);
       expect(canonicalizeDocText(out, { stripFrontmatter: true })).toBe(out);
     });
 
-    // rule: '-' in the stringifier means a thematic break serialises to `---`.
-    // A canonical body opening with one would let the bot's frontmatter regex
-    // eat everything up to the next `---`.
+    // rule: '-' en el stringifier hace que un thematic break serialice a `---`.
+    // Un cuerpo canónico que empiece por uno dejaría que la regex de frontmatter
+    // del bot se comiera todo hasta el siguiente `---`.
     it(`${label}: canonical text does not open with a frontmatter-shaped fence`, async () => {
       const out = await mdxToText(body);
       expect(out.startsWith('---')).toBe(false);

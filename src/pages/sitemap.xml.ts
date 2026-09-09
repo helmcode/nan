@@ -75,10 +75,10 @@ export const GET: APIRoute = async () => {
   }
 
   /*
-   * The guides now exist in both languages, so each one is listed twice with
-   * its alternates. The Spanish copies are not all translated yet, which is a
-   * content matter: the URL exists and answers 200, and the page itself says
-   * so when it is still showing English.
+   * Las guías existen ya en los dos idiomas, así que cada una se lista dos
+   * veces con sus alternates. No todas las copias en español están traducidas
+   * aún, que es un asunto de contenido: la URL existe y responde 200, y la
+   * propia página lo dice cuando todavía enseña el inglés.
    */
   const docs = await getCollection('docs');
   for (const doc of docs) {
@@ -92,11 +92,11 @@ export const GET: APIRoute = async () => {
   }
 
   /*
-   * The API reference is listed separately because it no longer comes from the
-   * collection: Scalar serves it from the spec. And it does carry alternates,
-   * because it is the only page under /docs that exists in both languages: the
-   * spec stays in English, but Scalar's chrome and labels are translated and
-   * /es/docs/api is a real URL we want indexed as such.
+   * La referencia de la API se lista aparte porque ya no sale de la
+   * colección: Scalar la sirve desde la spec. Y sí lleva alternates, porque
+   * es la única página bajo /docs que existe en los dos idiomas: la spec se
+   * queda en inglés, pero el chrome y las etiquetas de Scalar están traducidos
+   * y /es/docs/api es una URL real que queremos indexada como tal.
    */
   const apiAlternates = LOCALES.map((lang) => ({
     lang,

@@ -6,13 +6,14 @@ import {
 } from '../../lib/communitySignup';
 
 /**
- * resolveSignupResponse is the pure response classifier the
- * CommunitySignupForm island uses to turn a fetch result into a UI state. It
- * used to live inline in the component (untestable without a DOM); it was
- * extracted so every error path is fixed here.
+ * resolveSignupResponse es el clasificador puro de respuestas que la isla
+ * CommunitySignupForm usa para convertir el resultado de un fetch en un estado
+ * de UI. Antes vivía inline en el componente (imposible de testear sin DOM); se
+ * extrajo para que cada camino de error quede fijado aquí.
  *
- * The form's other branch — the fetch throwing — is handled by the caller as
- * errorNetwork before this function is ever called, so it has no case here.
+ * La otra rama del formulario, que el fetch lance, la gestiona quien llama
+ * como errorNetwork antes de que esta función llegue a ejecutarse, así que
+ * aquí no tiene caso.
  */
 
 const T = {
@@ -59,7 +60,7 @@ describe('resolveSignupResponse', () => {
   });
 
   it('falls back to server_error when 200 lacks ok:true', () => {
-    // A 200 without the expected shape is not a redirect — treat as server error.
+    // Un 200 sin la forma esperada no es una redirección: se trata como error de servidor.
     const out = resolveSignupResponse(200, { url: 'https://checkout.stripe.com/c/pay/abc' });
     expect(out).toEqual({ kind: 'error', code: 'server_error' });
   });
@@ -80,7 +81,7 @@ describe('errorMessageFor', () => {
     ['invalid_email', T.errorInvalidEmail],
     ['invalid_region', T.errorInvalidRegion],
     ['rate_limited', T.errorRateLimited],
-    ['already_subscribed', T.errorServer], // no dedicated message in the form -> server fallback
+    ['already_subscribed', T.errorServer], // sin mensaje propio en el formulario -> fallback de servidor
     ['server_error', T.errorServer],
   ];
 
