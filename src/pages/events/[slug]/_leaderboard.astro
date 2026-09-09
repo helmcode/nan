@@ -4,7 +4,7 @@ import '../../../styles/global.css';
 import NanPage from '../../../layouts/NanPage.astro';
 import EventHeader from '../../../components/events/EventHeader.astro';
 import { getLocale, tObj } from '../../../lib/i18n';
-import { fetchMe, fetchPublic, hasSessionCookie, type LeaderboardView, type EventInfo } from '../../../lib/events';
+import { eventSession, fetchPublic, type LeaderboardView, type EventInfo } from '../../../lib/events';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -14,16 +14,14 @@ interface Props {
 const ev = Astro.props.event;
 const slug = ev.slug;
 
-const hasSession = hasSessionCookie(Astro.request);
 // Clasificación + validación de la sesión en paralelo, como en el resto de
 // páginas: la cabecera solo muestra "mi zona" si la cookie sigue siendo válida.
-const [lbRes, meRes] = await Promise.all([
+const [lbRes, { sessionOk }] = await Promise.all([
   fetchPublic<LeaderboardView>(slug, 'leaderboard'),
-  hasSession ? fetchMe(slug, Astro.request.headers.get('cookie') ?? '') : Promise.resolve({ me: null, unauthorized: false }),
+  eventSession(Astro.request, slug),
 ]);
 const lb = lbRes ?? { rows: [], public: false };
 const rows = lb.rows ?? [];
-const sessionOk = hasSession && !meRes.unauthorized;
 // La API devuelve lista, pero un event.json editado a mano (o una versión
 // vieja del backend) puede traer null: nunca reventamos la pantalla por eso.
 const checks = ev.submission.checks ?? [];

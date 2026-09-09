@@ -7,16 +7,11 @@
 import '../../../../styles/global.css';
 import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
 import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
-import { adminFetch, adminHref, fmtAdminDate, type AdminEventView, type StaffSession } from '../../../../lib/eventsAdmin';
-import { readFlash, type FormOutcome } from '../../../../lib/eventsAdminForms';
+import { adminFetch, adminHref, fmtAdminDate, ownerKind, type AdminScreenProps } from '../../../../lib/eventsAdmin';
+import { readFlash } from '../../../../lib/eventsAdminForms';
 import { CHECK_LABELS, SUBMISSION_EDIT_FIELDS, type AdminSubmissionRow } from '../../../../lib/eventsAdminSubmissions';
 
-interface Props {
-  staff: StaffSession;
-  cookie: string;
-  view: AdminEventView;
-  outcome: FormOutcome;
-}
+type Props = AdminScreenProps;
 const { staff, cookie, view, outcome } = Astro.props;
 const ev = view.event;
 const archived = Boolean(ev.archived_at);
@@ -107,7 +102,7 @@ const prizeText = (r: AdminSubmissionRow) => {
             <tr id={r.id}>
               <td>
                 <div>{r.owner.name}</div>
-                <div class="adm-muted" style="font-size:12px">{r.owner.type === 'team' ? 'equipo' : 'participante'} · {r.owner_emails.join(', ') || '—'}</div>
+                <div class="adm-muted" style="font-size:12px">{ownerKind(r.owner.type)} · {r.owner_emails.join(', ') || '—'}</div>
               </td>
               <td>
                 <a href={`${here}?editar=${r.id}#editar`}>{r.title}</a>
@@ -169,7 +164,7 @@ const prizeText = (r: AdminSubmissionRow) => {
     <section class="adm-card" id="editar">
       <h2 class="adm-h2">Editar: {editRow.title}</h2>
       <p class="adm-muted" style="font-family:var(--font-mono);font-size:12px">
-        {editRow.owner.type === 'team' ? 'equipo' : 'participante'} {editRow.owner.name} · entregada el {fmtAdminDate(editRow.submitted_at)}
+        {ownerKind(editRow.owner.type)} {editRow.owner.name} · entregada el {fmtAdminDate(editRow.submitted_at)}
         {editRow.withdrawn_at ? ` · retirada el ${fmtAdminDate(editRow.withdrawn_at)}` : ''} · <code>{editRow.id}</code>
       </p>
       <form method="post">

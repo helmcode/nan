@@ -1,4 +1,5 @@
 import { apiBase, cookieHeaderHasSession, fmtUTC, safeSegments, ssrHeaders, type Windows } from './events';
+import type { FormOutcome } from './eventsAdminForms';
 
 /**
  * Panel de administración de eventos (SPEC v3 §8): guardia SSR de staff y
@@ -108,6 +109,17 @@ export interface AdminEventView {
   counts: { registered: number; reserve: number; withdrawn: number; teams: number; submissions: number; votes: number };
   warnings: string[];
 }
+
+/** Props que reciben los seis cuerpos del panel de un evento (`admin/[slug]/_*.astro`). */
+export interface AdminScreenProps {
+  staff: StaffSession;
+  cookie: string;
+  view: AdminEventView;
+  outcome: FormOutcome;
+}
+
+/** Tipo de dueño de una entrega o un voto, para mostrarlo en el panel. */
+export const ownerKind = (t: string) => (t === 'team' ? 'equipo' : 'participante');
 
 /** Fila de `GET /admin/events` (API.md §5). */
 export interface AdminEventSummary {

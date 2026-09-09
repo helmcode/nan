@@ -7,20 +7,15 @@
 import '../../../../styles/global.css';
 import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
 import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
-import { adminFetch, adminHref, fmtAdminDate, type AdminEventView, type StaffSession } from '../../../../lib/eventsAdmin';
-import { readFlash, type FormOutcome } from '../../../../lib/eventsAdminForms';
+import { adminFetch, adminHref, fmtAdminDate, type AdminScreenProps } from '../../../../lib/eventsAdmin';
+import { isoToLocal, readFlash } from '../../../../lib/eventsAdminForms';
 import {
   actorLabel, auditSearch, backupDate, fmtBytes, readAuditFilters,
   AUDIT_ACTION_GROUPS, AUDIT_DEFAULT_LIMIT, AUDIT_MAX_LIMIT,
   type AuditEntry, type BackupInfo, type RestoreResult,
 } from '../../../../lib/eventsAdminAudit';
 
-interface Props {
-  staff: StaffSession;
-  cookie: string;
-  view: AdminEventView;
-  outcome: FormOutcome;
-}
+type Props = AdminScreenProps;
 const { staff, cookie, view, outcome } = Astro.props;
 const ev = view.event;
 const archived = Boolean(ev.archived_at);
@@ -42,7 +37,6 @@ const json = (v: unknown) => (v === null || v === undefined ? '—' : JSON.strin
 const fileLabel = (f: string) => f.replace(/\.json$/, '');
 // Las acciones con sujeto van con el id del sujeto en `target`; las del evento llevan el slug.
 const targetText = (e: AuditEntry) => (e.target && e.target !== ev.slug ? e.target : '');
-const inputValue = (iso: string) => (iso ? iso.slice(0, 16) : '');
 ---
 
 <EventsAdmin title={`Auditoría · ${ev.name}`} staff={staff} event={{ slug: ev.slug, name: ev.name, status: ev.status }} current="auditoria">
@@ -70,7 +64,7 @@ const inputValue = (iso: string) => (iso ? iso.slice(0, 16) : '');
     <form method="get" class="adm-actions" style="align-items:end">
       <label>
         <span class="adm-label">Desde (UTC)</span>
-        <input class="adm-input" type="datetime-local" name="desde" value={inputValue(filters.since)} />
+        <input class="adm-input" type="datetime-local" name="desde" value={isoToLocal(filters.since)} />
       </label>
       <label>
         <span class="adm-label">Acción</span>

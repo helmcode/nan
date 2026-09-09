@@ -326,6 +326,16 @@ export async function fetchMe(slug: string, cookie: string): Promise<{ me: MeDat
   }
 }
 
+/**
+ * Sesión del visitante en la landing de un evento: `me` si hay cookie y el
+ * backend la acepta; `sessionOk` es false sin cookie o con cookie caducada.
+ */
+export async function eventSession(request: Request, slug: string): Promise<{ me: MeData | null; sessionOk: boolean }> {
+  if (!hasSessionCookie(request)) return { me: null, sessionOk: false };
+  const { me, unauthorized } = await fetchMe(slug, request.headers.get('cookie') ?? '');
+  return { me, sessionOk: !unauthorized };
+}
+
 /** Recurso público de un evento (`submissions`, `leaderboard`). */
 export async function fetchPublic<T>(slug: string, resource: string): Promise<T | null> {
   if (!SAFE_SEGMENT.test(slug) || !SAFE_SEGMENT.test(resource)) return null;

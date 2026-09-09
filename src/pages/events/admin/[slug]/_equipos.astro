@@ -6,17 +6,12 @@
 import '../../../../styles/global.css';
 import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
 import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
-import { adminFetch, adminHref, type AdminEventView, type StaffSession } from '../../../../lib/eventsAdmin';
-import { readFlash, warningLabel, type FormOutcome } from '../../../../lib/eventsAdminForms';
+import { adminFetch, adminHref, type AdminScreenProps } from '../../../../lib/eventsAdmin';
+import { readFlash, warningLabel } from '../../../../lib/eventsAdminForms';
 import { adminOptionLabel, participantProfile, type AdminParticipantRow } from '../../../../lib/eventsAdminParticipants';
 import { NO_TEAM, TEAM_ORIGIN_LABELS, type AdminTeamRow, type GenerateReport } from '../../../../lib/eventsAdminTeams';
 
-interface Props {
-  staff: StaffSession;
-  cookie: string;
-  view: AdminEventView;
-  outcome: FormOutcome;
-}
+type Props = AdminScreenProps;
 const { staff, cookie, view, outcome } = Astro.props;
 const ev = view.event;
 const archived = Boolean(ev.archived_at);

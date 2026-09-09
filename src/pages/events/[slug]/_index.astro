@@ -8,7 +8,7 @@ import RegisterForm, { type FormStrings } from '../../../components/events/Regis
 import LoginForm, { type LoginStrings } from '../../../components/events/LoginForm.tsx';
 import RegistrationBar from '../../../components/events/RegistrationBar.astro';
 import { getLocale, t, tObj, withLang } from '../../../lib/i18n';
-import { fetchMe, fmtDate, fmtRange, hasSessionCookie, type EventInfo } from '../../../lib/events';
+import { eventSession, fmtDate, fmtRange, type EventInfo } from '../../../lib/events';
 import { eventCalendarPath, googleEventURL } from '../../../lib/eventsCalendar';
 
 const locale = getLocale(Astro.url);
@@ -19,12 +19,8 @@ interface Props {
 const ev = Astro.props.event;
 const slug = ev.slug;
 
-// Sesión: /me solo si hay cookie. Si el backend devuelve 401, la sesión caducó.
-const hasSession = hasSessionCookie(Astro.request);
-const { me, unauthorized } = hasSession
-  ? await fetchMe(slug, Astro.request.headers.get('cookie') ?? '')
-  : { me: null, unauthorized: false };
-const sessionOk = hasSession && !unauthorized;
+// Sesión: /me solo si hay cookie; si el backend devuelve 401, la sesión caducó.
+const { me, sessionOk } = await eventSession(Astro.request, slug);
 const participant = me?.participant ?? null;
 const registered = !!participant && participant.status !== 'withdrawn';
 const hasSubmission = !!me?.submission;

@@ -7,15 +7,10 @@ import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
 import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
 import EventForm from '../../../../components/events/admin/EventForm.astro';
 import StateControl from '../../../../components/events/admin/StateControl.astro';
-import { adminHref, fmtAdminDate, PHASE_LABELS, type AdminEventView, type StaffSession } from '../../../../lib/eventsAdmin';
-import { eventToForm, readFlash, warningLabel, type FormOutcome } from '../../../../lib/eventsAdminForms';
+import { adminHref, fmtAdminDate, PHASE_LABELS, type AdminScreenProps } from '../../../../lib/eventsAdmin';
+import { eventToForm, readFlash, warningLabel } from '../../../../lib/eventsAdminForms';
 
-interface Props {
-  staff: StaffSession;
-  cookie: string;
-  view: AdminEventView;
-  outcome: FormOutcome;
-}
+type Props = AdminScreenProps;
 const { staff, view, outcome } = Astro.props;
 const ev = view.event;
 const archived = Boolean(ev.archived_at);

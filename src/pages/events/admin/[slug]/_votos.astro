@@ -7,16 +7,11 @@
 import '../../../../styles/global.css';
 import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
 import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
-import { adminFetch, adminHref, fmtAdminDate, STATUS_LABELS, type AdminEventView, type StaffSession } from '../../../../lib/eventsAdmin';
-import { readFlash, type FormOutcome } from '../../../../lib/eventsAdminForms';
+import { adminFetch, adminHref, fmtAdminDate, ownerKind, STATUS_LABELS, type AdminScreenProps } from '../../../../lib/eventsAdmin';
+import { readFlash } from '../../../../lib/eventsAdminForms';
 import { voteStats, type AdminVoteRow, type LeaderboardView } from '../../../../lib/eventsAdminVotes';
 
-interface Props {
-  staff: StaffSession;
-  cookie: string;
-  view: AdminEventView;
-  outcome: FormOutcome;
-}
+type Props = AdminScreenProps;
 const { staff, cookie, view, outcome } = Astro.props;
 const ev = view.event;
 const archived = Boolean(ev.archived_at);
@@ -44,7 +39,6 @@ const previewVerb = outcome.action === 'close_preview' ? 'close' : 'open';
 const previewBoard = previewVerb === 'close' ? (preview?.data as LeaderboardView | null) : null;
 
 const voteState = (v: AdminVoteRow) => (!v.owner ? 'entrega eliminada' : v.withdrawn ? 'entrega retirada' : 'cuenta');
-const ownerKind = (t: string) => (t === 'team' ? 'equipo' : 'participante');
 const num = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
 ---
 

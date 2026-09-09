@@ -6,7 +6,7 @@ import EventHeader from '../../../components/events/EventHeader.astro';
 import ReassignForm from '../../../components/events/ReassignForm.tsx';
 import LoginForm, { type LoginStrings } from '../../../components/events/LoginForm.tsx';
 import { getLocale, optionLabel, t, tObj, withLang } from '../../../lib/i18n';
-import { fetchMe, hasSessionCookie, type EventInfo } from '../../../lib/events';
+import { eventSession, type EventInfo } from '../../../lib/events';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -16,11 +16,7 @@ interface Props {
 const ev = Astro.props.event;
 const slug = ev.slug;
 
-const hasSession = hasSessionCookie(Astro.request);
-const { me, unauthorized } = hasSession
-  ? await fetchMe(slug, Astro.request.headers.get('cookie') ?? '')
-  : { me: null, unauthorized: false };
-const sessionOk = hasSession && !unauthorized;
+const { me, sessionOk } = await eventSession(Astro.request, slug);
 const participant = me?.participant ?? null;
 const team = me?.team ?? null;
 const submission = me?.submission ?? null;
