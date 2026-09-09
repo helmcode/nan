@@ -54,7 +54,7 @@ const windows = [
       {archived && <div><dt>Archivado</dt><dd>{fmtAdminDate(ev.archived_at)}</dd></div>}
     </dl>
     <div class="adm-actions" style="gap:.5rem">
-      {windows.map((w) => <span class:list={['adm-pill', { 'adm-pill-warn': false }]}>{w.label}: {w.open ? 'abierta' : 'cerrada'}</span>)}
+      {windows.map((w) => <span class:list={['adm-pill', { 'adm-pill-warn': !w.open }]}>{w.label}: {w.open ? 'abierta' : 'cerrada'}</span>)}
     </div>
     {view.warnings.length > 0 && (
       <div class="adm-msg adm-msg-warn">
