@@ -1,5 +1,5 @@
 import { adminFetch } from './eventsAdmin';
-import { doneHref, formValues, on, readForm, str, type FormOutcome } from './eventsAdminForms';
+import { badForm, beginForm, on, SAFE_ID, str, type FormOutcome } from './eventsAdminForms';
 import { optionLabel, tObj } from './i18n';
 
 /**
@@ -123,8 +123,6 @@ export function participantsSearch(f: ParticipantFilters): string {
   return s ? `?${s}` : '';
 }
 
-const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
-
 /**
  * `/events/admin/{slug}/participantes`: procesa el POST según `action`
  * (`add`, `update`, `withdraw`, `reinstate`, `promote`, `demote`,
@@ -133,12 +131,9 @@ const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
  * vuelven a pintar la página con la respuesta.
  */
 export async function handleParticipantsForm(request: Request, cookie: string, slug: string): Promise<FormOutcome> {
-  const { fd, forbidden } = await readForm(request);
-  if (forbidden) return { forbidden: true };
-  if (!fd) return {};
-  const values = formValues(fd);
-  const action = str(values, 'action');
-  const back = (ok: string, warnings: string[]) => doneHref(slug, ok, warnings, 'participantes');
+  const f = await beginForm(request, { slug, screen: 'participantes' });
+  if (f.done) return f.done;
+  const { fd, values, action, back } = f;
 
   if (action === 'add') {
     const body = {
@@ -159,7 +154,7 @@ export async function handleParticipantsForm(request: Request, cookie: string, s
     const file = fd.get('csv');
     const csv = file instanceof File ? await file.text() : typeof file === 'string' ? file : '';
     if (!csv.trim()) {
-      return { action, values, result: { ok: false, status: 400, data: null, error: 'csv_invalid', message: 'Falta el fichero CSV.', warnings: [], dryRun: false, fields: ['csv'] } };
+      return badForm(action, values, ['csv'], 'Falta el fichero CSV.', 'csv_invalid');
     }
     const result = await adminFetch<ImportReport>(cookie, `${slug}/admin/participants/import`, {
       method: 'POST',
@@ -172,7 +167,7 @@ export async function handleParticipantsForm(request: Request, cookie: string, s
 
   const id = str(values, 'id');
   if (!SAFE_ID.test(id)) {
-    return { action, values, result: { ok: false, status: 400, data: null, error: 'validation_failed', message: 'Falta el participante.', warnings: [], dryRun: false, fields: ['id'] } };
+    return badForm(action, values, ['id'], 'Falta el participante.');
   }
 
   if (action === 'update') {
@@ -196,5 +191,5 @@ export async function handleParticipantsForm(request: Request, cookie: string, s
     return { action, result, values };
   }
 
-  return { action, values, result: { ok: false, status: 400, data: null, error: 'validation_failed', message: 'Acción desconocida.', warnings: [], dryRun: false, fields: ['action'] } };
+  return badForm(action, values, ['action'], 'Acción desconocida.');
 }

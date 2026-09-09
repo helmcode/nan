@@ -1,5 +1,5 @@
 import { adminFetch } from './eventsAdmin';
-import { doneHref, formValues, on, readForm, str, type FormOutcome } from './eventsAdminForms';
+import { badForm, beginForm, on, SAFE_ID, str, type FormOutcome } from './eventsAdminForms';
 
 /**
  * Pantalla de equipos del panel (SPEC v3 §6.3 y §8, W-06): tablero con una
@@ -51,12 +51,6 @@ export const TEAM_ORIGIN_LABELS: Record<string, string> = {
 /** Valor del destino "sin equipo" en el selector de mover. */
 export const NO_TEAM = 'none';
 
-const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
-
-function bad(action: string, values: FormOutcome['values'], field: string, message: string): FormOutcome {
-  return { action, values, result: { ok: false, status: 400, data: null, error: 'validation_failed', message, warnings: [], dryRun: false, fields: [field] } };
-}
-
 /**
  * `/events/admin/{slug}/equipos`: procesa el POST según `action`
  * (`create`, `rename`, `delete`, `move`, `generate_preview`, `generate`).
@@ -64,12 +58,9 @@ function bad(action: string, values: FormOutcome['values'], field: string, messa
  * del suyo, que en ese caso también exige `from`).
  */
 export async function handleTeamsForm(request: Request, cookie: string, slug: string): Promise<FormOutcome> {
-  const { fd, forbidden } = await readForm(request);
-  if (forbidden) return { forbidden: true };
-  if (!fd) return {};
-  const values = formValues(fd);
-  const action = str(values, 'action');
-  const back = (ok: string, warnings: string[]) => doneHref(slug, ok, warnings, 'equipos');
+  const f = await beginForm(request, { slug, screen: 'equipos' });
+  if (f.done) return f.done;
+  const { fd, values, action, back } = f;
 
   if (action === 'create') {
     const memberIds = fd.getAll('member_ids').map((m) => String(m).trim()).filter((m) => SAFE_ID.test(m));
@@ -88,22 +79,22 @@ export async function handleTeamsForm(request: Request, cookie: string, slug: st
   if (action === 'move') {
     const pid = str(values, 'participant_id');
     const to = str(values, 'to');
-    if (!SAFE_ID.test(pid)) return bad(action, values, 'participant_id', 'Falta el participante.');
+    if (!SAFE_ID.test(pid)) return badForm(action, values, ['participant_id'], 'Falta el participante.');
     if (to === NO_TEAM) {
       const from = str(values, 'from');
-      if (!SAFE_ID.test(from)) return bad(action, values, 'from', 'Falta el equipo de origen.');
+      if (!SAFE_ID.test(from)) return badForm(action, values, ['from'], 'Falta el equipo de origen.');
       const result = await adminFetch(cookie, `${slug}/admin/teams/${from}/members/${pid}`, { method: 'DELETE' });
       if (result.ok) return { redirect: back('quitado', result.warnings) };
       return { action, result, values };
     }
-    if (!SAFE_ID.test(to)) return bad(action, values, 'to', 'Falta el equipo de destino.');
+    if (!SAFE_ID.test(to)) return badForm(action, values, ['to'], 'Falta el equipo de destino.');
     const result = await adminFetch(cookie, `${slug}/admin/teams/${to}/members`, { method: 'POST', body: { participant_id: pid } });
     if (result.ok) return { redirect: back('movido', result.warnings) };
     return { action, result, values };
   }
 
   const id = str(values, 'id');
-  if (!SAFE_ID.test(id)) return bad(action, values, 'id', 'Falta el equipo.');
+  if (!SAFE_ID.test(id)) return badForm(action, values, ['id'], 'Falta el equipo.');
 
   if (action === 'rename') {
     const result = await adminFetch(cookie, `${slug}/admin/teams/${id}`, { method: 'PUT', body: { name: str(values, 'name') } });
@@ -117,5 +108,5 @@ export async function handleTeamsForm(request: Request, cookie: string, slug: st
     return { action, result, values };
   }
 
-  return bad(action, values, 'action', 'Acción desconocida.');
+  return badForm(action, values, ['action'], 'Acción desconocida.');
 }

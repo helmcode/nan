@@ -1,6 +1,6 @@
 import type { Check, Owner } from './events';
 import { adminFetch } from './eventsAdmin';
-import { doneHref, formValues, readForm, str, type FormOutcome } from './eventsAdminForms';
+import { badForm, beginForm, SAFE_CHECK, SAFE_ID, str, type FormOutcome } from './eventsAdminForms';
 
 /**
  * Pantalla de entregas del panel (SPEC v3 §6.4 y §8, W-07): listado con
@@ -40,11 +40,7 @@ export interface AdminSubmissionRow {
   owner_emails: string[];
 }
 
-export const CHECK_LABELS: Record<string, string> = {
-  url_live: 'URL viva',
-  in_nan_space: 'en un space de NaN',
-  repo_public: 'repositorio público',
-};
+export { CHECK_LABELS } from './eventsAdminForms';
 
 /** Campos editables de una entrega, en el orden del formulario. */
 export const SUBMISSION_EDIT_FIELDS = [
@@ -57,13 +53,6 @@ export const SUBMISSION_EDIT_FIELDS = [
   { key: 'video_url', label: 'URL de vídeo', kind: 'url' },
 ] as const;
 
-const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
-const SAFE_CHECK = /^[a-z_]{1,32}$/;
-
-function bad(action: string, values: FormOutcome['values'], field: string, message: string): FormOutcome {
-  return { action, values, result: { ok: false, status: 400, data: null, error: 'validation_failed', message, warnings: [], dryRun: false, fields: [field] } };
-}
-
 /**
  * `/events/admin/{slug}/entregas`: procesa el POST según `action`
  * (`update`, `withdraw`, `restore`, `check`, `prize`, `verify`). Todas menos
@@ -72,12 +61,9 @@ function bad(action: string, values: FormOutcome['values'], field: string, messa
  * admiten `reason`.
  */
 export async function handleSubmissionsForm(request: Request, cookie: string, slug: string): Promise<FormOutcome> {
-  const { fd, forbidden } = await readForm(request);
-  if (forbidden) return { forbidden: true };
-  if (!fd) return {};
-  const values = formValues(fd);
-  const action = str(values, 'action');
-  const back = (ok: string, warnings: string[]) => doneHref(slug, ok, warnings, 'entregas');
+  const f = await beginForm(request, { slug, screen: 'entregas' });
+  if (f.done) return f.done;
+  const { fd, values, action, back } = f;
 
   if (action === 'verify') {
     const result = await adminFetch<{ verified?: number }>(cookie, `${slug}/admin/verify`, { method: 'POST', body: {} });
@@ -86,7 +72,7 @@ export async function handleSubmissionsForm(request: Request, cookie: string, sl
   }
 
   const id = str(values, 'id');
-  if (!SAFE_ID.test(id)) return bad(action, values, 'id', 'Falta la entrega.');
+  if (!SAFE_ID.test(id)) return badForm(action, values, ['id'], 'Falta la entrega.');
   const base = `${slug}/admin/submissions/${id}`;
 
   if (action === 'update') {
@@ -106,10 +92,10 @@ export async function handleSubmissionsForm(request: Request, cookie: string, sl
 
   if (action === 'check') {
     const name = str(values, 'name');
-    if (!SAFE_CHECK.test(name)) return bad(action, values, 'name', 'Falta el check.');
+    if (!SAFE_CHECK.test(name)) return badForm(action, values, ['name'], 'Falta el check.');
     const reset = str(values, 'reset') !== '';
     const pass = str(values, 'pass');
-    if (!reset && pass !== 'true' && pass !== 'false') return bad(action, values, 'pass', 'Indica si el check pasa o no.');
+    if (!reset && pass !== 'true' && pass !== 'false') return badForm(action, values, ['pass'], 'Indica si el check pasa o no.');
     const body = reset ? { reset: true } : { pass: pass === 'true', reason: str(values, 'reason') };
     const result = await adminFetch(cookie, `${base}/checks/${name}`, { method: 'PUT', body });
     if (result.ok) return { redirect: back(reset ? 'check_reiniciado' : 'check_forzado', result.warnings) };
@@ -119,12 +105,12 @@ export async function handleSubmissionsForm(request: Request, cookie: string, sl
   if (action === 'prize') {
     const reset = str(values, 'reset') !== '';
     const eligible = str(values, 'eligible');
-    if (!reset && eligible !== 'true' && eligible !== 'false') return bad(action, values, 'eligible', 'Indica si opta al premio o no.');
+    if (!reset && eligible !== 'true' && eligible !== 'false') return badForm(action, values, ['eligible'], 'Indica si opta al premio o no.');
     const body = reset ? { reset: true } : { eligible: eligible === 'true', reason: str(values, 'reason') };
     const result = await adminFetch(cookie, `${base}/prize-eligibility`, { method: 'PUT', body });
     if (result.ok) return { redirect: back(reset ? 'premio_automatico' : 'premio', result.warnings) };
     return { action, result, values };
   }
 
-  return bad(action, values, 'action', 'Acción desconocida.');
+  return badForm(action, values, ['action'], 'Acción desconocida.');
 }

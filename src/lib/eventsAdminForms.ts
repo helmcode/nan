@@ -33,14 +33,29 @@ export const SUBMISSION_FIELDS = [
   { key: 'video_url', label: 'URL de vídeo' },
 ] as const;
 
-export const CHECKS = [
-  { value: 'url_live', label: 'URL viva (puntúa)' },
-  { value: 'in_nan_space', label: 'Desplegado en un space de NaN (puntúa)' },
-  { value: 'repo_public', label: 'Repositorio público (no puntúa; puede condicionar el premio)' },
+/** Los checks que conoce el panel: clave, etiqueta y si suman puntos automáticos. */
+export const CHECK_DEFS = [
+  { value: 'url_live', label: 'URL viva', scores: true },
+  { value: 'in_nan_space', label: 'Desplegado en un space de NaN', scores: true },
+  { value: 'repo_public', label: 'Repositorio público', scores: false },
 ] as const;
 
+/** Etiqueta corta por clave (la pantalla de entregas). */
+export const CHECK_LABELS: Record<string, string> = Object.fromEntries(CHECK_DEFS.map((c) => [c.value, c.label]));
+
+/** Opciones del formulario de configuración, con la nota de si puntúan. */
+export const CHECKS = CHECK_DEFS.map((c) => ({
+  value: c.value,
+  label: `${c.label} (${c.scores ? 'puntúa' : 'no puntúa; puede condicionar el premio'})`,
+}));
+
 /** Checks que suman puntos automáticos: `voting.auto_max` se deriva de ellos (el backend lo exige). */
-const SCORING_CHECKS = ['url_live', 'in_nan_space'];
+const SCORING_CHECKS: string[] = CHECK_DEFS.filter((c) => c.scores).map((c) => c.value);
+
+/** Identificador que emite el backend (participante, equipo, entrega): va en la URL sin codificar. */
+export const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
+/** Nombre de un check (`url_live`, `in_nan_space`, `repo_public`…). */
+export const SAFE_CHECK = /^[a-z_]{1,32}$/;
 
 export const DATE_FIELDS = [
   { key: 'registration_open', label: 'Apertura de inscripción' },
@@ -404,6 +419,36 @@ export async function readForm(request: Request): Promise<{ fd: FormData | null;
   }
 }
 
+/**
+ * Arranque común de los formularios del panel: lee el POST (o devuelve en
+ * `done` el resultado ya decidido si no es POST o viene de otro origen),
+ * saca los valores y la acción, y prepara la URL de vuelta de esa pantalla.
+ */
+export async function beginForm(request: Request, opts: { slug?: string; screen?: AdminScreen; defaultAction?: string } = {}): Promise<
+  | { done: FormOutcome }
+  | { done?: undefined; fd: FormData; values: EventFormValues; action: string; back: (ok: string, warnings?: string[]) => string }
+> {
+  const { fd, forbidden } = await readForm(request);
+  if (forbidden) return { done: { forbidden: true } };
+  if (!fd) return { done: {} };
+  const values = formValues(fd);
+  return {
+    fd,
+    values,
+    action: str(values, 'action') || (opts.defaultAction ?? ''),
+    back: (ok, warnings = []) => doneHref(opts.slug ?? '', ok, warnings, opts.screen),
+  };
+}
+
+/**
+ * Resultado de un formulario rechazado antes de llamar al backend (falta un
+ * campo, acción desconocida…), con la misma forma que un 400 del backend
+ * para que la pantalla lo pinte igual.
+ */
+export function badForm(action: string, values: EventFormValues | undefined, fields: string[], message: string, error = 'validation_failed'): FormOutcome {
+  return { action, values, result: { ok: false, status: 400, data: null, error, message, warnings: [], dryRun: false, fields } };
+}
+
 /** URL de vuelta tras un cambio: `/events/admin/{slug}[/pantalla]?ok=…&warn=a,b`. */
 export function doneHref(slug: string, ok: string, warnings: string[] = [], screen: AdminScreen = 'evento'): string {
   const q = new URLSearchParams({ ok });
@@ -433,11 +478,9 @@ export function readFlash(url: URL, outcome?: FormOutcome): { ok: string | null;
 
 /** `/events/admin/nuevo`: crear (o simular) un evento. */
 export async function handleNewEventForm(request: Request, cookie: string): Promise<FormOutcome> {
-  const { fd, forbidden } = await readForm(request);
-  if (forbidden) return { forbidden: true };
-  if (!fd) return {};
-  const values = formValues(fd);
-  const action = str(values, 'action') || 'create';
+  const f = await beginForm(request, { defaultAction: 'create' });
+  if (f.done) return f.done;
+  const { values, action } = f;
   const body = formToEventBody(values);
   if (action === 'simulate') body.dry_run = true;
   const result = await adminFetch<{ event?: { slug?: string } }>(cookie, 'admin/events', { method: 'POST', body });
@@ -449,11 +492,9 @@ export async function handleNewEventForm(request: Request, cookie: string): Prom
 
 /** `/events/admin/{slug}`: guardar, simular, clonar, archivar, desarchivar, cambiar de estado (con previsualización) o forzar el sweep. */
 export async function handleEventForm(request: Request, cookie: string, slug: string): Promise<FormOutcome> {
-  const { fd, forbidden } = await readForm(request);
-  if (forbidden) return { forbidden: true };
-  if (!fd) return {};
-  const values = formValues(fd);
-  const action = str(values, 'action') || 'save';
+  const f = await beginForm(request, { defaultAction: 'save' });
+  if (f.done) return f.done;
+  const { values, action } = f;
 
   if (action === 'clone') {
     const to = str(values, 'clone_slug');

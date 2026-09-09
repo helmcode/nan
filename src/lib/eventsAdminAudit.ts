@@ -1,5 +1,5 @@
 import { adminFetch } from './eventsAdmin';
-import { doneHref, formValues, readForm, str, type FormOutcome } from './eventsAdminForms';
+import { badForm, beginForm, str, type FormOutcome } from './eventsAdminForms';
 
 /**
  * Pantalla de auditoría y backups del panel (SPEC v3 §6.6, §6.7 y §8, W-09).
@@ -129,25 +129,23 @@ export function backupDate(timestamp: string): string {
  * queda en la página; la restauración real redirige con el flash.
  */
 export async function handleAuditForm(request: Request, cookie: string, slug: string): Promise<FormOutcome> {
-  const { fd, forbidden } = await readForm(request);
-  if (forbidden) return { forbidden: true };
-  if (!fd) return {};
-  const values = formValues(fd);
-  const action = str(values, 'action');
+  const f = await beginForm(request, { slug, screen: 'auditoria' });
+  if (f.done) return f.done;
+  const { values, action, back } = f;
   const m = /^restore(_preview)?$/.exec(action);
   if (!m) {
-    return { action, values, result: { ok: false, status: 400, data: null, error: 'validation_failed', message: 'Acción desconocida.', warnings: [], dryRun: false, fields: ['action'] } };
+    return badForm(action, values, ['action'], 'Acción desconocida.');
   }
   const preview = Boolean(m[1]);
   const file = str(values, 'file');
   const timestamp = str(values, 'timestamp');
   if (!file || !timestamp) {
-    return { action, values, result: { ok: false, status: 400, data: null, error: 'validation_failed', message: 'Falta el backup a restaurar.', warnings: [], dryRun: false, fields: [!file ? 'file' : 'timestamp'] } };
+    return badForm(action, values, [!file ? 'file' : 'timestamp'], 'Falta el backup a restaurar.');
   }
   const result = await adminFetch<RestoreResult>(cookie, `${slug}/admin/backups/restore`, {
     method: 'POST',
     body: { file, timestamp, dry_run: preview },
   });
-  if (result.ok && !preview) return { redirect: doneHref(slug, 'restaurado', result.warnings, 'auditoria') };
+  if (result.ok && !preview) return { redirect: back('restaurado', result.warnings) };
   return { action, result, values };
 }

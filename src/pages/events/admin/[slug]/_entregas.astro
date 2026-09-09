@@ -228,7 +228,7 @@ const prizeText = (r: AdminSubmissionRow) => {
       <h3 class="adm-label" style="margin-top:1.5rem">Premio</h3>
       <p class="adm-muted" style="font-size:12px">
         Ahora: <strong>{prizeText(editRow)}</strong>{editRow.prize_reason ? ` · ${editRow.prize_reason}` : ''}.
-        {prizeRequires.length ? ` En automático exige ${prizeRequires.map(checkLabel).join(' y ')}.` : ' En automático todas optan.'}
+        {prizeRequires.length ? ` En automático exige: ${prizeRequires.map(checkLabel).join(', ')}.` : ' En automático todas optan.'}
       </p>
       <form method="post" class="adm-inline">
         <input type="hidden" name="action" value="prize" />

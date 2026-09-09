@@ -1,6 +1,6 @@
 import type { LeaderboardRow, LeaderboardView, Owner } from './events';
 import { adminFetch } from './eventsAdmin';
-import { doneHref, formValues, readForm, str, type FormOutcome } from './eventsAdminForms';
+import { badForm, beginForm, type FormOutcome } from './eventsAdminForms';
 
 /**
  * Pantalla de votos y ranking del panel (SPEC v3 §6.5, B-23 y §8, W-08).
@@ -38,17 +38,15 @@ export function voteStats(votes: AdminVoteRow[]): { total: number; counted: numb
  * van con `?dry_run=true` y se quedan en la página; las reales redirigen.
  */
 export async function handleVotesForm(request: Request, cookie: string, slug: string): Promise<FormOutcome> {
-  const { fd, forbidden } = await readForm(request);
-  if (forbidden) return { forbidden: true };
-  if (!fd) return {};
-  const values = formValues(fd);
-  const action = str(values, 'action');
+  const f = await beginForm(request, { slug, screen: 'votos' });
+  if (f.done) return f.done;
+  const { values, action, back } = f;
   const m = /^(open|close)(_preview)?$/.exec(action);
   if (!m) {
-    return { action, values, result: { ok: false, status: 400, data: null, error: 'validation_failed', message: 'Acción desconocida.', warnings: [], dryRun: false, fields: ['action'] } };
+    return badForm(action, values, ['action'], 'Acción desconocida.');
   }
   const [, verb, preview] = m;
   const result = await adminFetch(cookie, `${slug}/admin/voting/${verb}`, { method: 'POST', search: preview ? '?dry_run=true' : '' });
-  if (result.ok && !preview) return { redirect: doneHref(slug, verb === 'open' ? 'votacion_abierta' : 'votacion_cerrada', result.warnings, 'votos') };
+  if (result.ok && !preview) return { redirect: back(verb === 'open' ? 'votacion_abierta' : 'votacion_cerrada', result.warnings) };
   return { action, result, values };
 }
