@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 // Mock de cloudflare:workers env (patrón del repo).
 vi.mock('cloudflare:workers', () => ({ env: { CLOUD_API_URL: 'https://api.test/' } }));
 
-import { adminFetch, adminHref, fetchStaffSession, resolveAdminRoute } from '../../lib/eventsAdmin';
+import { adminFetch, adminHref, fetchStaffSession, reloadAdminEventView, resolveAdminEventRoute, resolveAdminRoute } from '../../lib/eventsAdmin';
 
 const me = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 
@@ -79,6 +79,68 @@ describe('resolveAdminRoute', () => {
     expect(route.staff).toBeNull();
     expect(spy).not.toHaveBeenCalled();
     expect(rewrite).toHaveBeenCalledWith('/404');
+  });
+});
+
+describe('resolveAdminEventRoute / reloadAdminEventView', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  const staff = { role: 'staff', email: 's@nan.builders', userUUID: 'u' };
+  const ficha = { event: { slug: 'gauntlet-2026-08', name: 'Gauntlet' }, phase: 'building', windows: {}, counts: { registered: 3 }, warnings: [] };
+
+  // fetch simulado: /api/auth/me y /api/events/{slug}/admin, por URL.
+  const plataforma = (opts: { me?: unknown; meStatus?: number; admin?: unknown; adminStatus?: number }) =>
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith('/api/auth/me')) return me(opts.me ?? staff, opts.meStatus ?? 200);
+      if (url.includes('/admin')) return me(opts.admin ?? { ok: true, data: ficha }, opts.adminStatus ?? 200);
+      throw new Error(`fetch inesperado: ${url}`);
+    });
+
+  const ctx = (slug: string, cookie = 'nan_session=abc') => {
+    const rewrite = vi.fn(async (to: string) => new Response(`rewrite:${to}`, { status: 404 }));
+    return {
+      astro: { request: new Request(`https://nan.builders/events/admin/${slug}`, { headers: { cookie } }), rewrite, params: { slug } },
+      rewrite,
+    };
+  };
+
+  it('staff y evento existente → ficha, slug del backend y sin rewrite', async () => {
+    const spy = plataforma({});
+    const { astro, rewrite } = ctx('gauntlet-2026-08');
+    const route = await resolveAdminEventRoute(astro);
+    expect(route.notFound).toBeNull();
+    expect(route.view?.counts.registered).toBe(3);
+    expect(route.slug).toBe('gauntlet-2026-08');
+    expect(rewrite).not.toHaveBeenCalled();
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it('staff y evento inexistente → 404 por rewrite', async () => {
+    plataforma({ admin: { ok: false, error: 'event_not_found' }, adminStatus: 404 });
+    const { astro, rewrite } = ctx('nope');
+    const route = await resolveAdminEventRoute(astro);
+    expect(route.view).toBeNull();
+    expect(rewrite).toHaveBeenCalledWith('/404');
+    expect(route.notFound?.status).toBe(404);
+  });
+
+  it('sin staff → 404 sin pedir la ficha', async () => {
+    const spy = plataforma({ me: { role: 'member' } });
+    const { astro, rewrite } = ctx('gauntlet-2026-08');
+    const route = await resolveAdminEventRoute(astro);
+    expect(route.view).toBeNull();
+    expect(rewrite).toHaveBeenCalledWith('/404');
+    expect(spy).toHaveBeenCalledTimes(1); // solo /api/auth/me
+  });
+
+  it('reloadAdminEventView devuelve la ficha nueva, o la anterior si la recarga falla', async () => {
+    const nueva = { ...ficha, counts: { registered: 4 } };
+    plataforma({ admin: { ok: true, data: nueva } });
+    expect((await reloadAdminEventView('nan_session=abc', 'gauntlet-2026-08', ficha as never)).counts.registered).toBe(4);
+    vi.restoreAllMocks();
+    plataforma({ admin: { ok: false, error: 'server_error' }, adminStatus: 500 });
+    expect((await reloadAdminEventView('nan_session=abc', 'gauntlet-2026-08', ficha as never)).counts.registered).toBe(3);
   });
 });
 
