@@ -16,7 +16,7 @@ import {
  * were the ones that do not apply to them. These asserts pin the four numbers
  * to what the platform actually enforces:
  *
- *   context 1,000,000      cloud-api usage_quota.go modelRateLimits
+ *   context 1,048,576      cloud-api usage_quota.go modelRateLimits
  *   concurrency 5          idem, and the ratelimit hook
  *   400M per rolling 4h    ratelimit hook ROLLING_WINDOW_S / rolling budget
  *   3,000M per period      cloud-api usage_quota.go monthlyTokenCaps
@@ -25,7 +25,7 @@ import {
  * change: the failure is the point.
  */
 const GLM = {
-  contextTokens: 1_000_000,
+  contextTokens: 1_048_576,
   maxParallel: 5,
   windowHours: 4,
   windowTokens: 400_000_000,
