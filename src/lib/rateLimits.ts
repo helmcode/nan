@@ -103,9 +103,17 @@ export function formatTokens(tokens: number, lang: DocsLocale = 'en'): string {
   // side. Rounding the DISPLAY is the right layer: the published constant
   // stays equal to the backend, so the test below can keep asserting
   // equality rather than a floor.
+  //
+  // `roundingMode: 'floor'` because this page is read by people who have not
+  // paid yet, so it must never advertise MORE than the backend allows.
+  // Truncating alone is not the default: `maximumFractionDigits` ROUNDS, so
+  // 1.5M would have printed "2M". Harmless at today's 1,048,576, and the
+  // exact trap the member portal already guards against with Math.floor —
+  // the guard belonged on the more public surface too.
   const fmt = new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
     useGrouping: 'always',
     maximumFractionDigits: 0,
+    roundingMode: 'floor',
   });
   if (tokens >= 1_000_000) return `${fmt.format(tokens / 1_000_000)}M`;
   if (tokens >= 1_000) return `${fmt.format(tokens / 1_000)}K`;
