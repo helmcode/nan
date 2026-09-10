@@ -67,7 +67,11 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
   // numbers the member portal publishes.
   //
   // contextTokens mirrors the backend EXACTLY: 1,048,576, raised from 500,000
-  // on 2026-09-10 and exactly what the Novita primary serves. It renders as
+  // on 2026-09-10. It equals the Novita primary's `context_size`, which
+  // covers input AND OUTPUT together — so it is the provider's total budget,
+  // not a servable input window: a prompt at the very top leaves no room for
+  // the reply. Nothing filters for that on our side, so a caller who uses the
+  // full figure gets the provider's error on a number this page publishes. It renders as
   // "1M" because formatTokens rounds the display, which is the layer that
   // should do it — publishing a rounded 1,000,000 here would leave the site
   // 4.8% below the source it claims to mirror, and would turn the test below
