@@ -66,16 +66,17 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
   // glm5.3) and the usage hook's window budget, which is the same set of
   // numbers the member portal publishes.
   //
-  // contextTokens is the one that is NOT an exact mirror: the backend carries
-  // 1,048,576 (raised from 500,000 on 2026-09-10, and exactly what the Novita
-  // primary serves) and this publishes the rounded-down 1,000,000. Rounding
-  // DOWN is the safe direction — a member who trusts 1M can always send it —
-  // and the exact value renders as "1,049M" in es-ES, which reads as 1049
-  // million. See the note in rateLimits.test.ts.
+  // contextTokens mirrors the backend EXACTLY: 1,048,576, raised from 500,000
+  // on 2026-09-10 and exactly what the Novita primary serves. It renders as
+  // "1M" because formatTokens rounds the display, which is the layer that
+  // should do it — publishing a rounded 1,000,000 here would leave the site
+  // 4.8% below the source it claims to mirror, and would turn the test below
+  // from an equality into a floor. The equality is the mechanism: it is what
+  // makes a backend change fail here instead of shipping quietly.
   windowedModels: [
     {
       model: 'glm5.3',
-      contextTokens: 1_000_000,
+      contextTokens: 1_048_576,
       maxParallel: 5,
       windowHours: 4,
       windowTokens: 400_000_000,
@@ -96,7 +97,16 @@ export function formatTokens(tokens: number, lang: DocsLocale = 'en'): string {
   // cannot read "3,000M" next to a model card that says "3.000M".
   // `useGrouping: 'always'` because es-ES leaves four-digit numbers ungrouped,
   // which would print 3000M beside a model card that already says 3.000M.
-  const fmt = new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', { useGrouping: 'always' });
+  // `maximumFractionDigits: 0` so a window of 1,048,576 prints "1M" and not
+  // "1,049M". Without it the page shows a decimal comma (1,049M) next to a
+  // thousands dot (3.000M) in es-ES — both correct, and confusing side by
+  // side. Rounding the DISPLAY is the right layer: the published constant
+  // stays equal to the backend, so the test below can keep asserting
+  // equality rather than a floor.
+  const fmt = new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+    useGrouping: 'always',
+    maximumFractionDigits: 0,
+  });
   if (tokens >= 1_000_000) return `${fmt.format(tokens / 1_000_000)}M`;
   if (tokens >= 1_000) return `${fmt.format(tokens / 1_000)}K`;
   return String(tokens);
