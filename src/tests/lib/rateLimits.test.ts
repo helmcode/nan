@@ -16,7 +16,15 @@ import {
  * were the ones that do not apply to them. These asserts pin the four numbers
  * to what the platform actually enforces:
  *
- *   context 1,000,000      cloud-api usage_quota.go modelRateLimits
+ *   context 1,000,000      the ROUNDED-DOWN form of cloud-api's 1,048,576
+ *                          (usage_quota.go modelRateLimits). Deliberately not
+ *                          the exact value: `formatTokens` would render it
+ *                          "1,049M" in es-ES, which reads as 1049 million, and
+ *                          publishing the lower number is the safe direction —
+ *                          a member who believes 1M can always send it, while
+ *                          advertising 1.049M and enforcing less could not be
+ *                          honoured. If the backend ever drops BELOW 1,000,000
+ *                          this stops being conservative and must move.
  *   concurrency 5          idem, and the ratelimit hook
  *   400M per rolling 4h    ratelimit hook ROLLING_WINDOW_S / rolling budget
  *   3,000M per period      cloud-api usage_quota.go monthlyTokenCaps

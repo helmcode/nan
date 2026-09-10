@@ -65,6 +65,13 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
   // mirror the backend policy (cloud-api modelRateLimits + the token cap for
   // glm5.3) and the usage hook's window budget, which is the same set of
   // numbers the member portal publishes.
+  //
+  // contextTokens is the one that is NOT an exact mirror: the backend carries
+  // 1,048,576 (raised from 500,000 on 2026-09-10, and exactly what the Novita
+  // primary serves) and this publishes the rounded-down 1,000,000. Rounding
+  // DOWN is the safe direction — a member who trusts 1M can always send it —
+  // and the exact value renders as "1,049M" in es-ES, which reads as 1049
+  // million. See the note in rateLimits.test.ts.
   windowedModels: [
     {
       model: 'glm5.3',
