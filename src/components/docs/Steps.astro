@@ -1,0 +1,92 @@
+---
+/**
+ * A numbered procedure: a rail down the left, one circle per step.
+ *
+ * The steps are the `h3`s inside the slot, and the numbers come from a CSS
+ * counter rather than from the text. Written by hand, the numbers go stale the
+ * first time a step is inserted in the middle, and a guide that says "4. Apunta
+ * Claude Code" right after step 4 is the kind of error nobody reports.
+ *
+ * Everything here is presentation. The extractor in mdxToText.ts serves the
+ * children unchanged, so /api/docs keeps the same markdown headings it had
+ * before the rail existed.
+ */
+---
+
+<div class="docs-steps">
+  <slot />
+</div>
+
+<style>
+  .docs-steps {
+    counter-reset: docs-step;
+    position: relative;
+    margin: 2rem 0;
+    padding-left: 2.25rem;
+  }
+
+  /* The rail. Inset by half a marker so it runs through their centres, and
+     stopped short at the bottom so it does not dangle past the last step. */
+  .docs-steps::before {
+    content: '';
+    position: absolute;
+    left: 0.6875rem;
+    top: 0.75rem;
+    bottom: 1.5rem;
+    width: 1px;
+    background: rgb(38 38 38);
+  }
+
+  .docs-steps :global(h3) {
+    counter-increment: docs-step;
+    position: relative;
+    margin-top: 2rem;
+    font-size: 1rem;
+  }
+
+  .docs-steps :global(h3:first-child) {
+    margin-top: 0;
+  }
+
+  .docs-steps :global(h3)::before {
+    content: counter(docs-step);
+    position: absolute;
+    left: -2.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: 999px;
+    border: 1px solid rgb(139 92 246 / 0.4);
+    /* Opaque, so the rail passes behind the marker and not through it. */
+    background: #0a0a0a;
+    color: rgb(196 181 253);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  /* The anchor link the docs shell adds to headings would otherwise land on
+     top of the marker. */
+  .docs-steps :global(h3 > a) {
+    position: relative;
+  }
+
+  @media (max-width: 620px) {
+    .docs-steps {
+      padding-left: 1.75rem;
+    }
+    .docs-steps::before {
+      left: 0.5rem;
+    }
+    .docs-steps :global(h3)::before {
+      left: -1.75rem;
+      width: 1.125rem;
+      height: 1.125rem;
+      font-size: 0.625rem;
+    }
+  }
+</style>

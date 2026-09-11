@@ -1,0 +1,58 @@
+---
+/**
+ * A third-party project's own mark, beside the paragraph that introduces it.
+ *
+ * It exists so that raw `<div>`, `<img>` and `<style>` do not have to be
+ * written into the MDX. The text extractor only knows headings and a handful
+ * of inline tags, so any of those would throw and take /api/docs down for the
+ * page rather than degrade.
+ *
+ * The mark keeps its own colours. The monoaccent rule governs NaN's own
+ * surfaces; reproducing someone else's logo in violet would be recolouring
+ * their brand, which is worse than the exception. The exception ends here
+ * though: the picker on /docs/agent-setup uses monochrome marks throughout.
+ */
+
+interface Props {
+  src: string;
+  alt: string;
+  /** Intrinsic size, so the page does not reflow while the image loads. */
+  width: number;
+  height: number;
+}
+
+const { src, alt, width, height } = Astro.props;
+---
+
+<div class="brand-intro not-prose">
+  <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+  <div class="brand-intro-body"><slot /></div>
+</div>
+
+<style>
+  .brand-intro {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 1.5rem 0 2rem;
+  }
+
+  .brand-intro img {
+    width: 96px;
+    height: auto;
+    flex-shrink: 0;
+    border-radius: 0.75rem;
+  }
+
+  .brand-intro-body :global(p) {
+    margin: 0;
+  }
+
+  @media (max-width: 620px) {
+    .brand-intro {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+  }
+</style>

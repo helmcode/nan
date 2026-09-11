@@ -15,6 +15,10 @@ const KNOWN_COMPONENTS = [
   'FieldList',
   'Callout',
   'RateLimits',
+  'AgentGrid',
+  'Steps',
+  'Details',
+  'BrandIntro',
 ];
 
 const FIXTURES = [
@@ -24,6 +28,9 @@ const FIXTURES = [
   'fieldlist',
   'callout',
   'ratelimits',
+  'agentgrid',
+  'steps',
+  'details',
   'raw-html-heading',
   'raw-html-inline',
   'composite',

@@ -17,6 +17,10 @@ const KNOWN_COMPONENTS = new Set([
   'FieldList',
   'Callout',
   'RateLimits',
+  'AgentGrid',
+  'Steps',
+  'Details',
+  'BrandIntro',
 ]);
 
 const AUTHOR_HTML_BLOCK_TAGS = new Set(['h1', 'h2', 'h3', 'h4']);
@@ -253,6 +257,14 @@ function componentToBlockMd(node: MdxNode, rateLimits: RateLimitsConfig): string
       return calloutToMd(node);
     case 'RateLimits':
       return rateLimitsToMd(rateLimits);
+    case 'AgentGrid':
+      return agentGridToMd(node);
+    case 'Steps':
+      return stepsToMd(node);
+    case 'Details':
+      return detailsToMd(node);
+    case 'BrandIntro':
+      return brandIntroToMd(node);
     default:
       throw new Error(`Unknown MDX block component: <${name || '?'}>`);
   }
@@ -342,6 +354,65 @@ function calloutToMd(node: MdxNode): string {
     .map((line) => (line.length ? `> ${line}` : '>'))
     .join('\n');
   return `> [!${variant}] ${title}\n>\n${quoted}\n`;
+}
+
+/**
+ * The agent picker as a list of links.
+ *
+ * The grid is a layout, not content: what a text consumer needs is which tools
+ * are covered and where each one lives. `indirect` survives because it is the
+ * one fact that changes what a reader has to do.
+ */
+function agentGridToMd(node: MdxNode): string {
+  const items =
+    (getAttr(node, 'items') as
+      | Array<{ name?: string; href?: string; kind?: string; note?: string; indirect?: boolean }>
+      | undefined) || [];
+  const lines: string[] = [];
+  for (const it of items) {
+    const name = String(it.name ?? '');
+    const href = String(it.href ?? '');
+    const parts = [String(it.kind ?? '')];
+    if (it.indirect) parts.push('needs a local gateway');
+    if (it.note) parts.push(stripInlineHtml(String(it.note)));
+    lines.push(`- [${name}](${href}) - ${parts.filter(Boolean).join('. ')}`);
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
+/**
+ * Steps are numbered by CSS, so their markdown is already complete: the
+ * children carry the headings and the prose. Serving them unchanged is what
+ * keeps /api/docs identical whether a guide is wrapped in the rail or not.
+ */
+function stepsToMd(node: MdxNode): string {
+  return `${stringifyBlockChildren(node.children || []).trim()}\n`;
+}
+
+/**
+ * A collapsed block flattens to its summary plus its body.
+ *
+ * Whether it was open or closed is a property of a browser, and the reader on
+ * the other side of /api/docs does not have one.
+ */
+function detailsToMd(node: MdxNode): string {
+  const summary = String(getAttr(node, 'summary') ?? '');
+  const inner = stringifyBlockChildren(node.children || []).trim();
+  return `**${summary}**\n\n${inner}\n`;
+}
+
+/**
+ * The mark plus the paragraph beside it.
+ *
+ * The image survives as markdown rather than being dropped: a consumer that
+ * renders the text gets the logo, and one that does not still reads the alt.
+ */
+function brandIntroToMd(node: MdxNode): string {
+  const src = String(getAttr(node, 'src') ?? '');
+  const alt = String(getAttr(node, 'alt') ?? '');
+  const inner = stringifyBlockChildren(node.children || []).trim();
+  return `![${alt}](${src})` + String.fromCharCode(10, 10) + inner + String.fromCharCode(10);
 }
 
 function rateLimitsToMd(config: RateLimitsConfig): string {

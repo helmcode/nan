@@ -1,0 +1,120 @@
+---
+/**
+ * The mark of a coding agent, for the picker on /docs/agent-setup.
+ *
+ * Paths come from `simple-icons` rather than from SVG files committed here:
+ * the package is maintained, the marks stay current, and nothing in this repo
+ * has to be redrawn when a tool rebrands. Everything is resolved at build time,
+ * so the reader downloads a handful of inline paths and no icon library.
+ *
+ * Not every tool has one. Continue, Aider, Codex, VS Code and our own CLI are
+ * missing from the set, so they fall back to a monogram tile instead of to an
+ * empty square: a deliberate letterform reads as a choice, a blank does not.
+ *
+ * The marks render in the current text colour rather than in each brand's
+ * colour. That is the monoaccent rule of the brand, and it is also what keeps
+ * a grid of nine logos from looking like a sponsor wall.
+ */
+/*
+ * Named imports, one per mark, and never `import * as icons`: the package
+ * carries a few thousand of them, and a namespace import defeats tree-shaking,
+ * so all of them would be bundled into a Worker that has a size limit.
+ *
+ * Adding a tool here is one import plus one line in MARKS.
+ */
+import {
+  siClaudecode,
+  siCline,
+  siCursor,
+  siGithubcopilot,
+  siOpencode,
+  siPi,
+  siZedindustries,
+} from 'simple-icons';
+
+/*
+ * One mark that shares a name with something else is NOT here on purpose:
+ * `siHermes` in that package is myhermes.de, a German parcel courier, and not
+ * the agent by Nous Research. A wrong logo is worse than no logo, because it
+ * makes the page look like it knows something it does not.
+ *
+ * `siPi` is the right one, checked against its source: pi.dev, the terminal
+ * agent that configures itself under `~/.pi/agent/`.
+ */
+
+/*
+ * Marks that simple-icons does not carry.
+ *
+ * Same shape as the ones it does: a single path on a 24x24 viewBox, drawn in
+ * `currentColor`. Taken from lobehub/lobe-icons (MIT), which is where the
+ * OpenAI family lives now that simple-icons no longer publishes it.
+ */
+const LOCAL_MARKS: Record<string, { path: string }> = {
+  codex: {
+    path: 'M8.086.457a6.105 6.105 0 013.046-.415c1.333.153 2.521.72 3.564 1.7a.117.117 0 00.107.029c1.408-.346 2.762-.224 4.061.366l.063.03.154.076c1.357.703 2.33 1.77 2.918 3.198.278.679.418 1.388.421 2.126a5.655 5.655 0 01-.18 1.631.167.167 0 00.04.155 5.982 5.982 0 011.578 2.891c.385 1.901-.01 3.615-1.183 5.14l-.182.22a6.063 6.063 0 01-2.934 1.851.162.162 0 00-.108.102c-.255.736-.511 1.364-.987 1.992-1.199 1.582-2.962 2.462-4.948 2.451-1.583-.008-2.986-.587-4.21-1.736a.145.145 0 00-.14-.032c-.518.167-1.04.191-1.604.185a5.924 5.924 0 01-2.595-.622 6.058 6.058 0 01-2.146-1.781c-.203-.269-.404-.522-.551-.821a7.74 7.74 0 01-.495-1.283 6.11 6.11 0 01-.017-3.064.166.166 0 00.008-.074.115.115 0 00-.037-.064 5.958 5.958 0 01-1.38-2.202 5.196 5.196 0 01-.333-1.589 6.915 6.915 0 01.188-2.132c.45-1.484 1.309-2.648 2.577-3.493.282-.188.55-.334.802-.438.286-.12.573-.22.861-.304a.129.129 0 00.087-.087A6.016 6.016 0 015.635 2.31C6.315 1.464 7.132.846 8.086.457zm-.804 7.85a.848.848 0 00-1.473.842l1.694 2.965-1.688 2.848a.849.849 0 001.46.864l1.94-3.272a.849.849 0 00.007-.854l-1.94-3.393zm5.446 6.24a.849.849 0 000 1.695h4.848a.849.849 0 000-1.696h-4.848z',
+  },
+};
+
+const MARKS: Record<string, { path: string }> = {
+  ...LOCAL_MARKS,
+  claudecode: siClaudecode,
+  cline: siCline,
+  cursor: siCursor,
+  githubcopilot: siGithubcopilot,
+  opencode: siOpencode,
+  pi: siPi,
+  zedindustries: siZedindustries,
+};
+
+interface Props {
+  /** Key into MARKS. Omitted, or unknown, falls back to a monogram. */
+  logo?: string;
+  /** Used for the monogram fallback and for the accessible name. */
+  name: string;
+  size?: number;
+}
+
+const { logo, name, size = 22 } = Astro.props;
+
+const icon = logo ? MARKS[logo.toLowerCase()] : undefined;
+
+/**
+ * One or two letters, skipping the words that every tool shares. "GitHub
+ * Copilot" reads as GC, but "Visual Studio Code" as VS rather than VSC, which
+ * does not fit the tile at this size.
+ */
+const monogram = name
+  .replace(/\b(code|cli|ai|studio)\b/gi, '')
+  .split(/[\s.-]+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((w) => w[0])
+  .join('')
+  .toUpperCase()
+  .slice(0, 2);
+---
+
+{
+  icon ? (
+    <svg
+      role="img"
+      aria-label={name}
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="currentColor"
+      class="shrink-0"
+    >
+      <path d={icon.path} />
+    </svg>
+  ) : (
+    <span
+      aria-label={name}
+      role="img"
+      class="grid shrink-0 place-items-center rounded-[4px] border border-current/25 font-mono font-medium leading-none"
+      style={`width:${size}px;height:${size}px;font-size:${Math.round(size * 0.42)}px`}
+    >
+      {monogram}
+    </span>
+  )
+}

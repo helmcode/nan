@@ -1,0 +1,95 @@
+---
+/**
+ * A collapsed block: the summary is always visible, the body opens on click.
+ *
+ * For the material that is true but not needed on the first read: the caveat
+ * for one platform, the troubleshooting list, the long config nobody copies
+ * until something breaks. Before this, that material either pushed the steps
+ * off the screen or was cut, and cutting it is how a guide ends up answering
+ * the easy half of the question.
+ *
+ * Native `<details>` on purpose. It prints, it is searchable with the
+ * browser's own find, it works without JavaScript, and a screen reader
+ * announces its state without any of it being wired by hand.
+ */
+
+interface Props {
+  /** The always-visible line. Written as a question when it answers one. */
+  summary: string;
+  /** Starts open. For the block a reader should see without asking. */
+  open?: boolean;
+}
+
+const { summary, open = false } = Astro.props;
+---
+
+<details class="docs-details" open={open}>
+  <summary>
+    <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="none">
+      <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+    <span>{summary}</span>
+  </summary>
+  <div class="docs-details-body">
+    <slot />
+  </div>
+</details>
+
+<style>
+  .docs-details {
+    margin: 1.5rem 0;
+    border: 1px solid rgb(38 38 38 / 0.6);
+    border-radius: 0.75rem;
+    background: #0a0a0a;
+  }
+
+  .docs-details summary {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.25rem;
+    cursor: pointer;
+    color: rgb(212 212 216);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    /* The default triangle sits apart from the chevron below and cannot be
+       rotated, so it goes and the chevron does the work. */
+    list-style: none;
+  }
+
+  .docs-details summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .docs-details summary:hover {
+    color: rgb(196 181 253);
+  }
+
+  .docs-details summary svg {
+    flex-shrink: 0;
+    color: rgb(139 92 246);
+    transition: transform 0.15s ease;
+  }
+
+  .docs-details[open] summary svg {
+    transform: rotate(90deg);
+  }
+
+  .docs-details-body {
+    padding: 0 1.25rem 0.25rem;
+    border-top: 1px solid rgb(38 38 38 / 0.6);
+  }
+
+  /* The body opens with its first element's own top margin, which reads as a
+     gap twice the size of the one under the summary. */
+  .docs-details-body > :global(:first-child) {
+    margin-top: 1rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .docs-details summary svg {
+      transition: none;
+    }
+  }
+</style>
