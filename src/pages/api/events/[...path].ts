@@ -64,7 +64,10 @@ const handler: APIRoute = async ({ params, request, url }) => {
   // getSetCookie() devuelve un array sin colapsar comas (WHATWG); preserva
   // múltiples cookies (login + refresh, handoff de onboarding, etc.).
   for (const cookie of resp.headers.getSetCookie()) headers.append('set-cookie', cookie);
-  return new Response(text || '{}', { status: resp.status, headers });
+  // A CSV or iCalendar body is forwarded as is, even when empty: padding it
+  // with `{}` would hand the operator a download with `{}` inside. The `{}`
+  // fallback only applies to the JSON responses, so callers can always parse.
+  return new Response(passthrough ? text : text || '{}', { status: resp.status, headers });
 };
 
 export const GET = handler;

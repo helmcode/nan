@@ -160,6 +160,21 @@ describe('events proxy handler', () => {
     expect(await resp.text()).toBe('email,name\n');
   });
 
+  it('forwards an empty CSV body as is instead of padding it with {}', async () => {
+    const upstream = new Response('', {
+      status: 200,
+      headers: { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="p.csv"' },
+    });
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(upstream);
+    const resp = await GET(ctx('gauntlet-2026-08/admin/participants/export.csv', { cookie: 'nan_session=xyz', search: '?download=1' }));
+    expect(resp.headers.get('content-type')).toBe('text/csv; charset=utf-8');
+    expect(await resp.text()).toBe('');
+    // The JSON fallback is untouched: an empty JSON upstream still parses.
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 200 }));
+    const empty = await GET(ctx('gauntlet-2026-08/me', { cookie: 'nan_session=xyz' }));
+    expect(await empty.text()).toBe('{}');
+  });
+
   it('deja pasar el feed iCalendar con su content-type y su caché (W-10)', async () => {
     const upstream = new Response('BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n', {
       status: 200,
