@@ -71,8 +71,10 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
   // covers input AND OUTPUT together — so it is the provider's total budget,
   // not a servable input window: a prompt at the very top leaves no room for
   // the reply. Nothing filters for that on our side, so a caller who uses the
-  // full figure gets the provider's error on a number this page publishes. It renders as
-  // "1M" because formatTokens rounds the display, which is the layer that
+  // full figure gets the provider's error on a number this page publishes.
+  //
+  // It renders as "1M" because formatTokens rounds the display down, which is
+  // the layer that
   // should do it — publishing a rounded 1,000,000 here would leave the site
   // 4.8% below the source it claims to mirror, and would turn the test below
   // from an equality into a floor. The equality is the mechanism: it is what
