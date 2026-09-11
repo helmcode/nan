@@ -1,13 +1,13 @@
 /**
- * Única fuente de verdad de los rate limits que se enseñan en la documentación.
+ * Single source of truth for the rate limits shown in the docs.
  *
- * Lo consumen <RateLimits /> (lo que lee una persona) y rateLimitsToMd()
- * (lo que /api/docs sirve al bot de Discord). Tener un solo módulo hace que la
- * página y la API no puedan discrepar, que es lo que pasaba: el componente
- * decía 60 rpm mientras el extractor tenía 100 rpm hardcodeados.
+ * Consumed by <RateLimits /> (what humans read) and by rateLimitsToMd()
+ * (what /api/docs serves to the Discord bot). Keeping one module means the
+ * page and the API cannot disagree, which they did: the component said
+ * 60 rpm while the extractor hardcoded 100 rpm.
  *
- * Recibe el env como parámetro para poder probarlo con tests unitarios sin
- * bindings de runtime, igual que src/lib/email.ts.
+ * Receives the env as a parameter so it can be unit-tested without runtime
+ * bindings, mirroring src/lib/email.ts.
  */
 
 export interface PerKeyRateLimits {
@@ -21,10 +21,10 @@ export interface ModelRate {
 }
 
 /**
- * Límites de un modelo que no se controla por una tasa por minuto sino por una
- * sliding window más una cuota por periodo de facturación. Son los dos números
- * con los que un miembro tiene que planificar, así que se publican como filas
- * de primera clase y no como una nota al pie.
+ * Limits for a model that is not gated by a per-minute rate but by a sliding
+ * window plus an allowance per billing period. Those are the two numbers a
+ * member has to plan against, so they are published as first-class rows
+ * instead of a footnote.
  */
 export interface WindowedModelLimits {
   model: string;
@@ -48,8 +48,8 @@ export interface RateLimitsEnv {
 }
 
 /**
- * Las tablas por modelo se quedan aquí y no en variables de entorno: solo
- * cambian cuando se añade o se quita un modelo, que ya es un cambio de código.
+ * Per-model tables stay here rather than in env vars: they only change when a
+ * model is added or removed, which is a code change anyway.
  */
 export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
   perKey: { requestsPerMinute: 60, maxParallel: 5 },
@@ -60,11 +60,11 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
     { model: 'gemma4', label: '1.5M tpm' },
   ],
   requestsPerMinuteByModel: [{ model: 'rerank', label: '1000 rpm' }],
-  // glm5.3 (tier premium) falta a propósito en las tablas por minuto: su
-  // control es la sliding window de 4h más la cuota por periodo de facturación.
-  // Estos números replican la política del backend (modelRateLimits de cloud-api
-  // más el tope de tokens de glm5.3) y el presupuesto de ventana del hook de
-  // uso, que es el mismo conjunto de números que publica el portal de miembros.
+  // glm5.3 (premium tier) is absent from the per-minute tables on purpose: its
+  // gate is the 4h sliding window plus the allowance per billing period. These
+  // mirror the backend policy (cloud-api modelRateLimits + the token cap for
+  // glm5.3) and the usage hook's window budget, which is the same set of
+  // numbers the member portal publishes.
   windowedModels: [
     {
       model: 'glm5.3',
@@ -78,17 +78,17 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
 };
 
 /**
- * Formatea un recuento de tokens como lo escribe cada superficie publicada: 1M,
- * 400M, 3,000M. Vive aquí para que la página de docs y /api/docs no puedan
- * desviarse la una de la otra, que es la razón de ser de este módulo.
+ * Formats a token count the way every published surface writes it: 1M, 400M,
+ * 3,000M. Lives here so the docs page and /api/docs cannot drift from
+ * each other, which is the whole reason this module exists.
  */
 export type DocsLocale = 'en' | 'es';
 
 export function formatTokens(tokens: number, lang: DocsLocale = 'en'): string {
-  // El separador de miles es el que usa el resto de la página, para que la
-  // tarjeta no diga "3,000M" al lado de una ficha de modelo que dice "3.000M".
-  // `useGrouping: 'always'` porque es-ES deja sin agrupar los números de cuatro
-  // cifras, y saldría 3000M junto a una ficha de modelo que ya dice 3.000M.
+  // The thousands separator is the one the rest of the page uses, so the card
+  // cannot read "3,000M" next to a model card that says "3.000M".
+  // `useGrouping: 'always'` because es-ES leaves four-digit numbers ungrouped,
+  // which would print 3000M beside a model card that already says 3.000M.
   const fmt = new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', { useGrouping: 'always' });
   if (tokens >= 1_000_000) return `${fmt.format(tokens / 1_000_000)}M`;
   if (tokens >= 1_000) return `${fmt.format(tokens / 1_000)}K`;
@@ -96,12 +96,12 @@ export function formatTokens(tokens: number, lang: DocsLocale = 'en'): string {
 }
 
 /**
- * La redacción de la ventana, escrita una sola vez.
+ * The window wording, written once.
  *
- * <RateLimits /> resalta la frase principal y /api/docs sirve texto plano, así
- * que la frase se parte en dos mitades en vez de reescribirla en cada
- * superficie: la página y el bot de Discord ya se pillaron discrepando sobre
- * los rpm, y este es el número con el que planifica un miembro premium.
+ * <RateLimits /> emphasizes the headline clause and /api/docs serves plain
+ * text, so the sentence is split in two halves instead of being retyped on
+ * each surface: the page and the Discord bot were already caught disagreeing
+ * about rpm, and this is the number a premium member plans against.
  */
 export function windowedModelHeadline(m: WindowedModelLimits, lang: DocsLocale = 'en'): string {
   return lang === 'es'
@@ -109,7 +109,7 @@ export function windowedModelHeadline(m: WindowedModelLimits, lang: DocsLocale =
     : `${formatTokens(m.windowTokens)} tokens per rolling ${m.windowHours} hours`;
 }
 
-/** El resto de la frase que empieza windowedModelHeadline(). */
+/** The rest of the sentence started by windowedModelHeadline(). */
 export function windowedModelBody(m: WindowedModelLimits, lang: DocsLocale = 'en'): string {
   if (lang === 'es') {
     return (
@@ -130,7 +130,7 @@ export function windowedModelBody(m: WindowedModelLimits, lang: DocsLocale = 'en
   );
 }
 
-/** Titular más cuerpo, para las superficies que lo publican como un solo párrafo. */
+/** Headline plus body, for the surfaces that publish it as one paragraph. */
 export function windowedModelNote(m: WindowedModelLimits, lang: DocsLocale = 'en'): string {
   return `${windowedModelHeadline(m, lang)} ${windowedModelBody(m, lang)}`;
 }
@@ -139,7 +139,7 @@ function parsePositiveInt(raw: string | undefined, fallback: number, varName: st
   if (raw === undefined || raw.trim() === '') return fallback;
   const n = Number(raw);
   if (!Number.isInteger(n) || n <= 0) {
-    // Una variable mal configurada no debe tumbar la documentación, pero tiene que hacer ruido.
+    // A misconfigured var must not take the docs down, but it must be loud.
     console.warn(`[rateLimits] ignoring invalid ${varName}=${JSON.stringify(raw)}, using ${fallback}`);
     return fallback;
   }
@@ -165,19 +165,19 @@ export function getRateLimitsConfig(env: RateLimitsEnv = {}): RateLimitsConfig {
 }
 
 /**
- * La sección de rate limits de la spec OpenAPI, construida desde esta misma config.
+ * The rate-limit section of the OpenAPI spec, built from this same config.
  *
- * La spec (src/data/openapi.json) lleva un placeholder `{{RATE_LIMITS}}` en
- * vez de los números, y se rellena cuando se sirve la spec. Sin esto los
- * números serían una tercera copia hardcodeada, que es justo el fallo que este
- * módulo se escribió para evitar: el componente y el extractor ya se habían
- * desviado una vez (60 rpm frente a 100 rpm), y `RATE_LIMIT_RPM` es una variable
- * de entorno, así que un cambio desplegado actualizaría /docs/models y dejaría
- * /docs/api publicando un número que ya no es cierto.
+ * The spec (src/data/openapi.json) carries a `{{RATE_LIMITS}}` placeholder
+ * instead of the numbers, and it is filled in when the spec is served. Without
+ * this the numbers would be a third hardcoded copy, which is the exact failure
+ * this module was written to prevent: the component and the extractor had
+ * already drifted once (60 rpm against 100 rpm), and `RATE_LIMIT_RPM` is an env
+ * var, so a deployed change would update /docs/models and leave /docs/api
+ * publishing a number that is no longer true.
  *
- * La redacción es la de la spec (en inglés, tabla primero, dirigida a quien va
- * a escribir un cliente) y no la de la página de docs; solo se comparten los
- * datos, que es lo que tiene que coincidir.
+ * The wording is the spec's (English, table-first, addressed to whoever is
+ * about to write a client) rather than the docs page's; only the data is
+ * shared, which is what has to agree.
  */
 export function rateLimitsToSpecMarkdown(config: RateLimitsConfig): string {
   const tpm = config.tokensPerMinuteByModel;
@@ -188,8 +188,8 @@ export function rateLimitsToSpecMarkdown(config: RateLimitsConfig): string {
     `| Concurrent requests | ${config.perKey.maxParallel} |`,
   ];
   if (tpm.length) {
-    // La etiqueta ya lleva su unidad ("1.5M tpm"), así que la columna de valor
-    // la toma tal cual y los modelos se listan en la columna del límite.
+    // The label already carries its unit ("1.5M tpm"), so the value column
+    // takes it verbatim and the models are listed in the limit column.
     const models = tpm.map((m) => `\`${m.model}\``).join(', ');
     rows.push(`| Tokens per minute (${models}) | ${tpm[0].label.replace(/\s*tpm$/, '')} |`);
   }
@@ -219,9 +219,9 @@ export function rateLimitsToSpecMarkdown(config: RateLimitsConfig): string {
 }
 
 /**
- * Las etiquetas visibles de la tarjeta de rate limits. Viven aquí, junto a los
- * números que etiquetan, para que un locale no pueda caer en silencio
- * al otro idioma como pasaba cuando eran literales dentro del componente.
+ * The visible labels of the rate limits card. They live here, beside the numbers
+ * they label, so a locale cannot silently fall back to the other language the
+ * way it did when they were literals inside the component.
  */
 export function rateLimitsLabels(lang: DocsLocale) {
   return {

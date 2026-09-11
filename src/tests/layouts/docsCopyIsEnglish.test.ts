@@ -4,24 +4,24 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 /**
- * Las docs son solo en inglés, y el español se había colado en lo que ve un lector.
+ * The docs are English-only, and Spanish had leaked into what a reader sees.
  *
- * No en la prosa, que está escrita en inglés, sino en el CHROME: el botón de
- * copiar decía "Copiar", el toast "¡Copiado al portapapeles!", la tarjeta de
- * rate limits "Paralelo máximo / concurrentes", y un `<LimitationsCard>` sin
- * título explícito caía en "limitaciones conocidas". Nada de eso lo cazó la
- * revisión porque el código y el contenido de alrededor estaban en inglés; los
- * strings eran defaults y etiquetas enterrados en componentes.
+ * Not into the prose, which is written in English, but into the CHROME: the
+ * copy button said "Copiar", the toast "¡Copiado al portapapeles!", the rate
+ * limits card "Paralelo máximo / concurrentes", and a `<LimitationsCard>` with
+ * no explicit title fell back to "limitaciones conocidas". None of it was
+ * caught by review because the surrounding code and content were English; the
+ * strings were defaults and labels buried in components.
  *
- * El español que queda legítimamente está fuera de alcance aquí: los
- * comentarios, que ningún lector ve, y la rama `es` de DocsTopBar, que es el
- * chrome traducido de /es/docs/api.
+ * The Spanish that legitimately remains is out of scope here: comments, which
+ * no reader sees, and the `es` branch of DocsTopBar, which is the translated
+ * chrome of /es/docs/api.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
 const componentsDir = resolve(here, '../../components/docs');
 
-/** Palabras que solo aparecen en español, y nunca dentro de una URL o un identificador. */
+/** Words that only appear in Spanish, and never inside a URL or identifier. */
 const SPANISH = [
   'copiar',
   'copiado',
@@ -40,9 +40,9 @@ const SPANISH = [
 ];
 
 /**
- * Solo strings que un lector puede acabar viendo: literales entre comillas y
- * texto entre etiquetas. Los comentarios se excluyen a propósito, porque el
- * repo mantiene comentarios en español en los layouts y estilos adrede.
+ * Only strings a reader can end up seeing: quoted literals and text between
+ * tags. Comments are deliberately excluded, since the repo keeps Spanish ones
+ * in the layouts and styles on purpose.
  */
 function visibleText(source: string): string {
   return source
@@ -52,8 +52,8 @@ function visibleText(source: string): string {
 }
 
 /**
- * Ficheros que legítimamente llevan copy en español para las rutas /es, en una
- * rama `es` junto a la `en`. Su español es el objetivo, no una fuga.
+ * Files that legitimately hold Spanish copy for the /es routes, in an `es`
+ * branch beside the `en` one. Their Spanish is the point, not a leak.
  */
 const BILINGUAL = ['DocsTopBar.astro', 'ApiReference.astro', 'Docs.astro'];
 
@@ -69,9 +69,9 @@ describe('the docs chrome is in English', () => {
   for (const [label, path] of files) {
     it(`${label} shows no Spanish to the reader`, () => {
       const text = visibleText(readFileSync(path, 'utf-8')).toLowerCase();
-      // Estos llevan a propósito el chrome y los metadatos traducidos de
-      // /es/docs/api, en una rama `es` junto a la `en`. Su español es el
-      // objetivo, no una fuga.
+      // These two carry the translated chrome and metadata of /es/docs/api on
+      // purpose, in an `es` branch beside the `en` one. Their Spanish is the
+      // point, not a leak.
       if (BILINGUAL.some((f) => label.endsWith(f))) return;
       const found = SPANISH.filter((w) => text.includes(w));
       expect(found, `${label}: ${found.join(', ')}`).toEqual([]);
@@ -80,9 +80,9 @@ describe('the docs chrome is in English', () => {
 });
 
 /**
- * El título por defecto de la tarjeta vive en dos sitios que tienen que
- * coincidir: el componente que lee una persona y el extractor que alimenta
- * /api/docs. Ya se desalinearon una vez con los rate limits, y por eso existe rateLimits.ts.
+ * The card's default title lives in two places that have to agree: the
+ * component a person reads and the extractor that feeds /api/docs. They drifted
+ * once already over the rate limits, which is why rateLimits.ts exists.
  */
 describe('LimitationsCard default title', () => {
   it('matches between the component and the text extractor', () => {

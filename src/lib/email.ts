@@ -1,7 +1,7 @@
 /**
- * Envío de email vía la API de Resend, agnóstico del almacenamiento.
- * Recibe la API key y la configuración del remitente como parámetros para
- * poder probarlo con tests unitarios sin bindings de runtime.
+ * Email sending via Resend API — storage-agnostic.
+ * Receives API key and sender config as parameters so it can be
+ * unit-tested without runtime bindings.
  */
 
 import type { WaitlistRegion } from './waitlist';
@@ -39,7 +39,7 @@ export type SendEmailOutcome =
   | { ok: false; error: string; status?: number };
 
 /**
- * Envía el email de confirmación de la lista de espera vía Resend.
+ * Sends a waitlist confirmation email via Resend.
  */
 export async function sendConfirmationEmail(
   params: SendEmailParams,

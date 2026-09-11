@@ -5,18 +5,18 @@ import { dirname, resolve } from 'node:path';
 import { t } from '../../lib/i18n';
 
 /**
- * Guarda el cuerpo de la página /community (src/pages/_community.astro,
- * compartido por /community y /es/community). Son los invariantes de los que
- * depende el formulario restaurado pero que astro check y el runtime no ven:
+ * Guards the /community page body (src/pages/_community.astro, shared by
+ * /community and /es/community). These are the invariants the restored form
+ * depends on but that astro check and the runtime can't see:
  *
- *   - el ancla #signup existe y es el destino de scroll de todos los CTA
- *     (hero, pricing de la home EN, pricing de la home ES);
- *   - la isla CommunitySignupForm se monta con client:load;
- *   - cada llamada t('community.*', lang) del fuente resuelve a un string
- *     localizado real en los dos locales, no a la ruta de la clave. t() devuelve
- *     la propia clave cuando no puede resolver, así que una errata publica
- *     `community.submit` como etiqueta del botón en LOS DOS idiomas sin error de
- *     tipos ni de test: exactamente así se coló el literal "// already a member".
+ *   - the #signup anchor exists and is the scroll target of every CTA
+ *     (hero, home pricing EN, home pricing ES);
+ *   - the CommunitySignupForm island is mounted with client:load;
+ *   - every t('community.*', lang) call in the source resolves to a real
+ *     localized string in both locales, not the raw key path. t() returns the
+ *     key itself when it can't resolve, so a typo ships `community.submit` as
+ *     the button label in BOTH languages with no type or test error — this is
+ *     exactly how the "// already a member" literal slipped through.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -32,11 +32,11 @@ describe('/community page body (_community.astro)', () => {
   });
 
   test('every t(\'community.*\', lang) call resolves to a real string in both locales', () => {
-    // Se extraen del fuente todas las llamadas t('community.SOMETHING', ...).
+    // Extract all t('community.SOMETHING', ...) call sites from the source.
     const calls = [...source.matchAll(/t\(\s*'community\.([A-Za-z0-9_]+)'\s*,/g)].map(
       (m) => `community.${m[1]}`,
     );
-    // Sanity: el formulario cablea al menos las claves básicas (submit, emailLabel, etc.).
+    // Sanity: the form wires at least the core keys (submit, emailLabel, etc.).
     expect(calls.length).toBeGreaterThan(10);
 
     const problems: string[] = [];
@@ -46,8 +46,8 @@ describe('/community page body (_community.astro)', () => {
         if (typeof value !== 'string' || value.trim() === '') {
           problems.push(`${key} [${locale}]: not a non-empty string`);
         } else if (value === key) {
-          // t() devuelve la clave cuando no puede resolver: una errata renderiza
-          // la ruta en crudo como etiqueta visible en los dos idiomas.
+          // t() returns the key when it can't resolve — a typo renders the raw
+          // path as the visible label in both languages.
           problems.push(`${key} [${locale}]: resolved to the raw key path (missing translation)`);
         }
       }

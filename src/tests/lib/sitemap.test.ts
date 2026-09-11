@@ -120,10 +120,10 @@ describe('sitemap.xml', () => {
   });
 
   /**
-   * Las guías eran solo en inglés y se listaban sin alternates. Ahora existen
-   * en /docs/<slug> y /es/docs/<slug>, así que cada una se lista en los dos
-   * idiomas, declaradas de forma cruzada. Que la copia en español esté ya
-   * traducida o no es cuestión de contenido y no cambia qué es indexable.
+   * The guides used to be English-only and were listed without alternates.
+   * They now exist at /docs/<slug> and /es/docs/<slug>, so each is listed in
+   * both languages, cross-declared. Whether the Spanish copy is translated yet
+   * is a content matter and does not change what is indexable.
    */
   test('every guide is listed in both languages, with its alternates', async () => {
     const { xml } = await sitemap([{ id: 'intro' }, { id: 'apps' }]);
@@ -142,8 +142,8 @@ describe('sitemap.xml', () => {
   test('sin documentos, el sitemap sigue siendo válido', async () => {
     const { xml } = await sitemap([]);
     expect(xml).toContain('<urlset');
-    // La referencia de la API no depende de la colección, así que sobrevive a
-    // una vacía; lo que no puede aparecer es ninguna guía.
+    // The API reference does not depend on the collection, so it survives an
+    // empty one; what must not appear is any guide.
     expect(locs(xml).filter((u) => u.includes('/docs/'))).toEqual([
       `${SITE}/docs/api`,
       `${SITE}/es/docs/api`,
@@ -151,11 +151,11 @@ describe('sitemap.xml', () => {
   });
 
   /**
-   * /docs/api ya no sale de la colección: Scalar lo sirve desde la spec. Además
-   * es la única página bajo /docs que existe en español, así que es la única de
-   * la sección que lleva alternates. Si alguna vez vuelve a colarse en la
-   * colección aparecería dos veces, que es lo que cubre el test de URLs
-   * repetidas.
+   * /docs/api no longer comes from the collection: Scalar serves it from the
+   * spec. It is also the only page under /docs that exists in Spanish, so it is
+   * the only one in the section carrying alternates. If it ever sneaks back
+   * into the collection it would appear twice, which the duplicate-URL test
+   * covers.
    */
   test('the API reference is listed even though it is not in the collection, in both languages', async () => {
     const { xml } = await sitemap([{ id: 'intro' }]);

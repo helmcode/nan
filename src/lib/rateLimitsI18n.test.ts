@@ -11,14 +11,14 @@ import {
 } from './rateLimits';
 
 /**
- * La tarjeta de rate limits se incrusta desde las guías en inglés y en español.
- * Sus etiquetas empezaron en español, se tradujeron al inglés para que no se
- * colaran en /docs, y entonces pasaron a salir en inglés en /es/docs: siempre
- * perdía un idioma, porque el componente no tenía locale alguno.
+ * The rate limits card is embedded from both the English and the Spanish
+ * guides. Its labels started out Spanish, were translated to English to stop
+ * them leaking into /docs, and then rendered English on /es/docs instead: one
+ * language always lost, because the component had no locale at all.
  *
- * La guarda que había solo miraba en un sentido, español dentro de ficheros en
- * inglés, así que no podía ver la segunda mitad. Estos tests comprueban las dos
- * direcciones sobre las mismas cadenas.
+ * The existing guard only looked one way, for Spanish inside English files, so
+ * it could not see the second half of that. These tests check both directions
+ * on the same strings.
  */
 
 const model: WindowedModelLimits = {
@@ -30,13 +30,13 @@ const model: WindowedModelLimits = {
   maxParallel: 5,
 };
 
-/** Palabras que solo pueden ser de un idioma, nunca un token compartido como "min" o "API". */
+/** Words that can only be one language, never a shared token like "min" or "API". */
 const ENGLISH = ['requests', 'parallel', 'concurrent', 'allowance', 'billing', 'rolling', 'window'];
 const SPANISH = ['peticiones', 'paralelo', 'concurrentes', 'cuota', 'facturación', 'móvil', 'ventana'];
 
 /**
- * Solo palabras completas: "concurrentes" contiene "concurrent", y buscar por
- * subcadenas marcó el copy en español como inglés en su primera ejecución.
+ * Whole words only: "concurrentes" contains "concurrent", and matching on
+ * substrings flagged the Spanish copy as English on its first run.
  */
 function wordsIn(text: string, words: string[]): string[] {
   return words.filter((w) => new RegExp(`(^|[^\\p{L}])${w}([^\\p{L}]|$)`, 'iu').test(text));
@@ -98,9 +98,8 @@ describe('the rate limits card speaks the language of the page', () => {
 });
 
 /**
- * El componente no debe reintroducir literales: cada etiqueta que muestra tiene
- * que venir de la tabla de arriba, o la próxima traducción se dejará lo que se
- * haya escrito inline.
+ * The component must not reintroduce literals: every label it shows has to come
+ * from the table above, or the next translation will miss whatever was inlined.
  */
 describe('the card renders no hardcoded copy', () => {
   it('routes every visible label through rateLimitsLabels', () => {

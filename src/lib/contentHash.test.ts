@@ -15,7 +15,7 @@ describe('sha256Hex', () => {
   });
 
   it('hashes UTF-8 multibyte text deterministically', async () => {
-    // "héllo wörld" con é=0xC3 0xA9 y ö=0xC3 0xB6
+    // "héllo wörld" with é=0xC3 0xA9 and ö=0xC3 0xB6
     expect(await sha256Hex('héllo wörld')).toBe(
       'a1003f7d04a4115711d0b48a2eaf1359ce565d2d2a6fd65098dfcffadeeef59f',
     );

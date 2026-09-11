@@ -1,20 +1,20 @@
 /**
- * Lógica del alta en el tier community. El endpoint de Astro valida la entrada
- * en el edge y reenvía las altas válidas al backend cloud-api, que crea una
- * Stripe Checkout Session y devuelve su URL. El frontend redirige entonces al
- * usuario a Stripe.
+ * Community-tier signup logic. The Astro endpoint validates input on the edge
+ * and forwards valid signups to the cloud-api backend, which creates a Stripe
+ * Checkout Session and returns its URL. The frontend then redirects the user
+ * to Stripe.
  *
- * El endpoint del backend (POST /api/community/signup) es PÚBLICO (sin API
- * key), con un middleware de chi delante que ya aplica CORS/origin. Por eso
- * aquí NO se envía X-API-Key: verificado leyendo
- * cmd/server/main.go e internal/handlers/community.go el 2026-05-07.
+ * The backend endpoint (POST /api/community/signup) is PUBLIC (no API key),
+ * fronted by chi middleware that already enforces CORS/origin. We therefore
+ * do NOT send X-API-Key here — verified by reading
+ * cmd/server/main.go and internal/handlers/community.go on 2026-05-07.
  */
 
 const RATE_LIMIT_TTL_MS = 60_000;
 
 const EMAIL_MAX_LENGTH = 254;
 
-// La misma regex que waitlist.ts: se mantienen sincronizadas a propósito.
+// Same regex as waitlist.ts — kept in sync intentionally.
 const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 const BLOCKED_EMAIL_DOMAINS: ReadonlySet<string> = new Set([
@@ -84,8 +84,8 @@ export function validateCommunityInput(raw: unknown): CommunityValidationResult 
   }
   const region = obj.region;
 
-  // Trampa honeypot: si un bot rellena el campo oculto `_hp` la capa de API
-  // devuelve igualmente 200 OK pero nunca persiste. Solo defensivo.
+  // Honeypot trap: if a bot fills the hidden `_hp` field we still return
+  // 200 OK from the API layer but never persist. Defensive only.
   const honeypot = typeof obj._hp === 'string' && obj._hp.trim().length > 0;
 
   return {
@@ -99,13 +99,13 @@ export function isCommunityRegion(value: string): value is CommunityRegion {
 }
 
 /**
- * Rate limiter en memoria. Best-effort: el estado se pierde cuando se desaloja
- * el isolate del Worker, y es aceptable: el backend tiene su propio límite por IP.
+ * In-memory rate limiter. Best-effort: state is lost when the Worker isolate
+ * is evicted, which is acceptable — the backend has its own per-IP limiter.
  */
 const rateLimitMap = new Map<string, number>();
 
 export function checkRateLimit(ip: string): boolean {
-  if (!ip) return true; // no se puede identificar al cliente: fail open
+  if (!ip) return true; // cannot identify client — fail open
   const now = Date.now();
 
   const expiresAt = rateLimitMap.get(ip);
@@ -134,12 +134,12 @@ export type SignupOutcome =
   | { kind: 'error'; code: CommunityErrorCode };
 
 /**
- * Convierte una respuesta cruda (status + body parseado) del endpoint edge de
- * community-signup en un resultado estructurado sobre el que el formulario
- * puede actuar. Es pura para poder testearla en node sin DOM.
+ * Maps a raw response (status + parsed body) from the community-signup edge
+ * endpoint to a structured outcome the form component can act on. Pure so it
+ * can be unit-tested in node without a DOM.
  *
- * El caso en que fetch lanza (sin respuesta) lo trata el llamador como error
- * de red; esta función solo clasifica respuestas que sí llegaron.
+ * The fetch-throws case (no response at all) is handled by the caller as a
+ * network error; this function only classifies responses that did arrive.
  */
 export function resolveSignupResponse(status: number, body: unknown): SignupOutcome {
   if (
@@ -169,7 +169,7 @@ export function resolveSignupResponse(status: number, body: unknown): SignupOutc
   return { kind: 'error', code: 'server_error' };
 }
 
-/** Traduce un código de error con la tabla de textos del formulario. */
+/** Localizes an error code using the form's translation table. */
 export function errorMessageFor(
   code: CommunityErrorCode,
   t: { errorInvalidEmail: string; errorInvalidRegion: string; errorRateLimited: string; errorServer: string },
@@ -184,12 +184,12 @@ export function errorMessageFor(
 
 
 /**
- * Llama al endpoint de alta community de cloud-api. Si va bien, el backend
- * devuelve la URL de una Stripe Checkout Session a la que redirigir al usuario.
+ * Calls the cloud-api community signup endpoint. On success, the backend
+ * returns a Stripe Checkout Session URL the user should be redirected to.
  *
- * Nota: el endpoint del backend es PÚBLICO y NO requiere X-API-Key.
- * Enviar la clave sería inocuo pero innecesario; se omite para mantener la
- * llamada mínima.
+ * Note: the backend endpoint is PUBLIC and does NOT require X-API-Key.
+ * Sending the key would be harmless but unnecessary; we omit it to keep the
+ * call minimal.
  */
 export async function signupViaBackend(
   apiURL: string,
@@ -249,7 +249,7 @@ export async function signupViaBackend(
   return { ok: false, error: 'server_error' };
 }
 
-// Helper solo para tests: vacía el mapa del rate limit entre tests.
+// Test-only helper: clear the rate-limit map between tests.
 export function __resetRateLimitForTests(): void {
   rateLimitMap.clear();
 }

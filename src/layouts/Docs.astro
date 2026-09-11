@@ -2,8 +2,8 @@
 import '../styles/global.css';
 import '../styles/docs-shell.css';
 
-// Fuentes autoalojadas, como en NanBase. Antes venían de Google Fonts: eso
-// bloqueaba el renderizado y mandaba la IP de cada visitante a un tercero.
+// Self-hosted fonts, as in NanBase. They used to come from Google Fonts: that
+// blocked rendering and sent every visitor's IP to a third party.
 import '@fontsource-variable/archivo/wdth.css';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
@@ -26,8 +26,8 @@ interface Props {
   lang?: 'en' | 'es';
 }
 
-// Las guías existen en los dos idiomas, cada una en su colección, así que el
-// idioma de la página, el copy por defecto y la tarjeta social siguen la prop `lang`.
+// The guides exist in both languages, each in its own collection, so the page
+// language, the default copy and the social card follow the `lang` prop.
 const { title, lang = 'en' } = Astro.props;
 
 const description =
@@ -60,8 +60,8 @@ const T = {
 
 const siteUrl = 'https://nan.builders';
 
-// Sin barra final, igual que la canonical que emite NanBase, para que las dos
-// variantes de cada URL no compitan entre sí.
+// No trailing slash, matching the canonical NanBase emits, so the two variants
+// of each URL do not compete with each other.
 const canonical = `${siteUrl}${Astro.url.pathname.replace(/\/+$/, '') || '/'}`;
 const ogImage = `${siteUrl}/og/og-en.png`;
 const socialTitle = `${title} · NaN Docs`;
@@ -69,10 +69,10 @@ const socialTitle = `${title} · NaN Docs`;
 const entries = await getCollection(lang === 'es' ? 'docsEs' : 'docs');
 
 /*
- * La referencia de la API no sale de la colección: Scalar sirve /docs/api desde
- * la spec, así que no hay entrada de la que sacar título, orden o grupo. Se
- * añade a mano desde apiDoc.ts, el mismo módulo del que los lee /api/docs,
- * para que la página y el manifiesto no puedan discrepar.
+ * The API reference does not come from the collection: Scalar serves /docs/api
+ * from the spec, so there is no entry to take a title, order or group from. It
+ * is added by hand from apiDoc.ts, the same module /api/docs reads them from,
+ * so the page and the manifest cannot disagree.
  */
 const navItems: DocsNavItem[] = [
   ...entries.map((entry) => ({
@@ -100,16 +100,16 @@ const here = Astro.url.pathname.replace(/\/+$/, '') || `${pfx}/docs`;
 const isActive = (slug: string) => isActiveDocPath(here, slug);
 
 /*
- * Breadcrumbs. El layout anterior los tenía y helmcode no, así que al portar su
- * estructura se perdieron; se restauran porque bajo /docs son la única pista
- * de dónde estás cuando llegas desde un buscador.
+ * Breadcrumbs. The previous layout had them and helmcode does not, so porting
+ * its structure dropped them; they are restored because under /docs they are
+ * the only clue to where you are when you arrive from a search engine.
  */
 const breadcrumb = enPath
   .split('/')
   .filter(Boolean)
   .map((part, i, parts) => {
-    // Se construye desde la ruta sin locale: contar `/es` como segmento hacía
-    // que las páginas en español mostraran una miga de más para el índice de docs.
+    // Built from the locale-stripped path: counting `/es` as a segment made the
+    // Spanish pages show an extra crumb for the docs index.
     const path = `${pfx}/` + parts.slice(0, i + 1).join('/');
     const item = navItems.find((n) => n.slug === path);
     return {
@@ -125,12 +125,12 @@ const nextPage =
   currentIndex >= 0 && currentIndex < navItems.length - 1 ? navItems[currentIndex + 1] : null;
 
 /*
- * Índice de búsqueda.
+ * Search index.
  *
- * helmcode lo construye con import.meta.glob sobre páginas .md; aquí las guías
- * son una colección de contenido, así que los encabezados salen de
- * render(entry), y los de la referencia de la API salen de la spec, que es su
- * única representación textual (Scalar renderiza en el cliente).
+ * helmcode builds it with import.meta.glob over .md pages; here the guides are
+ * a content collection, so the headings come from render(entry), and the API
+ * reference's come from the spec, which is its only textual representation
+ * (Scalar renders on the client).
  */
 const collectionIndex = await Promise.all(
   entries.map(async (entry) => {
@@ -163,12 +163,12 @@ const searchData = [
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    {/* El mismo juego de iconos que NanBase, para que /docs no cambie de favicon. */}
+    {/* The same icon set as NanBase, so /docs does not change favicon. */}
     <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="canonical" href={canonical} />
-    {/* Cada guía existe en las dos rutas, así que cada una declara la otra. */}
+    {/* Every guide exists at both paths, so each declares the other. */}
     <link rel="alternate" hreflang="en" href={`${siteUrl}${enPath}`} />
     <link rel="alternate" hreflang="es" href={`${siteUrl}${esPath}`} />
     <link rel="alternate" hreflang="x-default" href={`${siteUrl}${enPath}`} />
@@ -187,10 +187,10 @@ const searchData = [
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     {/*
-      `font-src` necesita `data:`: Vite convierte en data URIs los subconjuntos
-      de fuentes que quedan por debajo del límite de inline (varios de Archivo y
-      JetBrains Mono), y con un `'self'` a secas el navegador los bloqueaba.
-      Viene de antes del port; solo se veía en la consola.
+      `font-src` needs `data:`: Vite turns the font subsets that fall under the
+      inline limit into data URIs (several Archivo and JetBrains Mono subsets),
+      and with a bare `'self'` the browser blocked them. This predates the port;
+      it only showed up in the console.
     */}
     <meta
       http-equiv="Content-Security-Policy"
@@ -208,11 +208,11 @@ const searchData = [
     <div class="docs-wrap">
       <aside class="docs-side" id="docs-side" aria-label="Documentation">
         {/*
-          Cierre desde dentro del propio panel. Visible solo en móvil, donde el
-          sidebar es un drawer: el layout anterior lo tenía y al portar el de
-          helmcode se perdió, dejando el cierre al overlay, la tecla Escape o
-          volver a la hamburguesa, y ninguno es un affordance evidente en una
-          pantalla pequeña.
+          Closing from inside the panel itself. Visible on mobile only, where
+          the sidebar is a drawer: the previous layout had it and porting
+          helmcode's lost it, leaving closing to the overlay, the Escape key or
+          going back to the hamburger, none of which are obvious affordances on
+          a small screen.
         */}
         <button class="docs-side-close" id="docs-side-close" type="button" aria-label={T.close}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -315,12 +315,12 @@ const searchData = [
       </div>
     </div>
 
-    <!-- Notificación toast de copiado -->
+    <!-- Copy toast notification -->
     <div class="copy-toast" id="copy-toast">Copied to clipboard</div>
 
     <script define:vars={{ searchData }} is:inline>
-      // Búsqueda: filtra por título, descripción y encabezados. Sin dependencias
-      // ni índice invertido; con siete páginas un `includes` sobra.
+      // Search: filters by title, description and headings. No dependencies and
+      // no inverted index; with seven pages an `includes` is plenty.
       (function () {
         const input = document.getElementById('docs-search');
         const panel = document.getElementById('docs-search-results');
@@ -382,15 +382,15 @@ const searchData = [
     </script>
 
     <script>
-      // ── Drawer del sidebar en móvil ───────────────────────────────────────
+      // ── Mobile sidebar drawer ─────────────────────────────────────────────
       const menuBtn = document.getElementById('docs-menu-btn');
       const side = document.getElementById('docs-side');
       const backdrop = document.getElementById('docs-backdrop');
       const sideClose = document.getElementById('docs-side-close');
 
       if (menuBtn && side && backdrop) {
-        // El botón vive en la barra compartida y llega oculto: solo tiene
-        // sentido donde hay un sidebar que abrir, y la referencia de la API no tiene.
+        // The button lives in the shared bar and ships hidden: it only makes
+        // sense where there is a sidebar to open, and the API reference has none.
         menuBtn.hidden = false;
 
         const setOpen = (open: boolean) => {
@@ -409,9 +409,9 @@ const searchData = [
       }
 
       // ── TOC ───────────────────────────────────────────────────────────────
-      // Se construye desde el DOM y no desde los `headings` de Astro a propósito:
-      // los h2 que renderizan componentes como ModelCard no aparecen en esa
-      // lista, así que /docs/models perdería todo su índice.
+      // Built from the DOM rather than from Astro's `headings` on purpose: the
+      // h2s rendered by components such as ModelCard do not appear in that
+      // list, so /docs/models would lose its whole index.
       const tocContainer = document.getElementById('toc');
       const headings = document.querySelectorAll<HTMLElement>('.docs-content h2, .docs-content h3');
 
@@ -424,7 +424,7 @@ const searchData = [
 
           const link = document.createElement('a');
           link.href = `#${id}`;
-          // data-toc-text permite a un encabezado dejar las decoraciones (badges) fuera del TOC
+          // data-toc-text lets a heading keep decorations (badges) out of the TOC
           link.textContent = heading.dataset.tocText || heading.textContent || '';
           link.dataset.target = id!;
           if (heading.tagName === 'H3') link.classList.add('lvl3');
@@ -459,9 +459,9 @@ const searchData = [
         });
       }
 
-      // ── Bloques de código ─────────────────────────────────────────────────
-      // Mejora progresiva para los bloques <pre><code> generados por Markdown:
-      // envuelve cada uno en una barra con etiqueta de lenguaje + botón de copiar.
+      // ── Code blocks ───────────────────────────────────────────────────────
+      // Progressive enhancement for Markdown-generated <pre><code> blocks:
+      // wrap each in a toolbar with language label + copy button.
       const prettifyLanguage = (raw: string | null | undefined) => {
         const value = (raw || 'text').replace(/^language-/, '').toLowerCase();
         const labels: Record<string, string> = {

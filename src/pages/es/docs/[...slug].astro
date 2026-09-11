@@ -1,9 +1,9 @@
 ---
 /*
- * /es/docs y /es/docs/<slug>: las guías en español.
+ * /es/docs and /es/docs/<slug>: the Spanish guides.
  *
- * Replica la ruta en inglés pero lee la colección `docsEs`. La ruta estática
- * /es/docs/api gana a este catch-all, exactamente igual que en inglés.
+ * It mirrors the English route but reads the `docsEs` collection. The static
+ * /es/docs/api route wins over this catch-all, exactly as it does in English.
  */
 import { getEntry, render } from 'astro:content';
 import Docs from '../../../layouts/Docs.astro';

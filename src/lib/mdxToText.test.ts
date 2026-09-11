@@ -56,7 +56,7 @@ describe('mdxToText invariants on docs corpus', () => {
       const codeFenceFree = out.replace(/```[\s\S]*?```/g, '');
       expect(codeFenceFree).not.toMatch(/^import\s/m);
       expect(codeFenceFree).not.toMatch(/^export\s/m);
-      // Sin etiquetas HTML residuales del conjunto soportado.
+      // No residual HTML tags for the supported set.
       expect(codeFenceFree).not.toMatch(/<\/?h[1-4]\b/i);
       expect(codeFenceFree).not.toMatch(/<\/?a\b/i);
       expect(codeFenceFree).not.toMatch(/<\/?(strong|b|em|i)\b/i);
@@ -111,8 +111,8 @@ describe('mdxToText rate limits', () => {
     const out = await mdxToText(input);
     expect(out).toContain('- Requests / min: 60 rpm');
     expect(out).toContain('- Max parallel: 5 concurrent');
-    // glm5.3 se limita por la ventana, no por una tasa por minuto, y los docs
-    // no tenían ninguna fila para él cuando el modelo ya se estaba sirviendo.
+    // glm5.3 is gated by the window, not by a per-minute rate, and the docs
+    // had no row for it at all while the model was already being served.
     expect(out).toContain('- Rolling 4h window: 400M tokens');
     expect(out).toContain('- Allowance / billing period: 3,000M tokens');
   });

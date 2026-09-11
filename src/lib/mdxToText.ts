@@ -71,12 +71,11 @@ export function htmlNodeToMarkdown(input: string): string {
 }
 
 /**
- * Reduce la expresión de una prop a un valor estático.
+ * Reduces a prop expression to a static value.
  *
- * Solo se admiten construcciones literales: todo lo que el extractor de texto
- * canónico no pueda evaluar lanza, porque la alternativa es que un componente
- * desaparezca en silencio del texto servido a los consumidores de la API
- * mientras la página sigue renderizando.
+ * Only literal constructs are supported: anything the canonical text extractor
+ * cannot evaluate throws, because the alternative is a component silently
+ * vanishing from the text served to API consumers while the page still renders.
  */
 export function astToValue(node: unknown): unknown {
   if (!node || typeof node !== 'object') {
@@ -103,9 +102,9 @@ export function astToValue(node: unknown): unknown {
         if (prop.type !== 'Property') {
           throw new Error(`Unsupported MDX expression: ${prop.type} in object literal`);
         }
-        // `{ [label]: 'x' }` también tiene una clave Identifier, pero nombra un
-        // binding y no el campo. Leerla como literal escribiría en silencio la
-        // clave equivocada y dejaría vacía la que el componente espera.
+        // `{ [label]: 'x' }` has an Identifier key too, but it names a binding
+        // rather than the field. Reading it as a literal would silently write
+        // the wrong key and blank out the one the component expects.
         if (prop.computed) {
           throw new Error('Unsupported MDX expression: computed object key');
         }
@@ -150,7 +149,7 @@ export function getAttr(node: { attributes?: unknown[] }, name: string): unknown
       name?: string;
       value?: unknown;
     };
-    // Un spread oculta qué props recibe realmente un componente.
+    // A spread hides which props a component actually receives.
     if (attr.type === 'mdxJsxExpressionAttribute') {
       throw new Error('Unsupported MDX expression: spread attribute');
     }
@@ -387,7 +386,7 @@ function htmlTagToBlockMd(node: MdxNode): string {
     const inner = stringifyInlineChildren(node.children || []).trim();
     return `${hashes} ${inner}`;
   }
-  // Etiquetas inline que aparecen a nivel de bloque: se envuelven como párrafo.
+  // Inline tags occurring at block level — wrap as paragraph.
   return htmlTagToInlineMd(node);
 }
 
@@ -462,13 +461,13 @@ function transformTree(root: { children?: unknown[] }, rateLimits: RateLimitsCon
     const out: unknown[] = [];
     for (const c of node.children) {
       const child = c as MdxNode;
-      // Primero se recurre (post-orden).
+      // Recurse first (post-order).
       if (Array.isArray(child.children)) {
         const newChildren = process(child);
         child.children = newChildren;
       }
 
-      // import/export nunca renderizan; son la forma en que .mdx trae sus componentes.
+      // import/export never render; they are how .mdx pulls in its components.
       if (isMdxEsm(child.type)) {
         continue;
       }
@@ -520,19 +519,18 @@ function transformTree(root: { children?: unknown[] }, rateLimits: RateLimitsCon
 }
 
 /**
- * Los 29 code points que acepta str.isspace() de Python.
+ * The 29 code points Python's str.isspace() accepts.
  *
- * El .trim() de JS no es el mismo conjunto: quita U+FEFF, que Python conserva,
- * y conserva U+001C..U+001F, que Python quita. El bot de Discord vuelve a
- * canonicalizar el cuerpo que servimos y lo hashea (nan-discord-bot,
- * bot/docs_client.py), así que una discrepancia aquí haría que su hash no
- * coincidiera nunca con nuestro contentHash.
+ * JS .trim() is not the same set: it strips U+FEFF, which Python keeps, and
+ * keeps U+001C..U+001F, which Python strips. The Discord bot re-canonicalises
+ * the body we serve and hashes it (nan-discord-bot, bot/docs_client.py), so a
+ * mismatch here would make its hash disagree with our contentHash forever.
  */
 const PYTHON_WHITESPACE =
   '\\t\\n\\v\\f\\r\\x1c-\\x1f \\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000';
 const PYTHON_STRIP_RE = new RegExp(`^[${PYTHON_WHITESPACE}]+|[${PYTHON_WHITESPACE}]+$`, 'g');
 
-/** Replica el str.strip() de Python y no el .trim() de JS. */
+/** Mirrors Python's str.strip() rather than JS's .trim(). */
 export function pythonStrip(s: string): string {
   return s.replace(PYTHON_STRIP_RE, '');
 }

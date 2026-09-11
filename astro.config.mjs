@@ -23,10 +23,10 @@ export default defineConfig({
     routing: { prefixDefaultLocale: false },
   },
 
-  // No usamos sesiones de Astro en v1 (sin auth). Si no, el adaptador de
-  // Cloudflare activa solo un driver de sesión sobre KV e intenta inyectar un
-  // binding KV "SESSION" en la config de wrangler generada. Apuntar el driver
-  // de sesión a `unstorage/drivers/null` lo desactiva limpiamente.
+  // We do not use Astro sessions in v1 (no auth). The Cloudflare adapter
+  // otherwise auto-enables a KV-backed session driver and tries to inject a
+  // "SESSION" KV binding into the generated wrangler config. Pointing the
+  // session driver at `unstorage/drivers/null` disables it cleanly.
   session: {
     driver: {
       entrypoint: 'unstorage/drivers/null',

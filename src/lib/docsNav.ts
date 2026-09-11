@@ -1,11 +1,10 @@
 /**
- * Lógica de navegación e índice de búsqueda del shell de docs.
+ * Navigation and search-index logic for the docs shell.
  *
- * Vive aquí y no inline en Docs.astro para poder probarla con tests unitarios:
- * a un layout solo se llega con un render SSR completo, y estas son justo las
- * partes que se rompen en silencio. La navegación es lo que usa quien lee para
- * encontrar cualquier cosa, y los anchors de abajo son un contrato con un
- * paquete de terceros.
+ * It lives here rather than inline in Docs.astro so it can be unit-tested: a
+ * layout is only reachable through a full SSR render, and these are exactly the
+ * parts that break silently. The nav is what a reader uses to find anything,
+ * and the anchors below are a contract with a third-party package.
  */
 
 export interface DocsNavItem {
@@ -21,18 +20,18 @@ export interface DocsNavGroup {
   items: DocsNavItem[];
 }
 
-/** Destino de un resultado de búsqueda: un encabezado dentro de una página de docs. */
+/** A search hit target: a heading inside a docs page. */
 export interface DocsHeading {
   text: string;
-  /** Fragmento SIN la '#' inicial. */
+  /** Fragment WITHOUT the leading '#'. */
   slug: string;
 }
 
 /**
- * Las reglas de slug de Scalar para un encabezado, reproducidas.
+ * Scalar's slug rules for a heading, reproduced.
  *
- * Verificado contra la página renderizada: "Versioning & compatibility" pasa a
- * `versioning-compatibility` y "Making requests" a `making-requests`.
+ * Verified against the rendered page: "Versioning & compatibility" becomes
+ * `versioning-compatibility` and "Making requests" becomes `making-requests`.
  */
 export function slugifyAnchor(text: string): string {
   return text
@@ -43,17 +42,17 @@ export function slugifyAnchor(text: string): string {
 }
 
 /**
- * Dónde vive un encabezado de la referencia de la API, como fragmento.
+ * Where a heading of the API reference lives, as a fragment.
  *
- * Scalar tiene DOS espacios de nombres de anchors y no son intercambiables:
- * las secciones de la vista general (que salen de `info.description`) se
- * direccionan como `description/<slug>`, y los grupos de endpoints como
- * `tag/<slug>`. Mandar a un lector a `tag/authentication` lo deja en la página
- * sin hacer scroll, porque ese id no existe.
+ * Scalar has TWO anchor namespaces and they are not interchangeable: the
+ * sections of the overview (which come from `info.description`) are addressed
+ * as `description/<slug>`, and the endpoint groups as `tag/<slug>`. Sending a
+ * reader to `tag/authentication` lands them on the page without scrolling,
+ * because that id does not exist.
  *
- * Es un acoplamiento con `@scalar/api-reference` que nada más impone, así que
- * lo fijan los tests: si una versión de Scalar cambia el esquema, los
- * resultados de búsqueda empiezan a apuntar a ninguna parte y ningún build falla.
+ * This is a coupling to `@scalar/api-reference` that nothing else enforces, so
+ * it is pinned by tests: if a version of Scalar changes the scheme, the search
+ * results start pointing nowhere and no build fails.
  */
 export function apiSearchHeadings(spec: {
   info?: { description?: string };
@@ -61,7 +60,7 @@ export function apiSearchHeadings(spec: {
 }): DocsHeading[] {
   const overview = (spec.info?.description ?? '')
     .split('\n')
-    // `^##\s` solo casa con el nivel 2: un `###` tiene una '#' donde debe ir el espacio.
+    // `^##\s` only matches level 2: a `###` has a '#' where the space must be.
     .flatMap((line) => {
       const m = /^##\s+(.+)$/.exec(line);
       return m ? [m[1].trim()] : [];
@@ -77,11 +76,11 @@ export function apiSearchHeadings(spec: {
 }
 
 /**
- * Si una entrada de navegación debe leerse como la página actual.
+ * Whether a nav entry should read as the current page.
  *
- * Coincidencia por prefijo, no solo igualdad, para que una ruta anidada
- * resalte a su padre. `/docs` se excluye de la rama de prefijo o se
- * resaltaría en todas las páginas de la sección.
+ * Prefix matching, not just equality, so a nested route highlights its parent.
+ * `/docs` is excluded from the prefix branch or it would highlight on every
+ * page of the section.
  */
 export function isActiveDocPath(here: string, slug: string): boolean {
   const target = slug.replace(/\/+$/, '');
@@ -90,11 +89,11 @@ export function isActiveDocPath(here: string, slug: string): boolean {
 }
 
 /**
- * Agrupa la navegación conservando el orden que los elementos ya traen.
+ * Groups the nav, preserving the order the items already carry.
  *
- * El orden de los grupos sigue el `order` más bajo de cada uno en vez de una
- * lista escrita a mano en el layout, para que añadir una guía siga siendo
- * cuestión de crear un fichero.
+ * The group order follows the lowest `order` in each group rather than a list
+ * written by hand in the layout, so adding a guide stays a matter of creating
+ * one file.
  */
 export function groupDocsNav(items: DocsNavItem[]): DocsNavGroup[] {
   const sorted = [...items].sort((a, b) => a.order - b.order);

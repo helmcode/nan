@@ -28,7 +28,7 @@ describe('i18n', () => {
     });
 
     test('falls back to Spanish for unknown locale', () => {
-      // El fallback de i18n es translations.es, así que los locales desconocidos devuelven español
+      // The i18n fallback is translations.es, so unknown locales return Spanish
       expect(t('events.kindHackathon', 'fr')).toBe('hackatón');
     });
 

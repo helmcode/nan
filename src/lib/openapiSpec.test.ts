@@ -5,22 +5,22 @@ import { resolveSpec } from './apiDoc';
 import { DEFAULT_RATE_LIMITS, formatTokens, getRateLimitsConfig } from './rateLimits';
 
 /**
- * Centinela sobre src/data/openapi.json, la spec que Scalar pinta en /docs/api
- * y la fuente del Markdown que consume el bot de Discord.
+ * Tripwire over src/data/openapi.json, the spec Scalar renders at /docs/api
+ * and the source of the Markdown the Discord bot consumes.
  *
- * Existe porque la spec es datos, no código: nada la comprueba con tipos y un
- * error dentro se despliega en silencio. Y esta spec en concreto se derivó de
- * la de helmcode.com, cuyo catálogo y modelo de facturación NO son los de NaN,
- * así que lo que más vigila es que no se cuele de vuelta nada de allí.
+ * It exists because the spec is data, not code: nothing type-checks it and a
+ * mistake inside ships silently. And this spec in particular was derived from
+ * helmcode.com's, whose catalogue and billing model are NOT NaN's, so what
+ * this mostly watches for is anything from there creeping back in.
  *
- * La superficie de endpoints se comprobó contra el backend real probando cada
- * ruta: las 12 listadas aquí responden 401 (existen y piden auth) mientras que
- * /v1/moderations, /v1/batches y /v1/files responden 404 (no activas en NaN).
+ * The endpoint surface was checked against the real backend by probing each
+ * route: the 12 listed here answer 401 (they exist and want auth) while
+ * /v1/moderations, /v1/batches and /v1/files answer 404 (not enabled on NaN).
  */
 
 const raw = JSON.stringify(spec);
 
-/** Las 12 rutas públicas verificadas contra api.nan.builders. */
+/** The 12 public routes verified against api.nan.builders. */
 const PUBLIC_SURFACE: Array<[string, string]> = [
   ['/models', 'get'],
   ['/chat/completions', 'post'],
@@ -36,7 +36,7 @@ const PUBLIC_SURFACE: Array<[string, string]> = [
   ['/mcp', 'post'],
 ];
 
-/** El catálogo real de NaN (src/data/modelos.json + la referencia de la API). */
+/** NaN's real catalogue (src/data/modelos.json + the API reference). */
 const NAN_MODELS = [
   'deepseek-v4-flash',
   'mimo-v2.5',
@@ -97,7 +97,7 @@ describe('openapi.json: the surface is what the backend actually serves', () => 
 
   it('does not document endpoints NaN does not serve', () => {
     const documented = Object.keys(spec.paths as Record<string, unknown>);
-    // Estos tres responden 404 en api.nan.builders.
+    // These three answer 404 on api.nan.builders.
     for (const absent of ['/moderations', '/batches', '/files']) {
       expect(documented).not.toContain(absent);
     }
@@ -128,8 +128,8 @@ describe('openapi.json: nothing left over from helmcode.com', () => {
   });
 
   it('mentions Helmcode only as the enterprise-service note', () => {
-    // Una sola mención, y dentro de info: la que dice que enterprise usa otra
-    // base URL. Cualquier otra sería branding sin migrar.
+    // A single mention, and inside info: the one saying enterprise uses a
+    // different base URL. Any other would be un-migrated branding.
     const outsideInfo = JSON.stringify({ ...spec, info: undefined });
     expect(outsideInfo.toLowerCase()).not.toContain('helmcode');
   });
@@ -137,9 +137,9 @@ describe('openapi.json: nothing left over from helmcode.com', () => {
 
 describe('openapi.json: the model catalogue', () => {
   /**
-   * Todo identificador con pinta de modelo que aparezca en la spec tiene que
-   * estar en el catálogo. Es la red que evita publicar un modelo que no existe,
-   * que es justo lo que pasó una vez con glm5.3 en sentido contrario.
+   * Every model-looking identifier appearing in the spec must be in the
+   * catalogue. This is the net that stops us publishing a model that does not
+   * exist, which is exactly what happened once with glm5.3 the other way round.
    */
   it('cites no model identifier outside the catalogue', () => {
     const cited = new Set(
@@ -156,11 +156,10 @@ describe('openapi.json: the model catalogue', () => {
   });
 
   /**
-   * La tabla de la home (modelos.json) y esta spec se escriben a mano en dos
-   * días distintos, así que un modelo puede aterrizar en el clúster, salir en
-   * la landing y no llegar nunca a la referencia de la API. Los modelos de chat
-   * son los que un miembro copia en el campo `model`, así que son los que se
-   * comprueban.
+   * The home table (modelos.json) and this spec are written by hand on two
+   * different days, so a model can land on the cluster, get listed on the
+   * landing page and never reach the API reference. The chat models are the
+   * ones a member copies into the `model` field, so those are the ones checked.
    */
   it('documents every chat model the landing page lists', () => {
     const llm = modelos.categorias.find((c) => c.id === 'llm')!;
@@ -178,10 +177,10 @@ describe('openapi.json: the model catalogue', () => {
 });
 
 /**
- * Los rate limits NO están escritos en la spec: vienen de rateLimits.ts, el
- * módulo que existe porque la página de docs y la API de docs ya se habían
- * desviado una vez (60 rpm contra 100 rpm). Hardcodearlos aquí habría sido una
- * tercera copia, y una que no puede seguir RATE_LIMIT_RPM, que es una env var.
+ * The rate limits are NOT written into the spec: they come from rateLimits.ts,
+ * the module that exists because the docs page and the docs API had already
+ * drifted apart once (60 rpm against 100 rpm). Hardcoding them here would have
+ * been a third copy, and one that cannot follow RATE_LIMIT_RPM, an env var.
  */
 describe('openapi.json: rate limits come from the single source of truth', () => {
   it('ships a placeholder rather than the numbers', () => {
@@ -200,7 +199,7 @@ describe('openapi.json: rate limits come from the single source of truth', () =>
     );
   });
 
-  /** Un override por env tiene que llegar a /docs/api, no solo a /docs/models. */
+  /** An env override has to reach /docs/api, not only /docs/models. */
   it('follows an env override of the per-key limits', () => {
     const overridden = getRateLimitsConfig({ RATE_LIMIT_RPM: '250', RATE_LIMIT_PARALLEL: '9' });
     const description = resolveSpec(overridden).info.description;

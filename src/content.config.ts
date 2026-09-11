@@ -7,13 +7,13 @@ const docsSchema = z.object({
   description: z.string(),
   order: z.number().int().min(0),
   /*
-   * El encabezado bajo el que aparece la página en la navegación de docs.
+   * The heading the page appears under in the docs navigation.
    *
-   * La navegación de helmcode escribe los grupos a mano en el layout; aquí
-   * viven en los datos para que añadir una guía siga siendo cuestión de crear
-   * un fichero y no de editar también el layout, que es como estas cosas se
-   * desincronizan. El orden entre grupos sale del `order` más bajo de cada
-   * uno, así que tampoco hay una segunda lista que mantener.
+   * helmcode's nav writes the groups by hand in the layout; here they live in
+   * the data so adding a guide stays a matter of creating a file rather than
+   * also editing the layout, which is how these things drift apart. The order
+   * between groups comes from the lowest `order` in each, so there is no
+   * second list to maintain either.
    */
   group: z.string().default('Guides'),
   locale: z.string().default('es'),
@@ -25,14 +25,14 @@ const docs = defineCollection({
 });
 
 /*
- * Las guías en español viven en su propio directorio y no en una subcarpeta
- * de locale dentro de `docs`.
+ * The Spanish guides live in their own directory rather than under a locale
+ * subfolder of `docs`.
  *
- * Una estructura `docs/en/…` + `docs/es/…` convertiría cada id de entrada en
- * `en/intro` y similares, y SAFE_SLUG en src/lib/docsApi.ts rechaza las
- * barras: la ruta del manifest lanza en la primera, así que
- * /api/docs/manifest.json respondería 500 y el bot de Discord lo perdería
- * todo. Dejar el inglés donde está deja esos slugs intactos.
+ * A `docs/en/…` + `docs/es/…` layout would turn every entry id into `en/intro`
+ * and the like, and SAFE_SLUG in src/lib/docsApi.ts rejects slashes: the
+ * manifest route throws on the first one, so /api/docs/manifest.json would
+ * answer 500 and the Discord bot would lose everything. Keeping English where
+ * it is leaves those slugs untouched.
  */
 const docsEs = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/docs-es' }),

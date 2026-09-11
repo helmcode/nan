@@ -119,9 +119,9 @@ describe('POST /api/community-signup', () => {
     });
     expect(status).toBe(200);
     expect(payload.ok).toBe(true);
-    // La URL del honeypot es una URL inocua de nan.builders, no la de Stripe.
+    // The honeypot URL is a benign nan.builders URL, not the Stripe one.
     expect(payload.url).toContain('nan.builders');
-    // No debería haberse llamado al backend.
+    // Backend should not have been called.
     expect((fetchMock as unknown as ReturnType<typeof vi.fn>).mock.calls.length).toBe(0);
   });
 
