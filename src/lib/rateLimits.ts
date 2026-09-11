@@ -67,12 +67,18 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
   // numbers the member portal publishes.
   //
   // contextTokens mirrors the backend EXACTLY: 1,048,576, raised from 500,000
-  // on 2026-09-10 and exactly what the Novita primary serves. It renders as
-  // "1M" because formatTokens rounds the display, which is the layer that
-  // should do it — publishing a rounded 1,000,000 here would leave the site
-  // 4.8% below the source it claims to mirror, and would turn the test below
-  // from an equality into a floor. The equality is the mechanism: it is what
-  // makes a backend change fail here instead of shipping quietly.
+  // on 2026-09-10. It equals the Novita primary's `context_size`, which
+  // covers input AND OUTPUT together — so it is the provider's total budget,
+  // not a servable input window: a prompt at the very top leaves no room for
+  // the reply. Nothing filters for that on our side, so a caller who uses the
+  // full figure gets the provider's error on a number this page publishes.
+  //
+  // It renders as "1M" because formatTokens rounds the display down, which is
+  // the layer that should do it. Publishing a rounded 1,000,000 here instead
+  // would leave the site 4.8% below the source it claims to mirror, and would
+  // turn the test below from an equality into a floor. The equality is the
+  // mechanism: it is what makes a backend change fail here instead of
+  // shipping quietly.
   windowedModels: [
     {
       model: 'glm5.3',
@@ -103,9 +109,17 @@ export function formatTokens(tokens: number, lang: DocsLocale = 'en'): string {
   // side. Rounding the DISPLAY is the right layer: the published constant
   // stays equal to the backend, so the test below can keep asserting
   // equality rather than a floor.
+  //
+  // `roundingMode: 'floor'` because this page is read by people who have not
+  // paid yet, so it must never advertise MORE than the backend allows.
+  // Truncating alone is not the default: `maximumFractionDigits` ROUNDS, so
+  // 1.5M would have printed "2M". Harmless at today's 1,048,576, and the
+  // exact trap the member portal already guards against with Math.floor —
+  // the guard belonged on the more public surface too.
   const fmt = new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
     useGrouping: 'always',
     maximumFractionDigits: 0,
+    roundingMode: 'floor',
   });
   if (tokens >= 1_000_000) return `${fmt.format(tokens / 1_000_000)}M`;
   if (tokens >= 1_000) return `${fmt.format(tokens / 1_000)}K`;

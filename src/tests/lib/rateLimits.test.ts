@@ -6,6 +6,7 @@ import {
   windowedModelBody,
   windowedModelHeadline,
   windowedModelNote,
+  formatTokens,
 } from '../../lib/rateLimits';
 
 /**
@@ -31,6 +32,30 @@ const GLM = {
   windowTokens: 400_000_000,
   periodCapTokens: 3_000_000_000,
 };
+
+describe('formatTokens rounds DOWN', () => {
+  // 1_500_000, not the live 1_048_576: the live value renders "1M" whether
+  // the formatter floors or rounds, so an assert on it cannot fail if the
+  // guard is removed. This is the smallest value that tells them apart.
+  //
+  // It matters more here than in the member portal. `roundingMode` is an
+  // Intl.NumberFormat option, and a runtime that does not support it IGNORES
+  // IT SILENTLY — no error, just rounding again. So this is not "is the word
+  // still in the source", it is "does this runtime actually floor", and only
+  // an assert can answer that.
+  it('never advertises more than the backend allows', () => {
+    expect(formatTokens(1_500_000)).toBe('1M');
+    expect(formatTokens(1_900_000)).toBe('1M');
+    expect(formatTokens(1_500_000, 'es')).toBe('1M');
+  });
+
+  it('leaves the other published figures untouched', () => {
+    expect(formatTokens(1_048_576)).toBe('1M');
+    expect(formatTokens(3_000_000_000)).toBe('3,000M');
+    expect(formatTokens(3_000_000_000, 'es')).toBe('3.000M');
+    expect(formatTokens(400_000_000)).toBe('400M');
+  });
+});
 
 describe('rateLimits — glm5.3 windowed limits', () => {
   const glm = DEFAULT_RATE_LIMITS.windowedModels.find((m) => m.model === 'glm5.3');
