@@ -1,7 +1,7 @@
 ---
 title: Modelos
 description: Especificaciones técnicas, capacidades y parámetros de los modelos del clúster compartido.
-order: 3
+order: 18
 group: Referencia
 ---
 
@@ -13,56 +13,6 @@ import RateLimits from '../../components/docs/RateLimits.astro';
 
 Modelos de la comunidad. A todos se accede con la misma API compatible con
 OpenAI y la misma `base URL`.
-
-<ModelCard
-  id="deepseek-v4-flash"
-  name="deepseek-v4-flash"
-  tag="305B MoE"
-  leftLabel="generación de texto, chat y visión"
-  rightLabel="capacidades"
-  description="Modelo MoE de 305B parámetros, servido en su variante Vision-Exp: acepta imágenes de entrada. Contexto de 1M tokens. Tool calling y razonamiento. Cuota de 3B tokens al mes por miembro."
-  specs={[
-    { label: 'Tipo', value: 'MoE (305B total)' },
-    { label: 'Cuantización', value: 'FP8' },
-    { label: 'Contexto', value: '1M tokens' },
-    { label: 'Modalidades de entrada', value: 'texto · imagen' },
-    { label: 'Modalidades de salida', value: 'texto' },
-    { label: 'Cuota mensual', value: '3B tokens / miembro' },
-  ]}
-  items={[
-    'Tool calling',
-    'Modo razonamiento',
-    'Visión (entrada de imagen)',
-    'Contexto de 1M tokens',
-    'Generación en streaming (SSE)',
-  ]}
-/>
-
-<ModelCard
-  id="mimo-v2-5"
-  name="mimo-v2.5"
-  tag="310B-15B"
-  leftLabel="omnimodal: texto, visión y audio"
-  rightLabel="capacidades"
-  description="Modelo MoE de 310B parámetros (15B activos), omnimodal de forma nativa con codificadores dedicados de visión y audio. Contexto de 1M tokens. Tool calling y razonamiento. Cuota de 1.0B tokens al mes por miembro. Licencia MIT."
-  specs={[
-    { label: 'Tipo', value: 'MoE (310B total · 15B activos)' },
-    { label: 'Cuantización', value: 'FP8' },
-    { label: 'Contexto', value: '1M tokens' },
-    { label: 'Modalidades de entrada', value: 'texto · imagen · audio' },
-    { label: 'Modalidades de salida', value: 'texto' },
-    { label: 'Cuota mensual', value: '1.0B tokens / miembro' },
-    { label: 'Licencia', value: 'MIT' },
-  ]}
-  items={[
-    'Tool calling (function calling)',
-    'Modo razonamiento (se recomienda <code>max_tokens &ge; 300</code>)',
-    'Visión (entrada de imagen)',
-    'Audio (entrada de audio)',
-    'Contexto de 1M tokens',
-    'Generación en streaming (SSE)',
-  ]}
-/>
 
 <ModelCard
   id="glm-5-3"
@@ -92,25 +42,25 @@ OpenAI y la misma `base URL`.
 />
 
 <ModelCard
-  id="qwen3-8-flash"
-  name="qwen3.8-flash"
-  tag="125B-6B"
+  id="deepseek-v4-flash"
+  name="deepseek-v4-flash"
+  tag="305B MoE"
   leftLabel="generación de texto, chat y visión"
   rightLabel="capacidades"
-  description="Modelo MoE de 125B parámetros (6B activos), multimodal con visión, tool calling y razonamiento activado por defecto. Contexto de 262K tokens, la ventana nativa del modelo. Cuota de 500M tokens al mes por miembro."
+  description="Modelo MoE de 305B parámetros, servido en su variante Vision-Exp: acepta imágenes de entrada. Contexto de 1M tokens. Tool calling y razonamiento. Cuota de 3B tokens al mes por miembro."
   specs={[
-    { label: 'Tipo', value: 'MoE (125B total · 6B activos)' },
-    { label: 'Contexto', value: '262K tokens' },
+    { label: 'Tipo', value: 'MoE (305B total)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '1M tokens' },
     { label: 'Modalidades de entrada', value: 'texto · imagen' },
     { label: 'Modalidades de salida', value: 'texto' },
-    { label: 'Cuota mensual', value: '500M tokens / miembro' },
-    { label: 'Licencia', value: 'qwen-community-1.0' },
+    { label: 'Cuota mensual', value: '3B tokens / miembro' },
   ]}
   items={[
-    'Tool calling (formato XML)',
-    'Modo razonamiento (activado por defecto)',
+    'Tool calling',
+    'Modo razonamiento',
     'Visión (entrada de imagen)',
-    'Contexto de 262K tokens',
+    'Contexto de 1M tokens',
     'Generación en streaming (SSE)',
   ]}
 />
@@ -135,6 +85,56 @@ OpenAI y la misma `base URL`.
     'Tool calling (function calling)',
     'Modo razonamiento',
     'Visión (entrada de imagen)',
+    'Contexto de 1M tokens',
+    'Generación en streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="qwen3-8-flash"
+  name="qwen3.8-flash"
+  tag="125B-6B"
+  leftLabel="generación de texto, chat y visión"
+  rightLabel="capacidades"
+  description="Modelo MoE de 125B parámetros (6B activos), multimodal con visión, tool calling y razonamiento activado por defecto. Contexto de 262K tokens, la ventana nativa del modelo. Cuota de 500M tokens al mes por miembro."
+  specs={[
+    { label: 'Tipo', value: 'MoE (125B total · 6B activos)' },
+    { label: 'Contexto', value: '262K tokens' },
+    { label: 'Modalidades de entrada', value: 'texto · imagen' },
+    { label: 'Modalidades de salida', value: 'texto' },
+    { label: 'Cuota mensual', value: '500M tokens / miembro' },
+    { label: 'Licencia', value: 'qwen-community-1.0' },
+  ]}
+  items={[
+    'Tool calling (formato XML)',
+    'Modo razonamiento (activado por defecto)',
+    'Visión (entrada de imagen)',
+    'Contexto de 262K tokens',
+    'Generación en streaming (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="mimo-v2-5"
+  name="mimo-v2.5"
+  tag="310B-15B"
+  leftLabel="omnimodal: texto, visión y audio"
+  rightLabel="capacidades"
+  description="Modelo MoE de 310B parámetros (15B activos), omnimodal de forma nativa con codificadores dedicados de visión y audio. Contexto de 1M tokens. Tool calling y razonamiento. Cuota de 1.0B tokens al mes por miembro. Licencia MIT."
+  specs={[
+    { label: 'Tipo', value: 'MoE (310B total · 15B activos)' },
+    { label: 'Cuantización', value: 'FP8' },
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Modalidades de entrada', value: 'texto · imagen · audio' },
+    { label: 'Modalidades de salida', value: 'texto' },
+    { label: 'Cuota mensual', value: '1.0B tokens / miembro' },
+    { label: 'Licencia', value: 'MIT' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Modo razonamiento (se recomienda <code>max_tokens &ge; 300</code>)',
+    'Visión (entrada de imagen)',
+    'Audio (entrada de audio)',
     'Contexto de 1M tokens',
     'Generación en streaming (SSE)',
   ]}

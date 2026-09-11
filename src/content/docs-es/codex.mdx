@@ -1,0 +1,80 @@
+---
+title: Codex
+description: Configura Codex CLI para que use los modelos de NaN con un proveedor propio.
+order: 7
+group: Configurar tu agente
+---
+
+import Details from '../../components/docs/Details.astro';
+
+# Codex.
+
+Codex CLI es el agente de terminal de OpenAI. Habla el formato de OpenAI, que es el mismo que habla NaN, así que se conecta directamente: solo hay que declarar un proveedor nuevo.
+
+> **Puedes saltarte todo esto**
+> El [CLI de NaN](/es/docs/nan-cli) escribe esta configuración por ti: pestaña Setup, `e` para pegar tu clave, `espacio` para marcar Codex, `c` para aplicar.
+
+## Qué necesitas
+
+- Codex CLI instalado.
+- Tu API key de NaN en una variable de entorno.
+
+```bash
+export NAN_API_KEY="sk-tu-clave"
+```
+
+Codex lee la clave de la variable de entorno que le indiques, no del fichero de configuración. Así no acaba escrita en un fichero que puedas subir a un repositorio sin querer.
+
+## Configuración
+
+Edita `~/.codex/config.toml`:
+
+```toml
+model_provider = "nan"
+model = "glm5.3-flash"
+
+[model_providers.nan]
+name = "NaN"
+base_url = "https://api.nan.builders/v1"
+env_key = "NAN_API_KEY"
+wire_api = "chat"
+```
+
+Tres detalles que importan:
+
+- **`wire_api = "chat"`** hace que Codex use `/chat/completions`. Es lo que quieres: el endpoint `/responses` del clúster contesta de una sola vez en lugar de ir emitiendo la respuesta, así que con `"responses"` verías la respuesta aparecer de golpe al final.
+- **El identificador del proveedor no puede ser `openai`, `ollama` ni `lmstudio`**, que están reservados. Por eso se llama `nan`.
+- **`base_url` termina en `/v1`** y nada más. No añadas la ruta del endpoint.
+
+## Comprueba que funciona
+
+```bash
+codex
+```
+
+Pídele algo corto, por ejemplo que liste los ficheros del directorio y resuma qué hace el proyecto. Si contesta, ya está funcionando contra el clúster.
+
+Si ves un error de autenticación, lo más habitual es que la variable `NAN_API_KEY` no esté exportada en la terminal desde la que lanzas `codex`.
+
+## Cambiar de modelo
+
+Puedes cambiarlo sin tocar el fichero:
+
+```bash
+codex --model deepseek-v4-flash
+```
+
+O dejar varios proveedores declarados y elegir con `--profile` si prefieres perfiles separados por tarea.
+
+## Modelo recomendado
+
+`glm5.3-flash` para trabajo de código. Si tienes el tier premium, `glm5.3`. Para preguntas sueltas que no tocan ficheros, `deepseek-v4-flash` va sobrado.
+
+<Details summary="Problemas conocidos">
+
+- **Las funciones en la nube de Codex no aplican.** Al declarar un proveedor propio, todo va contra NaN desde tu máquina.
+- **El razonamiento se ve distinto según el modelo.** Los modelos del clúster emiten su traza de razonamiento a su manera, y Codex no siempre la presenta como con los modelos de OpenAI.
+- **Si cambias `wire_api` a `"responses"`**, la respuesta deja de aparecer poco a poco. No es un cuelgue: es que ese endpoint todavía no emite la respuesta por partes.
+
+</Details>
+

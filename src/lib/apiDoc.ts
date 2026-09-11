@@ -12,16 +12,19 @@ import { rateLimitsToSpecMarkdown, type RateLimitsConfig } from './rateLimits';
  * had as `api.mdx`. The manifest contract does not change; only where the
  * text comes from does.
  *
- * The metadata mirrors the frontmatter `api.mdx` used to carry (`order: 2`
- * included) so that neither the manifest order nor the docs navigation moves
- * with the migration.
+ * The metadata mirrors the frontmatter `api.mdx` used to carry, so that
+ * neither the manifest order nor the docs navigation moved with the
+ * migration. `order` is the one field that has changed since: the agent setup
+ * guides were inserted before the reference, and the shell requires the orders
+ * to be contiguous from zero (see DocsShell.test.ts), so every page after it
+ * shifted too.
  */
 export const API_DOC_SLUG = 'api';
 
 export const API_DOC_META = {
   title: 'API',
   description: 'Public API endpoint reference. OpenAI-compatible.',
-  order: 2,
+  order: 17,
   /**
    * The nav group, per locale.
    *

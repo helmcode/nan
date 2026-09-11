@@ -1,0 +1,124 @@
+---
+title: Servidor MCP
+description: Enchufa la búsqueda web de NaN en cualquier agente compatible con MCP.
+order: 16
+group: Configurar tu agente
+---
+
+import Details from '../../components/docs/Details.astro';
+
+# Servidor MCP.
+
+Además de los modelos, NaN expone sus propias herramientas a través de un servidor **MCP** ([Model Context Protocol](https://modelcontextprotocol.io)). Sirve para lo contrario que el resto de esta sección: aquí no le das modelos a tu agente, le das **capacidades**.
+
+Hoy la herramienta disponible es la **búsqueda web**. El registro irá creciendo, así que pregúntale al servidor qué tiene en vez de fiarte de esta frase.
+
+| Campo | Valor |
+|---|---|
+| URL | `https://api.nan.builders/mcp` |
+| Autenticación | `Authorization: Bearer sk-tu-clave` |
+| Transporte | HTTP, sin estado |
+
+> **Esta URL no lleva `/v1`**
+> El servidor MCP vive en la raíz del dominio, no debajo de `/v1` como el resto de la API. Es `https://api.nan.builders/mcp`, sin nada más.
+
+La clave es la misma que usas para los modelos. No hay que generar otra.
+
+## Configuración genérica
+
+Casi todos los clientes MCP usan este mismo fichero, con este mismo bloque:
+
+```json
+{
+  "mcpServers": {
+    "nan": {
+      "url": "https://api.nan.builders/mcp",
+      "headers": {
+        "Authorization": "Bearer sk-tu-clave"
+      }
+    }
+  }
+}
+```
+
+Dónde va ese fichero depende del cliente:
+
+| Cliente | Dónde |
+|---|---|
+| Cursor | `.cursor/mcp.json` en el proyecto, o `~/.cursor/mcp.json` |
+| Cline | El panel de MCP Servers dentro de la extensión |
+| Zed | El bloque `context_servers` de `~/.config/zed/settings.json` |
+| OpenCode | El bloque `mcp` de tu `opencode.json` |
+
+## Claude Code
+
+Claude Code lo añade por línea de comandos:
+
+```bash
+claude mcp add --transport http nan https://api.nan.builders/mcp \
+  --header "Authorization: Bearer sk-tu-clave"
+```
+
+Añade `--scope user` si lo quieres disponible en todos tus proyectos y no solo en el actual. Dentro de una sesión, `/mcp` te enseña los servidores conectados y las herramientas que ofrecen.
+
+Esto es independiente de los modelos: puedes usar la búsqueda web de NaN desde Claude Code aunque los modelos te los sirva otro sitio.
+
+## Comprueba que funciona
+
+Sin cliente de por medio, preguntándole al servidor directamente qué herramientas tiene:
+
+```bash
+curl https://api.nan.builders/mcp \
+  -H "Authorization: Bearer $NAN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }'
+```
+
+La respuesta trae la lista de herramientas con sus argumentos. Ahí verás siempre el conjunto real, que es más fiable que cualquier lista escrita a mano.
+
+Y una búsqueda de verdad:
+
+```bash
+curl https://api.nan.builders/mcp \
+  -H "Authorization: Bearer $NAN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "web_search",
+      "arguments": { "query": "kubernetes 1.34 release", "count": 5 }
+    }
+  }'
+```
+
+## La herramienta `web_search`
+
+Acepta los mismos argumentos que el endpoint [`POST /v1/search`](/es/docs/api):
+
+| Argumento | Qué hace |
+|---|---|
+| `query` | La búsqueda. Es el único obligatorio |
+| `count` | Cuántos resultados, de 1 a 20. Por defecto 5 |
+| `freshness` | Filtro de antigüedad: `pd` día, `pw` semana, `pm` mes, `py` año |
+| `fetch_content` | Con `true`, además del resumen trae el texto de las páginas. Tarda más |
+
+Las búsquedas salen por NaN, así que tu clave nunca habla con un buscador externo y no necesitas darte de alta en ninguno.
+
+## Límites
+
+La búsqueda web tiene su propio presupuesto, separado del de los modelos: **20 peticiones por minuto, 3 a la vez y 500 búsquedas al día** por clave. Buscar no gasta tu cuota de chat ni al revés.
+
+Da igual si la llamada entra por MCP o por `POST /v1/search`: cuenta lo mismo en el mismo contador. Una búsqueda repetida en los 15 minutos siguientes se sirve de una caché corta y llega marcada con `cached: true`, pero sigue contando.
+
+Si te pasas, la respuesta es un `429` con una cabecera `Retry-After` que te dice cuánto esperar.
+
+<Details summary="Problemas conocidos">
+
+- **El servidor no guarda estado.** Cada petición es independiente y lleva su propia autenticación. No hay sesión que mantener abierta.
+- **Algunos clientes no reenvían las cabeceras que declaras** en todas las fases de la conexión. Si el cliente se conecta pero luego falla al llamar a una herramienta con un error de autenticación, suele ser eso, y no tu clave.
+- **La lista de herramientas cambia.** Usa `tools/list` antes de dar por hecho que una herramienta existe.
+
+</Details>
+

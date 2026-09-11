@@ -1,0 +1,135 @@
+---
+title: Gentle-AI
+description: "La configuración que NaN recomienda por defecto: memoria, skills y guardarraíles sobre el agente que ya usas."
+order: 5
+group: Configurar tu agente
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+import BrandIntro from '../../components/docs/BrandIntro.astro';
+
+# Gentle-AI.
+
+<BrandIntro src="/docs/gentle-ai/rose.webp" alt="La rosa de Gentle-AI" width={200} height={261}>
+
+[Gentle-AI](https://github.com/Gentleman-Programming/gentle-ai) no instala agentes ni los conecta a ningún sitio: **configura el que ya usas**. Le pone memoria entre sesiones, una biblioteca de skills, un flujo de trabajo para lo que es grande, un servidor MCP de documentación y unos guardarraíles de permisos.
+
+</BrandIntro>
+
+Es la configuración que recomendamos por defecto en NaN, y es lo que se hace **después** de conectar tu agente al clúster, no en vez de eso.
+
+<Callout title="El orden importa">
+Primero conecta tu agente siguiendo [su página](/es/docs/agent-setup). Después pasa Gentle-AI. No toca tu proveedor ni tus modelos: lo que hayas configurado para NaN sigue exactamente igual.
+</Callout>
+
+## Por qué lo recomendamos
+
+Un agente de código, tal y como viene, empieza cada sesión en blanco. No recuerda lo que decidisteis ayer, no conoce las convenciones del proyecto y vuelve a preguntar lo mismo. Eso se paga en tokens y en paciencia.
+
+En NaN la cuota da para sesiones largas, así que el cuello de botella no es cuánto puedes gastar sino cuánto contexto se pierde por el camino. Gentle-AI ataca justo eso:
+
+- **Memoria entre sesiones**, para que las decisiones no haya que repetirlas.
+- **Skills**, una biblioteca de criterios que se cargan según lo que estés haciendo.
+- **SDD**, un flujo para lo que es lo bastante grande como para merecer un plan antes del código.
+- **Context7**, un servidor MCP que le da documentación actualizada de librerías en vez de lo que recuerde el modelo.
+- **Permisos**, listas de denegación para que el agente no lea ni toque lo que no debe.
+- **Persona**, el tono con el que te habla.
+
+Puedes cogerlo todo o solo lo que quieras: trae presets, desde "solo memoria" hasta el paquete completo.
+
+## Instalación
+
+<Steps>
+
+### Comprueba los requisitos
+
+Necesitas **Node.js 18 o superior con npm**, y **Git 2.38 o superior**. En Windows, además, **Go 1.25.10 o superior**.
+
+Y el agente que vayas a configurar tiene que estar ya instalado y accesible desde la terminal. Gentle-AI lo configura, no lo instala.
+
+### Instala el binario
+
+En macOS y Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
+```
+
+En Windows, desde PowerShell:
+
+```powershell
+go install github.com/gentleman-programming/gentle-ai/v2/cmd/gentle-ai@latest
+```
+
+En Windows la instalación desde fuente es la vía soportada: no hay distribución oficial de binarios y el instalador está hecho para fallar antes que descargarte un ejecutable sin firmar.
+
+Comprueba que ha ido bien:
+
+```bash
+gentle-ai version
+```
+
+### Configura tu agente
+
+```bash
+gentle-ai
+```
+
+Se abre un panel donde eliges qué agentes configurar, qué componentes quieres (o un preset) y qué persona.
+
+Al aplicar, escribe en el directorio de configuración de cada agente que hayas marcado. Antes hace una copia de seguridad de lo que tenías.
+
+### Verifica
+
+```bash
+gentle-ai doctor
+```
+
+Te da un informe de salud sin tocar nada: binarios, estado, memoria accesible, espacio en disco y configuraciones rotas. Es lo primero que hay que ejecutar cuando algo va raro.
+
+</Steps>
+
+## Con qué agentes funciona
+
+De los que documentamos aquí, Gentle-AI configura **Claude Code, OpenCode, Cursor, VS Code con Copilot, Codex y Pi**. Además soporta Kilo Code, Gemini CLI, Antigravity, Kimi Code, Kiro IDE, Qwen Code, Hermes, Windsurf, OpenClaw y Trae.
+
+Usa el mecanismo de configuración propio de cada agente, no una capa por encima, así que lo que escribe se puede leer y revertir.
+
+<Details summary="¿Y si ya tengo mi propia configuración?">
+
+Gentle-AI hace una copia de seguridad de lo que había antes de escribir nada, comprimida y con rotación automática. Si no te convence:
+
+```bash
+gentle-ai uninstall
+```
+
+Eso quita lo que él gestiona y deja el resto. Y `gentle-ai restore` devuelve una copia anterior.
+
+Aun así, si tienes una configuración muy tuya, míratela antes y después. Escribe en el directorio global del agente, que es donde también vive lo que hayas puesto a mano.
+
+</Details>
+
+<Details summary="¿Cambia los modelos que uso?">
+
+No. Gentle-AI configura cómo trabaja el agente, no a qué proveedor llama. Tu `opencode.json`, tu `config.toml` de Codex o lo que hayas configurado para NaN sigue igual.
+
+Trae un componente opcional de cambio de proveedor, pero es eso, opcional, y no altera lo que ya tengas puesto si no se lo pides.
+
+</Details>
+
+## Mantenerlo al día
+
+```bash
+gentle-ai upgrade   # actualiza el binario
+gentle-ai sync      # pone al día lo que ha escrito en tus agentes
+```
+
+Conviene pasar `sync` después de cada `upgrade`: lo primero actualiza el programa, lo segundo lo que ese programa dejó escrito en tus agentes.
+
+## Siguientes pasos
+
+- [Configurar tu agente](/es/docs/agent-setup): conecta primero tu herramienta al clúster.
+- [Servidor MCP](/es/docs/mcp): añade además la búsqueda web de NaN a tu agente.
+- [Elige tu modelo](/es/docs/choose-a-model): qué modelo pedir para cada tarea.
