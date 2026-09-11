@@ -3,11 +3,18 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 // Mock de cloudflare:workers env (patrón del repo).
 vi.mock('cloudflare:workers', () => ({ env: { CLOUD_API_URL: 'https://api.test' } }));
 
-import { isAdminPath, backendURL, hasSessionCookie } from '../../lib/events';
+import { isAdminPath, backendURL, cookieHeaderHasSession, hasSessionCookie } from '../../lib/events';
 import { GET, POST } from '../../pages/api/events/[...path]';
 import { POST as LOGIN_POST } from '../../pages/api/auth/login-request';
 
 describe('events proxy lib', () => {
+  it('cookieHeaderHasSession compares the cookie name, not a substring', () => {
+    expect(cookieHeaderHasSession('basura=xx-nan_session-xx')).toBe(false);
+    expect(cookieHeaderHasSession('no_es_nan_session_de_verdad=1')).toBe(false);
+    expect(cookieHeaderHasSession('a=1; nan_session=abc')).toBe(true);
+    expect(cookieHeaderHasSession('')).toBe(false);
+  });
+
   it('hasSessionCookie mira el nombre de la cookie, no la subcadena', () => {
     const req = (cookie?: string) => new Request('https://nan.builders/api/events/admin', { headers: cookie ? { cookie } : {} });
     expect(hasSessionCookie(req())).toBe(false);
