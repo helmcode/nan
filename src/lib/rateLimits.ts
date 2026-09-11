@@ -74,10 +74,9 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
   // full figure gets the provider's error on a number this page publishes.
   //
   // It renders as "1M" because formatTokens rounds the display down, which is
-  // the layer that
-  // should do it — publishing a rounded 1,000,000 here would leave the site
-  // 4.8% below the source it claims to mirror, and would turn the test below
-  // from an equality into a floor. The equality is the mechanism: it is what
+  // the layer that should do it. Publishing a rounded 1,000,000 here instead
+  // would leave the site 4.8% below the source it claims to mirror, and would
+  // turn the test below from an equality into a floor. The equality is the mechanism: it is what
   // makes a backend change fail here instead of shipping quietly.
   windowedModels: [
     {
