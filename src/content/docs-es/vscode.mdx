@@ -50,22 +50,22 @@ Se abre un fichero `chatLanguageModels.json`. Déjalo así:
     "apiType": "chat-completions",
     "models": [
       {
-        "id": "glm5.3-flash",
-        "name": "GLM 5.3 Flash",
-        "url": "https://api.nan.builders/v1/chat/completions",
-        "toolCalling": true,
-        "vision": true,
-        "maxInputTokens": 900000,
-        "maxOutputTokens": 32000
-      },
-      {
         "id": "deepseek-v4-flash",
         "name": "DeepSeek V4 Flash",
         "url": "https://api.nan.builders/v1/chat/completions",
         "toolCalling": true,
         "vision": true,
-        "maxInputTokens": 900000,
-        "maxOutputTokens": 32000
+        "maxInputTokens": 1015807,
+        "maxOutputTokens": 32768
+      },
+      {
+        "id": "glm5.3-flash",
+        "name": "GLM 5.3 Flash",
+        "url": "https://api.nan.builders/v1/chat/completions",
+        "toolCalling": true,
+        "vision": true,
+        "maxInputTokens": 1015808,
+        "maxOutputTokens": 32768
       },
       {
         "id": "qwen3.8-flash",
@@ -73,8 +73,44 @@ Se abre un fichero `chatLanguageModels.json`. Déjalo así:
         "url": "https://api.nan.builders/v1/chat/completions",
         "toolCalling": true,
         "vision": true,
-        "maxInputTokens": 240000,
-        "maxOutputTokens": 32000
+        "maxInputTokens": 229376,
+        "maxOutputTokens": 32768
+      },
+      {
+        "id": "mimo-v2.5",
+        "name": "Xiaomi MiMo V2.5",
+        "url": "https://api.nan.builders/v1/chat/completions",
+        "toolCalling": true,
+        "vision": true,
+        "maxInputTokens": 1015808,
+        "maxOutputTokens": 32768
+      },
+      {
+        "id": "gemma4",
+        "name": "Gemma 4",
+        "url": "https://api.nan.builders/v1/chat/completions",
+        "toolCalling": true,
+        "vision": true,
+        "maxInputTokens": 196608,
+        "maxOutputTokens": 65536
+      },
+      {
+        "id": "qwen3.6",
+        "name": "Qwen 3.6",
+        "url": "https://api.nan.builders/v1/chat/completions",
+        "toolCalling": true,
+        "vision": true,
+        "maxInputTokens": 196608,
+        "maxOutputTokens": 65536
+      },
+      {
+        "id": "glm5.3",
+        "name": "GLM 5.3 (premium)",
+        "url": "https://api.nan.builders/v1/chat/completions",
+        "toolCalling": true,
+        "vision": false,
+        "maxInputTokens": 1015808,
+        "maxOutputTokens": 32768
       }
     ]
   }
@@ -91,7 +127,7 @@ Abre el chat, despliega el selector de modelos y elige uno de los que acabas de 
 
 - **La `url` va completa, con `/chat/completions` al final.** No es como en el resto de herramientas, donde se pone solo la base. VS Code añade la ruta por su cuenta según el tipo de API, y dársela entera evita que se equivoque.
 - **`toolCalling: true` es lo que habilita el modo agente.** Sin eso, el modelo aparece en el chat pero no puede usar herramientas ni editar ficheros.
-- **`maxInputTokens` va por debajo del contexto real a propósito.** Es el presupuesto de entrada, y si lo dejas al ras de la ventana no queda sitio para la respuesta. Con 900.000 sobre un millón vas sobrado.
+- **`maxInputTokens` es la ventana menos el presupuesto de salida.** VS Code SUMA los dos y trata el resultado como la ventana de contexto, así que las cifras de arriba son `contexto - maxOutputTokens`. Publicar la ventana entera como entrada y un presupuesto de salida encima, que es lo que hacía esta documentación antes, hacía creer a VS Code que el modelo aguantaba un 25% más de lo que aguanta: enseñaba el consumo de contexto contra ese número y dejaba crecer la conversación hasta que el proxy devolvía un error de longitud a mitad de sesión, sin aviso de compactación y señalando al sitio equivocado.
 
 ## La clave
 
@@ -101,7 +137,7 @@ Abre el chat, despliega el selector de modelos y elige uno de los que acabas de 
 
 `glm5.3-flash` para el modo agente, que es donde importa el contexto largo. `deepseek-v4-flash` para preguntas de chat. `qwen3.8-flash` si prefieres que conteste rápido.
 
-`glm5.3` solo si tienes el tier premium, y en ese caso pon `"vision": false`: no acepta imágenes.
+`glm5.3` solo responde si tienes el tier premium. Va en el bloque con `"vision": false`, que no es una preferencia: es el único modelo que no acepta imágenes.
 
 <Details summary="Problemas conocidos">
 

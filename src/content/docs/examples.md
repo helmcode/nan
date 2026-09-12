@@ -9,9 +9,9 @@ group: Guides
 
 Examples to connect to the API with different languages and tools. Use `https://api.nan.builders/v1` as base URL and your personal API key.
 
-## model: qwen3.6
+## model: deepseek-v4-flash
 
-text generation and chat
+text generation, chat and vision
 
 ### curl
 
@@ -20,7 +20,7 @@ curl https://api.nan.builders/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-your-key-here" \
   -d '{
-    "model": "qwen3.6",
+    "model": "deepseek-v4-flash",
     "messages": [{"role": "user", "content": "Hello, how are you?"}],
     "max_tokens": 500
   }'
@@ -37,7 +37,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-  model="qwen3.6",
+  model="deepseek-v4-flash",
   messages=[{"role": "user", "content": "Write a hello world in Rust"}],
   max_tokens=500,
   stream=True
@@ -62,7 +62,7 @@ const client = new OpenAI({
 });
 
 const stream = await client.chat.completions.create({
-  model: "qwen3.6",
+  model: "deepseek-v4-flash",
   messages: [{ role: "user", content: "Write a hello world in Zig" }],
   max_tokens: 500,
   stream: true,
@@ -75,182 +75,6 @@ for await (const chunk of stream) {
 ```
 
 Install: `npm install openai`
-
-### opencode.json (config)
-
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "provider": {
-    "nan": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "NaN",
-      "options": {
-        "baseURL": "https://api.nan.builders/v1",
-        "apiKey": "sk-your-key-here"
-      },
-      "models": {
-        "qwen3.6": {
-          "name": "Qwen 3.6",
-          "contextWindow": 262144,
-          "modalities": {
-            "input": ["text", "image"],
-            "output": ["text"]
-          }
-        },
-        "gemma4": {
-          "name": "Gemma 4",
-          "contextWindow": 262144,
-          "modalities": {
-            "input": ["text", "image"],
-            "output": ["text"]
-          }
-        },
-        "deepseek-v4-flash": {
-          "name": "DeepSeek V4 Flash",
-          "contextWindow": 500000,
-          "modalities": {
-            "input": ["text", "image"],
-            "output": ["text"]
-          }
-        },
-        "mimo-v2.5": {
-          "name": "Xiaomi MiMo V2.5",
-          "contextWindow": 500000,
-          "modalities": {
-            "input": ["text", "image", "audio"],
-            "output": ["text"]
-          }
-        }
-      }
-    }
-  },
-  "compaction": {
-    "auto": true,
-    "prune": true,
-    "reserved": 50000
-  }
-}
-```
-
-This is the config to connect IDEs (Cursor, OpenCode) with the 4 available LLM models: `qwen3.6`, `gemma4`, `deepseek-v4-flash` and `mimo-v2.5`.
-
-### .pi/agent/models.json (config)
-
-```json
-{
-  "providers": {
-    "nan": {
-      "baseUrl": "https://api.nan.builders/v1",
-      "api": "openai-completions",
-      "apiKey": "<api-key>",
-      "compat": {
-        "supportsDeveloperRole": true
-      },
-      "models": [
-        {
-          "id": "qwen3.6",
-          "name": "Qwen 3.6",
-          "reasoning": true,
-          "input": ["text", "image"],
-          "contextWindow": 262144,
-          "maxTokens": 16384
-        },
-        {
-          "id": "gemma4",
-          "name": "Gemma 4",
-          "reasoning": true,
-          "input": ["text", "image"],
-          "contextWindow": 262144,
-          "maxTokens": 16384
-        }
-      ]
-    }
-  }
-}
-```
-
-Config for `~/.pi/agent/models.json`
-
-### .pi/agent/settings.json (config)
-
-```json
-{
-  "defaultProvider": "nan",
-  "defaultModel": "qwen3.6"
-}
-```
-
-Config for `~/.pi/agent/settings.json`. Without `defaultProvider` and `defaultModel`, Pi uses its default provider and returns an authentication error (401).
-
-### openclaw.json (config)
-
-```json
-{
-  "models": {
-    "providers": {
-      "nan": {
-        "baseUrl": "https://api.nan.builders/v1",
-        "apiKey": "sk-...",
-        "api": "openai-completions",
-        "models": [
-          {
-            "id": "qwen3.6",
-            "name": "Qwen 3.6",
-            "reasoning": true,
-            "input": ["text", "image"],
-            "contextWindow": 262144,
-            "maxTokens": 65536
-          }
-        ]
-      }
-    }
-  },
-  "agents": {
-    "defaults": {
-      "model": { "primary": "nan/qwen3.6" },
-      "models": {
-        "nan/qwen3.6": {
-          "params": {
-            "maxTokens": 16000
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-Config for `~/.openclaw/openclaw.json`
-
-`maxTokens: 65536` is the maximum the model supports. `params.maxTokens: 16000` is what is sent per request. 16K is a good balance for most tasks. If you need longer responses, increase it — but keep in mind that reasoning also consumes from that budget.
-
-<h3 id="qwen36-zed">settings.json (Zed)</h3>
-
-```json
-{
-  "language_models": {
-    "openai": {
-      "api_url": "https://api.nan.builders/v1",
-      "available_models": [
-        {
-          "name": "qwen3.6",
-          "display_name": "NaN",
-          "max_tokens": 262144
-        }
-      ]
-    }
-  },
-  "edit_predictions": {
-    "open_ai_compatible_api": {
-      "api_url": "https://api.nan.builders/v1",
-      "model": "qwen3.6"
-    }
-  }
-}
-```
-
-Config for `~/.config/zed/settings.json` — includes inline predictions.
 
 ## model: qwen3-embedding
 
@@ -631,13 +455,6 @@ for r in response["results"]:
 
 Also works with raw `requests` or any HTTP client — send the JSON body with your Bearer key.
 
-## IDE Integration
+## Connect your editor or your agent
 
-- **Cursor**: Settings → OpenAI API → Base URL: `https://api.nan.builders/v1`, API Key: your key
-- **Zed**: Settings → `settings.json` → see [full config above](#qwen36-zed)
-- **Cline / Continue / Aider**: Set the environment variables:
-
-```bash
-export OPENAI_BASE_URL="https://api.nan.builders/v1"
-export OPENAI_API_KEY="sk-your-key-here"
-```
+The configurations for Cursor, Claude Code, Codex, Cline, OpenCode, Zed and the rest are in [Set up your agent](/docs/agent-setup), with one page per tool.
