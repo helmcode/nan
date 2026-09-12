@@ -1,0 +1,69 @@
+---
+title: Cline
+description: Conecta Cline, la extensión de VS Code, al clúster de NaN.
+order: 10
+group: Configurar tu agente
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Cline.
+
+Cline es una extensión de VS Code que edita ficheros y ejecuta comandos por ti. Trae un proveedor genérico llamado **OpenAI Compatible**, que es justo lo que necesita NaN.
+
+## Configuración
+
+<Steps>
+
+### Abre los ajustes de Cline
+
+En VS Code, abre el panel de Cline y entra en sus ajustes con el icono del engranaje.
+
+### Elige el proveedor
+
+En **API Provider**, selecciona **OpenAI Compatible**.
+
+### Rellena los tres campos
+
+| Campo | Valor |
+|---|---|
+| Base URL | `https://api.nan.builders/v1` |
+| API Key | tu clave, la que empieza por `sk-` |
+| Model ID | `glm5.3-flash` |
+
+<Callout title="La base URL termina en /v1" variant="warning">
+Es el error más habitual de este proveedor: pegar `https://api.nan.builders/v1/chat/completions` en lugar de solo la base. Cline añade por su cuenta la parte del endpoint, así que con la ruta completa acabarías llamando a una dirección que no existe.
+</Callout>
+
+### Declara qué sabe hacer el modelo
+
+Cline lo pregunta porque con un proveedor genérico no tiene forma de averiguarlo:
+
+| Modelo | Contexto | Imágenes | Herramientas |
+|---|---|---|---|
+| `glm5.3-flash` | 1000000 | sí | sí |
+| `deepseek-v4-flash` | 1000000 | sí | sí |
+| `qwen3.8-flash` | 262144 | sí | sí |
+| `glm5.3` | 1000000 | no | sí |
+
+Si marcas imágenes en un modelo que no las acepta, Cline intentará mandarle capturas y la petición fallará.
+
+### Pruébalo
+
+Abre una carpeta con código y pídele algo pequeño y observable, por ejemplo que lea el README y te resuma qué hace el proyecto. Si te contesta y te pide permiso para tocar ficheros, está conectado.
+
+</Steps>
+
+## Modelo recomendado
+
+`glm5.3-flash`. Es el que mejor aguanta las tandas largas de leer, editar y volver a leer que hace Cline, y su cuota da para trabajar.
+
+<Details summary="Problemas conocidos">
+
+- **Cline consume mucho contexto.** Manda el contenido de los ficheros en cada vuelta, así que gasta tokens mucho más rápido que un chat. Vigila tu cuota en [cloud.nan.builders](https://cloud.nan.builders/).
+- **Los cuatro campos tienen que ser del mismo sitio.** Proveedor, base URL, clave y modelo, todo de NaN. Mezclar una clave de un sitio con la base URL de otro da siempre un `401`.
+- **Roo Code y los demás derivados se configuran igual.** Son forks de Cline y tienen el mismo proveedor genérico, con los mismos cuatro campos.
+
+</Details>

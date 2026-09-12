@@ -1,0 +1,157 @@
+---
+title: Configurar tu agente
+description: Conecta Claude Code, Codex, Cursor, VS Code, Cline, OpenCode, Zed, Pi o Hermes al clúster de NaN.
+order: 3
+group: Configurar tu agente
+---
+
+import AgentGrid from '../../components/docs/AgentGrid.astro';
+import Callout from '../../components/docs/Callout.astro';
+import Details from '../../components/docs/Details.astro';
+
+# Configurar tu agente.
+
+Casi todas las herramientas de código con IA se conectan a NaN con los mismos dos datos: la **base URL** del clúster y tu **API key**. Lo que cambia de una a otra es dónde se escriben.
+
+| Campo | Valor |
+|---|---|
+| Base URL | `https://api.nan.builders/v1` |
+| API key | la tuya, empieza por `sk-` |
+
+Cada página de esta sección tiene la misma forma: qué necesitas, la configuración exacta con la ruta del fichero, cómo comprobar que funciona y los problemas conocidos.
+
+## Elige tu herramienta
+
+<AgentGrid
+  items={[
+    {
+      name: 'Claude Code',
+      href: '/es/docs/claude-code',
+      kind: 'Terminal',
+      logo: 'claudecode',
+      indirect: true,
+      note: 'Habla el formato de Anthropic. O delegas en OpenCode, o levantas una pasarela.',
+    },
+    {
+      name: 'Codex',
+      href: '/es/docs/codex',
+      kind: 'Terminal',
+      logo: 'codex',
+      note: 'Un proveedor propio en config.toml y listo.',
+    },
+    {
+      name: 'Cursor',
+      href: '/es/docs/cursor',
+      kind: 'Editor',
+      logo: 'cursor',
+      note: 'La opción ya no está en todos los planes. Compruébalo antes.',
+    },
+    {
+      name: 'VS Code y Copilot',
+      href: '/es/docs/vscode',
+      kind: 'Editor',
+      logo: 'githubcopilot',
+      note: 'Chat y modo agente sí. El autocompletado en línea sigue siendo de Copilot.',
+    },
+    {
+      name: 'Cline',
+      href: '/es/docs/cline',
+      kind: 'Extensión de VS Code',
+      logo: 'cline',
+      note: 'Proveedor OpenAI Compatible, cuatro campos.',
+    },
+    {
+      name: 'OpenCode',
+      href: '/es/docs/opencode',
+      kind: 'Terminal',
+      logo: 'opencode',
+      note: 'Se le declara NaN como un proveedor más.',
+    },
+    {
+      name: 'Zed',
+      href: '/es/docs/zed',
+      kind: 'Editor',
+      logo: 'zedindustries',
+      note: 'El único que deja usar NaN también en las predicciones al escribir.',
+    },
+    {
+      name: 'Pi',
+      href: '/es/docs/pi',
+      kind: 'Terminal',
+      logo: 'pi',
+      note: 'Armazón mínimo. Se le declara NaN y se pone por defecto.',
+    },
+    {
+      name: 'Hermes',
+      href: '/es/docs/hermes',
+      kind: 'Mensajería y terminal',
+      note: 'El agente de Nous Research. Desplegado en NaN Cloud sale conectado de fábrica.',
+    },
+    {
+      name: 'Otras herramientas',
+      href: '/es/docs/other-tools',
+      kind: 'Varias',
+      note: 'Continue, Aider, OpenClaw, Open WebUI y LM Studio.',
+    },
+  ]}
+/>
+
+¿No está la tuya? Si acepta una base URL y una API key de OpenAI, funciona. Copia los dos valores de la tabla de arriba y pega el id del modelo tal y como aparece en [Elige tu modelo](/es/docs/choose-a-model).
+
+## Atajos y extras
+
+<AgentGrid
+  items={[
+    {
+      name: 'Gentle-AI',
+      href: '/es/docs/gentle-ai',
+      kind: 'Configurador',
+      featured: true,
+      note: 'Memoria entre sesiones, skills y guardarraíles sobre el agente que ya usas. Lo que recomendamos después de conectarlo.',
+    },
+    {
+      name: 'CLI de NaN',
+      href: '/es/docs/nan-cli',
+      kind: 'Terminal',
+      note: 'Configura OpenCode, Codex, Pi y droid por ti, y te enseña tu consumo.',
+    },
+    {
+      name: 'Servidor MCP',
+      href: '/es/docs/mcp',
+      kind: 'Herramientas',
+      note: 'La búsqueda web de NaN dentro de cualquier agente compatible con MCP.',
+    },
+  ]}
+/>
+
+## Por qué casi todas funcionan
+
+NaN expone una API compatible con la de OpenAI. Eso significa que las rutas, los campos de la petición y la forma de la respuesta son los que ya esperan estas herramientas, así que para ellas el clúster es indistinguible de OpenAI salvo por la dirección a la que llaman.
+
+La excepción es **Claude Code**, que no habla ese formato sino el de la API de Anthropic. No es un problema de credenciales: son dos protocolos distintos. Por eso su página explica los dos caminos que hay.
+
+## Qué modelo poner
+
+Casi todas estas herramientas te piden un id de modelo además de la base URL y la clave. Para trabajo de agente, el orden razonable es:
+
+1. `glm5.3` si tienes el tier premium. Es el que está pensado para sesiones largas de código.
+2. `glm5.3-flash` si no lo tienes. Mismo contexto de 1M de tokens y cuota amplia.
+3. `deepseek-v4-flash` para todo lo demás.
+
+La lista completa, con cuotas y modalidades, está en [Elige tu modelo](/es/docs/choose-a-model).
+
+<Callout title="Cuidado con el contexto que declaras" variant="warning">
+Varias de estas herramientas te dejan escribir a mano la ventana de contexto del modelo. Si pones un número mayor del real, el agente llenará la conversación hasta un punto en el que el modelo empieza a rechazar peticiones. Si pones uno menor, solo compactará antes de tiempo. Ante la duda, quédate corto.
+</Callout>
+
+<Details summary="Documentación en Markdown, para dársela a un agente">
+
+Cualquier página de esta documentación se puede leer sin el HTML de alrededor, añadiendo el prefijo de la API:
+
+- `https://nan.builders/api/docs/getting-started.md`
+- `https://nan.builders/api/docs/choose-a-model.md`
+- `https://nan.builders/api/docs/manifest.json` lista todas las páginas con su hash de contenido
+
+Es lo que conviene darle a un agente cuando quieres que lea la documentación en vez de adivinar.
+
+</Details>

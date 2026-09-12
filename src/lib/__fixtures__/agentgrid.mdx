@@ -1,0 +1,10 @@
+import AgentGrid from '../../components/docs/AgentGrid.astro';
+
+## Pick your agent
+
+<AgentGrid
+  items={[
+    { name: 'Claude Code', href: '/docs/claude-code', kind: 'Terminal', logo: 'claudecode', indirect: true, note: 'Speaks the Anthropic format.' },
+    { name: 'Zed', href: '/docs/zed', kind: 'Editor', logo: 'zedindustries' },
+  ]}
+/>

@@ -1,0 +1,89 @@
+---
+/**
+ * The "pick your agent" grid of /docs/agent-setup.
+ *
+ * It replaced a table. A table is the right shape for comparing numbers, and
+ * the wrong one for choosing: a reader arrives knowing which tool they use and
+ * wants to find it, which is a recognition task. Marks and cards are scanned
+ * in one pass; a column of names is read line by line.
+ *
+ * `note` carries the one thing that changes the decision, not a description.
+ * For most tools that is nothing at all, and an empty note is better than a
+ * filler sentence repeated nine times.
+ */
+import AgentLogo from './AgentLogo.astro';
+
+interface Item {
+  name: string;
+  href: string;
+  /** Terminal, IDE, extension… shown as the card's eyebrow. */
+  kind: string;
+  /** simple-icons key; omitted when the tool has no mark in the set. */
+  logo?: string;
+  /** The caveat worth knowing before clicking. */
+  note?: string;
+  /** Marks the tool that does not connect straight to the cluster. */
+  indirect?: boolean;
+  /** Marks the recommendation, so the eye lands on it first. */
+  featured?: boolean;
+}
+
+interface Props {
+  items: Item[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="not-prose my-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+  {
+    items.map((item) => (
+      <a
+        href={item.href}
+        class:list={[
+          'agent-card group flex flex-col gap-3 rounded-xl border p-5 transition-colors',
+          item.featured
+            ? 'border-violet-500/40 bg-violet-500/[0.06] hover:border-violet-400/60'
+            : 'border-neutral-800/60 bg-[#0a0a0a] hover:border-neutral-700',
+        ]}
+      >
+        <span class="flex items-center gap-3 text-neutral-300 transition-colors group-hover:text-violet-300">
+          <AgentLogo logo={item.logo} name={item.name} />
+          <span class="font-mono text-sm text-white">{item.name}</span>
+        </span>
+
+        <span class="flex flex-wrap items-center gap-2">
+          <span class="font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+            {item.kind}
+          </span>
+          {item.indirect && (
+            <span class="rounded-[3px] border border-amber-500/30 px-1.5 py-px font-mono text-[10px] text-amber-300/90">
+              via pasarela
+            </span>
+          )}
+          {item.featured && (
+            <span class="rounded-[3px] border border-violet-500/40 px-1.5 py-px font-mono text-[10px] text-violet-300">
+              recomendado
+            </span>
+          )}
+        </span>
+
+        {item.note && <span class="text-xs leading-relaxed text-neutral-400">{item.note}</span>}
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  /*
+   * `.docs-content a` underlines every link in the prose, which is right for a
+   * link inside a sentence and wrong for a card: it underlined the title, the
+   * eyebrow and the whole note, and the grid read as a wall of links rather
+   * than as things to pick from. The card is the target; the words inside it
+   * are not.
+   */
+  .agent-card,
+  .agent-card :global(*) {
+    text-decoration: none;
+  }
+</style>

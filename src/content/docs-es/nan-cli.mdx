@@ -1,0 +1,161 @@
+---
+title: CLI de NaN
+description: "La herramienta oficial de terminal: consumo, costes y configuración automática de OpenCode, Codex, Pi y droid."
+order: 4
+group: Configurar tu agente
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# CLI de NaN.
+
+NaN tiene una herramienta de terminal oficial, [`helmcode/nan-cli`](https://github.com/helmcode/nan-cli). Hace dos cosas: te enseña tu consumo real y **configura tus herramientas de código por ti**, sin que tengas que editar ficheros de configuración a mano.
+
+Es un atajo, no un requisito. Todo lo que hace se puede hacer a mano siguiendo la página de tu herramienta en esta misma sección.
+
+## Qué configura sola
+
+| Herramienta | Configuración automática |
+|---|---|
+| [OpenCode](/es/docs/opencode) | Sí |
+| [Codex](/es/docs/codex) | Sí |
+| Pi | Sí |
+| Factory AI (`droid`) | Sí |
+
+Para Claude Code, Cursor, VS Code, Cline y Zed sigue haciendo falta la configuración manual de sus páginas.
+
+## Qué más te da
+
+El CLI abre un panel con pestañas que se mueve con las flechas:
+
+| Pestaña | Para qué |
+|---|---|
+| Profile | Los datos de tu cuenta |
+| Usage | Tokens consumidos en 24 horas, 30 días y desde siempre |
+| Models | Los modelos disponibles y cuánto has gastado en cada uno |
+| Costs | Lo que te habría costado lo mismo en otros proveedores |
+| Setup | Tu API key y la configuración automática de herramientas |
+| About | Versión y enlaces |
+
+La pestaña **Usage** es la forma más rápida de saber cuánta cuota te queda antes de arrancar una sesión larga de agente.
+
+## Instalación
+
+<Steps>
+
+### Instala el binario
+
+En macOS y Linux, una línea:
+
+```bash
+curl -fsSL https://nan.builders/install | bash
+```
+
+El instalador mira tu sistema y tu arquitectura, se baja el binario que toca de la última versión publicada, **comprueba su checksum** y lo deja en `/usr/local/bin/nan`. Si esa carpeta necesita permisos de administrador, te pedirá la contraseña por `sudo`.
+
+Para ponerlo en otro sitio, dale la carpeta tú:
+
+```bash
+INSTALL_DIR="$HOME/.local/bin" curl -fsSL https://nan.builders/install | bash
+```
+
+Si la carpeta que elijas no está en tu `PATH`, el propio instalador te lo dice y te da la línea que hay que añadir a tu `~/.zshrc` o a tu `~/.bashrc`.
+
+Hay binarios para macOS y Linux, en Intel y en ARM. En Windows, de momento, hay que compilar desde el código, y el bloque de abajo explica cómo.
+
+### Comprueba que ha ido bien
+
+```bash
+nan --version
+```
+
+Tiene que responder con la versión y con el nombre de la herramienta. Si la terminal dice que no encuentra la orden, el binario está instalado pero su carpeta no está en tu `PATH`.
+
+### Consigue tu API key
+
+En [cloud.nan.builders](https://cloud.nan.builders/), en los ajustes de usuario, apartado **API Keys**.
+
+<Callout title="No uses nan auth login" variant="warning">
+Ese comando apunta a una dirección de acceso por Discord que ya no existe y acaba en un `404` en el navegador. No es culpa de tu máquina. El camino bueno es sacar la clave del panel y pegarla en la pestaña Setup.
+</Callout>
+
+### Configura tus herramientas
+
+```bash
+nan
+```
+
+Dentro del panel, ve a la pestaña **Setup** con las flechas. Pulsa `e` y pega tu API key. Con `espacio`, marca las herramientas que quieres configurar. Pulsa `c` para aplicar.
+
+El CLI escribe la configuración de cada herramienta marcada. Sal con `q` y arranca tu agente:
+
+```bash
+opencode
+```
+
+Dentro de OpenCode, `/models` te enseña los modelos de NaN ya disponibles.
+
+</Steps>
+
+<Details summary="Compilar desde el código">
+
+Es la vía para Windows, y la que quieres si vas a tocar el CLI. Hace falta [Go](https://go.dev) 1.26 o superior:
+
+```bash
+git clone https://github.com/helmcode/nan-cli
+cd nan-cli
+go build -o nan .
+```
+
+Eso deja el binario en la carpeta del repositorio. Para tenerlo a mano desde cualquier sitio, muévelo a una carpeta de tu `PATH`:
+
+```bash
+mkdir -p ~/.local/bin
+mv ./nan ~/.local/bin/nan
+```
+
+Si esa carpeta no está aún en tu `PATH`, añádela al fichero de arranque de tu terminal. En macOS la terminal por defecto es **zsh**, así que el fichero es `~/.zshrc` y no `~/.bashrc`:
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+En Linux con bash, el mismo comando pero contra `~/.bashrc`.
+
+</Details>
+
+## Actualizar
+
+Vuelve a pasar el instalador. Siempre trae la última versión publicada y sobrescribe la que tengas:
+
+```bash
+curl -fsSL https://nan.builders/install | bash
+```
+
+Para quitarlo, borra el binario: `rm /usr/local/bin/nan`, o la ruta que le hayas dado con `INSTALL_DIR`. No deja nada más en tu sistema.
+
+## Si prefieres no instalar nada
+
+Es completamente razonable. Ve directamente a la página de tu herramienta y copia el bloque de configuración:
+
+- [OpenCode](/es/docs/opencode)
+- [Codex](/es/docs/codex)
+- [Claude Code](/es/docs/claude-code)
+- [Cursor](/es/docs/cursor)
+- [VS Code y Copilot](/es/docs/vscode)
+- [Cline](/es/docs/cline)
+- [Zed](/es/docs/zed)
+- [Otras herramientas](/es/docs/other-tools)
+
+El resultado es el mismo. Lo único que te pierdes son las pestañas de consumo y costes.
+
+<Details summary="Problemas conocidos">
+
+- **Profile, Usage y Costs necesitan una sesión que hoy no se puede crear.** El acceso por Discord del CLI apunta a un endpoint retirado. La pestaña Setup, que es la que configura tus herramientas, funciona solo con la API key y no se ve afectada.
+- **En Windows hay que compilar.** Las versiones publicadas traen binarios de macOS y Linux; para Windows, de momento, la vía es `go build`.
+- **El instalador pide la lista de versiones a GitHub.** Si estás detrás de un proxy que bloquea `api.github.com`, no encontrará nada que descargar. En ese caso, baja el `.tar.gz` de tu sistema a mano desde la [página de releases](https://github.com/helmcode/nan-cli/releases).
+
+</Details>

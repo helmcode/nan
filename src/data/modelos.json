@@ -84,9 +84,9 @@
       "label": "rerank",
       "modelos": [
         {
-          "id": "qwen3-reranker",
+          "id": "rerank",
           "by": "Alibaba",
-          "specs": "8B · BF16 · 100+ languages · cross-lingual",
+          "specs": "Qwen3-Reranker-8B · BF16 · 100+ languages · cross-lingual",
           "cuota": "sin contador",
           "frontier": false
         }
@@ -108,6 +108,19 @@
           "by": "OpenAI",
           "specs": "STT · large-v3 · CTranslate2 · ~3.2% WER Spanish · auto language detection",
           "cuota": "sin contador",
+          "frontier": false
+        }
+      ]
+    },
+    {
+      "id": "imagen",
+      "label": "image",
+      "modelos": [
+        {
+          "id": "flux-2-klein",
+          "by": "Black Forest Labs",
+          "specs": "FLUX diffusion · text→image · image→image · 256-1536 px · 1-4 per request",
+          "cuota": "100 req/mes",
           "frontier": false
         }
       ]

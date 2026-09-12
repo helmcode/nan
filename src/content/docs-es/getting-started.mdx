@@ -1,0 +1,167 @@
+---
+title: Primeros pasos
+description: De cero a tu primera respuesta del clúster, y de ahí a tu editor.
+order: 1
+group: Primeros pasos
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Primeros pasos.
+
+La API de NaN es compatible con OpenAI. Solo necesitas dos datos, una **base URL** y una **API key**, y cualquier herramienta o SDK que acepte esos dos campos funciona con NaN sin tocar nada más.
+
+| Campo | Valor |
+|---|---|
+| Base URL | `https://api.nan.builders/v1` |
+| API key | la tuya, empieza por `sk-` |
+| Modelo para empezar | `deepseek-v4-flash` |
+
+<Steps>
+
+### Consigue tu API key
+
+Tienes que ser miembro de la comunidad NaN. Entra en [cloud.nan.builders](https://cloud.nan.builders/), abre los ajustes de usuario y ve a la sección **API Keys** para generar la tuya.
+
+La clave es personal e intransferible, y se muestra una sola vez: cópiala en cuanto la generes. Si la pierdes, no pasa nada, genera otra y borra la vieja desde el mismo panel.
+
+<Callout title="No la pegues en el código" variant="warning">
+Una clave subida a un repositorio la encuentra un bot en cuestión de minutos. Guárdala en una variable de entorno y léela desde ahí, como en los ejemplos de esta página.
+</Callout>
+
+### Guárdala en una variable de entorno
+
+```bash
+# macOS y Linux
+export NAN_API_KEY="sk-tu-clave"
+```
+
+```powershell
+# Windows, PowerShell
+$env:NAN_API_KEY = "sk-tu-clave"
+```
+
+Así solo dura lo que dure esa terminal. Para que sobreviva a cerrarla, añade la línea a tu `~/.zshrc`, a tu `~/.bashrc` o a tu perfil de PowerShell.
+
+### Haz tu primera llamada
+
+```bash
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Authorization: Bearer $NAN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "deepseek-v4-flash",
+    "messages": [{ "role": "user", "content": "Preséntate en una línea." }]
+  }'
+```
+
+Si todo va bien recibes un JSON y el texto del modelo está en `choices[0].message.content`:
+
+```json
+{
+  "id": "chatcmpl-...",
+  "model": "deepseek-v4-flash",
+  "choices": [
+    { "index": 0, "message": { "role": "assistant", "content": "Soy un modelo abierto..." } }
+  ],
+  "usage": { "prompt_tokens": 14, "completion_tokens": 23, "total_tokens": 37 }
+}
+```
+
+Ya tienes acceso al clúster. Todo lo demás son variaciones de esta misma llamada.
+
+### Lo mismo desde tu código
+
+Usa el SDK oficial de OpenAI y cámbiale la `base_url`. No hay librería de NaN que instalar.
+
+```python
+# pip install openai
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.environ["NAN_API_KEY"],
+    base_url="https://api.nan.builders/v1",
+)
+
+resp = client.chat.completions.create(
+    model="deepseek-v4-flash",
+    messages=[{"role": "user", "content": "Preséntate en una línea."}],
+)
+print(resp.choices[0].message.content)
+```
+
+```javascript
+// npm install openai
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+  apiKey: process.env.NAN_API_KEY,
+  baseURL: 'https://api.nan.builders/v1',
+});
+
+const resp = await client.chat.completions.create({
+  model: 'deepseek-v4-flash',
+  messages: [{ role: 'user', content: 'Preséntate en una línea.' }],
+});
+console.log(resp.choices[0].message.content);
+```
+
+Tienes más ejemplos, incluidos embeddings, voz, imágenes y búsqueda web, en [Ejemplos](/es/docs/examples).
+
+### Elige el modelo
+
+`deepseek-v4-flash` es un buen punto de partida, pero no es el único ni el mejor para todo. La lista completa, con cuál conviene para cada cosa, está en [Elige tu modelo](/es/docs/choose-a-model).
+
+Y la lista que de verdad puede usar **tu** clave siempre te la da la API:
+
+```bash
+curl https://api.nan.builders/v1/models \
+  -H "Authorization: Bearer $NAN_API_KEY"
+```
+
+### Conecta tu editor o tu agente
+
+Cursor, Claude Code, Codex, VS Code, Cline, OpenCode, Zed y compañía se configuran con esos mismos dos datos. Cada uno los pide en un sitio distinto, y eso es lo que recoge [Configurar tu agente](/es/docs/agent-setup), con una página por herramienta.
+
+Si usas OpenCode, Codex, Pi o droid, el [CLI de NaN](/es/docs/nan-cli) te los configura sin que tengas que editar nada.
+
+</Steps>
+
+## Si algo falla
+
+Todos los errores llegan con el mismo formato que los de OpenAI: un JSON con `error.message`, `error.type` y un `error.code` corto con el que puedes ramificar en tu código.
+
+| Código | Qué ha pasado | Qué hacer |
+|---|---|---|
+| `401` | La clave falta, está mal escrita o ya no existe | Revisa la cabecera `Authorization: Bearer ...` |
+| `402` | Has gastado la cuota de tokens de ese modelo | Cambia de modelo o espera a que empiece tu siguiente periodo |
+| `403` | Tu plan no llega a ese modelo o a ese endpoint | `glm5.3` necesita el tier premium |
+| `404` | Ese id de modelo no existe | Comprueba cómo se escribe en [Elige tu modelo](/es/docs/choose-a-model) o con `GET /v1/models` |
+| `429` | Demasiadas peticiones a la vez, o cuota agotada | Reintenta esperando cada vez un poco más |
+| `5xx` | El fallo es nuestro | Reintenta; si insiste, cuéntalo en `#support` |
+
+Reintentar solo tiene sentido con `429` y con los `5xx`. Un `401`, un `403` o un `404` van a fallar exactamente igual hasta que cambies la petición, y el `402` no se arregla insistiendo: el contador vuelve a cero cuando empieza tu periodo de facturación.
+
+El detalle completo, endpoint a endpoint, está en la [referencia de la API](/es/docs/api).
+
+<Details summary="Los límites, en corto">
+
+Los límites van por API key, no por modelo: un tope de peticiones por minuto y un máximo de peticiones a la vez.
+
+`glm5.3` es el único que además se rige por una ventana móvil de tokens, y la búsqueda web tiene su propio presupuesto, separado del de los modelos.
+
+Las cifras vigentes están al final de [Modelos](/es/docs/models), que es donde se publican para que no haya dos versiones de la misma cifra dando vueltas.
+
+</Details>
+
+## Siguientes pasos
+
+- [Elige tu modelo](/es/docs/choose-a-model): qué modelo pedir para cada tarea, y cómo se escribe su id.
+- [Configurar tu agente](/es/docs/agent-setup): Cursor, Claude Code, Codex, VS Code, Cline, OpenCode, Zed y el resto.
+- [Gentle-AI](/es/docs/gentle-ai): lo que recomendamos configurar encima, una vez conectado.
+- [Ejemplos](/es/docs/examples): fragmentos listos para copiar en Python, Node.js y curl.
+- [Referencia de la API](/es/docs/api): todos los endpoints, campos y errores.
+- Soporte: `#support` en Discord, solo para cuestiones técnicas.

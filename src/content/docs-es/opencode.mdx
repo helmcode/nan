@@ -1,0 +1,132 @@
+---
+title: OpenCode
+description: Declara NaN como proveedor en OpenCode y usa todos los modelos del clúster.
+order: 11
+group: Configurar tu agente
+---
+
+import Details from '../../components/docs/Details.astro';
+
+# OpenCode.
+
+OpenCode es un agente de terminal de código abierto. Se le declara NaN como un proveedor más y a partir de ahí puedes cambiar de modelo desde el propio agente.
+
+> **Puedes saltarte todo esto**
+> El [CLI de NaN](/es/docs/nan-cli) escribe esta configuración por ti: pestaña Setup, `e` para pegar tu clave, `espacio` para marcar OpenCode, `c` para aplicar.
+
+## Configuración
+
+Escribe esto en `~/.config/opencode/opencode.json` para tenerlo en todos tus proyectos, o en un `opencode.json` en la raíz del proyecto si lo quieres solo ahí:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "nan": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "NaN",
+      "options": {
+        "baseURL": "https://api.nan.builders/v1",
+        "apiKey": "sk-tu-clave"
+      },
+      "models": {
+        "deepseek-v4-flash": {
+          "name": "DeepSeek V4 Flash",
+          "limit": { "context": 1048575, "output": 32768 },
+          "modalities": { "input": ["text", "image"], "output": ["text"] }
+        },
+        "glm5.3-flash": {
+          "name": "GLM 5.3 Flash",
+          "limit": { "context": 1048576, "output": 32768 },
+          "modalities": { "input": ["text", "image"], "output": ["text"] }
+        },
+        "qwen3.8-flash": {
+          "name": "Qwen 3.8 Flash",
+          "limit": { "context": 262144, "output": 32768 },
+          "modalities": { "input": ["text", "image"], "output": ["text"] }
+        },
+        "mimo-v2.5": {
+          "name": "Xiaomi MiMo V2.5",
+          "limit": { "context": 1048576, "output": 32768 },
+          "modalities": { "input": ["text", "image", "audio"], "output": ["text"] }
+        },
+        "glm5.3": {
+          "name": "GLM 5.3 (premium)",
+          "limit": { "context": 1048576, "output": 32768 },
+          "modalities": { "input": ["text"], "output": ["text"] }
+        }
+      }
+    }
+  },
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 50000
+  }
+}
+```
+
+`@ai-sdk/openai-compatible` es el adaptador genérico, el que habla con cualquier API con forma de OpenAI. No uses `@ai-sdk/openai` a secas: ese espera la API de OpenAI de verdad.
+
+De todo lo que hay dentro de cada modelo, lo único obligatorio es su clave, que es el id. `name`, `limit` y `modalities` son opcionales: sin ellos OpenCode funciona igual, solo que en el selector verás el id pelado y la compactación automática trabajará con sus valores por defecto. Si prefieres un fichero corto, quítalos.
+
+`glm5.3` solo responderá si tu clave está en el tier premium. Si no lo está, déjalo fuera de la lista para no seleccionarlo por error.
+
+## Dónde poner la clave
+
+En el ejemplo de arriba la clave va escrita dentro del fichero, que es lo más directo pero no lo más cómodo si ese fichero acaba en un repositorio.
+
+La alternativa es dejar `apiKey` fuera del `opencode.json` y guardarla con el comando `/connect` de OpenCode, que la escribe en su propio almacén de credenciales:
+
+```text
+/connect
+```
+
+Te pedirá un **Provider id**. Escribe exactamente:
+
+```text
+nan
+```
+
+> **El Provider id tiene que coincidir con la clave del JSON**
+> OpenCode empareja la credencial con el proveedor por ese identificador. Si en `opencode.json` tu proveedor se llama `nan` y en `/connect` escribes `NaN`, `nan-builders` o cualquier otra cosa, OpenCode guarda la credencial pero no la asocia a ningún proveedor, y las peticiones salen sin clave. Es el fallo más habitual al conectar OpenCode con NaN y no da un mensaje que lo explique.
+
+Después pega tu API key y pulsa Enter.
+
+## Los límites de contexto
+
+```json
+"limit": { "context": 1048575, "output": 32768 }
+```
+
+`limit.context` y `limit.output` son los campos que OpenCode lee. Una versión anterior de esta documentación publicaba `contextWindow`, que no existe en [el esquema de OpenCode](https://opencode.ai/config.json): una clave desconocida no da ningún error que nadie vea, OpenCode se queda con su propia suposición sobre la ventana, y el síntoma es una sesión que compacta demasiado pronto en los modelos de contexto largo.
+
+`limit.context` es la ventana que acepta el proxy, que no siempre es aquella con la que se entrenó el modelo: `qwen3.8-flash` se sirve en sus 262K nativos, no en el 1M extendido con YaRN. `limit.output` es un presupuesto del cliente, no un tope del servidor, así que súbelo si necesitas respuestas más largas.
+
+## El bloque de compactación
+
+```json
+"compaction": { "auto": true, "prune": true, "reserved": 50000 }
+```
+
+OpenCode resume la conversación por su cuenta cuando se acerca al límite de contexto, y `reserved` es el margen de tokens que se guarda para hacerlo. Con ventanas de 1M de tokens no vas a rozar el límite en una sesión normal, pero dejarlo activado evita que una sesión muy larga se corte de golpe.
+
+## Comprueba que funciona
+
+```bash
+opencode
+```
+
+Dentro del agente, elige el modelo con `/models` y pídele algo corto. Si responde, ya está saliendo por el clúster.
+
+## Modelo recomendado
+
+`glm5.3-flash` para código, `deepseek-v4-flash` para lo demás. Si tienes el tier premium, `glm5.3` para las sesiones largas.
+
+<Details summary="Problemas conocidos">
+
+- **La clave va escrita en el fichero.** Si guardas el `opencode.json` dentro del repositorio, la clave se va con él. Tenlo en el fichero de tu carpeta personal, o añade el fichero a `.gitignore`.
+- **Las ventanas son las de verdad.** Están medidas contra el proxy, y son las mismas cifras que publica [Ejemplos](/es/docs/examples). Si las subes a mano, OpenCode llenará la conversación hasta un punto en el que el modelo empieza a rechazar peticiones.
+
+</Details>
+

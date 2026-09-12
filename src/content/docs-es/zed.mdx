@@ -1,0 +1,66 @@
+---
+title: Zed
+description: Usa los modelos de NaN en el asistente de Zed y en las predicciones en línea.
+order: 12
+group: Configurar tu agente
+---
+
+import Details from '../../components/docs/Details.astro';
+
+# Zed.
+
+Zed acepta proveedores compatibles con OpenAI tanto para el asistente como para las predicciones mientras escribes.
+
+## Configuración
+
+Abre `~/.config/zed/settings.json` y añade:
+
+```json
+{
+  "language_models": {
+    "openai": {
+      "api_url": "https://api.nan.builders/v1",
+      "available_models": [
+        {
+          "name": "glm5.3-flash",
+          "display_name": "NaN GLM 5.3 Flash",
+          "max_tokens": 1000000
+        },
+        {
+          "name": "deepseek-v4-flash",
+          "display_name": "NaN DeepSeek V4 Flash",
+          "max_tokens": 1000000
+        }
+      ]
+    }
+  },
+  "edit_predictions": {
+    "open_ai_compatible_api": {
+      "api_url": "https://api.nan.builders/v1",
+      "model": "qwen3.8-flash"
+    }
+  }
+}
+```
+
+`name` es el id que viaja en la petición y tiene que escribirse exacto. `display_name` es solo lo que verás tú en el selector, así que ponle lo que quieras.
+
+## La clave
+
+Zed no guarda la clave en el `settings.json`. Te la pide desde la interfaz: abre el panel del asistente, entra en la configuración del proveedor OpenAI y pega ahí tu clave de NaN.
+
+## Comprueba que funciona
+
+Abre el panel del asistente, elige uno de los modelos que has declarado y pregúntale cualquier cosa.
+
+## Modelo recomendado
+
+`glm5.3-flash` para el asistente. Para las predicciones en línea, `qwen3.8-flash`: ahí lo que importa es la latencia, porque el resultado tiene que aparecer mientras escribes.
+
+<Details summary="Problemas conocidos">
+
+- **No pongas un modelo lento en `edit_predictions`.** Las predicciones se piden muy a menudo y con un modelo grande van a llegar tarde y a gastar cuota para nada.
+- **Solo aparecen los modelos que declares.** Zed no pregunta al clúster qué hay disponible: muestra exactamente lo que hayas escrito en `available_models`.
+
+</Details>
+

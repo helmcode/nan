@@ -1,0 +1,96 @@
+---
+title: Pi
+description: Declare NaN as a provider in Pi and leave it as the default.
+order: 13
+group: Set up your agent
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Pi.
+
+Pi is a deliberately small terminal agent: a minimal shell that adapts to how you work instead of imposing how it works. It speaks the OpenAI format, so NaN goes in as one more provider.
+
+<Callout title="You can skip all of this">
+The [NaN CLI](/docs/nan-cli) writes this configuration for you: Setup tab, `e` to paste your key, `space` to mark Pi, `c` to apply.
+</Callout>
+
+## Configuration
+
+<Steps>
+
+### Declare the provider
+
+In `~/.pi/agent/models.json`:
+
+```json
+{
+  "providers": {
+    "nan": {
+      "baseUrl": "https://api.nan.builders/v1",
+      "api": "openai-completions",
+      "apiKey": "sk-your-key",
+      "compat": { "supportsDeveloperRole": true },
+      "models": [
+        {
+          "id": "glm5.3-flash",
+          "name": "GLM 5.3 Flash",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 1000000,
+          "maxTokens": 16384
+        },
+        {
+          "id": "deepseek-v4-flash",
+          "name": "DeepSeek V4 Flash",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 1000000,
+          "maxTokens": 16384
+        }
+      ]
+    }
+  }
+}
+```
+
+`api: "openai-completions"` is what tells Pi which format to speak. `maxTokens` is the ceiling for the answer on each request, not the context.
+
+### Make it the default
+
+In `~/.pi/agent/settings.json`:
+
+```json
+{
+  "defaultProvider": "nan",
+  "defaultModel": "glm5.3-flash"
+}
+```
+
+<Callout title="This step is not optional" variant="warning">
+Without `defaultProvider` and `defaultModel`, Pi keeps using its factory provider and what you get is a `401`. It is the most common failure when connecting it, and the error message does not say this file is the problem.
+</Callout>
+
+### Try it
+
+```bash
+pi
+```
+
+Ask it for something short. If it answers, it is going out through the cluster. You can switch models mid-session without leaving the agent.
+
+</Steps>
+
+## Recommended model
+
+`glm5.3-flash` for coding work. `deepseek-v4-flash` for everything else, which also has the widest quota on the cluster.
+
+<Details summary="Known issues">
+
+- **The key is written in the file.** `models.json` lives in your home directory, so it does not usually end up in a repository, but keep it in mind if you sync your configuration between machines.
+- **`maxTokens` is not the context.** It is the ceiling for each answer. Reasoning comes out of that same budget, so if you ask for long reasoned answers, raise it.
+- **The models you declare are the ones you get.** Pi does not ask the cluster what is available: it shows whatever is on the list.
+
+</Details>

@@ -1,0 +1,71 @@
+---
+title: Cursor
+description: Apunta Cursor al clúster de NaN sobrescribiendo la base URL de OpenAI.
+order: 8
+group: Configurar tu agente
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Cursor.
+
+Cursor permite sustituir la dirección a la que envía sus peticiones de OpenAI. Como NaN habla ese mismo formato, basta con cambiar la dirección y la clave.
+
+<Callout title="Léete esto antes de empezar" variant="warning">
+La sobrescritura de la base URL no cubre todo Cursor. El autocompletado mientras escribes usa modelos propios de Cursor y seguirá haciéndolo pase lo que pase. Y en versiones recientes la opción ha dejado de estar visible en todos los planes: si no la encuentras en tus ajustes, no es que la hayas perdido, es que tu plan no la trae.
+</Callout>
+
+## Configuración
+
+<Steps>
+
+### Abre los ajustes de modelos
+
+Entra en **Settings**, luego **Cursor Settings**, y abre la sección **Models**.
+
+### Pega tu clave
+
+En la sección de claves de OpenAI, pon tu clave de NaN, la que empieza por `sk-`.
+
+### Cambia la base URL
+
+Activa **Override OpenAI Base URL** y escribe:
+
+```text
+https://api.nan.builders/v1
+```
+
+### Añade los modelos
+
+Con **Add Model**, escribe el id exactamente como aparece en [Elige tu modelo](/es/docs/choose-a-model):
+
+```text
+glm5.3-flash
+deepseek-v4-flash
+qwen3.8-flash
+```
+
+Los nombres que Cursor trae de fábrica no existen en NaN, así que desactívalos o ignóralos. Si dejas seleccionado uno de ellos, la petición se va al clúster con un id que no reconoce y vuelve un `404`.
+
+### Verifica
+
+Pulsa **Verify** para que Cursor compruebe la conexión, y después abre el panel de chat, elige uno de los modelos que has añadido y pregúntale algo.
+
+Para estar seguro del todo, mira el consumo en [cloud.nan.builders](https://cloud.nan.builders/): si los tokens suben, las peticiones están llegando.
+
+</Steps>
+
+## Modelo recomendado
+
+`glm5.3-flash` para el modo agente y `deepseek-v4-flash` para preguntas de chat. `qwen3.8-flash` si notas la respuesta lenta y prefieres rapidez a profundidad.
+
+<Details summary="Problemas conocidos">
+
+- **El autocompletado en línea no usa NaN.** Es de Cursor y no se puede redirigir.
+- **La opción no está en todos los planes.** En algunas versiones recientes solo aparece en ciertos planes. La alternativa que queda entonces es la configuración de tipo Azure, si tu versión la trae.
+- **Es una sobrescritura global.** Al cambiar la base URL, todo lo que Cursor enviaba a OpenAI pasa a ir a NaN. No es una selección por modelo.
+- **Las funciones que corren en los servidores de Cursor no cambian de sitio.** Lo que Cursor procesa en su propia infraestructura sigue igual.
+
+</Details>

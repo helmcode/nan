@@ -1,7 +1,7 @@
 ---
 title: Models
 description: Technical specifications, capabilities, and parameters of the shared cluster models.
-order: 3
+order: 18
 group: Reference
 ---
 
@@ -13,56 +13,6 @@ import RateLimits from '../../components/docs/RateLimits.astro';
 
 Community models. All are accessed via the same OpenAI-compatible API
 with the same `base URL`.
-
-<ModelCard
-  id="deepseek-v4-flash"
-  name="deepseek-v4-flash"
-  tag="305B MoE"
-  leftLabel="text generation, chat & vision"
-  rightLabel="capabilities"
-  description="305B parameter MoE model, served as the Vision-Exp variant: it takes images as input. 1M token context. Tool calling and reasoning. 3B token monthly quota per member."
-  specs={[
-    { label: 'Type', value: 'MoE (305B total)' },
-    { label: 'Quantization', value: 'FP8' },
-    { label: 'Context', value: '1M tokens' },
-    { label: 'Input modalities', value: 'text · image' },
-    { label: 'Output modalities', value: 'text' },
-    { label: 'Monthly quota', value: '3B tokens / member' },
-  ]}
-  items={[
-    'Tool calling',
-    'Reasoning mode',
-    'Vision (image input)',
-    '1M token context',
-    'Streaming generation (SSE)',
-  ]}
-/>
-
-<ModelCard
-  id="mimo-v2-5"
-  name="mimo-v2.5"
-  tag="310B-15B"
-  leftLabel="omnimodal — text, vision & audio"
-  rightLabel="capabilities"
-  description="310B parameter MoE model (15B active), natively omnimodal with dedicated vision and audio encoders. 1M token context. Tool calling and reasoning. 1.0B token monthly quota per member. MIT license."
-  specs={[
-    { label: 'Type', value: 'MoE (310B total · 15B active)' },
-    { label: 'Quantization', value: 'FP8' },
-    { label: 'Context', value: '1M tokens' },
-    { label: 'Input modalities', value: 'text · image · audio' },
-    { label: 'Output modalities', value: 'text' },
-    { label: 'Monthly quota', value: '1.0B tokens / member' },
-    { label: 'License', value: 'MIT' },
-  ]}
-  items={[
-    'Tool calling (function calling)',
-    'Reasoning mode (recommended <code>max_tokens &ge; 300</code>)',
-    'Vision (image input)',
-    'Audio (audio input)',
-    '1M token context',
-    'Streaming generation (SSE)',
-  ]}
-/>
 
 <ModelCard
   id="glm-5-3"
@@ -92,25 +42,25 @@ with the same `base URL`.
 />
 
 <ModelCard
-  id="qwen3-8-flash"
-  name="qwen3.8-flash"
-  tag="125B-6B"
+  id="deepseek-v4-flash"
+  name="deepseek-v4-flash"
+  tag="305B MoE"
   leftLabel="text generation, chat & vision"
   rightLabel="capabilities"
-  description="125B parameter MoE model (6B active), multimodal with vision, tool calling and reasoning on by default. 262K token context, the model's native window. 500M token monthly quota per member."
+  description="305B parameter MoE model, served as the Vision-Exp variant: it takes images as input. 1M token context. Tool calling and reasoning. 3B token monthly quota per member."
   specs={[
-    { label: 'Type', value: 'MoE (125B total · 6B active)' },
-    { label: 'Context', value: '262K tokens' },
+    { label: 'Type', value: 'MoE (305B total)' },
+    { label: 'Quantization', value: 'FP8' },
+    { label: 'Context', value: '1M tokens' },
     { label: 'Input modalities', value: 'text · image' },
     { label: 'Output modalities', value: 'text' },
-    { label: 'Monthly quota', value: '500M tokens / member' },
-    { label: 'License', value: 'qwen-community-1.0' },
+    { label: 'Monthly quota', value: '3B tokens / member' },
   ]}
   items={[
-    'Tool calling (XML format)',
-    'Reasoning mode (on by default)',
+    'Tool calling',
+    'Reasoning mode',
     'Vision (image input)',
-    '262K token context',
+    '1M token context',
     'Streaming generation (SSE)',
   ]}
 />
@@ -135,6 +85,56 @@ with the same `base URL`.
     'Tool calling (function calling)',
     'Reasoning mode',
     'Vision (image input)',
+    '1M token context',
+    'Streaming generation (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="qwen3-8-flash"
+  name="qwen3.8-flash"
+  tag="125B-6B"
+  leftLabel="text generation, chat & vision"
+  rightLabel="capabilities"
+  description="125B parameter MoE model (6B active), multimodal with vision, tool calling and reasoning on by default. 262K token context, the model's native window. 500M token monthly quota per member."
+  specs={[
+    { label: 'Type', value: 'MoE (125B total · 6B active)' },
+    { label: 'Context', value: '262K tokens' },
+    { label: 'Input modalities', value: 'text · image' },
+    { label: 'Output modalities', value: 'text' },
+    { label: 'Monthly quota', value: '500M tokens / member' },
+    { label: 'License', value: 'qwen-community-1.0' },
+  ]}
+  items={[
+    'Tool calling (XML format)',
+    'Reasoning mode (on by default)',
+    'Vision (image input)',
+    '262K token context',
+    'Streaming generation (SSE)',
+  ]}
+/>
+
+<ModelCard
+  id="mimo-v2-5"
+  name="mimo-v2.5"
+  tag="310B-15B"
+  leftLabel="omnimodal — text, vision & audio"
+  rightLabel="capabilities"
+  description="310B parameter MoE model (15B active), natively omnimodal with dedicated vision and audio encoders. 1M token context. Tool calling and reasoning. 1.0B token monthly quota per member. MIT license."
+  specs={[
+    { label: 'Type', value: 'MoE (310B total · 15B active)' },
+    { label: 'Quantization', value: 'FP8' },
+    { label: 'Context', value: '1M tokens' },
+    { label: 'Input modalities', value: 'text · image · audio' },
+    { label: 'Output modalities', value: 'text' },
+    { label: 'Monthly quota', value: '1.0B tokens / member' },
+    { label: 'License', value: 'MIT' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Reasoning mode (recommended <code>max_tokens &ge; 300</code>)',
+    'Vision (image input)',
+    'Audio (audio input)',
     '1M token context',
     'Streaming generation (SSE)',
   ]}

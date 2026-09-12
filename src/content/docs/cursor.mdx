@@ -1,0 +1,71 @@
+---
+title: Cursor
+description: Point Cursor at the NaN cluster by overriding the OpenAI base URL.
+order: 8
+group: Set up your agent
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Cursor.
+
+Cursor lets you replace the address it sends its OpenAI requests to. Since NaN speaks that same format, changing the address and the key is enough.
+
+<Callout title="Read this before you start" variant="warning">
+The base URL override does not cover all of Cursor. Autocomplete as you type uses Cursor's own models and will keep doing so whatever you set. And in recent versions the option has stopped being visible on every plan: if you cannot find it in your settings, you have not lost it, your plan does not include it.
+</Callout>
+
+## Configuration
+
+<Steps>
+
+### Open the model settings
+
+Go to **Settings**, then **Cursor Settings**, and open the **Models** section.
+
+### Paste your key
+
+In the OpenAI keys section, put your NaN key, the one that starts with `sk-`.
+
+### Change the base URL
+
+Turn on **Override OpenAI Base URL** and write:
+
+```text
+https://api.nan.builders/v1
+```
+
+### Add the models
+
+With **Add Model**, write the id exactly as it appears in [Choose your model](/docs/choose-a-model):
+
+```text
+glm5.3-flash
+deepseek-v4-flash
+qwen3.8-flash
+```
+
+The names Cursor ships with do not exist on NaN, so turn them off or ignore them. If you leave one of them selected, the request goes to the cluster with an id it does not recognize and comes back a `404`.
+
+### Verify
+
+Press **Verify** so Cursor checks the connection, then open the chat panel, pick one of the models you added and ask it something.
+
+To be completely sure, look at your usage on [cloud.nan.builders](https://cloud.nan.builders/): if the tokens go up, the requests are arriving.
+
+</Steps>
+
+## Recommended model
+
+`glm5.3-flash` for agent mode and `deepseek-v4-flash` for chat questions. `qwen3.8-flash` if answers feel slow and you would rather have speed than depth.
+
+<Details summary="Known issues">
+
+- **Inline autocomplete does not use NaN.** It is Cursor's own and cannot be redirected.
+- **The option is not on every plan.** In some recent versions it only shows up on certain plans. The remaining alternative is then the Azure-style configuration, if your version has it.
+- **It is a global override.** Once you change the base URL, everything Cursor used to send to OpenAI goes to NaN. It is not a per-model selection.
+- **Features that run on Cursor's servers do not move.** Whatever Cursor processes on its own infrastructure stays as it is.
+
+</Details>

@@ -1,0 +1,121 @@
+---
+title: VS Code y Copilot
+description: Añade los modelos de NaN al chat de Copilot en VS Code con un endpoint propio.
+order: 9
+group: Configurar tu agente
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# VS Code y Copilot.
+
+En VS Code los modelos entran por **Copilot Chat**, así que configurar VS Code y configurar Copilot son la misma cosa. Copilot admite modelos propios a través de su proveedor **Custom Endpoint**, que habla el formato de OpenAI. Es justo lo que sirve NaN.
+
+<Callout title="Qué cambia y qué no" variant="warning">
+Esto afecta al **chat y al modo agente**. El autocompletado en línea, esas sugerencias grises mientras escribes, **sigue siendo de Copilot** y no se puede redirigir. Lo mismo con la búsqueda semántica y lo que depende de los embeddings de GitHub: siguen necesitando tu cuenta.
+</Callout>
+
+## Qué necesitas
+
+Una versión de VS Code con el proveedor **Custom Endpoint** (llegó en la 1.122; antes existía un ajuste `github.copilot.chat.customOAIModels` que está obsoleto), la extensión de Copilot Chat instalada y tu API key de NaN.
+
+## Configuración
+
+<Steps>
+
+### Abre el editor de modelos
+
+En el selector de modelos del chat, pulsa el engranaje. O abre la paleta de comandos y busca **Chat: Manage Language Models**.
+
+### Añade un proveedor
+
+Elige **Add Models** y después **Custom Endpoint**.
+
+Te pedirá un nombre de grupo, un nombre visible y la API key. Pon `NaN` como nombre y pega tu clave, la que empieza por `sk-`.
+
+Cuando pregunte el tipo de API, elige **Chat Completions**.
+
+### Declara los modelos
+
+Se abre un fichero `chatLanguageModels.json`. Déjalo así:
+
+```json
+[
+  {
+    "name": "NaN",
+    "vendor": "customendpoint",
+    "apiKey": "${input:nanApiKey}",
+    "apiType": "chat-completions",
+    "models": [
+      {
+        "id": "glm5.3-flash",
+        "name": "GLM 5.3 Flash",
+        "url": "https://api.nan.builders/v1/chat/completions",
+        "toolCalling": true,
+        "vision": true,
+        "maxInputTokens": 900000,
+        "maxOutputTokens": 32000
+      },
+      {
+        "id": "deepseek-v4-flash",
+        "name": "DeepSeek V4 Flash",
+        "url": "https://api.nan.builders/v1/chat/completions",
+        "toolCalling": true,
+        "vision": true,
+        "maxInputTokens": 900000,
+        "maxOutputTokens": 32000
+      },
+      {
+        "id": "qwen3.8-flash",
+        "name": "Qwen 3.8 Flash",
+        "url": "https://api.nan.builders/v1/chat/completions",
+        "toolCalling": true,
+        "vision": true,
+        "maxInputTokens": 240000,
+        "maxOutputTokens": 32000
+      }
+    ]
+  }
+]
+```
+
+### Elige el modelo y prueba
+
+Abre el chat, despliega el selector de modelos y elige uno de los que acabas de añadir. Pídele algo corto. Si responde, está saliendo por el clúster.
+
+</Steps>
+
+## Tres detalles que importan
+
+- **La `url` va completa, con `/chat/completions` al final.** No es como en el resto de herramientas, donde se pone solo la base. VS Code añade la ruta por su cuenta según el tipo de API, y dársela entera evita que se equivoque.
+- **`toolCalling: true` es lo que habilita el modo agente.** Sin eso, el modelo aparece en el chat pero no puede usar herramientas ni editar ficheros.
+- **`maxInputTokens` va por debajo del contexto real a propósito.** Es el presupuesto de entrada, y si lo dejas al ras de la ventana no queda sitio para la respuesta. Con 900.000 sobre un millón vas sobrado.
+
+## La clave
+
+`"apiKey": "${input:nanApiKey}"` hace que VS Code te la pida y la guarde en su almacén de secretos, en vez de dejarla escrita en el fichero. Es lo que quieres: ese fichero es fácil que acabe en un repositorio o en una copia de seguridad.
+
+## Modelo recomendado
+
+`glm5.3-flash` para el modo agente, que es donde importa el contexto largo. `deepseek-v4-flash` para preguntas de chat. `qwen3.8-flash` si prefieres que conteste rápido.
+
+`glm5.3` solo si tienes el tier premium, y en ese caso pon `"vision": false`: no acepta imágenes.
+
+<Details summary="Problemas conocidos">
+
+- **El autocompletado no cambia.** Es de Copilot y no se puede redirigir a otro proveedor. Si lo que quieres es que las sugerencias en línea salgan por NaN, la herramienta es [Zed](/es/docs/zed), que sí lo permite.
+- **Algunas funciones siguen pidiendo cuenta de GitHub**, como la búsqueda semántica del repositorio. No es un problema de tu clave.
+- **El proveedor llegó en la 1.122.** En versiones anteriores había un ajuste `github.copilot.chat.customOAIModels` que ya está obsoleto: si lo tienes puesto, quítalo y usa el proveedor.
+- **Si el modelo aparece pero no edita ficheros**, casi siempre es `toolCalling` sin poner o a `false`.
+
+</Details>
+
+<Details summary="Copilot fuera de VS Code">
+
+Esta página cubre Copilot **dentro de VS Code**, que es donde vive el proveedor Custom Endpoint. Copilot en JetBrains, en Visual Studio o en su CLI no ofrece el mismo mecanismo de endpoint propio.
+
+Si trabajas en JetBrains, la vía para usar NaN es otro plugin que acepte base URL de OpenAI, o [Continue](/es/docs/other-tools), que sí tiene versión para JetBrains.
+
+</Details>
