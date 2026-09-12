@@ -50,6 +50,16 @@ Escribe esto en `~/.config/opencode/opencode.json` para tenerlo en todos tus pro
           "limit": { "context": 1048576, "output": 32768 },
           "modalities": { "input": ["text", "image", "audio"], "output": ["text"] }
         },
+        "gemma4": {
+          "name": "Gemma 4",
+          "limit": { "context": 262144, "output": 65536 },
+          "modalities": { "input": ["text", "image"], "output": ["text"] }
+        },
+        "qwen3.6": {
+          "name": "Qwen 3.6",
+          "limit": { "context": 262144, "output": 65536 },
+          "modalities": { "input": ["text", "image"], "output": ["text"] }
+        },
         "glm5.3": {
           "name": "GLM 5.3 (premium)",
           "limit": { "context": 1048576, "output": 32768 },
@@ -65,6 +75,8 @@ Escribe esto en `~/.config/opencode/opencode.json` para tenerlo en todos tus pro
   }
 }
 ```
+
+Esta es la configuración de los 7 modelos LLM que sirve NaN: `deepseek-v4-flash`, `glm5.3-flash`, `qwen3.8-flash`, `mimo-v2.5`, `gemma4`, `qwen3.6` y `glm5.3`.
 
 `@ai-sdk/openai-compatible` es el adaptador genérico, el que habla con cualquier API con forma de OpenAI. No uses `@ai-sdk/openai` a secas: ese espera la API de OpenAI de verdad.
 

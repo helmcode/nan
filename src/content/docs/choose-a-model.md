@@ -56,7 +56,7 @@ If you do not know which one to pick, look for what you want to do in the first 
 The full spec sheets, with parameters, licenses and reasoning modes, are in [Models](/docs/models).
 
 > **`glm5.3` is the only one the normal subscription does not cover**
-> It needs a key on the premium tier. If you ask for it without one, the answer is `403` with `tier_restricted`. Every other model can be called by any member.
+> It needs a key on the premium tier. If you ask for it without one, the answer is a **`401`**, not a `403`: "This API key does not have access to the requested model". It reads like a broken key and it is not, so check the tier before you go rotating credentials. It does not show up in `GET /v1/models` either. Every other model can be called by any member.
 
 ## How to read the ids
 
