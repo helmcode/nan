@@ -7,21 +7,29 @@ group: Get started
 
 # Welcome to NaN.
 
-This doc explains how to connect your tools to our GPUs. The cluster runs open models with an OpenAI-compatible API. If something accepts a `base URL` + `API key`, it works with NaN.
+This documentation explains how to connect your tools to our GPUs. The cluster runs open models behind an OpenAI-compatible API. If something accepts a `base URL` and an `API key`, it works with NaN.
 
 > **To get your API Key**
-> You must be a NaN community member. You can generate your API Key from the user settings section under "API Keys" on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable.
+> You have to be a member of the NaN community. You can generate your API Key from the user settings, under "API Keys" on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable.
 
-## Rate limits
+## The essentials
 
-| Metric | Value |
+| Field | Value |
 |---|---|
-| Requests per minute | 60 rpm |
-| Max parallel | 5 concurrent |
+| Base URL | `https://api.nan.builders/v1` |
+| Authentication | `Authorization: Bearer sk-your-key` |
+| Format | OpenAI-compatible |
 
-## What to do next
+Limits are per API key: a cap on requests per minute and a maximum number of requests at once. The current figures are at the end of [Models](/docs/models), which is where they are published so that no two versions of the same number go around.
 
-- [Getting Started](/docs/getting-started): endpoint, auth, and step-by-step setup.
-- [Models](/docs/models): capabilities and limits of the models.
-- [Examples](/docs/examples): snippets in Python, Node.js, and curl.
-- Support: report issues via `#support` on Discord.
+## Where to go next
+
+- [Getting started](/docs/getting-started): from zero to your first response, with curl, Python and Node.
+- [Choose your model](/docs/choose-a-model): which model to ask for each task, and how its id is spelled.
+- [Set up your agent](/docs/agent-setup): Claude Code, Codex, Cursor, Cline, OpenCode, Zed and company.
+- [NaN CLI](/docs/nan-cli): the official terminal tool, which also configures several of them for you.
+- [MCP server](/docs/mcp): NaN's web search inside your agent.
+- [API reference](/docs/api): every endpoint, field by field.
+- [Models](/docs/models): the spec sheets and the limits.
+- [Examples](/docs/examples): snippets in Python, Node.js and curl.
+- Support: report issues in `#support` on Discord.

@@ -1,0 +1,90 @@
+---
+title: Hermes
+description: The Nous Research agent, with NaN models. On your own machine or deployed on NaN Cloud.
+order: 14
+group: Set up your agent
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Hermes.
+
+[Hermes](https://hermes-agent.nousresearch.com/) is the Nous Research agent, open source and MIT licensed. It is not a coding agent like the rest of this section: it lives in your messaging channels (Telegram, Discord, Slack, WhatsApp, Signal, email) as well as in the terminal, it remembers what you talked about, it schedules tasks for itself and it delegates to subagents.
+
+There are two ways to have it, and the first one requires configuring nothing.
+
+## Path 1: deployed on NaN Cloud
+
+NaN Cloud deploys Hermes for you in **its own microVM**, and it comes connected to the cluster out of the box: the platform injects your key and you do not have to touch any provider configuration.
+
+<Callout title="This is the short way">
+You create the agent from the panel, pick a model, give it your Telegram bot token, and it is already talking. It is explained step by step in [Agents](/docs/agents), with screenshots.
+</Callout>
+
+You also get a web terminal, file uploads, logs and metrics, and you can expose it on a public URL. All of that only exists on this path.
+
+## Path 2: on your own machine
+
+If you would rather run it yourself, Hermes ships a provider called **`custom`**, meant for any OpenAI-compatible endpoint. That is the one NaN uses.
+
+<Steps>
+
+### Install it
+
+On macOS and Linux:
+
+```bash
+curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+```
+
+For macOS 12 or newer and for Windows 10 and 11 there are desktop installers on their site as well.
+
+### Configure it
+
+```bash
+hermes setup
+```
+
+Choose the **`custom`** provider (it also shows up as `local`, `ollama` or `vllm`: it is the same one, the OpenAI-compatible endpoint provider) and give it the three values:
+
+| Field | Value |
+|---|---|
+| Base URL | `https://api.nan.builders/v1` |
+| API key | your key, the one that starts with `sk-` |
+| Model | `glm5.3-flash` |
+
+Unlike the providers Hermes ships preconfigured, `custom` **has no fixed environment variable**: you give it the address and the key here, and it keeps them in `~/.hermes/config.yaml`.
+
+### Check that it works
+
+```bash
+hermes doctor
+```
+
+It tells you whether the provider answers. Then start the agent and send it a message through whichever channel you configured.
+
+</Steps>
+
+## Switching models
+
+The default model lives in `~/.hermes/config.yaml`, under `model.default`. You do not edit it by hand:
+
+```bash
+hermes model
+```
+
+## Recommended model
+
+`glm5.3-flash` if you are going to give it long tasks or have it delegate to subagents, for its 1M token context. `deepseek-v4-flash` for conversation and normal tasks, which also has the widest quota on the cluster.
+
+If you are going to send it photos over Telegram, any of them except `glm5.3`, which is the only one that does not accept images.
+
+<Details summary="Known issues">
+
+- **The two paths do not mix.** The NaN Cloud Hermes is configured from the panel and yours from `hermes setup`. If you have both, they are two different agents with two different memories.
+- **The `custom` provider does not discover models.** Since there is no fixed list behind it, write the id exactly as it appears in [Choose your model](/docs/choose-a-model).
+- **An agent that lives in your messages spends at its own pace.** It is not a session you open and close: if you give it scheduled tasks, it spends quota while you are not looking. Check it at [cloud.nan.builders](https://cloud.nan.builders/).
+
+</Details>

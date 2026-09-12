@@ -43,6 +43,22 @@ describe('GET /install', () => {
   });
 
   /**
+   * What this route returns is piped into a shell, under sudo in the default
+   * install path. Off a branch, anyone who can push to the CLI repo changes
+   * that with no review step in between, and nothing here would notice. A tag
+   * cannot move, so the ref is asserted rather than trusted.
+   */
+  it('pins the script to a tag, not to a moving branch', async () => {
+    const fetchMock = vi.fn(async () => new Response(SCRIPT, { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await call();
+
+    const url = String(fetchMock.mock.calls[0][0]);
+    expect(url, url).toMatch(/helmcode\/nan-cli\/v\d+\.\d+\.\d+\//);
+  });
+
+  /**
    * A body without a shebang means the upstream answered with something that
    * is not the installer. Piped into bash it runs line by line, so it is
    * refused rather than passed on.

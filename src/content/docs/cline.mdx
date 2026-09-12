@@ -1,0 +1,69 @@
+---
+title: Cline
+description: Connect Cline, the VS Code extension, to the NaN cluster.
+order: 10
+group: Set up your agent
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Cline.
+
+Cline is a VS Code extension that edits files and runs commands for you. It ships a generic provider called **OpenAI Compatible**, which is exactly what NaN needs.
+
+## Configuration
+
+<Steps>
+
+### Open Cline's settings
+
+In VS Code, open the Cline panel and go into its settings with the gear icon.
+
+### Choose the provider
+
+In **API Provider**, select **OpenAI Compatible**.
+
+### Fill in the three fields
+
+| Field | Value |
+|---|---|
+| Base URL | `https://api.nan.builders/v1` |
+| API Key | your key, the one that starts with `sk-` |
+| Model ID | `glm5.3-flash` |
+
+<Callout title="The base URL ends at /v1" variant="warning">
+This is the most common mistake with this provider: pasting `https://api.nan.builders/v1/chat/completions` instead of just the base. Cline appends the endpoint part on its own, so with the full path you would end up calling an address that does not exist.
+</Callout>
+
+### Declare what the model can do
+
+Cline asks because with a generic provider it has no way of finding out:
+
+| Model | Context | Images | Tools |
+|---|---|---|---|
+| `glm5.3-flash` | 1000000 | yes | yes |
+| `deepseek-v4-flash` | 1000000 | yes | yes |
+| `qwen3.8-flash` | 262144 | yes | yes |
+| `glm5.3` | 1000000 | no | yes |
+
+If you tick images on a model that does not accept them, Cline will try to send it screenshots and the request will fail.
+
+### Try it
+
+Open a folder with code and ask it for something small and observable, for instance to read the README and summarize what the project does. If it answers and asks for permission to touch files, it is connected.
+
+</Steps>
+
+## Recommended model
+
+`glm5.3-flash`. It is the one that best withstands the long rounds of reading, editing and reading again that Cline does, and its quota is enough to work with.
+
+<Details summary="Known issues">
+
+- **Cline eats a lot of context.** It sends file contents on every turn, so it spends tokens far faster than a chat does. Watch your quota at [cloud.nan.builders](https://cloud.nan.builders/).
+- **The four fields have to come from the same place.** Provider, base URL, key and model, all NaN. Mixing a key from one place with a base URL from another always gives a `401`.
+- **Roo Code and the other derivatives are configured the same way.** They are Cline forks and have the same generic provider, with the same four fields.
+
+</Details>

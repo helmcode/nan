@@ -1,0 +1,79 @@
+---
+title: Codex
+description: Set up Codex CLI to use NaN models through a provider of your own.
+order: 7
+group: Set up your agent
+---
+
+import Details from '../../components/docs/Details.astro';
+
+# Codex.
+
+Codex CLI is OpenAI's terminal agent. It speaks the OpenAI format, which is the same one NaN speaks, so it connects directly: all you have to do is declare a new provider.
+
+> **You can skip all of this**
+> The [NaN CLI](/docs/nan-cli) writes this configuration for you: Setup tab, `e` to paste your key, `space` to mark Codex, `c` to apply.
+
+## What you need
+
+- Codex CLI installed.
+- Your NaN API key in an environment variable.
+
+```bash
+export NAN_API_KEY="sk-your-key"
+```
+
+Codex reads the key from the environment variable you point it at, not from the configuration file. That way it does not end up written in a file you might push to a repository by accident.
+
+## Configuration
+
+Edit `~/.codex/config.toml`:
+
+```toml
+model_provider = "nan"
+model = "glm5.3-flash"
+
+[model_providers.nan]
+name = "NaN"
+base_url = "https://api.nan.builders/v1"
+env_key = "NAN_API_KEY"
+wire_api = "chat"
+```
+
+Three details that matter:
+
+- **`wire_api = "chat"`** makes Codex use `/chat/completions`. That is what you want: the cluster's `/responses` endpoint answers in one go instead of streaming, so with `"responses"` you would see the answer appear all at once at the end.
+- **The provider identifier cannot be `openai`, `ollama` or `lmstudio`**, which are reserved. That is why it is called `nan`.
+- **`base_url` ends at `/v1`** and nothing more. Do not add the endpoint path.
+
+## Check that it works
+
+```bash
+codex
+```
+
+Ask it for something short, for example to list the files in the directory and summarize what the project does. If it answers, it is already working against the cluster.
+
+If you see an authentication error, the usual cause is that `NAN_API_KEY` is not exported in the terminal you are launching `codex` from.
+
+## Switching models
+
+You can change it without touching the file:
+
+```bash
+codex --model deepseek-v4-flash
+```
+
+Or leave several providers declared and pick with `--profile` if you prefer separate profiles per task.
+
+## Recommended model
+
+`glm5.3-flash` for coding work. If you have the premium tier, `glm5.3`. For one-off questions that do not touch files, `deepseek-v4-flash` is more than enough.
+
+<Details summary="Known issues">
+
+- **Codex's cloud features do not apply.** Once you declare a provider of your own, everything goes to NaN from your machine.
+- **Reasoning looks different depending on the model.** The cluster's models emit their reasoning trace their own way, and Codex does not always present it the way it does with OpenAI's models.
+- **If you change `wire_api` to `"responses"`**, the answer stops appearing gradually. It is not a hang: that endpoint does not stream yet.
+
+</Details>

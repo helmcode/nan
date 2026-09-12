@@ -1,0 +1,204 @@
+---
+title: Claude Code
+description: "Two ways to use NaN models from Claude Code: delegating to OpenCode, or through a local gateway."
+order: 6
+group: Set up your agent
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Claude Code.
+
+Claude Code is Anthropic's terminal agent. It is the only tool in this section that **does not connect directly** to the cluster, and it is worth understanding why before wrestling with the configuration.
+
+<Callout title="It is not a problem with your key" variant="warning">
+Claude Code speaks the Anthropic API format. NaN speaks the OpenAI format. They are two different protocols, so pointing `ANTHROPIC_BASE_URL` at `https://api.nan.builders/v1` does not work: the request arrives, but in a shape the cluster does not understand.
+</Callout>
+
+There are two paths, and they do different things:
+
+| | What you get | What it costs |
+|---|---|---|
+| **Delegating to OpenCode** | Claude Code directs, and the model work is done by OpenCode against NaN | Installing OpenCode. Nothing else |
+| **Local gateway** | Claude Code uses NaN models as if they were its own | An extra process running on your machine |
+
+Start with the first. It is simpler and it builds no infrastructure.
+
+## Path 1: delegate to OpenCode
+
+Claude Code can run commands in your terminal, and [OpenCode](/docs/opencode) knows how to work without opening its interface. That is enough: you ask Claude Code, in plain words, to use OpenCode for a task, and the one doing the model work is NaN.
+
+There is nothing to set up beyond having OpenCode configured. No gateways, no environment variables, no new files.
+
+You keep using your Claude Code subscription for what it does well, directing the session and knowing your repository, and the work that eats tokens by the handful goes to the cluster.
+
+<Steps>
+
+### Configure OpenCode
+
+Once, as [its page](/docs/opencode) explains, or by letting the [NaN CLI](/docs/nan-cli) do it.
+
+### Check that it answers without an interface
+
+```bash
+opencode run --agent plan -m nan/deepseek-v4-flash "Summarize in three lines what this repository does."
+```
+
+Three things about that command:
+
+- **`run`** is the headless mode: it does the task, writes the answer and exits.
+- **`-m`** takes the model as `provider/model`, where the provider is the name you gave it in your `opencode.json`, `nan` if you followed our page.
+- **`--agent plan`** leaves OpenCode in read-only mode. Without it, it starts with its default agent, which **can edit files and run commands**. For delegating a review or a summary, that is not what you want.
+
+The answer comes back on standard output, preceded by the tools it used:
+
+```text
+> plan · deepseek-v4-flash
+→ Read src/lib/modelCatalog.ts
+It is the single source of truth for the model catalog...
+```
+
+### Ask Claude Code for it
+
+Inside a Claude Code session, say it plainly:
+
+```text
+Use `opencode run --agent plan -m nan/deepseek-v4-flash` to review
+src/parser.ts and tell me which cases it is not covering.
+```
+
+Claude Code runs the command, reads what OpenCode answers and carries on from there. The first time, it will ask for permission to run it.
+
+It works well for what is long to read and cheap to summarize: reviewing a big file, making a first draft, summarizing documentation, comparing two versions. Claude Code keeps the coordination and the fine edits.
+
+Two options that help once you get a taste for it:
+
+- **`-f file`** attaches specific files, instead of making it look for them.
+- **`-c`** continues OpenCode's last conversation, so you can follow up without explaining everything again.
+
+</Steps>
+
+<Callout title="If you are going to do it often">
+Write a line in your project's `CLAUDE.md`, along the lines of "to review long files, use `opencode run --agent plan -m nan/deepseek-v4-flash`". That way you do not have to repeat the command every session.
+</Callout>
+
+<Callout title="Two separate meters">
+What Claude Code does comes out of your Anthropic subscription. What `opencode run` does comes out of your NaN quota. That is exactly what you want if you are stretching the subscription, but it is worth being clear about when you look at usage figures.
+</Callout>
+
+## Path 2: a local gateway
+
+If what you want is for **Claude Code itself** to use NaN models, you have to put something in the middle that translates between the two formats.
+
+You need Claude Code installed, Python 3.10 or newer for the gateway, and your NaN API key in `NAN_API_KEY`.
+
+<Steps>
+
+### Install the gateway
+
+[LiteLLM](https://docs.litellm.ai/docs/anthropic_unified/) exposes a `/v1/messages` endpoint in Anthropic's format and translates it into OpenAI's before forwarding it.
+
+```bash
+pip install "litellm[proxy]"
+```
+
+<Callout title="Pin the version" variant="warning">
+LiteLLM versions 1.82.7 and 1.82.8 were published with credential-stealing code. Install a later, known version, and do not use those two. If you did install them, rotate your keys.
+</Callout>
+
+### Configure the gateway
+
+Create a `litellm.config.yaml` wherever suits you:
+
+```yaml
+model_list:
+  - model_name: nan-coder
+    litellm_params:
+      model: openai/glm5.3-flash
+      api_base: https://api.nan.builders/v1
+      api_key: os.environ/NAN_API_KEY
+
+  - model_name: nan-general
+    litellm_params:
+      model: openai/deepseek-v4-flash
+      api_base: https://api.nan.builders/v1
+      api_key: os.environ/NAN_API_KEY
+
+general_settings:
+  master_key: sk-local-change-this
+```
+
+The `openai/` prefix tells LiteLLM which format to speak to NaN in. What comes after the prefix is the model id as it is, and `model_name` is the name you will see it under from Claude Code.
+
+The `master_key` is a key you make up for your local gateway. It is not your NaN key, and it must not be: only the LiteLLM process knows that one.
+
+### Start the gateway
+
+```bash
+litellm --config litellm.config.yaml --port 4000
+```
+
+Leave it running in its own terminal.
+
+### Point Claude Code at the gateway
+
+```bash
+export ANTHROPIC_BASE_URL="http://localhost:4000"
+export ANTHROPIC_AUTH_TOKEN="sk-local-change-this"
+export ANTHROPIC_MODEL="nan-coder"
+
+claude
+```
+
+Use `ANTHROPIC_AUTH_TOKEN` and not `ANTHROPIC_API_KEY`: it is the variable Claude Code sends as the `Authorization` header when the base URL is not Anthropic's.
+
+If you would rather pick the model per session than fix it through the environment, leave `ANTHROPIC_MODEL` out and start with `claude --model nan-coder`.
+
+### Check that it works
+
+With the gateway up:
+
+```bash
+curl http://localhost:4000/v1/messages \
+  -H "Authorization: Bearer sk-local-change-this" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nan-coder",
+    "max_tokens": 64,
+    "messages": [{ "role": "user", "content": "Say hello." }]
+  }'
+```
+
+If that answers, so will Claude Code. If it returns an authentication error, the thing that is wrong is the `master_key`; if it returns `404 model_not_found`, what is wrong is the NaN id inside `litellm_params`.
+
+</Steps>
+
+<Details summary="If you would rather not install LiteLLM">
+
+There are smaller gateways dedicated to just this, such as [claude-code-proxy](https://github.com/fuergaosi233/claude-code-proxy). The idea is the same: a local process that receives in Anthropic format and forwards to `https://api.nan.builders/v1`.
+
+</Details>
+
+## Recommended model
+
+It depends on the path, because the model does different jobs in each.
+
+**Delegating to OpenCode**, the model receives separate, bounded errands, so `deepseek-v4-flash` is more than enough and has the widest quota on the cluster. If what you hand it is a whole repository, `glm5.3-flash` holds more context.
+
+**With the gateway**, the model runs the entire session: `glm5.3-flash`, or `glm5.3` if you have the premium tier. Both have 1M tokens of context, which is what a long agent session asks for.
+
+On either path, avoid `glm5.3` for tasks that involve reading screenshots: it does not accept images.
+
+## Known issues
+
+- **When delegating, OpenCode's output lands in your conversation.** If you ask it to summarize something enormous, whatever it returns takes up context in Claude Code. Ask it for summaries, not dumps.
+- **With the gateway, the whole session goes through your machine.** If you kill the process, Claude Code stops answering. It is not a service, it is something of yours that has to be switched on.
+- **Agent behavior depends on the model.** Claude Code is tuned against Anthropic's models, and an open model may use its tools less well. That is to be expected, and it is not a cluster failure. This only affects the gateway path: when delegating, Claude Code is still Claude Code.
+- **Features tied to the Anthropic account do not travel.** Anything that depends on Anthropic's infrastructure does not work against another base URL.
+- **Context fills up fast.** An agent session eats tokens far quicker than a chat. If you use `glm5.3`, watch the rolling 4-hour window described in [Choose your model](/docs/choose-a-model).
+
+## NaN's tools, separately
+
+Whichever path you choose, you can give Claude Code the cluster's web search with a single command. It is in [MCP server](/docs/mcp).

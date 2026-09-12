@@ -23,12 +23,21 @@ import type { APIRoute } from 'astro';
 export const prerender = false;
 
 /**
- * Pinned to a branch rather than a tag, which is what the README's one-liner
- * has always meant. Worth pinning to a released tag once the CLI publishes
- * them: whatever this URL returns runs on a member's machine, under sudo in
- * the default install path.
+ * Pinned to a RELEASED TAG, not to `main`.
+ *
+ * Whatever this URL returns runs on a member's machine, under sudo in the
+ * default install path. Off `main`, any push to the CLI repo changes that
+ * instantly and with no review step in between; a tag is immutable, so what
+ * ships here is a revision somebody decided to publish.
+ *
+ * The cost is that this constant has to be bumped when the CLI changes how it
+ * installs itself. That is not the same as bumping it on every release: the
+ * script asks the GitHub API for the LATEST release at run time, so a member
+ * running an older installer still gets the newest binary. Only a change to
+ * `scripts/install.sh` itself needs a bump here.
  */
-const SCRIPT_URL = 'https://raw.githubusercontent.com/helmcode/nan-cli/main/scripts/install.sh';
+const SCRIPT_URL =
+  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.1/scripts/install.sh';
 
 export const GET: APIRoute = async () => {
   let upstream: Response;

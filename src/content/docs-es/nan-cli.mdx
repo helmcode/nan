@@ -47,35 +47,31 @@ La pestaña **Usage** es la forma más rápida de saber cuánta cuota te queda a
 
 ### Instala el binario
 
-Hace falta [Go](https://go.dev) 1.26 o superior:
+En macOS y Linux, una línea:
 
 ```bash
-git clone https://github.com/helmcode/nan-cli
-cd nan-cli
-go build -o nan .
+curl -fsSL https://nan.builders/install | bash
 ```
 
-### Ponlo en tu PATH
+El instalador mira tu sistema y tu arquitectura, se baja el binario que toca de la última versión publicada, **comprueba su checksum** y lo deja en `/usr/local/bin/nan`. Si esa carpeta necesita permisos de administrador, te pedirá la contraseña por `sudo`.
+
+Para ponerlo en otro sitio, dale la carpeta tú:
 
 ```bash
-mkdir -p ~/.local/bin
-mv ./nan ~/.local/bin/nan
+INSTALL_DIR="$HOME/.local/bin" curl -fsSL https://nan.builders/install | bash
 ```
 
-Si esa carpeta no está aún en tu `PATH`, añádela al fichero de arranque de tu terminal. En macOS la terminal por defecto es **zsh**, así que el fichero es `~/.zshrc` y no `~/.bashrc`:
+Si la carpeta que elijas no está en tu `PATH`, el propio instalador te lo dice y te da la línea que hay que añadir a tu `~/.zshrc` o a tu `~/.bashrc`.
+
+Hay binarios para macOS y Linux, en Intel y en ARM. En Windows, de momento, hay que compilar desde el código, y el bloque de abajo explica cómo.
+
+### Comprueba que ha ido bien
 
 ```bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
+nan --version
 ```
 
-En Linux con bash, el mismo comando pero contra `~/.bashrc`.
-
-Comprueba que ha quedado bien:
-
-```bash
-nan --help
-```
+Tiene que responder con la versión y con el nombre de la herramienta. Si la terminal dice que no encuentra la orden, el binario está instalado pero su carpeta no está en tu `PATH`.
 
 ### Consigue tu API key
 
@@ -103,7 +99,45 @@ Dentro de OpenCode, `/models` te enseña los modelos de NaN ya disponibles.
 
 </Steps>
 
-## Si prefieres no compilar nada
+<Details summary="Compilar desde el código">
+
+Es la vía para Windows, y la que quieres si vas a tocar el CLI. Hace falta [Go](https://go.dev) 1.26 o superior:
+
+```bash
+git clone https://github.com/helmcode/nan-cli
+cd nan-cli
+go build -o nan .
+```
+
+Eso deja el binario en la carpeta del repositorio. Para tenerlo a mano desde cualquier sitio, muévelo a una carpeta de tu `PATH`:
+
+```bash
+mkdir -p ~/.local/bin
+mv ./nan ~/.local/bin/nan
+```
+
+Si esa carpeta no está aún en tu `PATH`, añádela al fichero de arranque de tu terminal. En macOS la terminal por defecto es **zsh**, así que el fichero es `~/.zshrc` y no `~/.bashrc`:
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+En Linux con bash, el mismo comando pero contra `~/.bashrc`.
+
+</Details>
+
+## Actualizar
+
+Vuelve a pasar el instalador. Siempre trae la última versión publicada y sobrescribe la que tengas:
+
+```bash
+curl -fsSL https://nan.builders/install | bash
+```
+
+Para quitarlo, borra el binario: `rm /usr/local/bin/nan`, o la ruta que le hayas dado con `INSTALL_DIR`. No deja nada más en tu sistema.
+
+## Si prefieres no instalar nada
 
 Es completamente razonable. Ve directamente a la página de tu herramienta y copia el bloque de configuración:
 
@@ -121,6 +155,7 @@ El resultado es el mismo. Lo único que te pierdes son las pestañas de consumo 
 <Details summary="Problemas conocidos">
 
 - **Profile, Usage y Costs necesitan una sesión que hoy no se puede crear.** El acceso por Discord del CLI apunta a un endpoint retirado. La pestaña Setup, que es la que configura tus herramientas, funciona solo con la API key y no se ve afectada.
-- **Hay que compilarlo.** Todavía no hay binarios publicados, así que de momento la única vía es clonar y construir.
+- **En Windows hay que compilar.** Las versiones publicadas traen binarios de macOS y Linux; para Windows, de momento, la vía es `go build`.
+- **El instalador pide la lista de versiones a GitHub.** Si estás detrás de un proxy que bloquea `api.github.com`, no encontrará nada que descargar. En ese caso, baja el `.tar.gz` de tu sistema a mano desde la [página de releases](https://github.com/helmcode/nan-cli/releases).
 
 </Details>

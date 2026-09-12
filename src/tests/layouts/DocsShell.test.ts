@@ -168,8 +168,13 @@ describe('frontmatter of the docs collection', () => {
     expect(metas.length).toBeGreaterThan(0);
   });
 
+  /**
+   * The list is closed on purpose: a typo in `group` does not fail a build, it
+   * silently opens a fourth nav section holding one page. Adding a section is
+   * a deliberate act, so it is written here too.
+   */
   it('declares a known group on every guide', () => {
-    const known = new Set(['Get started', 'Reference', 'Guides']);
+    const known = new Set(['Get started', 'Set up your agent', 'Reference', 'Guides']);
     for (const m of metas) {
       expect(known.has(m.data.group ?? ''), `${m.file}: group=${m.data.group}`).toBe(true);
     }

@@ -1,0 +1,65 @@
+---
+title: Zed
+description: Use NaN models in Zed's assistant and in its inline edit predictions.
+order: 12
+group: Set up your agent
+---
+
+import Details from '../../components/docs/Details.astro';
+
+# Zed.
+
+Zed accepts OpenAI-compatible providers both for the assistant and for the predictions it makes as you type.
+
+## Configuration
+
+Open `~/.config/zed/settings.json` and add:
+
+```json
+{
+  "language_models": {
+    "openai": {
+      "api_url": "https://api.nan.builders/v1",
+      "available_models": [
+        {
+          "name": "glm5.3-flash",
+          "display_name": "NaN GLM 5.3 Flash",
+          "max_tokens": 1000000
+        },
+        {
+          "name": "deepseek-v4-flash",
+          "display_name": "NaN DeepSeek V4 Flash",
+          "max_tokens": 1000000
+        }
+      ]
+    }
+  },
+  "edit_predictions": {
+    "open_ai_compatible_api": {
+      "api_url": "https://api.nan.builders/v1",
+      "model": "qwen3.8-flash"
+    }
+  }
+}
+```
+
+`name` is the id that travels in the request and has to be spelled exactly. `display_name` is only what you will see in the picker, so call it whatever you like.
+
+## The key
+
+Zed does not keep the key in `settings.json`. It asks you for it through the interface: open the assistant panel, go into the OpenAI provider settings and paste your NaN key there.
+
+## Check that it works
+
+Open the assistant panel, pick one of the models you declared and ask it anything.
+
+## Recommended model
+
+`glm5.3-flash` for the assistant. For inline predictions, `qwen3.8-flash`: what matters there is latency, because the result has to appear while you type.
+
+<Details summary="Known issues">
+
+- **Do not put a slow model in `edit_predictions`.** Predictions are requested very often, and with a big model they will arrive late and spend quota for nothing.
+- **Only the models you declare show up.** Zed does not ask the cluster what is available: it shows exactly what you wrote in `available_models`.
+
+</Details>

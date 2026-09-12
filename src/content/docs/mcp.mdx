@@ -1,0 +1,123 @@
+---
+title: MCP server
+description: Plug NaN's web search into any MCP-compatible agent.
+order: 16
+group: Set up your agent
+---
+
+import Details from '../../components/docs/Details.astro';
+
+# MCP server.
+
+On top of the models, NaN exposes its own tools through an **MCP** server ([Model Context Protocol](https://modelcontextprotocol.io)). It is for the opposite of the rest of this section: here you are not giving your agent models, you are giving it **capabilities**.
+
+Today the available tool is **web search**. The registry will grow, so ask the server what it has rather than trusting this sentence.
+
+| Field | Value |
+|---|---|
+| URL | `https://api.nan.builders/mcp` |
+| Authentication | `Authorization: Bearer sk-your-key` |
+| Transport | HTTP, stateless |
+
+> **This URL has no `/v1`**
+> The MCP server lives at the root of the domain, not under `/v1` like the rest of the API. It is `https://api.nan.builders/mcp`, nothing else.
+
+The key is the same one you use for the models. There is no second key to generate.
+
+## Generic configuration
+
+Almost every MCP client uses this same file, with this same block:
+
+```json
+{
+  "mcpServers": {
+    "nan": {
+      "url": "https://api.nan.builders/mcp",
+      "headers": {
+        "Authorization": "Bearer sk-your-key"
+      }
+    }
+  }
+}
+```
+
+Where that file goes depends on the client:
+
+| Client | Where |
+|---|---|
+| Cursor | `.cursor/mcp.json` in the project, or `~/.cursor/mcp.json` |
+| Cline | The MCP Servers panel inside the extension |
+| Zed | The `context_servers` block of `~/.config/zed/settings.json` |
+| OpenCode | The `mcp` block of your `opencode.json` |
+
+## Claude Code
+
+Claude Code adds it from the command line:
+
+```bash
+claude mcp add --transport http nan https://api.nan.builders/mcp \
+  --header "Authorization: Bearer sk-your-key"
+```
+
+Add `--scope user` if you want it available in every project and not only the current one. Inside a session, `/mcp` shows you the connected servers and the tools they offer.
+
+This is independent of the models: you can use NaN's web search from Claude Code even if your models come from somewhere else.
+
+## Check that it works
+
+With no client in between, by asking the server directly which tools it has:
+
+```bash
+curl https://api.nan.builders/mcp \
+  -H "Authorization: Bearer $NAN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }'
+```
+
+The answer carries the list of tools with their arguments. That is where you always see the real set, which is more reliable than any hand-written list.
+
+And a real search:
+
+```bash
+curl https://api.nan.builders/mcp \
+  -H "Authorization: Bearer $NAN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "web_search",
+      "arguments": { "query": "kubernetes 1.34 release", "count": 5 }
+    }
+  }'
+```
+
+## The `web_search` tool
+
+It takes the same arguments as the [`POST /v1/search`](/docs/api) endpoint:
+
+| Argument | What it does |
+|---|---|
+| `query` | The search. The only mandatory one |
+| `count` | How many results, from 1 to 20. Default 5 |
+| `freshness` | Age filter: `pd` day, `pw` week, `pm` month, `py` year |
+| `fetch_content` | With `true`, it brings the text of the pages as well as the summary. It takes longer |
+
+Searches go out through NaN, so your key never talks to an external search engine and you do not need to sign up for one.
+
+## Limits
+
+Web search has its own budget, separate from the models': **20 requests per minute, 3 at once and 500 searches a day** per key. Searching does not spend your chat quota, nor the other way around.
+
+It makes no difference whether the call comes in through MCP or through `POST /v1/search`: it counts the same, on the same counter. A search repeated within the next 15 minutes is served from a short cache and arrives marked `cached: true`, but it still counts.
+
+If you go over, the answer is a `429` with a `Retry-After` header telling you how long to wait.
+
+<Details summary="Known issues">
+
+- **The server keeps no state.** Every request is independent and carries its own authentication. There is no session to keep open.
+- **Some clients do not forward the headers you declare** at every phase of the connection. If the client connects but then fails to call a tool with an authentication error, that is usually why, and not your key.
+- **The tool list changes.** Use `tools/list` before assuming a tool exists.
+
+</Details>
