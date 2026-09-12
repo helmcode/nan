@@ -136,9 +136,9 @@ Todos los errores llegan con el mismo formato que los de OpenAI: un JSON con `er
 
 | Código | Qué ha pasado | Qué hacer |
 |---|---|---|
-| `401` | La clave falta, está mal escrita o ya no existe | Revisa la cabecera `Authorization: Bearer ...` |
+| `401` | La clave falta, está mal escrita, ya no existe, **o no llega a ese modelo** | Revisa la cabecera `Authorization: Bearer ...`. Si la clave funciona con otros modelos, es el tier: `glm5.3` necesita premium |
 | `402` | Has gastado la cuota de tokens de ese modelo | Cambia de modelo o espera a que empiece tu siguiente periodo |
-| `403` | Tu plan no llega a ese modelo o a ese endpoint | `glm5.3` necesita el tier premium |
+| `403` | Tu plan no llega a ese endpoint | La generación de imágenes necesita membresía de inferencia |
 | `404` | Ese id de modelo no existe | Comprueba cómo se escribe en [Elige tu modelo](/es/docs/choose-a-model) o con `GET /v1/models` |
 | `429` | Demasiadas peticiones a la vez, o cuota agotada | Reintenta esperando cada vez un poco más |
 | `5xx` | El fallo es nuestro | Reintenta; si insiste, cuéntalo en `#support` |

@@ -336,20 +336,9 @@ describe.each(LOCALES)('opencode.json published in %s', (locale) => {
   });
 
   /*
-   * NOT ASSERTED HERE: what a non-premium key gets when it calls glm5.3.
-   *
-   * The #52 branch required the page to say 401, citing a measurement in
-   * another repository (`devops/docs/GLM52-PREMIUM-TIER.md` §2: "Not entitled
-   * -> 401 -- LiteLLM auth_checks, before any hook runs"). Everything this
-   * repo publishes says 403 `tier_restricted` instead: `src/data/openapi.json`
-   * in three places, which is what /docs/api and the Discord bot serve, plus
-   * the note on /docs/choose-a-model.
-   *
-   * One of the two is wrong and this suite cannot tell which: the measurement
-   * is not reproducible from here, and a test that pins either number would
-   * freeze a contradiction rather than catch one. Pinning 401 on this page
-   * would also put it against the site's own API reference, one click away.
-   * Tracked instead, the way helmcode/nan#53 tracks the qwen3.8-flash window.
+   * Measured, not argued. This assertion lives with the model catalogue below
+   * rather than here, because the page that has to say it is
+   * /docs/choose-a-model, not the opencode config.
    */
 
   test('validates against the real opencode schema, not a list of key names', () => {
@@ -555,4 +544,60 @@ test('both locales publish byte-identical opencode model config', () => {
   const strip = (m: Record<string, any>) =>
     Object.fromEntries(Object.entries(m).map(([k, v]) => [k, { ...v, name: undefined }]));
   expect(strip(es)).toEqual(strip(en));
+});
+
+/**
+ * WHAT A NON-PREMIUM KEY GETS WHEN IT ASKS FOR glm5.3.
+ *
+ * MEASURED 2026-09-12 against https://api.nan.builders/v1/chat/completions with
+ * a key on the ordinary community tier:
+ *
+ *   HTTP 401
+ *   {"error":{"message":"This API key does not have access to the requested
+ *    model.","type":"auth_error","param":"None","code":"401"}}
+ *
+ * and `GET /v1/models` did not list glm5.3 for that key at all. The same key
+ * answered 200 on deepseek-v4-flash in the same minute, so it was the tier and
+ * not the credential.
+ *
+ * This settles a contradiction the site carried in both directions: the guides
+ * and `openapi.json` published `403 tier_restricted` (corrected in the same
+ * commit as this test), while `devops/docs/GLM52-PREMIUM-TIER.md` had measured
+ * the 401 and warned "do not smoke-test for a 402 - you will get a 401 and
+ * conclude, wrongly, that something is broken". The distinction is the
+ * member's: a 401 reads as a broken API key, so a page that promises a 403
+ * sends them to rotate a credential that is fine.
+ *
+ * 403 `tier_restricted` is NOT claimed to be fiction: it is documented for an
+ * ENDPOINT a tier cannot reach (image generation without inference
+ * membership), which this key could not test because it has that access. Only
+ * the per-model case is pinned here.
+ */
+describe.each(['docs', 'docs-es'] as const)('the premium failure code in %s', (locale) => {
+  const body = () => pageBody(locale, 'choose-a-model.md');
+
+  test('names the 401 a non-premium key actually gets', () => {
+    expect(body(), `${locale}: the premium note must name the 401`).toMatch(/\*\*`401`\*\*/);
+  });
+
+  /**
+   * Scoped to the blockquote that documents the premium model, so a legitimate
+   * `403` elsewhere on the page (an endpoint a tier cannot reach) does not trip
+   * it. The note is the run of `>` lines that starts with the model.
+   */
+  test('does not promise a 403 for a model the tier cannot reach', () => {
+    const lines = body().split('\n');
+    const first = lines.findIndex((l) => l.startsWith('> **`glm5.3`'));
+    expect(first, `${locale}: the premium note`).toBeGreaterThan(-1);
+    let last = first;
+    while (last + 1 < lines.length && lines[last + 1].startsWith('>')) last += 1;
+    const note = lines.slice(first, last + 1).join('\n');
+    // The page is allowed to NAME the 403 in order to deny it: readers who
+    // learned the old, wrong answer need to be told it changed. What it may not
+    // do is offer one as the answer, so the denial is removed before the check
+    // rather than the whole assertion being softened.
+    const claimed = note.replace(/,? *(?:not|no un) +a? *`403`/g, '');
+    expect(claimed, `${locale}: 403 was measured to be wrong for the per-model case`)
+      .not.toMatch(/`403`/);
+  });
 });
