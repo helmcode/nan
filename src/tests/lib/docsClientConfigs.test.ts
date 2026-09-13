@@ -86,21 +86,35 @@ const here = dirname(fileURLToPath(import.meta.url));
  * what LiteLLM advertises (deepseek-v4-flash `max_output_tokens` 32768) or from
  * what this site already published for that model. A member may raise it.
  *
- * IT IS ALSO THE ONE FIGURE HERE THAT NOTHING UPSTREAM CORROBORATES, and there
- * is a public number that disagrees: models.dev carries NaN as a provider
- * (`providers/nan`, added 2026-09-03, aligned with these docs 2026-09-11) where
- * each model declares a `base_model`, so it inherits the ceiling the MODEL
- * publishes rather than the one our deployment accepts -- 384000 for
- * deepseek-v4-flash, 131072 for the GLM and Qwen flashes, against 32768 here.
- * gemma4 goes the other way: 32768 there, 65536 here, which is the direction
- * that can bite, since it promises more than the model emits.
+ * MEASURED 2026-09-13, by bisecting `max_tokens` against the live proxy until
+ * it answered 400 (which says only "Invalid request", so the number has to be
+ * cornered):
  *
- * That is measurable with one request per model (`max_tokens` above the
- * ceiling, read the 400) and has not been measured. Until it is, every guide
- * answers with the same number, which is what the ceiling test below pins.
- * Tools that read models.dev and not our config -- opencode resolves ours when
- * it is present, verified with `opencode debug config` on 1.18.14 -- get the
- * other set, so the two want reconciling in the same move.
+ *   deepseek-v4-flash  1048575     glm5.3-flash  1048575
+ *   qwen3.8-flash       131072     mimo-v2.5      131072
+ *   gemma4              262130     qwen3.6        262131
+ *
+ * Two things follow, and they are why these values stay where they are.
+ *
+ * FOR MOST MODELS THERE IS NO OUTPUT CAP TO PUBLISH. gemma4 and qwen3.6 stop
+ * 13 and 14 tokens short of their 262144 window: that is the window minus the
+ * prompt, which is vLLM bounding the completion with no separate limit, exactly
+ * as described above. The 1M pair behaves the same against a ceiling of
+ * 1048575. So 32768 and 65536 are a BUDGET this site recommends, not a limit
+ * anything enforces, and a member who raises them is not doing anything wrong.
+ *
+ * TWO MODELS DO HAVE A REAL CAP: qwen3.8-flash and mimo-v2.5 refuse anything
+ * over 131072, well below their windows, because the upstream that serves them
+ * enforces its own. That figure is a fact about the endpoint and is the one
+ * models.dev already publishes for them.
+ *
+ * models.dev is the other public source and it describes the MODELS, not this
+ * endpoint: each entry under `providers/nan` declares a `base_model`, so it
+ * inherits the maker's ceiling -- 384000 for deepseek-v4-flash, 32768 for
+ * gemma4. Both are wrong about what our proxy accepts, in opposite directions,
+ * and the measurement above says which. Tools that read models.dev and not our
+ * config get that set; opencode resolves ours when it is present, verified with
+ * `opencode debug config` on 1.18.14.
  *
  * glm5.2 IS DELIBERATELY ABSENT, and the reason is an OWNER DECISION, not only
  * a measurement: it was kept as a reference point for 5.3 and is being retired
