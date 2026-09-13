@@ -82,10 +82,25 @@ const here = dirname(fileURLToPath(import.meta.url));
  * The three GLM groups agree since cloud-api `8aa5496` raised them to 1M.
  * `output` is NOT a server cap for the self-hosted models -- vLLM bounds the
  * completion by the context window minus the prompt, with no separate limit.
- * It is the budget opencode plans a turn against, and the values here are the
- * ones this site already publishes elsewhere (qwen3.6 at 65536 in the openclaw
- * block) or that LiteLLM advertises (deepseek-v4-flash `max_output_tokens`
- * 32768). A member may raise it.
+ * It is the budget opencode plans a turn against, and the values here come from
+ * what LiteLLM advertises (deepseek-v4-flash `max_output_tokens` 32768) or from
+ * what this site already published for that model. A member may raise it.
+ *
+ * IT IS ALSO THE ONE FIGURE HERE THAT NOTHING UPSTREAM CORROBORATES, and there
+ * is a public number that disagrees: models.dev carries NaN as a provider
+ * (`providers/nan`, added 2026-09-03, aligned with these docs 2026-09-11) where
+ * each model declares a `base_model`, so it inherits the ceiling the MODEL
+ * publishes rather than the one our deployment accepts -- 384000 for
+ * deepseek-v4-flash, 131072 for the GLM and Qwen flashes, against 32768 here.
+ * gemma4 goes the other way: 32768 there, 65536 here, which is the direction
+ * that can bite, since it promises more than the model emits.
+ *
+ * That is measurable with one request per model (`max_tokens` above the
+ * ceiling, read the 400) and has not been measured. Until it is, every guide
+ * answers with the same number, which is what the ceiling test below pins.
+ * Tools that read models.dev and not our config -- opencode resolves ours when
+ * it is present, verified with `opencode debug config` on 1.18.14 -- get the
+ * other set, so the two want reconciling in the same move.
  *
  * glm5.2 IS DELIBERATELY ABSENT, and the reason is an OWNER DECISION, not only
  * a measurement: it was kept as a reference point for 5.3 and is being retired
@@ -562,14 +577,24 @@ const GUIDE_PAGES = LOCALES.flatMap((locale) =>
  * rules.
  */
 describe('every contextWindow in the guides is the measured one', () => {
-  const WINDOWS: Record<string, { context: number }> = {
+  const WINDOWS: Record<string, { context: number; output: number }> = {
     ...EXPECTED_MODELS,
     ...EXPECTED_PREMIUM,
   };
 
   /** Every `{...}` that declares a contextWindow, with the page it came from. */
-  function declarations(): Array<{ page: string; id: unknown; contextWindow: unknown }> {
-    const out: Array<{ page: string; id: unknown; contextWindow: unknown }> = [];
+  function declarations(): Array<{
+    page: string;
+    id: unknown;
+    contextWindow: unknown;
+    maxTokens: unknown;
+  }> {
+    const out: Array<{
+      page: string;
+      id: unknown;
+      contextWindow: unknown;
+      maxTokens: unknown;
+    }> = [];
     for (const [page, body] of GUIDE_PAGES) {
       for (const raw of jsonBlocks(body)) {
         let parsed: unknown;
@@ -582,7 +607,12 @@ describe('every contextWindow in the guides is the measured one', () => {
         }
         walk(parsed, (node) => {
           if ('contextWindow' in node) {
-            out.push({ page, id: node.id ?? node.model, contextWindow: node.contextWindow });
+            out.push({
+              page,
+              id: node.id ?? node.model,
+              contextWindow: node.contextWindow,
+              maxTokens: node.maxTokens,
+            });
           }
         });
       }
@@ -620,6 +650,37 @@ describe('every contextWindow in the guides is the measured one', () => {
         (d) =>
           `${d.page} · ${d.id}: publishes ${d.contextWindow}, ` +
           `served at ${WINDOWS[d.id as string].context}`,
+      );
+    expect(wrong, wrong.join('\n')).toEqual([]);
+  });
+
+  /**
+   * THE ANSWER CEILING IS ONE NUMBER TOO, and it was three.
+   *
+   * The opencode block published 32,768 for glm5.3-flash, the OpenClaw one
+   * 65,536 and Pi's 16,384 - and two of the three prose lines called their own
+   * figure "the maximum the model takes", which cannot be true of both. Each
+   * tool names the field differently (`limit.output`, `maxTokens`) and they all
+   * answer the same question: how much can come back in one answer.
+   *
+   * A per-turn BUDGET is a different thing and is not checked here: it is a
+   * recommendation, not a limit, and OpenClaw writes it under `agents.defaults`,
+   * away from any model id.
+   *
+   * The figure itself is still unverified against the proxy - models.dev
+   * publishes far higher ceilings for these models, inherited from each base
+   * model's own entry. What this pins is that the guides answer with ONE number
+   * until a measurement moves all of them at once.
+   */
+  test('each one declares the same answer ceiling as the opencode block', () => {
+    const wrong = found
+      .filter((d) => typeof d.id === 'string' && d.id in WINDOWS)
+      .filter((d) => d.maxTokens !== undefined)
+      .filter((d) => d.maxTokens !== WINDOWS[d.id as string].output)
+      .map(
+        (d) =>
+          `${d.page} · ${d.id}: publishes ${d.maxTokens}, ` +
+          `opencode publishes ${WINDOWS[d.id as string].output}`,
       );
     expect(wrong, wrong.join('\n')).toEqual([]);
   });

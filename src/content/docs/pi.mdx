@@ -40,7 +40,7 @@ In `~/.pi/agent/models.json`:
           "reasoning": true,
           "input": ["text", "image"],
           "contextWindow": 1048576,
-          "maxTokens": 16384
+          "maxTokens": 32768
         },
         {
           "id": "deepseek-v4-flash",
@@ -48,7 +48,7 @@ In `~/.pi/agent/models.json`:
           "reasoning": true,
           "input": ["text", "image"],
           "contextWindow": 1048575,
-          "maxTokens": 16384
+          "maxTokens": 32768
         }
       ]
     }
@@ -56,7 +56,7 @@ In `~/.pi/agent/models.json`:
 }
 ```
 
-`api: "openai-completions"` is what tells Pi which format to speak. `maxTokens` is the ceiling for the answer on each request, not the context.
+`api: "openai-completions"` is what tells Pi which format to speak. `maxTokens` is the ceiling for one answer, not the context. It is the same figure the [OpenCode](/docs/opencode) block publishes as `limit.output`, because it answers the same question.
 
 ### Make it the default
 
