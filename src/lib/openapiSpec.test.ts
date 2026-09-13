@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import spec from '../data/openapi.json';
 import modelos from '../data/modelos.json';
 import { resolveSpec } from './apiDoc';
@@ -227,5 +230,86 @@ describe('openapi.json: rate limits come from the single source of truth', () =>
       expect(description).toContain(`${formatTokens(m.periodCapTokens)}-token allowance`);
       expect(description).toContain(`${formatTokens(m.contextTokens)} tokens`);
     }
+  });
+});
+
+/**
+ * THE REFERENCE AND THE QUICKSTART HAVE TO RECOMMEND THE SAME MODEL.
+ *
+ * They did not. /docs/getting-started moved to `deepseek-v4-flash` and
+ * /docs/choose-a-model started calling `qwen3.6` "previous generation", while
+ * this spec still opened its own quickstart with `qwen3.6`, offered it as the
+ * `model` example on every chat field, and used it in all three code samples.
+ * The reference is the page a member reaches with the API already in front of
+ * them, so it is the copy most likely to be pasted, and it was pointing at the
+ * model the rest of the docs steer away from.
+ *
+ * The expected value is READ OFF the quickstart table rather than written here
+ * again: the day that recommendation changes, this fails until the reference
+ * follows, which is the whole point.
+ */
+describe('openapi.json: the model it puts in front of a reader', () => {
+  const recommended = (() => {
+    const page = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), '../content/docs/getting-started.mdx'),
+      'utf-8',
+    );
+    const row = /\|\s*Model to start with\s*\|\s*`([^`]+)`\s*\|/.exec(page);
+    expect(row, 'the quickstart no longer states a model to start with').not.toBeNull();
+    return row![1];
+  })();
+
+  const chat = spec.paths['/chat/completions'].post as any;
+
+  it('opens the overview with it', () => {
+    expect(spec.info.description).toContain(`model="${recommended}"`);
+  });
+
+  it('offers it as the example value of the chat `model` field', () => {
+    expect(chat.requestBody.content['application/json'].schema.properties.model.example).toBe(
+      recommended,
+    );
+  });
+
+  it('answers with the model the request example asked for', () => {
+    const request = chat.requestBody.content['application/json'].examples.basic.value.model;
+    expect(request).toBe(recommended);
+    expect(chat.responses['200'].content['application/json'].example.model).toBe(request);
+  });
+
+  /**
+   * `json_schema` is the documented exception and stays one: structured output
+   * "works on `qwen3.6` and `gemma4`" per the ResponseFormat schema, so that
+   * example has to name a model that supports it. An example pinned to a model
+   * for a REASON is fine; an example pinned to it by inertia is what this
+   * catches.
+   */
+  it('uses it in every chat example that is not about a model-specific capability', () => {
+    const examples = chat.requestBody.content['application/json'].examples;
+    const capability: Record<string, string> = {
+      json_schema: 'structured output is only on qwen3.6 and gemma4',
+      premium_tier: 'the premium tier is the point of the example',
+    };
+    for (const [name, example] of Object.entries(examples) as Array<[string, any]>) {
+      if (capability[name]) continue;
+      expect(example.value.model, `${name}: ${JSON.stringify(example.value.model)}`).toBe(
+        recommended,
+      );
+    }
+  });
+
+  it('uses it in all three code samples', () => {
+    for (const sample of chat['x-codeSamples']) {
+      expect(sample.source, sample.lang).toContain(recommended);
+      expect(sample.source, `${sample.lang} still names a second model`).not.toMatch(
+        /qwen3\.6|glm5\.3|gemma4|mimo/,
+      );
+    }
+  });
+
+  /** The structured-output example is allowed to differ, but not to go stale. */
+  it('keeps the structured-output example on a model that supports it', () => {
+    const model = chat.requestBody.content['application/json'].examples.json_schema.value.model;
+    expect(spec.components.schemas.ResponseFormat.description).toContain(`\`${model}\``);
   });
 });
