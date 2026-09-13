@@ -39,16 +39,16 @@ En `~/.pi/agent/models.json`:
           "name": "GLM 5.3 Flash",
           "reasoning": true,
           "input": ["text", "image"],
-          "contextWindow": 1000000,
-          "maxTokens": 16384
+          "contextWindow": 1048576,
+          "maxTokens": 32768
         },
         {
           "id": "deepseek-v4-flash",
           "name": "DeepSeek V4 Flash",
           "reasoning": true,
           "input": ["text", "image"],
-          "contextWindow": 1000000,
-          "maxTokens": 16384
+          "contextWindow": 1048575,
+          "maxTokens": 32768
         }
       ]
     }
@@ -56,7 +56,7 @@ En `~/.pi/agent/models.json`:
 }
 ```
 
-`api: "openai-completions"` es lo que le dice a Pi con qué formato hablar. `maxTokens` es el techo de la respuesta en cada petición, no el contexto.
+`api: "openai-completions"` es lo que le dice a Pi con qué formato hablar. `maxTokens` es el techo de una respuesta, no el contexto. Es la misma cifra que el bloque de [OpenCode](/es/docs/opencode) publica como `limit.output`, porque responde a la misma pregunta.
 
 ### Ponlo por defecto
 

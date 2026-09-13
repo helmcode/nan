@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import modelos from '../../data/modelos.json';
 import { DEFAULT_RATE_LIMITS, formatTokens } from '../../lib/rateLimits';
+import { homeQuotaLabel } from '../../lib/modelCatalog';
 
 /**
  * La fila del modelo premium en la tabla de la home.
@@ -48,7 +49,12 @@ describe('tabla de modelos — la fila premium', () => {
   test('el componente marca la fila y traduce su cuota al inglés', () => {
     expect(component).toContain('badge--premium');
     expect(component).toContain('tt.badgePremium');
-    expect(component).toContain("'/periodo de facturación', ' / billing period'");
+    // La traducción vivía escrita a mano dentro del componente y esto miraba su
+    // código fuente. Ahora vive en homeQuotaLabel, así que se comprueba lo que
+    // el lector ve y no cómo está escrito: la cuota del premium no puede salir
+    // en español en la home inglesa, ni traducida a mes.
+    expect(homeQuotaLabel(premium[0].cuota, 'en')).toBe('3B tokens / billing period');
+    expect(homeQuotaLabel(premium[0].cuota, 'es')).toBe(premium[0].cuota);
   });
 
   test('ningún otro modelo de la tabla queda marcado como premium', () => {

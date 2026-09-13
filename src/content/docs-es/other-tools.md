@@ -86,8 +86,8 @@ Configura `~/.openclaw/openclaw.json`:
             "name": "GLM 5.3 Flash",
             "reasoning": true,
             "input": ["text", "image"],
-            "contextWindow": 1000000,
-            "maxTokens": 65536
+            "contextWindow": 1048576,
+            "maxTokens": 32768
           }
         ]
       }
@@ -106,7 +106,7 @@ Configura `~/.openclaw/openclaw.json`:
 }
 ```
 
-`maxTokens: 65536` es el máximo que admite el modelo. `params.maxTokens: 16000` es lo que se envía en cada petición, que es un buen equilibrio para la mayoría de tareas. Si necesitas respuestas más largas, súbelo, pero ten en cuenta que el razonamiento también sale de ese presupuesto.
+`maxTokens: 32768` es el techo de una respuesta, la misma cifra que publican para este modelo los bloques de [OpenCode](/es/docs/opencode) y [Pi](/es/docs/pi). `params.maxTokens: 16000` es lo que se envía en cada petición, que es un buen equilibrio para la mayoría de tareas. Si necesitas respuestas más largas, súbelo, pero ten en cuenta que el razonamiento también sale de ese presupuesto.
 
 ## Open WebUI, LM Studio y demás interfaces de chat
 

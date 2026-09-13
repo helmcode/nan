@@ -1,22 +1,18 @@
 ---
 import modelos from '../../../data/modelos.json';
 import { getLang, useT } from '../../../lib/i18n';
+import { homeQuotaLabel } from '../../../lib/modelCatalog';
 
 const lang = getLang(Astro.url);
 const tt = useT(lang).models;
 const home = lang === 'es' ? '/es' : '/';
 
 // la data es la fuente de verdad (ES); en EN traducimos la cuota al vuelo.
-// La cuota del premium va por periodo de facturación de Stripe, no por mes
-// natural, y por eso no se escribe como mensual en ninguna superficie. A 320px
-// la chip mide 231px de los 272 útiles, así que cabe sin recortar.
-const quota = (c: string) =>
-  lang === 'es'
-    ? c
-    : c
-        .replace('sin contador', 'unmetered')
-        .replace('/periodo de facturación', ' / billing period')
-        .replace('/mes', ' / mo');
+// La funcion vive en modelCatalog.ts, donde un test la mira: aqui dentro no
+// habia forma de comprobar que una redaccion nueva no acabase en ingles a
+// medias. A 320px la chip mide 231px de los 272 utiles, asi que cabe sin
+// recortar.
+const quota = (c: string) => homeQuotaLabel(c, lang);
 const total = modelos.categorias.reduce((n, c) => n + c.modelos.length, 0);
 ---
 

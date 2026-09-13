@@ -140,8 +140,14 @@ describe('docs/api — glm5.3 is callable', () => {
     const rows = section.split('\n').filter((l) => l.startsWith('|'));
     const status = (code: string) =>
       rows.find((l) => new RegExp(`^\\|\\s*\`${code}\`\\s*\\|`).test(l));
-    expect(status('402')).toMatch(/token allowance for the billing period is spent/i);
+    expect(status('402')).toMatch(/token allowance is spent/i);
     expect(status('402')).toContain('monthly_cap_reached');
+    // It used to say the counter returns with THE billing period, full stop,
+    // which is true of glm5.3 and of nothing else: every other quota resets
+    // with the calendar month. The row now has to name both, because a member
+    // reads it while deciding whether waiting is worth it.
+    expect(status('402')).toMatch(/calendar month/i);
+    expect(status('402')).toMatch(/billing period for `glm5\.3`/i);
     expect(status('429')).toMatch(/rolling 4h token budget of `glm5\.3`/);
   });
 

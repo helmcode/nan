@@ -100,6 +100,7 @@ OpenAI y la misma `base URL`.
   specs={[
     { label: 'Tipo', value: 'MoE (125B total · 6B activos)' },
     { label: 'Contexto', value: '262K tokens' },
+    { label: 'Respuesta máxima', value: '131K tokens' },
     { label: 'Modalidades de entrada', value: 'texto · imagen' },
     { label: 'Modalidades de salida', value: 'texto' },
     { label: 'Cuota mensual', value: '500M tokens / miembro' },
@@ -125,6 +126,7 @@ OpenAI y la misma `base URL`.
     { label: 'Tipo', value: 'MoE (310B total · 15B activos)' },
     { label: 'Cuantización', value: 'FP8' },
     { label: 'Contexto', value: '1M tokens' },
+    { label: 'Respuesta máxima', value: '131K tokens' },
     { label: 'Modalidades de entrada', value: 'texto · imagen · audio' },
     { label: 'Modalidades de salida', value: 'texto' },
     { label: 'Cuota mensual', value: '1.0B tokens / miembro' },
@@ -150,7 +152,7 @@ OpenAI y la misma `base URL`.
   specs={[
     { label: 'Tipo', value: 'MoE (26B total · 4B activos)' },
     { label: 'Cuantización', value: 'FP8' },
-    { label: 'Contexto', value: '256K tokens' },
+    { label: 'Contexto', value: '262K tokens' },
     { label: 'Muestreo', value: 'temp=0.6, top_p=0.95' },
     { label: 'Razonamiento', value: 'reasoning_config={}' },
   ]}
@@ -168,12 +170,12 @@ OpenAI y la misma `base URL`.
   tag="35B-A3B"
   leftLabel="generación de texto y chat"
   rightLabel="capacidades"
-  description="El modelo insignia. MoE de 35B parámetros, multimodal, con tool calling y razonamiento."
+  description="La generación anterior. MoE de 35B parámetros, multimodal, con tool calling y razonamiento. Sigue respondiendo para que las configuraciones que lo nombran no se rompan, pero hoy se empieza por deepseek-v4-flash."
   specs={[
     { label: 'Tipo', value: 'MoE (35B total)' },
     { label: 'Activos por token', value: '3B' },
     { label: 'Cuantización', value: 'FP8' },
-    { label: 'Contexto', value: '256K tokens' },
+    { label: 'Contexto', value: '262K tokens' },
     { label: 'Decodificación especulativa', value: 'MTP → ~2x de rendimiento' },
     { label: 'Muestreo', value: 'temp=0.6, top_p=0.95' },
     { label: 'Razonamiento', value: 'reasoning_config={}' },

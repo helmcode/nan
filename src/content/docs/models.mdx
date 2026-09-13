@@ -100,6 +100,7 @@ with the same `base URL`.
   specs={[
     { label: 'Type', value: 'MoE (125B total · 6B active)' },
     { label: 'Context', value: '262K tokens' },
+    { label: 'Max answer', value: '131K tokens' },
     { label: 'Input modalities', value: 'text · image' },
     { label: 'Output modalities', value: 'text' },
     { label: 'Monthly quota', value: '500M tokens / member' },
@@ -125,6 +126,7 @@ with the same `base URL`.
     { label: 'Type', value: 'MoE (310B total · 15B active)' },
     { label: 'Quantization', value: 'FP8' },
     { label: 'Context', value: '1M tokens' },
+    { label: 'Max answer', value: '131K tokens' },
     { label: 'Input modalities', value: 'text · image · audio' },
     { label: 'Output modalities', value: 'text' },
     { label: 'Monthly quota', value: '1.0B tokens / member' },
@@ -150,7 +152,7 @@ with the same `base URL`.
   specs={[
     { label: 'Type', value: 'MoE (26B total · 4B active)' },
     { label: 'Quantization', value: 'FP8' },
-    { label: 'Context', value: '256K tokens' },
+    { label: 'Context', value: '262K tokens' },
     { label: 'Sampling', value: 'temp=0.6, top_p=0.95' },
     { label: 'Reasoning', value: 'reasoning_config={}' },
   ]}
@@ -168,12 +170,12 @@ with the same `base URL`.
   tag="35B-A3B"
   leftLabel="text generation & chat"
   rightLabel="capabilities"
-  description="The flagship model. 35B parameter MoE, multimodal, with tool calling and reasoning."
+  description="The previous generation. 35B parameter MoE, multimodal, with tool calling and reasoning. It still answers so that configurations naming it keep working, but deepseek-v4-flash is what to start from today."
   specs={[
     { label: 'Type', value: 'MoE (35B total)' },
     { label: 'Active per token', value: '3B' },
     { label: 'Quantization', value: 'FP8' },
-    { label: 'Context', value: '256K tokens' },
+    { label: 'Context', value: '262K tokens' },
     { label: 'Speculative decoding', value: 'MTP → ~2x throughput' },
     { label: 'Sampling', value: 'temp=0.6, top_p=0.95' },
     { label: 'Reasoning', value: 'reasoning_config={}' },

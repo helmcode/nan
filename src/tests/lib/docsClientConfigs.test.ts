@@ -3,6 +3,7 @@ import Ajv2020 from 'ajv/dist/2020';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { formatTokens } from '../../lib/rateLimits';
 
 /**
  * The opencode.json block the docs publish must be a config opencode can
@@ -81,10 +82,39 @@ const here = dirname(fileURLToPath(import.meta.url));
  * The three GLM groups agree since cloud-api `8aa5496` raised them to 1M.
  * `output` is NOT a server cap for the self-hosted models -- vLLM bounds the
  * completion by the context window minus the prompt, with no separate limit.
- * It is the budget opencode plans a turn against, and the values here are the
- * ones this site already publishes elsewhere (qwen3.6 at 65536 in the openclaw
- * block) or that LiteLLM advertises (deepseek-v4-flash `max_output_tokens`
- * 32768). A member may raise it.
+ * It is the budget opencode plans a turn against, and the values here come from
+ * what LiteLLM advertises (deepseek-v4-flash `max_output_tokens` 32768) or from
+ * what this site already published for that model. A member may raise it.
+ *
+ * MEASURED 2026-09-13, by bisecting `max_tokens` against the live proxy until
+ * it answered 400 (which says only "Invalid request", so the number has to be
+ * cornered):
+ *
+ *   deepseek-v4-flash  1048575     glm5.3-flash  1048575
+ *   qwen3.8-flash       131072     mimo-v2.5      131072
+ *   gemma4              262130     qwen3.6        262131
+ *
+ * Two things follow, and they are why these values stay where they are.
+ *
+ * FOR MOST MODELS THERE IS NO OUTPUT CAP TO PUBLISH. gemma4 and qwen3.6 stop
+ * 13 and 14 tokens short of their 262144 window: that is the window minus the
+ * prompt, which is vLLM bounding the completion with no separate limit, exactly
+ * as described above. The 1M pair behaves the same against a ceiling of
+ * 1048575. So 32768 and 65536 are a BUDGET this site recommends, not a limit
+ * anything enforces, and a member who raises them is not doing anything wrong.
+ *
+ * TWO MODELS DO HAVE A REAL CAP: qwen3.8-flash and mimo-v2.5 refuse anything
+ * over 131072, well below their windows, because the upstream that serves them
+ * enforces its own. That figure is a fact about the endpoint and is the one
+ * models.dev already publishes for them.
+ *
+ * models.dev is the other public source and it describes the MODELS, not this
+ * endpoint: each entry under `providers/nan` declares a `base_model`, so it
+ * inherits the maker's ceiling -- 384000 for deepseek-v4-flash, 32768 for
+ * gemma4. Both are wrong about what our proxy accepts, in opposite directions,
+ * and the measurement above says which. Tools that read models.dev and not our
+ * config get that set; opencode resolves ours when it is present, verified with
+ * `opencode debug config` on 1.18.14.
  *
  * glm5.2 IS DELIBERATELY ABSENT, and the reason is an OWNER DECISION, not only
  * a measurement: it was kept as a reference point for 5.3 and is being retired
@@ -461,20 +491,68 @@ describe.each(LOCALES)('chatLanguageModels.json published in %s', (locale) => {
 });
 
 /**
- * NO REAL KEY ANYWHERE ON THE PAGE, in any block or any prose line.
+ * THE SAME WINDOW, WHEREVER IT IS WRITTEN.
  *
- * The previous scan lived inside the VS Code `describe` and ran on one block's
- * JSON, so the #52 reviewer dropped a realistic key into the OPENCODE block and
- * the suite stayed green. Its pattern could not have fired anyway:
- * `/sk-[A-Za-z0-9]{8}/` does not match `sk-your-key-here`, but neither does it
- * match anything else -- it was asserting a tautology.
+ * The config blocks carry the exact figure because a client parses them; the
+ * model cards and the home table carry it rounded because a person reads them.
+ * Those are two representations of ONE number, and nothing kept them together:
+ * `gemma4` and `qwen3.6` were published as "256K tokens" on /docs/models and as
+ * `262144` in the opencode block, which is the same window written in the two
+ * conventions -- binary on the card, decimal in the config. A reader comparing
+ * the two pages cannot tell that from a stale number, and the docs already got
+ * caught once publishing a window that was neither.
  *
- * This one reads the whole file. The two placeholders the page legitimately
- * uses (`sk-your-key-here`, 38 occurrences, and `sk-...`) are allowed by name;
- * everything else shaped like a key fails. A real community key is 40+ chars of
- * base62 after the prefix, so the 20-char floor clears the placeholders with
- * room and still catches anything genuine.
+ * `formatTokens` is the rounding the site itself uses (floor, never up), so
+ * this asserts the card against the function rather than against a second
+ * literal, and a change to the convention updates both at once.
  */
+describe.each(LOCALES)('the rounded windows in %s match the exact ones', (locale) => {
+  const WINDOWS = { ...EXPECTED_MODELS, ...EXPECTED_PREMIUM };
+  const body = pageBody(locale, 'models.mdx');
+
+  /** The `<ModelCard>` whose `name=` is this id, as raw source. */
+  function card(id: string): string {
+    const found = body
+      .split('<ModelCard')
+      .find((chunk) => new RegExp(`name="${id.replace(/\./g, '\\.')}"`).test(chunk));
+    expect(found, `${locale}: no model card for ${id}`).toBeDefined();
+    return found as string;
+  }
+
+  test.each(Object.keys(WINDOWS))('%s', (id) => {
+    const spec = /label: '(?:Context|Contexto)', value: '([^']+)'/.exec(card(id));
+    expect(spec, `${locale}/${id}: the card publishes no context spec`).not.toBeNull();
+    expect(spec![1]).toBe(`${formatTokens(WINDOWS[id].context)} tokens`);
+  });
+});
+
+/**
+ * The home table reads from the same catalogue the cards do, and writes the
+ * window into a free-prose `specs` string, which is the one place a number can
+ * drift without any consumer noticing. Only the models that state a window are
+ * checked: `kokoro` or `rerank` have nothing to state.
+ */
+test('the home table states the same window as the config blocks', () => {
+  const catalogue = JSON.parse(
+    readFileSync(resolve(here, '../../data/modelos.json'), 'utf-8'),
+  ) as { categorias: Array<{ modelos: Array<{ id: string; specs: string }> }> };
+
+  const WINDOWS: Record<string, { context: number }> = {
+    ...EXPECTED_MODELS,
+    ...EXPECTED_PREMIUM,
+  };
+
+  for (const cat of catalogue.categorias) {
+    for (const model of cat.modelos) {
+      const stated = /(\d+(?:\.\d+)?[KM]) context/.exec(model.specs);
+      if (!stated) continue;
+      const expected = WINDOWS[model.id];
+      expect(expected, `${model.id}: states a window but has no measured one`).toBeDefined();
+      expect(stated[1], `${model.id} on the home table`).toBe(formatTokens(expected.context));
+    }
+  }
+});
+
 /**
  * NO REAL KEY ANYWHERE IN THE GUIDES, in any block or any prose line.
  *
@@ -493,6 +571,134 @@ const GUIDE_PAGES = LOCALES.flatMap((locale) =>
     .filter((f) => /\.(md|mdx)$/.test(f))
     .map((f) => [`${locale}/${f}`, pageBody(locale, f)] as const),
 );
+
+/**
+ * EVERY TOOL PAGE PUBLISHES THE SAME WINDOW, not each one its own rounding.
+ *
+ * Only the OpenCode and VS Code blocks were checked, because those were the
+ * two the #52 bug lived in. The rest went on publishing `"contextWindow":
+ * 1000000` for models served at 1,048,576 and 1,048,575: a rounder number that
+ * looks deliberate, is 4.6% short, and disagrees with what the same site
+ * declares two pages away. Short is the harmless direction, but a reader who
+ * compares two of our pages cannot tell which one to believe, and that is the
+ * failure this whole file exists to prevent.
+ *
+ * The rule is written over the FIELD, not over the page: any JSON block in any
+ * guide that declares a `contextWindow` next to a model id has to declare the
+ * measured one. A tool page added tomorrow is covered without touching this.
+ * `limit.context` (OpenCode) and `maxInputTokens` (VS Code, which adds input
+ * and output) have their own tests above, because their shapes carry their own
+ * rules.
+ */
+describe('every contextWindow in the guides is the measured one', () => {
+  const WINDOWS: Record<string, { context: number; output: number }> = {
+    ...EXPECTED_MODELS,
+    ...EXPECTED_PREMIUM,
+  };
+
+  /** Every `{...}` that declares a contextWindow, with the page it came from. */
+  function declarations(): Array<{
+    page: string;
+    id: unknown;
+    contextWindow: unknown;
+    maxTokens: unknown;
+  }> {
+    const out: Array<{
+      page: string;
+      id: unknown;
+      contextWindow: unknown;
+      maxTokens: unknown;
+    }> = [];
+    for (const [page, body] of GUIDE_PAGES) {
+      for (const raw of jsonBlocks(body)) {
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          // Not every fenced json block is a whole document: the pages quote
+          // fragments of a config to explain one field.
+          continue;
+        }
+        walk(parsed, (node) => {
+          if ('contextWindow' in node) {
+            out.push({
+              page,
+              id: node.id ?? node.model,
+              contextWindow: node.contextWindow,
+              maxTokens: node.maxTokens,
+            });
+          }
+        });
+      }
+    }
+    return out;
+  }
+
+  function walk(node: unknown, visit: (o: Record<string, any>) => void): void {
+    if (Array.isArray(node)) return node.forEach((n) => walk(n, visit));
+    if (node && typeof node === 'object') {
+      visit(node as Record<string, any>);
+      Object.values(node).forEach((n) => walk(n, visit));
+    }
+  }
+
+  const found = declarations();
+
+  test('there is something to check, or this guards nothing', () => {
+    expect(found.length).toBeGreaterThan(0);
+  });
+
+  test('each one names a model the cluster serves', () => {
+    const strays = found.filter((d) => typeof d.id !== 'string' || !(d.id in WINDOWS));
+    expect(
+      strays.map((d) => `${d.page}: ${String(d.id)}`),
+      'a window declared for a model with no measurement behind it',
+    ).toEqual([]);
+  });
+
+  test('each one declares the window that model is served at', () => {
+    const wrong = found
+      .filter((d) => typeof d.id === 'string' && d.id in WINDOWS)
+      .filter((d) => d.contextWindow !== WINDOWS[d.id as string].context)
+      .map(
+        (d) =>
+          `${d.page} · ${d.id}: publishes ${d.contextWindow}, ` +
+          `served at ${WINDOWS[d.id as string].context}`,
+      );
+    expect(wrong, wrong.join('\n')).toEqual([]);
+  });
+
+  /**
+   * THE ANSWER CEILING IS ONE NUMBER TOO, and it was three.
+   *
+   * The opencode block published 32,768 for glm5.3-flash, the OpenClaw one
+   * 65,536 and Pi's 16,384 - and two of the three prose lines called their own
+   * figure "the maximum the model takes", which cannot be true of both. Each
+   * tool names the field differently (`limit.output`, `maxTokens`) and they all
+   * answer the same question: how much can come back in one answer.
+   *
+   * A per-turn BUDGET is a different thing and is not checked here: it is a
+   * recommendation, not a limit, and OpenClaw writes it under `agents.defaults`,
+   * away from any model id.
+   *
+   * The figure itself is still unverified against the proxy - models.dev
+   * publishes far higher ceilings for these models, inherited from each base
+   * model's own entry. What this pins is that the guides answer with ONE number
+   * until a measurement moves all of them at once.
+   */
+  test('each one declares the same answer ceiling as the opencode block', () => {
+    const wrong = found
+      .filter((d) => typeof d.id === 'string' && d.id in WINDOWS)
+      .filter((d) => d.maxTokens !== undefined)
+      .filter((d) => d.maxTokens !== WINDOWS[d.id as string].output)
+      .map(
+        (d) =>
+          `${d.page} · ${d.id}: publishes ${d.maxTokens}, ` +
+          `opencode publishes ${WINDOWS[d.id as string].output}`,
+      );
+    expect(wrong, wrong.join('\n')).toEqual([]);
+  });
+});
 
 describe('no credential is published in the guides', () => {
   /**

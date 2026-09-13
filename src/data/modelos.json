@@ -52,14 +52,14 @@
         {
           "id": "gemma4",
           "by": "Google",
-          "specs": "26B-A4B MoE · FP8 · 256K context · tool calling · reasoning · vision",
+          "specs": "26B-A4B MoE · FP8 · 262K context · tool calling · reasoning · vision",
           "cuota": "sin contador",
           "frontier": false
         },
         {
           "id": "qwen3.6",
           "by": "Alibaba",
-          "specs": "35B-A3B MoE · FP8 · 256K context · tool calling · reasoning · vision",
+          "specs": "35B-A3B MoE · FP8 · 262K context · tool calling · reasoning · vision",
           "cuota": "sin contador",
           "frontier": false,
           "mostUsed": true
@@ -99,7 +99,7 @@
         {
           "id": "kokoro",
           "by": "Hexgrad",
-          "specs": "TTS · 82M params · 67 voces · <1s latency · ef_dora · em_alex",
+          "specs": "TTS · 82M params · 67 voices · <1s latency · ef_dora · em_alex",
           "cuota": "sin contador",
           "frontier": false
         },

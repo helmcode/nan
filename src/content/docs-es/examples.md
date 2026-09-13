@@ -111,7 +111,7 @@ response = client.embeddings.create(
 )
 
 embeddings = [d.embedding for d in response.data]
-print(len(embeddings[0]))  // 4096
+print(len(embeddings[0]))  # 4096
 ```
 
 ### node.js
@@ -322,7 +322,6 @@ print(translation.text)  # English translation
 ```javascript
 import OpenAI from "openai";
 import fs from "fs";
-import FormData from "form-data";
 
 const client = new OpenAI({
   apiKey: "sk-your-key-here",
@@ -331,8 +330,6 @@ const client = new OpenAI({
 
 // Transcribe audio
 const file = fs.createReadStream("recording.mp3");
-const form = FormData();
-form.append("file", file);
 
 const result = await client.audio.transcriptions.create({
   model: "whisper",
@@ -408,6 +405,74 @@ response = client.chat.completions.create(
 
 print(response.choices[0].message.content)
 ```
+
+## model: flux-2-klein
+
+generación y edición de imágenes
+
+### curl
+
+```bash
+curl https://api.nan.builders/v1/images/generations \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-your-key-here" \
+  -d '{
+    "model": "flux-2-klein",
+    "prompt": "Un faro al atardecer sobre acantilados, fotográfico",
+    "size": "1024x1024",
+    "n": 1
+  }'
+# → {"created":...,"data":[{"url":"https://..."}]}
+```
+
+Cada lado de `size` tiene que ser divisible entre 16 y estar entre 256 y 1536, con una relación de aspecto entre 1:3 y 3:1. `n` llega hasta 4.
+
+### python
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-your-key-here",
+  base_url="https://api.nan.builders/v1"
+)
+
+image = client.images.generate(
+  model="flux-2-klein",
+  prompt="Un faro al atardecer sobre acantilados, fotográfico",
+  size="1024x1024",
+  extra_body={"seed": 42}
+)
+
+print(image.data[0].url)
+```
+
+El enlace es temporal, alrededor de 60 minutos. Pide `response_format="b64_json"` y los bytes llegan en `data[0].b64_json`, en base64, en lugar de detrás de un enlace. `seed` y `guidance` son extensiones de NaN, así que el SDK de OpenAI las manda por `extra_body`.
+
+### node.js (imagen a imagen)
+
+```javascript
+import OpenAI from "openai";
+import fs from "fs";
+
+const client = new OpenAI({
+  apiKey: "sk-your-key-here",
+  baseURL: "https://api.nan.builders/v1",
+});
+
+const image = await client.images.edit({
+  model: "flux-2-klein",
+  image: fs.createReadStream("referencia.png"),
+  prompt: "Convierte la escena en invierno, con nieve",
+  size: "1024x1024",
+});
+
+console.log(image.data[0].url);
+```
+
+`/images/edits` acepta hasta cuatro imágenes de referencia (PNG, JPEG o WebP, de menos de 25 MB cada una) y no admite `mask`: mandar una devuelve `400`.
+
+Las imágenes necesitan membresía de inferencia, `403` si no la tienes, y van por su propio presupuesto: 20 peticiones por minuto y 100 al mes, que no toca tu cuota de tokens.
 
 ## tool: web search
 
