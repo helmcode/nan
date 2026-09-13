@@ -301,7 +301,7 @@
       "line1": "Build without",
       "line2": "limits.",
       "sub": "Don't run out of tokens. Ever.",
-      "body": "NaN is the community of builders sharing GPUs to run AI open models. Build whatever you need, with no token cap. You can just do things.",
+      "body": "NaN is the community of builders sharing GPUs to run AI open models. Build whatever you need, without paying per token. You can just do things.",
       "spots": "Limited spots",
       "waitline": "Join the waitlist to unlock your subscription. Just leave your email.",
       "emailPlaceholder": "you@email.dev",
@@ -322,7 +322,7 @@
       "label": "what is nan",
       "title1": "What is NaN.",
       "title2": "The Builders Community",
-      "lead": "Builders sharing dedicated GPUs to run open models and burn tokens without limits.",
+      "lead": "Builders sharing dedicated GPUs to run open models, with no bill per token.",
       "p": [
         "Closed-model APIs are convenient but expensive and limited. Open models are free but running them seriously requires hardware almost no one has at home.",
         "NaN solves this by sharing powerful GPUs among builders who actually use them, splitting the real cost of infrastructure.",
@@ -372,7 +372,7 @@
       "perTaxes": "/mo · taxes included",
       "inferenceIncluded": "inference included",
       "memberIncludes": [
-        "Access to the shared cluster. Open models, no token caps.",
+        "Access to the shared cluster. No token counter on the cluster models.",
         "DeepSeek V4-Flash (frontier 305B, 1M context, vision, reasoning). 3B tokens/month.",
         "Open models chosen by the community",
         "Personal API key compatible with OpenAI",
