@@ -3,6 +3,7 @@ import Ajv2020 from 'ajv/dist/2020';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { formatTokens } from '../../lib/rateLimits';
 
 /**
  * The opencode.json block the docs publish must be a config opencode can
@@ -461,20 +462,68 @@ describe.each(LOCALES)('chatLanguageModels.json published in %s', (locale) => {
 });
 
 /**
- * NO REAL KEY ANYWHERE ON THE PAGE, in any block or any prose line.
+ * THE SAME WINDOW, WHEREVER IT IS WRITTEN.
  *
- * The previous scan lived inside the VS Code `describe` and ran on one block's
- * JSON, so the #52 reviewer dropped a realistic key into the OPENCODE block and
- * the suite stayed green. Its pattern could not have fired anyway:
- * `/sk-[A-Za-z0-9]{8}/` does not match `sk-your-key-here`, but neither does it
- * match anything else -- it was asserting a tautology.
+ * The config blocks carry the exact figure because a client parses them; the
+ * model cards and the home table carry it rounded because a person reads them.
+ * Those are two representations of ONE number, and nothing kept them together:
+ * `gemma4` and `qwen3.6` were published as "256K tokens" on /docs/models and as
+ * `262144` in the opencode block, which is the same window written in the two
+ * conventions -- binary on the card, decimal in the config. A reader comparing
+ * the two pages cannot tell that from a stale number, and the docs already got
+ * caught once publishing a window that was neither.
  *
- * This one reads the whole file. The two placeholders the page legitimately
- * uses (`sk-your-key-here`, 38 occurrences, and `sk-...`) are allowed by name;
- * everything else shaped like a key fails. A real community key is 40+ chars of
- * base62 after the prefix, so the 20-char floor clears the placeholders with
- * room and still catches anything genuine.
+ * `formatTokens` is the rounding the site itself uses (floor, never up), so
+ * this asserts the card against the function rather than against a second
+ * literal, and a change to the convention updates both at once.
  */
+describe.each(LOCALES)('the rounded windows in %s match the exact ones', (locale) => {
+  const WINDOWS = { ...EXPECTED_MODELS, ...EXPECTED_PREMIUM };
+  const body = pageBody(locale, 'models.mdx');
+
+  /** The `<ModelCard>` whose `name=` is this id, as raw source. */
+  function card(id: string): string {
+    const found = body
+      .split('<ModelCard')
+      .find((chunk) => new RegExp(`name="${id.replace(/\./g, '\\.')}"`).test(chunk));
+    expect(found, `${locale}: no model card for ${id}`).toBeDefined();
+    return found as string;
+  }
+
+  test.each(Object.keys(WINDOWS))('%s', (id) => {
+    const spec = /label: '(?:Context|Contexto)', value: '([^']+)'/.exec(card(id));
+    expect(spec, `${locale}/${id}: the card publishes no context spec`).not.toBeNull();
+    expect(spec![1]).toBe(`${formatTokens(WINDOWS[id].context)} tokens`);
+  });
+});
+
+/**
+ * The home table reads from the same catalogue the cards do, and writes the
+ * window into a free-prose `specs` string, which is the one place a number can
+ * drift without any consumer noticing. Only the models that state a window are
+ * checked: `kokoro` or `rerank` have nothing to state.
+ */
+test('the home table states the same window as the config blocks', () => {
+  const catalogue = JSON.parse(
+    readFileSync(resolve(here, '../../data/modelos.json'), 'utf-8'),
+  ) as { categorias: Array<{ modelos: Array<{ id: string; specs: string }> }> };
+
+  const WINDOWS: Record<string, { context: number }> = {
+    ...EXPECTED_MODELS,
+    ...EXPECTED_PREMIUM,
+  };
+
+  for (const cat of catalogue.categorias) {
+    for (const model of cat.modelos) {
+      const stated = /(\d+(?:\.\d+)?[KM]) context/.exec(model.specs);
+      if (!stated) continue;
+      const expected = WINDOWS[model.id];
+      expect(expected, `${model.id}: states a window but has no measured one`).toBeDefined();
+      expect(stated[1], `${model.id} on the home table`).toBe(formatTokens(expected.context));
+    }
+  }
+});
+
 /**
  * NO REAL KEY ANYWHERE IN THE GUIDES, in any block or any prose line.
  *
