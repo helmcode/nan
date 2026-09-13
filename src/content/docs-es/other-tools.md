@@ -86,7 +86,7 @@ Configura `~/.openclaw/openclaw.json`:
             "name": "GLM 5.3 Flash",
             "reasoning": true,
             "input": ["text", "image"],
-            "contextWindow": 1000000,
+            "contextWindow": 1048576,
             "maxTokens": 65536
           }
         ]

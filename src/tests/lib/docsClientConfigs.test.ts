@@ -543,6 +543,88 @@ const GUIDE_PAGES = LOCALES.flatMap((locale) =>
     .map((f) => [`${locale}/${f}`, pageBody(locale, f)] as const),
 );
 
+/**
+ * EVERY TOOL PAGE PUBLISHES THE SAME WINDOW, not each one its own rounding.
+ *
+ * Only the OpenCode and VS Code blocks were checked, because those were the
+ * two the #52 bug lived in. The rest went on publishing `"contextWindow":
+ * 1000000` for models served at 1,048,576 and 1,048,575: a rounder number that
+ * looks deliberate, is 4.6% short, and disagrees with what the same site
+ * declares two pages away. Short is the harmless direction, but a reader who
+ * compares two of our pages cannot tell which one to believe, and that is the
+ * failure this whole file exists to prevent.
+ *
+ * The rule is written over the FIELD, not over the page: any JSON block in any
+ * guide that declares a `contextWindow` next to a model id has to declare the
+ * measured one. A tool page added tomorrow is covered without touching this.
+ * `limit.context` (OpenCode) and `maxInputTokens` (VS Code, which adds input
+ * and output) have their own tests above, because their shapes carry their own
+ * rules.
+ */
+describe('every contextWindow in the guides is the measured one', () => {
+  const WINDOWS: Record<string, { context: number }> = {
+    ...EXPECTED_MODELS,
+    ...EXPECTED_PREMIUM,
+  };
+
+  /** Every `{...}` that declares a contextWindow, with the page it came from. */
+  function declarations(): Array<{ page: string; id: unknown; contextWindow: unknown }> {
+    const out: Array<{ page: string; id: unknown; contextWindow: unknown }> = [];
+    for (const [page, body] of GUIDE_PAGES) {
+      for (const raw of jsonBlocks(body)) {
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          // Not every fenced json block is a whole document: the pages quote
+          // fragments of a config to explain one field.
+          continue;
+        }
+        walk(parsed, (node) => {
+          if ('contextWindow' in node) {
+            out.push({ page, id: node.id ?? node.model, contextWindow: node.contextWindow });
+          }
+        });
+      }
+    }
+    return out;
+  }
+
+  function walk(node: unknown, visit: (o: Record<string, any>) => void): void {
+    if (Array.isArray(node)) return node.forEach((n) => walk(n, visit));
+    if (node && typeof node === 'object') {
+      visit(node as Record<string, any>);
+      Object.values(node).forEach((n) => walk(n, visit));
+    }
+  }
+
+  const found = declarations();
+
+  test('there is something to check, or this guards nothing', () => {
+    expect(found.length).toBeGreaterThan(0);
+  });
+
+  test('each one names a model the cluster serves', () => {
+    const strays = found.filter((d) => typeof d.id !== 'string' || !(d.id in WINDOWS));
+    expect(
+      strays.map((d) => `${d.page}: ${String(d.id)}`),
+      'a window declared for a model with no measurement behind it',
+    ).toEqual([]);
+  });
+
+  test('each one declares the window that model is served at', () => {
+    const wrong = found
+      .filter((d) => typeof d.id === 'string' && d.id in WINDOWS)
+      .filter((d) => d.contextWindow !== WINDOWS[d.id as string].context)
+      .map(
+        (d) =>
+          `${d.page} · ${d.id}: publishes ${d.contextWindow}, ` +
+          `served at ${WINDOWS[d.id as string].context}`,
+      );
+    expect(wrong, wrong.join('\n')).toEqual([]);
+  });
+});
+
 describe('no credential is published in the guides', () => {
   /**
    * `sk-local-change-this` is not a NaN key: it is the master key of the local
