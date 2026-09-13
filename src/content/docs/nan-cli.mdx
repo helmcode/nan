@@ -32,6 +32,7 @@ The CLI opens a panel with tabs you move through with the arrow keys:
 
 | Tab | What for |
 |---|---|
+| Home | The keys, and what each tab is for |
 | Profile | Your account details |
 | Usage | Tokens spent over 24 hours, 30 days and all time |
 | Models | The models available and how much you have spent on each |
@@ -77,8 +78,10 @@ It has to answer with the version and the name of the tool. If your terminal say
 
 At [cloud.nan.builders](https://cloud.nan.builders/), in your user settings, under **API Keys**.
 
-<Callout title="Do not use nan auth login" variant="warning">
-That command points to a Discord sign-in address that no longer exists and ends in a `404` in your browser. It is not your machine's fault. The good path is to take the key from the panel and paste it into the Setup tab.
+<Callout title="Or let the CLI log you in">
+`nan auth login --email you@yours` sends you a sign-in link, the same one the platform uses. Copy it out of the email and paste it back into the command, without opening it in the browser first: it works once, and the browser would spend it. That gets you the Profile, Usage and Costs tabs. The Setup tab, which is the one that configures your tools, needs the API key and nothing else.
+
+Before v0.1.2 this command pointed at a retired Discord endpoint and answered `404`. If that is what you see, you are on an older build: `curl -fsSL https://nan.builders/install | bash` again.
 </Callout>
 
 ### Configure your tools
@@ -154,7 +157,6 @@ The result is the same. The only thing you miss out on are the usage and cost ta
 
 <Details summary="Known issues">
 
-- **Profile, Usage and Costs need a session that cannot be created today.** The CLI's Discord sign-in points to a retired endpoint. The Setup tab, which is the one that configures your tools, works with the API key alone and is unaffected.
 - **On Windows you have to build.** The published releases carry macOS and Linux binaries; for Windows, the path for now is `go build`.
 - **The installer asks GitHub for the list of releases.** If you are behind a proxy that blocks `api.github.com`, it will find nothing to download. In that case, grab the `.tar.gz` for your system by hand from the [releases page](https://github.com/helmcode/nan-cli/releases).
 

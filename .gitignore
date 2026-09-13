@@ -32,3 +32,6 @@ worker-configuration.d.ts
 # caché de fuentes de scripts/gen-og.mjs: los TTF se bajan al generar las
 # tarjetas OG y no se commitea ninguna fuente (tendría que ir con su OFL)
 scripts/.fontcache/
+
+# Social cards: generadas, y pesadas. Se suben donde se publican, no aquí.
+public/social/
