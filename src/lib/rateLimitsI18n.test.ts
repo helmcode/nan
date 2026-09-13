@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import {
+  DEFAULT_RATE_LIMITS,
   formatTokens,
   rateLimitsLabels,
   windowedModelBody,
@@ -111,5 +112,54 @@ describe('the card renders no hardcoded copy', () => {
       ...markup.matchAll(/>\s*([A-Za-z][A-Za-z /]{6,})\s*</g),
     ].map((m) => m[1].trim());
     expect(literals, `inlined: ${literals.join(' | ')}`).toEqual([]);
+  });
+});
+
+/**
+ * "LIMITS ARE PER API KEY, NOT PER MODEL" WAS FALSE WHILE IT WAS PUBLISHED.
+ *
+ * Both the quickstart and the introduction said it, in both languages, while
+ * this very module published two per-model tables and /docs/models put a `RPM`
+ * row on the qwen3-embedding, kokoro and whisper cards. A member planning a
+ * batch job against "the limit is 60 rpm on your key" hits `rerank` at a
+ * different ceiling, or whisper at a much lower one, and nothing in the
+ * sentence they read prepares them for it.
+ *
+ * The check is conditional on the config rather than on a fixed phrase list
+ * being absent forever: the day the per-model tables are genuinely emptied,
+ * the sentence becomes true again and this stops objecting to it.
+ */
+describe('no guide denies the per-model limits this module publishes', () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const LOCALES = ['docs', 'docs-es'] as const;
+
+  /** Claims of exclusivity, in both languages. Substrings, lowercased. */
+  const DENIALS = [
+    'not per model',
+    'no por modelo',
+    'only per api key',
+    'solo por api key',
+    'sólo por api key',
+  ];
+
+  const perModel =
+    DEFAULT_RATE_LIMITS.tokensPerMinuteByModel.length +
+    DEFAULT_RATE_LIMITS.requestsPerMinuteByModel.length;
+
+  it.each(LOCALES)('%s', (locale) => {
+    if (perModel === 0) return;
+    const dir = resolve(here, `../content/${locale}`);
+    const offenders: string[] = [];
+    for (const file of readdirSync(dir).filter((f) => /\.mdx?$/.test(f))) {
+      const body = readFileSync(resolve(dir, file), 'utf-8').replace(/\r\n/g, '\n').toLowerCase();
+      for (const denial of DENIALS) {
+        if (body.includes(denial)) offenders.push(`${file}: "${denial}"`);
+      }
+    }
+    expect(
+      offenders,
+      `${perModel} models carry a limit of their own, so no page can say otherwise:\n` +
+        offenders.join('\n'),
+    ).toEqual([]);
   });
 });

@@ -124,7 +124,9 @@ curl https://api.nan.builders/v1/models \
 
 ### Connect your editor or your agent
 
-Cursor, Claude Code, Codex, VS Code, Cline, OpenCode, Zed and company are configured with those same two values. Each one asks for them somewhere different, and that is what [Set up your agent](/docs/agent-setup) collects, with one page per tool.
+Cursor, Codex, VS Code, Cline, OpenCode, Zed and company are configured with those same two values. Each one asks for them somewhere different, and that is what [Set up your agent](/docs/agent-setup) collects, with one page per tool.
+
+[Claude Code](/docs/claude-code) is the one exception, and it is not a matter of where the fields go: it speaks Anthropic's protocol, so it does not point at NaN directly. Its page has the two ways around that.
 
 If you use OpenCode, Codex, Pi or droid, the [NaN CLI](/docs/nan-cli) configures them for you without editing anything.
 
@@ -149,9 +151,9 @@ The full detail, endpoint by endpoint, is in the [API reference](/docs/api).
 
 <Details summary="The limits, in short">
 
-Limits are per API key, not per model: a cap on requests per minute and a maximum number of requests at once.
+Two limits are per API key and apply to everything you call: requests per minute, and requests at once.
 
-`glm5.3` is the only one that additionally follows a rolling token window, and web search has its own budget, separate from the models'.
+On top of those, some models carry one of their own: a tokens-per-minute ceiling on the big chat models, and a requests-per-minute one on `rerank`. `glm5.3` is not gated per minute at all, but by a rolling token window plus an allowance per billing period. Web search runs on a budget separate from the models'.
 
 The current figures are at the end of [Models](/docs/models), which is where they are published so that no two versions of the same number go around.
 

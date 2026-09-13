@@ -124,7 +124,9 @@ curl https://api.nan.builders/v1/models \
 
 ### Conecta tu editor o tu agente
 
-Cursor, Claude Code, Codex, VS Code, Cline, OpenCode, Zed y compañía se configuran con esos mismos dos datos. Cada uno los pide en un sitio distinto, y eso es lo que recoge [Configurar tu agente](/es/docs/agent-setup), con una página por herramienta.
+Cursor, Codex, VS Code, Cline, OpenCode, Zed y compañía se configuran con esos mismos dos datos. Cada uno los pide en un sitio distinto, y eso es lo que recoge [Configurar tu agente](/es/docs/agent-setup), con una página por herramienta.
+
+[Claude Code](/es/docs/claude-code) es la única excepción, y no es cuestión de dónde van los campos: habla el protocolo de Anthropic, así que no apunta a NaN directamente. En su página están las dos maneras de resolverlo.
 
 Si usas OpenCode, Codex, Pi o droid, el [CLI de NaN](/es/docs/nan-cli) te los configura sin que tengas que editar nada.
 
@@ -149,9 +151,9 @@ El detalle completo, endpoint a endpoint, está en la [referencia de la API](/es
 
 <Details summary="Los límites, en corto">
 
-Los límites van por API key, no por modelo: un tope de peticiones por minuto y un máximo de peticiones a la vez.
+Dos límites van por API key y se aplican a todo lo que llames: peticiones por minuto y peticiones a la vez.
 
-`glm5.3` es el único que además se rige por una ventana móvil de tokens, y la búsqueda web tiene su propio presupuesto, separado del de los modelos.
+Encima de esos, algunos modelos llevan el suyo: un techo de tokens por minuto en los modelos de chat grandes, y uno de peticiones por minuto en `rerank`. `glm5.3` no se rige por minuto en absoluto, sino por una ventana móvil de tokens más una asignación por periodo de facturación. La búsqueda web va por un presupuesto separado del de los modelos.
 
 Las cifras vigentes están al final de [Modelos](/es/docs/models), que es donde se publican para que no haya dos versiones de la misma cifra dando vueltas.
 
