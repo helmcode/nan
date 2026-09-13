@@ -254,3 +254,24 @@ export function inputsLabel(m: ModelSpec, lang: 'en' | 'es'): string {
   }[lang];
   return (m.inputs ?? ['text']).map((i) => T[i]).join(' · ');
 }
+
+/**
+ * The home table's quota chip, translated out of the data file.
+ *
+ * `src/data/modelos.json` is ONE file rendered on both homepages, and its
+ * `cuota` is written in Spanish. This is the function that made that work, and
+ * it used to live inline in Models.astro - where nothing could test it, and
+ * where a new phrasing added to the data file would have printed Spanish on
+ * the English homepage with no build failing. That is not hypothetical: the
+ * neighbouring `specs` field carried "67 voces" on /#models for months.
+ *
+ * The premium quota goes by the Stripe billing period, not by the calendar
+ * month, and that is why it is never written as monthly on any surface.
+ */
+export function homeQuotaLabel(cuota: string, lang: 'en' | 'es'): string {
+  if (lang === 'es') return cuota;
+  return cuota
+    .replace('sin contador', 'unmetered')
+    .replace('/periodo de facturación', ' / billing period')
+    .replace('/mes', ' / mo');
+}

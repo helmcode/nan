@@ -173,7 +173,7 @@
                     "example": [
                       {
                         "role": "user",
-                        "content": "Hola"
+                        "content": "Hello"
                       }
                     ]
                   },
@@ -248,7 +248,7 @@
                     "messages": [
                       {
                         "role": "user",
-                        "content": "Hola"
+                        "content": "Hello"
                       }
                     ],
                     "max_tokens": 200
@@ -261,7 +261,7 @@
                     "messages": [
                       {
                         "role": "user",
-                        "content": "Cuéntame un chiste corto"
+                        "content": "Tell me a short joke"
                       }
                     ],
                     "stream": true
@@ -277,7 +277,7 @@
                         "content": [
                           {
                             "type": "text",
-                            "text": "¿Qué hay en esta imagen?"
+                            "text": "What is in this image?"
                           },
                           {
                             "type": "image_url",
@@ -297,7 +297,7 @@
                     "messages": [
                       {
                         "role": "user",
-                        "content": "Alice, 30 años."
+                        "content": "Alice, 30 years old."
                       }
                     ],
                     "response_format": {
@@ -332,7 +332,7 @@
                     "messages": [
                       {
                         "role": "user",
-                        "content": "Resuelve paso a paso: 3x + 7 = 22"
+                        "content": "Solve step by step: 3x + 7 = 22"
                       }
                     ],
                     "reasoning_effort": "high"
@@ -374,7 +374,7 @@
                       "index": 0,
                       "message": {
                         "role": "assistant",
-                        "content": "¡Hola! ¿En qué puedo ayudarte?",
+                        "content": "Hello! How can I help you?",
                         "reasoning_content": "..."
                       }
                     }
@@ -390,7 +390,7 @@
                 "schema": {
                   "$ref": "#/components/schemas/ChatCompletionChunk"
                 },
-                "example": "data: {\"id\":\"chatcmpl-...\",\"object\":\"chat.completion.chunk\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"¡Hola\"}}]}\n\ndata: {\"id\":\"chatcmpl-...\",\"object\":\"chat.completion.chunk\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"!\"},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
+                "example": "data: {\"id\":\"chatcmpl-...\",\"object\":\"chat.completion.chunk\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"Hello\"}}]}\n\ndata: {\"id\":\"chatcmpl-...\",\"object\":\"chat.completion.chunk\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"!\"},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n"
               }
             }
           },
@@ -421,7 +421,7 @@
           {
             "lang": "javascript",
             "label": "Node.js",
-            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst resp = await client.chat.completions.create({\n  model: \"deepseek-v4-flash\",\n  messages: [{ role: \"user\", content: \"Hola\" }],\n});\nconsole.log(resp.choices[0].message.content);"
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst resp = await client.chat.completions.create({\n  model: \"deepseek-v4-flash\",\n  messages: [{ role: \"user\", content: \"Hello\" }],\n});\nconsole.log(resp.choices[0].message.content);"
           }
         ]
       }
@@ -1049,7 +1049,7 @@
                         }
                       }
                     ],
-                    "example": "Hola, ¿cómo estás?"
+                    "example": "Hello, how are you?"
                   },
                   "max_output_tokens": {
                     "type": "integer",
@@ -1113,7 +1113,7 @@
                       "content": [
                         {
                           "type": "output_text",
-                          "text": "Hola.",
+                          "text": "Hello.",
                           "annotations": []
                         }
                       ]
@@ -1139,17 +1139,17 @@
           {
             "lang": "curl",
             "label": "cURL",
-            "source": "curl https://api.nan.builders/v1/responses \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ \"model\": \"qwen3.6\", \"input\": \"Hola, ¿cómo estás?\" }'"
+            "source": "curl https://api.nan.builders/v1/responses \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ \"model\": \"qwen3.6\", \"input\": \"Hello, how are you?\" }'"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.responses.create(\n    model=\"qwen3.6\",\n    input=\"Hola, ¿cómo estás?\",\n)\nprint(resp.output_text)"
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.responses.create(\n    model=\"qwen3.6\",\n    input=\"Hello, how are you?\",\n)\nprint(resp.output_text)"
           },
           {
             "lang": "javascript",
             "label": "Node.js",
-            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst resp = await client.responses.create({\n  model: \"qwen3.6\",\n  input: \"Hola, ¿cómo estás?\",\n});\nconsole.log(resp.output_text);"
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst resp = await client.responses.create({\n  model: \"qwen3.6\",\n  input: \"Hello, how are you?\",\n});\nconsole.log(resp.output_text);"
           }
         ]
       }
@@ -1175,7 +1175,7 @@
                   "prompt": {
                     "type": "string",
                     "description": "A text description of the image to generate.",
-                    "example": "Un faro al atardecer sobre acantilados, estilo cinemático"
+                    "example": "A lighthouse at sunset over cliffs, cinematic style"
                   },
                   "model": {
                     "type": "string",
@@ -1264,17 +1264,17 @@
           {
             "lang": "curl",
             "label": "cURL",
-            "source": "curl https://api.nan.builders/v1/images/generations \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ \"model\": \"flux-2-klein\", \"prompt\": \"Un faro al atardecer sobre acantilados\", \"size\": \"1024x1024\" }'"
+            "source": "curl https://api.nan.builders/v1/images/generations \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{ \"model\": \"flux-2-klein\", \"prompt\": \"A lighthouse at sunset over cliffs\", \"size\": \"1024x1024\" }'"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nimg = client.images.generate(\n    model=\"flux-2-klein\",\n    prompt=\"Un faro al atardecer sobre acantilados\",\n    size=\"1024x1024\",\n)\nprint(img.data[0].url)"
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nimg = client.images.generate(\n    model=\"flux-2-klein\",\n    prompt=\"A lighthouse at sunset over cliffs\",\n    size=\"1024x1024\",\n)\nprint(img.data[0].url)"
           },
           {
             "lang": "javascript",
             "label": "Node.js",
-            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst img = await client.images.generate({\n  model: \"flux-2-klein\",\n  prompt: \"Un faro al atardecer sobre acantilados\",\n  size: \"1024x1024\",\n});\nconsole.log(img.data[0].url);"
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nconst img = await client.images.generate({\n  model: \"flux-2-klein\",\n  prompt: \"A lighthouse at sunset over cliffs\",\n  size: \"1024x1024\",\n});\nconsole.log(img.data[0].url);"
           }
         ]
       }
@@ -1382,17 +1382,17 @@
           {
             "lang": "curl",
             "label": "cURL",
-            "source": "curl https://api.nan.builders/v1/images/edits \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -F \"model=flux-2-klein\" \\\n  -F \"image[]=@ref.png\" \\\n  -F \"prompt=Convierte la escena en invierno con nieve\""
+            "source": "curl https://api.nan.builders/v1/images/edits \\\n  -H \"Authorization: Bearer $NAN_API_KEY\" \\\n  -F \"model=flux-2-klein\" \\\n  -F \"image[]=@ref.png\" \\\n  -F \"prompt=Turn the scene into winter, with snow\""
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nimg = client.images.edit(\n    model=\"flux-2-klein\",\n    image=open(\"ref.png\", \"rb\"),\n    prompt=\"Convierte la escena en invierno con nieve\",\n)\nprint(img.data[0].url)"
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nimg = client.images.edit(\n    model=\"flux-2-klein\",\n    image=open(\"ref.png\", \"rb\"),\n    prompt=\"Turn the scene into winter, with snow\",\n)\nprint(img.data[0].url)"
           },
           {
             "lang": "javascript",
             "label": "Node.js",
-            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nimport fs from \"node:fs\";\nconst img = await client.images.edit({\n  model: \"flux-2-klein\",\n  image: fs.createReadStream(\"ref.png\"),\n  prompt: \"Convierte la escena en invierno con nieve\",\n});\nconsole.log(img.data[0].url);"
+            "source": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  apiKey: process.env.NAN_API_KEY,\n  baseURL: \"https://api.nan.builders/v1\",\n});\n\nimport fs from \"node:fs\";\nconst img = await client.images.edit({\n  model: \"flux-2-klein\",\n  image: fs.createReadStream(\"ref.png\"),\n  prompt: \"Turn the scene into winter, with snow\",\n});\nconsole.log(img.data[0].url);"
           }
         ]
       }

@@ -313,3 +313,45 @@ describe('openapi.json: the model it puts in front of a reader', () => {
     expect(spec.components.schemas.ResponseFormat.description).toContain(`\`${model}\``);
   });
 });
+
+/**
+ * THE REFERENCE IS SERVED IN ENGLISH TO BOTH LOCALES, so its examples cannot be
+ * in Spanish.
+ *
+ * There is one spec, rendered by Scalar at /docs/api and at /es/docs/api, and
+ * its prose is English. Its examples were not: the chat quickstart asked "Hola",
+ * the model answered "¡Hola! ¿En qué puedo ayudarte?", the reasoning example
+ * said "Resuelve paso a paso" and the image ones prompted for "Un faro al
+ * atardecer sobre acantilados". A member who does not read Spanish got an
+ * English page with Spanish payloads, which reads like a copy-paste mistake
+ * even when every field around it is right.
+ *
+ * TWO STRINGS STAY SPANISH ON PURPOSE and are allowed by name below: the
+ * embeddings input pairs "Hola mundo" with "Hello world", which is the point of
+ * the example (the same sentence in two languages lands in nearby vectors), and
+ * the Whisper response is the transcript of a Spanish audio file, which is
+ * content, not prose.
+ */
+describe('openapi.json: one language for the reader', () => {
+  const DELIBERATE = ['Hola mundo', 'Hola, esto es una prueba.'];
+
+  /** `¿ ¡ ñ` and the accented vowels: Spanish and nothing else. */
+  const SPANISH = /[¿¡ñáéíóú]/;
+
+  function strings(node: unknown, path: string): Array<[string, string]> {
+    if (typeof node === 'string') return [[path, node]];
+    if (Array.isArray(node)) return node.flatMap((v, i) => strings(v, `${path}[${i}]`));
+    if (node && typeof node === 'object') {
+      return Object.entries(node).flatMap(([k, v]) => strings(v, `${path}.${k}`));
+    }
+    return [];
+  }
+
+  it('carries no Spanish outside the two examples that are about Spanish', () => {
+    const offenders = strings(spec, '')
+      .filter(([, value]) => SPANISH.test(value))
+      .filter(([, value]) => !DELIBERATE.some((allowed) => value.includes(allowed)))
+      .map(([path, value]) => `${path}: ${value.slice(0, 80)}`);
+    expect(offenders, offenders.join('\n')).toEqual([]);
+  });
+});

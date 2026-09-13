@@ -99,7 +99,7 @@
         {
           "id": "kokoro",
           "by": "Hexgrad",
-          "specs": "TTS · 82M params · 67 voces · <1s latency · ef_dora · em_alex",
+          "specs": "TTS · 82M params · 67 voices · <1s latency · ef_dora · em_alex",
           "cuota": "sin contador",
           "frontier": false
         },

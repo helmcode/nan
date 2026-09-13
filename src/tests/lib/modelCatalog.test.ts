@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import modelos from '../../data/modelos.json';
 import spec from '../../data/openapi.json';
-import { MODEL_IDS, MODELS, formatContext, quotaLabel } from '../../lib/modelCatalog';
+import { MODEL_IDS, MODELS, formatContext, homeQuotaLabel, quotaLabel } from '../../lib/modelCatalog';
 
 /**
  * The model ids, checked across every surface that writes one.
@@ -180,5 +180,35 @@ describe('the model catalog of the API reference', () => {
 
   it('lists exactly the models in the catalog', () => {
     expect([...listed].sort()).toEqual([...MODEL_IDS].sort());
+  });
+});
+
+/**
+ * ONE DATA FILE, TWO HOMEPAGES, and only half of it was translated.
+ *
+ * `src/data/modelos.json` is written in Spanish and rendered on `/` and on
+ * `/es`. The quota chip goes through `homeQuotaLabel`, so it comes out in the
+ * right language; the `specs` line does not go through anything, so whatever
+ * is written there is what both pages show. It read "67 voces" on the English
+ * homepage, next to eleven other rows that were in English, for as long as the
+ * Kokoro row has existed.
+ *
+ * Two rules follow. `specs` is the language-neutral technical line, so it
+ * carries no Spanish; and every `cuota` actually written in the file has to
+ * come out of the translator with no Spanish left, which is the part that
+ * silently breaks when somebody adds a model with a new phrasing.
+ */
+describe('the shared home table reads in both languages', () => {
+  const SPANISH = /[¿¡ñáéíóú]|\b(voces|idiomas|imagen|peticiones|mes|sin contador|por)\b/i;
+
+  const rows = modelos.categorias.flatMap((c) => c.modelos);
+
+  it.each(rows.map((m) => [m.id, m.specs] as const))('%s: specs are neutral', (id, specs) => {
+    expect(specs, `${id}: "${specs}" prints as-is on the English homepage`).not.toMatch(SPANISH);
+  });
+
+  it.each([...new Set(rows.map((m) => m.cuota))])('quota "%s" translates', (cuota) => {
+    expect(homeQuotaLabel(cuota, 'en')).not.toMatch(SPANISH);
+    expect(homeQuotaLabel(cuota, 'es')).toBe(cuota);
   });
 });
