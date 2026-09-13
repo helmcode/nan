@@ -96,6 +96,55 @@ const ALL_PAGES = pages();
 const PY = new Set(['python', 'py']);
 const JS = new Set(['javascript', 'js', 'typescript', 'ts']);
 
+describe('Examples covers every kind of model the cluster serves', () => {
+  /**
+   * "One complete call for each kind of model" is a promise /docs/choose-a-model
+   * makes about this page by name. It was false: `flux-2-klein` had been served
+   * for weeks and the page had no image example in either language, so the only
+   * way to find out how to call `/images/generations` was the API reference.
+   *
+   * The rule is per KIND, not per model, because that is what the page is: the
+   * seven LLMs share `/chat/completions` and one of them standing for the rest
+   * is the point of an examples page. Everything outside that category has its
+   * own endpoint and its own payload - embeddings, reranking, speech, audio,
+   * images - so each one needs its own section or a reader has nothing to copy.
+   */
+  const catalogue = JSON.parse(
+    readFileSync(resolve(here, '../../data/modelos.json'), 'utf-8'),
+  ) as { categorias: Array<{ id: string; modelos: Array<{ id: string }> }> };
+
+  const ownEndpoint = catalogue.categorias
+    .filter((c) => c.id !== 'llm')
+    .flatMap((c) => c.modelos.map((m) => m.id));
+
+  const llms = catalogue.categorias.find((c) => c.id === 'llm')!.modelos.map((m) => m.id);
+
+  function sections(locale: string): string[] {
+    const text = normalize(readFileSync(resolve(CONTENT, locale, 'examples.md'), 'utf-8'));
+    return [...text.matchAll(/^## model: (\S+)$/gm)].map((m) => m[1]);
+  }
+
+  test.each(LOCALES)('%s/examples.md has a section per endpoint family', (locale) => {
+    const published = sections(locale);
+    const missing = ownEndpoint.filter((id) => !published.includes(id));
+    expect(
+      missing,
+      `${locale}: served with an endpoint of its own and no example to copy: ${missing.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  test.each(LOCALES)('%s/examples.md leads with an LLM from the catalogue', (locale) => {
+    const published = sections(locale);
+    expect(llms).toContain(published[0]);
+  });
+
+  test.each(LOCALES)('%s/examples.md names no model the catalogue does not serve', (locale) => {
+    const known = new Set([...llms, ...ownEndpoint]);
+    const stale = sections(locale).filter((id) => !known.has(id));
+    expect(stale, `${locale}: example for a model that is not in the catalogue`).toEqual([]);
+  });
+});
+
 describe('python snippets do not carry JavaScript comments', () => {
   /**
    * THIS RULE MATCHES THE SHAPE, NOT THE SEMANTICS, and it is worth being
