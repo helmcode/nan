@@ -139,13 +139,13 @@ Every error arrives in the same shape as OpenAI's: a JSON with `error.message`, 
 | Code | What happened | What to do |
 |---|---|---|
 | `401` | The key is missing, misspelled or gone, **or it does not reach that model** | Check the `Authorization: Bearer ...` header. If the key works on other models, it is the tier: `glm5.3` needs premium |
-| `402` | You have spent that model's token quota | Switch models or wait for your next period to start |
+| `402` | You have spent that model's token quota | Switch models, or wait for that model's quota period to reset |
 | `403` | Your plan does not reach that endpoint | Image generation needs inference membership |
 | `404` | That model id does not exist | Check the spelling in [Choose your model](/docs/choose-a-model) or with `GET /v1/models` |
 | `429` | Too many requests at once, or quota exhausted | Retry, waiting a little longer each time |
 | `5xx` | The failure is ours | Retry; if it persists, say so in `#support` |
 
-Retrying only makes sense for `429` and for `5xx`. A `401`, a `403` or a `404` will fail in exactly the same way until you change the request, and a `402` is not fixed by insisting: the counter goes back to zero when your billing period starts.
+Retrying only makes sense for `429` and for `5xx`. A `401`, a `403` or a `404` will fail in exactly the same way until you change the request, and a `402` is not fixed by insisting: the counter goes back to zero when that model's quota period does, which is the calendar month for everything counted per month and your Stripe period for `glm5.3`.
 
 The full detail, endpoint by endpoint, is in the [API reference](/docs/api).
 

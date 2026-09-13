@@ -139,13 +139,13 @@ Todos los errores llegan con el mismo formato que los de OpenAI: un JSON con `er
 | Código | Qué ha pasado | Qué hacer |
 |---|---|---|
 | `401` | La clave falta, está mal escrita, ya no existe, **o no llega a ese modelo** | Revisa la cabecera `Authorization: Bearer ...`. Si la clave funciona con otros modelos, es el tier: `glm5.3` necesita premium |
-| `402` | Has gastado la cuota de tokens de ese modelo | Cambia de modelo o espera a que empiece tu siguiente periodo |
+| `402` | Has gastado la cuota de tokens de ese modelo | Cambia de modelo o espera a que se reinicie el periodo de cuota de ese modelo |
 | `403` | Tu plan no llega a ese endpoint | La generación de imágenes necesita membresía de inferencia |
 | `404` | Ese id de modelo no existe | Comprueba cómo se escribe en [Elige tu modelo](/es/docs/choose-a-model) o con `GET /v1/models` |
 | `429` | Demasiadas peticiones a la vez, o cuota agotada | Reintenta esperando cada vez un poco más |
 | `5xx` | El fallo es nuestro | Reintenta; si insiste, cuéntalo en `#support` |
 
-Reintentar solo tiene sentido con `429` y con los `5xx`. Un `401`, un `403` o un `404` van a fallar exactamente igual hasta que cambies la petición, y el `402` no se arregla insistiendo: el contador vuelve a cero cuando empieza tu periodo de facturación.
+Reintentar solo tiene sentido con `429` y con los `5xx`. Un `401`, un `403` o un `404` van a fallar exactamente igual hasta que cambies la petición, y el `402` no se arregla insistiendo: el contador vuelve a cero cuando se reinicia el periodo de cuota de ese modelo, que es el mes natural para todo lo que se cuenta por mes y tu periodo de Stripe para `glm5.3`.
 
 El detalle completo, endpoint a endpoint, está en la [referencia de la API](/es/docs/api).
 

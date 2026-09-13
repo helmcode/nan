@@ -163,3 +163,53 @@ describe('no guide denies the per-model limits this module publishes', () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * WHEN A SPENT QUOTA COMES BACK depends on the model, and the quickstart said
+ * it did not.
+ *
+ * /docs/choose-a-model publishes two different periods in the same column:
+ * `/month`, which is the calendar month, and `/billing period`, which is
+ * whatever day Stripe renews on and which only `glm5.3` uses. The quickstart
+ * answered the `402` with one sentence for both - "the counter goes back to
+ * zero when your billing period starts" - which is right for one model out of
+ * twelve and wrong for the rest by up to a month. It is also the sentence a
+ * member reads at the exact moment they are blocked and deciding whether to
+ * wait.
+ *
+ * So: if the catalogue page publishes both kinds of period, the page that
+ * explains the error has to name both too.
+ */
+describe('the quickstart explains both quota periods, because both exist', () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+
+  const CASES = {
+    docs: {
+      quotaKinds: ['/month', '/billing period'],
+      mustName: ['calendar month', 'Stripe'],
+    },
+    'docs-es': {
+      quotaKinds: ['/mes', '/periodo de facturación'],
+      mustName: ['mes natural', 'Stripe'],
+    },
+  } as const;
+
+  it.each(Object.keys(CASES) as Array<keyof typeof CASES>)('%s', (locale) => {
+    const read = (file: string) =>
+      readFileSync(resolve(here, `../content/${locale}/${file}`), 'utf-8').replace(/\r\n/g, '\n');
+
+    const catalogue = read('choose-a-model.md');
+    const published = CASES[locale].quotaKinds.filter((k) => catalogue.includes(`tokens${k}`));
+    expect(published, `${locale}: the quota column no longer publishes both periods`).toHaveLength(
+      2,
+    );
+
+    const quickstart = read('getting-started.mdx');
+    for (const term of CASES[locale].mustName) {
+      expect(
+        quickstart,
+        `${locale}: two quota periods exist and the 402 explanation never mentions "${term}"`,
+      ).toContain(term);
+    }
+  });
+});
