@@ -111,7 +111,7 @@ response = client.embeddings.create(
 )
 
 embeddings = [d.embedding for d in response.data]
-print(len(embeddings[0]))  // 4096
+print(len(embeddings[0]))  # 4096
 ```
 
 ### node.js
@@ -322,7 +322,6 @@ print(translation.text)  # English translation
 ```javascript
 import OpenAI from "openai";
 import fs from "fs";
-import FormData from "form-data";
 
 const client = new OpenAI({
   apiKey: "sk-your-key-here",
@@ -331,8 +330,6 @@ const client = new OpenAI({
 
 // Transcribe audio
 const file = fs.createReadStream("recording.mp3");
-const form = FormData();
-form.append("file", file);
 
 const result = await client.audio.transcriptions.create({
   model: "whisper",
