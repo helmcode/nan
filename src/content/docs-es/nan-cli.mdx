@@ -32,6 +32,7 @@ El CLI abre un panel con pestañas que se mueve con las flechas:
 
 | Pestaña | Para qué |
 |---|---|
+| Home | Las teclas, y para qué es cada pestaña |
 | Profile | Los datos de tu cuenta |
 | Usage | Tokens consumidos en 24 horas, 30 días y desde siempre |
 | Models | Los modelos disponibles y cuánto has gastado en cada uno |
@@ -77,8 +78,10 @@ Tiene que responder con la versión y con el nombre de la herramienta. Si la ter
 
 En [cloud.nan.builders](https://cloud.nan.builders/), en los ajustes de usuario, apartado **API Keys**.
 
-<Callout title="No uses nan auth login" variant="warning">
-Ese comando apunta a una dirección de acceso por Discord que ya no existe y acaba en un `404` en el navegador. No es culpa de tu máquina. El camino bueno es sacar la clave del panel y pegarla en la pestaña Setup.
+<Callout title="O deja que el CLI te identifique">
+`nan auth login --email tu@correo` te manda un enlace de acceso, el mismo que usa la plataforma. Cópialo del correo y pégalo de vuelta en el comando, sin abrirlo antes en el navegador: funciona una vez, y el navegador te lo gastaría. Eso te da las pestañas Profile, Usage y Costs. La pestaña Setup, que es la que configura tus herramientas, necesita la API key y nada más.
+
+Antes de la v0.1.2 este comando apuntaba a un endpoint de Discord retirado y contestaba `404`. Si es lo que ves, tienes una versión anterior: vuelve a lanzar `curl -fsSL https://nan.builders/install | bash`.
 </Callout>
 
 ### Configura tus herramientas
@@ -154,7 +157,6 @@ El resultado es el mismo. Lo único que te pierdes son las pestañas de consumo 
 
 <Details summary="Problemas conocidos">
 
-- **Profile, Usage y Costs necesitan una sesión que hoy no se puede crear.** El acceso por Discord del CLI apunta a un endpoint retirado. La pestaña Setup, que es la que configura tus herramientas, funciona solo con la API key y no se ve afectada.
 - **En Windows hay que compilar.** Las versiones publicadas traen binarios de macOS y Linux; para Windows, de momento, la vía es `go build`.
 - **El instalador pide la lista de versiones a GitHub.** Si estás detrás de un proxy que bloquea `api.github.com`, no encontrará nada que descargar. En ese caso, baja el `.tar.gz` de tu sistema a mano desde la [página de releases](https://github.com/helmcode/nan-cli/releases).
 
