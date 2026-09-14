@@ -1,6 +1,6 @@
 ---
 title: NaN CLI
-description: "The official terminal tool: usage, costs and automatic setup for OpenCode, Codex, Pi and droid."
+description: "The official terminal tool: usage, costs and automatic setup for OpenCode, Codex, Pi, droid and Hermes."
 order: 4
 group: Set up your agent
 ---
@@ -23,8 +23,19 @@ It is a shortcut, not a requirement. Everything it does can be done by hand by f
 | [Codex](/docs/codex) | Yes |
 | Pi | Yes |
 | Factory AI (`droid`) | Yes |
+| [Hermes](/docs/hermes) | Yes |
 
 Claude Code, Cursor, VS Code, Cline and Zed still need the manual configuration from their pages.
+
+It only lists tools you actually have installed, and it only touches the NaN
+part of each file: everything else in them is left as it was, and unticking a
+tool takes ours back out again. Hermes is the exception to "writes the file":
+the CLI drives `hermes config set`, which is Hermes' own way of writing its
+config, so the comments in it survive.
+
+The key you paste is checked against the cluster before anything is written,
+so a mistyped one is caught there instead of turning up later as a `401`
+inside each tool.
 
 ## What else you get
 

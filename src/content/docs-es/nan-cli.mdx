@@ -1,6 +1,6 @@
 ---
 title: CLI de NaN
-description: "La herramienta oficial de terminal: consumo, costes y configuración automática de OpenCode, Codex, Pi y droid."
+description: "La herramienta oficial de terminal: consumo, costes y configuración automática de OpenCode, Codex, Pi, droid y Hermes."
 order: 4
 group: Configurar tu agente
 ---
@@ -23,8 +23,19 @@ Es un atajo, no un requisito. Todo lo que hace se puede hacer a mano siguiendo l
 | [Codex](/es/docs/codex) | Sí |
 | Pi | Sí |
 | Factory AI (`droid`) | Sí |
+| [Hermes](/es/docs/hermes) | Sí |
 
 Para Claude Code, Cursor, VS Code, Cline y Zed sigue haciendo falta la configuración manual de sus páginas.
+
+Solo lista las herramientas que tienes instaladas, y solo toca la parte de NaN
+de cada fichero: lo demás se queda como estaba, y desmarcar una herramienta
+vuelve a sacar lo nuestro. Hermes es la excepción a «escribe el fichero»: el
+CLI usa `hermes config set`, que es la forma que tiene Hermes de escribir su
+configuración, así que los comentarios del fichero sobreviven.
+
+La key que pegas se comprueba contra el clúster antes de escribir nada, así que
+una mal copiada se ve ahí y no más tarde como un `401` dentro de cada
+herramienta.
 
 ## Qué más te da
 
