@@ -33,9 +33,17 @@ En `~/.pi/agent/models.json`:
     "nan": {
       "baseUrl": "https://api.nan.builders/v1",
       "api": "openai-completions",
-      "apiKey": "sk-tu-clave",
+      "apiKey": "sk-your-key",
       "compat": { "supportsDeveloperRole": true },
       "models": [
+        {
+          "id": "deepseek-v4-flash",
+          "name": "DeepSeek V4 Flash",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 1048575,
+          "maxTokens": 32768
+        },
         {
           "id": "glm5.3-flash",
           "name": "GLM 5.3 Flash",
@@ -45,11 +53,43 @@ En `~/.pi/agent/models.json`:
           "maxTokens": 32768
         },
         {
-          "id": "deepseek-v4-flash",
-          "name": "DeepSeek V4 Flash",
+          "id": "qwen3.8-flash",
+          "name": "Qwen 3.8 Flash",
           "reasoning": true,
           "input": ["text", "image"],
-          "contextWindow": 1048575,
+          "contextWindow": 262144,
+          "maxTokens": 32768
+        },
+        {
+          "id": "mimo-v2.5",
+          "name": "Xiaomi MiMo V2.5",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 1048576,
+          "maxTokens": 32768
+        },
+        {
+          "id": "gemma4",
+          "name": "Gemma 4",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 262144,
+          "maxTokens": 65536
+        },
+        {
+          "id": "qwen3.6",
+          "name": "Qwen 3.6",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 262144,
+          "maxTokens": 65536
+        },
+        {
+          "id": "glm5.3",
+          "name": "GLM 5.3 (premium)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1048576,
           "maxTokens": 32768
         }
       ]
@@ -57,6 +97,8 @@ En `~/.pi/agent/models.json`:
   }
 }
 ```
+
+Esta es la configuración de los 7 modelos LLM que sirve NaN: `deepseek-v4-flash`, `glm5.3-flash`, `qwen3.8-flash`, `mimo-v2.5`, `gemma4`, `qwen3.6` y `glm5.3`. Es el mismo conjunto que escribe el [CLI de NaN](/es/docs/nan-cli), y el mismo que publica la página de [OpenCode](/es/docs/opencode).
 
 `api: "openai-completions"` es lo que le dice a Pi con qué formato hablar. `maxTokens` es el techo de una respuesta, no el contexto. Es la misma cifra que el bloque de [OpenCode](/es/docs/opencode) publica como `limit.output`, porque responde a la misma pregunta.
 
@@ -94,5 +136,7 @@ Pídele algo corto. Si contesta, está saliendo por el clúster. Puedes cambiar 
 - **La clave va escrita en el fichero.** `models.json` vive en tu carpeta personal, así que no suele acabar en un repositorio, pero tenlo en cuenta si sincronizas tu configuración entre máquinas.
 - **`maxTokens` no es el contexto.** Es el techo de cada respuesta. El razonamiento sale de ese mismo presupuesto, así que si pides respuestas largas y razonadas, súbelo.
 - **Los modelos que declares son los que verás.** Pi no le pregunta al clúster qué hay disponible: muestra lo que haya en la lista.
+- **`mimo-v2.5` entra sin su audio.** El esquema de Pi acepta `"text"` e `"image"` en `input` y nada más, y un tercer valor no tumba solo a ese modelo: Pi rechaza el fichero entero, con todos los demás proveedores que haya dentro. El modelo sigue oyendo audio por la API, pero no desde Pi.
+- **`glm5.3` necesita una clave del tier premium.** Está en la lista para que quien lo tenga lo vea. Sin ese tier la respuesta es un `401`, explicado en [Elige tu modelo](/es/docs/choose-a-model).
 
 </Details>
