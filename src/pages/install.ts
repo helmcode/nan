@@ -42,7 +42,7 @@ export const prerender = false;
  * it, which explains neither what happened nor what to do.
  */
 const SCRIPT_URL =
-  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.17/scripts/install.sh';
+  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.18/scripts/install.sh';
 
 export const GET: APIRoute = async () => {
   let upstream: Response;
