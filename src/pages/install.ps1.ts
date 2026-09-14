@@ -37,12 +37,18 @@ export const prerender = false;
  * took the error message with it. Reported from Warp, reproduced, and fixed in
  * helmcode/nan-cli#6, where the body became a function that throws.
  *
+ * v0.1.6 fixes the third one: the script asked RuntimeInformation for the
+ * architecture and believed the silence, so on a machine where that .NET type
+ * is out of reach - ConstrainedLanguage mode under an AppLocker or WDAC policy,
+ * or anything before .NET Framework 4.7.1 - an ordinary x64 box was told it was
+ * an unsupported architecture. It reads the environment as well now.
+ *
  * If this tag ever stops existing, the upstream fetch 404s and the route
  * answers with the error script below - the correct degraded behaviour for
  * something piped into `iex`.
  */
 const SCRIPT_URL =
-  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.5/scripts/install.ps1';
+  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.6/scripts/install.ps1';
 
 export const GET: APIRoute = async () => {
   let upstream: Response;
