@@ -53,7 +53,7 @@ export const prerender = false;
  * something piped into `iex`.
  */
 const SCRIPT_URL =
-  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.7/scripts/install.ps1';
+  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.8/scripts/install.ps1';
 
 export const GET: APIRoute = async () => {
   let upstream: Response;
