@@ -406,6 +406,76 @@ function vscodeConfig(locale: string): any {
   return JSON.parse(raw as string);
 }
 
+/**
+ * Pi takes two files and the page publishes both: models.json declares the
+ * provider, settings.json says which provider to use. The second one is not
+ * optional - without it Pi calls its factory provider and the member gets a
+ * 401 that names neither file - and it is the step the NaN CLI used to skip.
+ */
+function piModels(locale: string): any {
+  const raw = jsonBlocks(pageBody(locale, 'pi.mdx')).find((b) => b.includes('"providers"'));
+  expect(raw, `${locale}: no json block declares a Pi provider`).toBeDefined();
+  return JSON.parse(raw as string);
+}
+
+function piSettings(locale: string): any {
+  const raw = jsonBlocks(pageBody(locale, 'pi.mdx')).find((b) => b.includes('defaultProvider'));
+  expect(raw, `${locale}: no json block declares the Pi default`).toBeDefined();
+  return JSON.parse(raw as string);
+}
+
+describe.each(LOCALES)('models.json published in %s', (locale) => {
+  test('declares the provider the way Pi reads it', () => {
+    const nan = piModels(locale).providers?.nan;
+    expect(nan?.baseUrl).toBe('https://api.nan.builders/v1');
+    // What tells Pi which wire format to speak. Anything else here and the
+    // provider is declared and unusable.
+    expect(nan?.api).toBe('openai-completions');
+    expect(ALLOWED_PLACEHOLDERS.has(nan?.apiKey), `${locale}: ${nan?.apiKey}`).toBe(true);
+  });
+
+  /**
+   * The page published two models as an example while the CLI wrote all seven,
+   * so the same member got a different answer depending on whether they set Pi
+   * up by hand or let the CLI do it - and by hand they got a picker missing
+   * five of the models they are paying for. Nothing caught it: every window on
+   * the page was correct, there were just two of them.
+   */
+  test('publishes exactly the served models, community plus premium', () => {
+    const ids = (piModels(locale).providers.nan.models as any[]).map((m) => m.id).sort();
+    const expected = [...Object.keys(EXPECTED_MODELS), ...Object.keys(EXPECTED_PREMIUM)].sort();
+    expect(ids).toEqual(expected);
+  });
+
+  /**
+   * Pi's schema for `input` is `("text" | "image")[]`. A third value does not
+   * fail the one model: Pi refuses the whole file, with every other provider
+   * in it. So mimo-v2.5 is published without its audio, and the page says so.
+   */
+  test('no model declares an input outside Pi schema', () => {
+    for (const m of piModels(locale).providers.nan.models as any[]) {
+      for (const input of m.input) {
+        expect(['text', 'image'], `${m.id}: input ${input}`).toContain(input);
+      }
+    }
+  });
+
+  test('every model carries the window and the answer budget', () => {
+    for (const m of piModels(locale).providers.nan.models as any[]) {
+      expect(typeof m.contextWindow, `${m.id}: contextWindow`).toBe('number');
+      expect(typeof m.maxTokens, `${m.id}: maxTokens`).toBe('number');
+    }
+  });
+
+  test('the default points at a provider and a model the same page declares', () => {
+    const settings = piSettings(locale);
+    expect(settings.defaultProvider).toBe('nan');
+    const ids = (piModels(locale).providers.nan.models as any[]).map((m) => m.id);
+    expect(ids, `defaultModel ${settings.defaultModel} is not in the provider`)
+      .toContain(settings.defaultModel);
+  });
+});
+
 describe.each(LOCALES)('chatLanguageModels.json published in %s', (locale) => {
   test('is an array with one customendpoint provider', () => {
     const cfg = vscodeConfig(locale);

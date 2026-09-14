@@ -1,6 +1,6 @@
 ---
 title: CLI de NaN
-description: "La herramienta oficial de terminal: consumo, costes y configuración automática de OpenCode, Codex, Pi y droid."
+description: "La herramienta oficial de terminal: consumo, costes y configuración automática de OpenCode, Codex, Pi, droid y Hermes."
 order: 4
 group: Configurar tu agente
 ---
@@ -23,8 +23,19 @@ Es un atajo, no un requisito. Todo lo que hace se puede hacer a mano siguiendo l
 | [Codex](/es/docs/codex) | Sí |
 | Pi | Sí |
 | Factory AI (`droid`) | Sí |
+| [Hermes](/es/docs/hermes) | Sí |
 
 Para Claude Code, Cursor, VS Code, Cline y Zed sigue haciendo falta la configuración manual de sus páginas.
+
+Solo lista las herramientas que tienes instaladas, y solo toca la parte de NaN
+de cada fichero: lo demás se queda como estaba, y desmarcar una herramienta
+vuelve a sacar lo nuestro. Hermes es la excepción a «escribe el fichero»: el
+CLI usa `hermes config set`, que es la forma que tiene Hermes de escribir su
+configuración, así que los comentarios del fichero sobreviven.
+
+La key que pegas se comprueba contra el clúster antes de escribir nada, así que
+una mal copiada se ve ahí y no más tarde como un `401` dentro de cada
+herramienta.
 
 ## Qué más te da
 
@@ -64,7 +75,22 @@ INSTALL_DIR="$HOME/.local/bin" curl -fsSL https://nan.builders/install | bash
 
 Si la carpeta que elijas no está en tu `PATH`, el propio instalador te lo dice y te da la línea que hay que añadir a tu `~/.zshrc` o a tu `~/.bashrc`.
 
-Hay binarios para macOS y Linux, en Intel y en ARM. En Windows, de momento, hay que compilar desde el código, y el bloque de abajo explica cómo.
+En Windows, desde PowerShell:
+
+```powershell
+irm https://nan.builders/install.ps1 | iex
+```
+
+Hace el mismo trabajo: resuelve la última release, descarga el `.zip` de tu arquitectura, **verifica su checksum** y deja `nan.exe` en `%LOCALAPPDATA%\Programs
+an`, añadiendo esa carpeta a tu `PATH` de usuario si no estaba. Las terminales que ya tuvieras abiertas no lo verán hasta que las reinicies.
+
+Instala para tu usuario y no para toda la máquina, a propósito: el equivalente en Windows del `sudo` es un diálogo de elevación saliendo de un script por tubería, que es peor. Para ponerlo en otro sitio:
+
+```powershell
+& ([scriptblock]::Create((irm https://nan.builders/install.ps1))) -InstallDir "C:	ools"
+```
+
+Hay binarios para macOS, Linux y Windows, en Intel y en ARM.
 
 ### Comprueba que ha ido bien
 

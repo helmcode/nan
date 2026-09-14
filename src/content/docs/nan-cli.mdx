@@ -1,6 +1,6 @@
 ---
 title: NaN CLI
-description: "The official terminal tool: usage, costs and automatic setup for OpenCode, Codex, Pi and droid."
+description: "The official terminal tool: usage, costs and automatic setup for OpenCode, Codex, Pi, droid and Hermes."
 order: 4
 group: Set up your agent
 ---
@@ -23,8 +23,19 @@ It is a shortcut, not a requirement. Everything it does can be done by hand by f
 | [Codex](/docs/codex) | Yes |
 | Pi | Yes |
 | Factory AI (`droid`) | Yes |
+| [Hermes](/docs/hermes) | Yes |
 
 Claude Code, Cursor, VS Code, Cline and Zed still need the manual configuration from their pages.
+
+It only lists tools you actually have installed, and it only touches the NaN
+part of each file: everything else in them is left as it was, and unticking a
+tool takes ours back out again. Hermes is the exception to "writes the file":
+the CLI drives `hermes config set`, which is Hermes' own way of writing its
+config, so the comments in it survive.
+
+The key you paste is checked against the cluster before anything is written,
+so a mistyped one is caught there instead of turning up later as a `401`
+inside each tool.
 
 ## What else you get
 
@@ -64,7 +75,22 @@ INSTALL_DIR="$HOME/.local/bin" curl -fsSL https://nan.builders/install | bash
 
 If the directory you choose is not in your `PATH`, the installer says so and hands you the line to add to your `~/.zshrc` or your `~/.bashrc`.
 
-There are binaries for macOS and Linux, on Intel and on ARM. On Windows you have to build from source for now, and the block below explains how.
+On Windows, from PowerShell:
+
+```powershell
+irm https://nan.builders/install.ps1 | iex
+```
+
+It does the same work: resolves the latest release, downloads the `.zip` for your architecture, **verifies its checksum** and puts `nan.exe` in `%LOCALAPPDATA%\Programs
+an`, adding that directory to your user `PATH` if it is not there already. Terminals you already had open will not see it until you restart them.
+
+It installs for your user and not for the whole machine, deliberately: the Windows equivalent of the `sudo` prompt is an elevation dialog out of a piped script, which is worse. To put it elsewhere:
+
+```powershell
+& ([scriptblock]::Create((irm https://nan.builders/install.ps1))) -InstallDir "C:	ools"
+```
+
+There are binaries for macOS, Linux and Windows, on Intel and on ARM.
 
 ### Check that it worked
 

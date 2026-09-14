@@ -29,6 +29,13 @@ You also get a web terminal, file uploads, logs and metrics, and you can expose 
 
 If you would rather run it yourself, Hermes ships a provider called **`custom`**, meant for any OpenAI-compatible endpoint. That is the one NaN uses.
 
+<Callout title="Or let the CLI do it">
+The [NaN CLI](/docs/nan-cli) configures this for you: it finds your Hermes,
+fills in the three values below through `hermes config set` and leaves the
+rest of your config alone. The steps here are what it does, if you would
+rather do it yourself or want to know what changed.
+</Callout>
+
 <Steps>
 
 ### Install it
@@ -55,7 +62,11 @@ Choose the **`custom`** provider (it also shows up as `local`, `ollama` or `vllm
 | API key | your key, the one that starts with `sk-` |
 | Model | `glm5.3-flash` |
 
-Unlike the providers Hermes ships preconfigured, `custom` **has no fixed environment variable**: you give it the address and the key here, and it keeps them in `~/.hermes/config.yaml`.
+Unlike the providers Hermes ships preconfigured, `custom` **has no fixed environment variable**: you give it the address and the key here, and it keeps them in its config file.
+
+That file is `~/.hermes/config.yaml` on macOS and Linux. On Windows it is
+`%LOCALAPPDATA%\hermes\config.yaml`. `hermes config path` prints whichever
+one is yours, and `HERMES_HOME` overrides both.
 
 ### Check that it works
 
@@ -69,7 +80,7 @@ It tells you whether the provider answers. Then start the agent and send it a me
 
 ## Switching models
 
-The default model lives in `~/.hermes/config.yaml`, under `model.default`. You do not edit it by hand:
+The default model lives in that same file, under `model.default`. You do not edit it by hand:
 
 ```bash
 hermes model

@@ -56,7 +56,9 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 Las fichas completas, con parámetros, licencias y modos de razonamiento, están en [Modelos](/es/docs/models).
 
 > **`glm5.3` es el único que no entra con la suscripción normal**
-> Necesita una clave en el tier premium. Si lo pides sin él, la respuesta es un **`401`**, no un `403`: "This API key does not have access to the requested model". Parece una clave rota y no lo es, así que mira el tier antes de ponerte a rotar credenciales. Tampoco aparece en `GET /v1/models`. Todos los demás los puede llamar cualquier miembro.
+> Necesita una clave en el tier premium. Si lo pides sin él, la respuesta es un **`401`**, no un `403`: "This API key does not have access to the requested model". Parece una clave rota y no lo es, así que mira el tier antes de ponerte a rotar credenciales. Tampoco aparece en `GET /v1/models`.
+>
+> Todos los demás **de la tabla de arriba** los puede llamar cualquier miembro. Guíate por esa tabla y no por `GET /v1/models`: ese endpoint contesta con lo que el clúster tiene levantado, que no es la misma pregunta que qué puede llamar tu clave, así que un id puede salir ahí y aun así devolver un `401`.
 
 ## Cómo se leen los ids
 

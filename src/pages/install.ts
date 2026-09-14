@@ -35,9 +35,14 @@ export const prerender = false;
  * script asks the GitHub API for the LATEST release at run time, so a member
  * running an older installer still gets the newest binary. Only a change to
  * `scripts/install.sh` itself needs a bump here.
+ *
+ * v0.1.4 is the first tag where the script says something useful when the
+ * GitHub API rate limits the version lookup. Before it, the empty version went
+ * into the archive name and the person saw curl fail on a URL with a hole in
+ * it, which explains neither what happened nor what to do.
  */
 const SCRIPT_URL =
-  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.1/scripts/install.sh';
+  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.4/scripts/install.sh';
 
 export const GET: APIRoute = async () => {
   let upstream: Response;
