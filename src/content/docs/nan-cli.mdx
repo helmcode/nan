@@ -75,7 +75,22 @@ INSTALL_DIR="$HOME/.local/bin" curl -fsSL https://nan.builders/install | bash
 
 If the directory you choose is not in your `PATH`, the installer says so and hands you the line to add to your `~/.zshrc` or your `~/.bashrc`.
 
-There are binaries for macOS and Linux, on Intel and on ARM. On Windows you have to build from source for now, and the block below explains how.
+On Windows, from PowerShell:
+
+```powershell
+irm https://nan.builders/install.ps1 | iex
+```
+
+It does the same work: resolves the latest release, downloads the `.zip` for your architecture, **verifies its checksum** and puts `nan.exe` in `%LOCALAPPDATA%\Programs
+an`, adding that directory to your user `PATH` if it is not there already. Terminals you already had open will not see it until you restart them.
+
+It installs for your user and not for the whole machine, deliberately: the Windows equivalent of the `sudo` prompt is an elevation dialog out of a piped script, which is worse. To put it elsewhere:
+
+```powershell
+& ([scriptblock]::Create((irm https://nan.builders/install.ps1))) -InstallDir "C:	ools"
+```
+
+There are binaries for macOS, Linux and Windows, on Intel and on ARM.
 
 ### Check that it worked
 
