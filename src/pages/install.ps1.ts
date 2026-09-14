@@ -43,12 +43,17 @@ export const prerender = false;
  * or anything before .NET Framework 4.7.1 - an ordinary x64 box was told it was
  * an unsupported architecture. It reads the environment as well now.
  *
+ * v0.1.7 is the first one that says what to do after it finishes. Until it,
+ * the script ended on "Run nan to get started" - true, printed from a shell
+ * that could not find `nan` yet, and silent about signing in, which is a
+ * subcommand nobody had mentioned. It ends on a numbered list now.
+ *
  * If this tag ever stops existing, the upstream fetch 404s and the route
  * answers with the error script below - the correct degraded behaviour for
  * something piped into `iex`.
  */
 const SCRIPT_URL =
-  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.6/scripts/install.ps1';
+  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.7/scripts/install.ps1';
 
 export const GET: APIRoute = async () => {
   let upstream: Response;
