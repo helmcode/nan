@@ -70,3 +70,28 @@ describe.each(['docs', 'docs-es'] as const)('the Hermes page in %s', (locale) =>
     expect(body()).toContain('nan-cli');
   });
 });
+
+/**
+ * Every other tool page says where its tool comes from - Hermes links Nous
+ * Research, Gentle-AI links its repo - and the Pi page said only what Pi is,
+ * so a reader who did not already have it had nowhere to go. The CLI's README
+ * had a link and it pointed at pi.ai, which is Inflection's consumer chatbot
+ * and a different piece of software entirely.
+ */
+describe.each(['docs', 'docs-es'] as const)('the Pi page in %s', (locale) => {
+  const body = () => read(locale, 'pi');
+
+  test('says where Pi comes from', () => {
+    expect(body(), 'no link to the Pi project').toContain('https://pi.dev');
+  });
+
+  test('does not send anyone to the Inflection chatbot', () => {
+    expect(body()).not.toContain('pi.ai');
+  });
+
+  test('says how to install it, on both kinds of machine', () => {
+    const text = body();
+    expect(text, 'no install command').toContain('pi.dev/install.sh');
+    expect(text, 'nothing for Windows').toContain('install.ps1');
+  });
+});
