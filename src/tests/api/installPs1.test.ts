@@ -100,3 +100,28 @@ describe('GET /install.ps1', () => {
     expect(res.headers.get('Cache-Control')).toContain('max-age=300');
   });
 });
+
+/**
+ * The two installer routes are pinned by hand, and the pair going out of step
+ * is what this whole sequence was about: /install sat on v0.1.1 for three
+ * releases, so the fix that tells a member what happened when the GitHub API
+ * rate limits them was published and served to nobody.
+ *
+ * They are not required to name the same tag forever - each moves when its own
+ * script changes - but a gap of more than nothing is worth having to justify,
+ * so this pins them together and fails loudly when one moves alone.
+ */
+describe('the two installer routes', () => {
+  const pin = (file: string) => {
+    const here = dirname(fileURLToPath(import.meta.url));
+    const source = readFileSync(resolve(here, '../../pages/', file), 'utf8');
+    const match = source.match(/raw\.githubusercontent\.com\/helmcode\/nan-cli\/([^/]+)\//);
+    expect(match, `no upstream URL in ${file}`).not.toBeNull();
+    return match![1];
+  };
+
+  it('serve scripts from the same released tag', () => {
+    expect(pin('install.ts'), 'the bash and PowerShell installers are pinned to different tags')
+      .toBe(pin('install.ps1.ts'));
+  });
+});

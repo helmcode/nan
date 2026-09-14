@@ -22,19 +22,21 @@ export const prerender = false;
  * Pinned to a RELEASED TAG, exactly as /install is, and for the same reason:
  * whatever this URL returns runs on a member's machine.
  *
- * This tag has to exist for the route to serve anything. Until it is cut, the
- * upstream fetch 404s and the route answers with the error script below, which
- * tells the person what happened and where to download by hand - the correct
- * degraded behaviour for something piped into `iex`, and better than this
- * route not existing at all.
+ * v0.1.4 and not v0.1.3, which is where this script was first published and
+ * where it did not work. Two PowerShell 5.1 faults, both found the first time
+ * it was pointed at a published release: an `Invoke-WebRequest` without
+ * `-UseBasicParsing`, which throws where the Internet Explorer engine is
+ * absent, and `checksums.txt` read off a response body that PowerShell hands
+ * back as a `Byte[]` because GitHub serves release assets as
+ * application/octet-stream. Both are fixed in v0.1.4, which was then run end
+ * to end on Windows 11 against the real release.
  *
- * /install is deliberately NOT bumped in step: it is pinned to v0.1.1, that
- * script still works, and moving it before the tag exists would break an
- * install path that works today in order to improve one that does not exist
- * yet. Both pins move to the same tag once v0.1.3 is published.
+ * If this tag ever stops existing, the upstream fetch 404s and the route
+ * answers with the error script below - the correct degraded behaviour for
+ * something piped into `iex`.
  */
 const SCRIPT_URL =
-  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.3/scripts/install.ps1';
+  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.4/scripts/install.ps1';
 
 export const GET: APIRoute = async () => {
   let upstream: Response;
