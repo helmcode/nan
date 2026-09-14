@@ -31,12 +31,18 @@ export const prerender = false;
  * application/octet-stream. Both are fixed in v0.1.4, which was then run end
  * to end on Windows 11 against the real release.
  *
+ * v0.1.5 and not v0.1.4, because v0.1.4's script closed the terminal it ran
+ * in. `iex` executes in the CURRENT session, so the `exit 1` on every failure
+ * path ended the session rather than the script: the tab shut instantly and
+ * took the error message with it. Reported from Warp, reproduced, and fixed in
+ * helmcode/nan-cli#6, where the body became a function that throws.
+ *
  * If this tag ever stops existing, the upstream fetch 404s and the route
  * answers with the error script below - the correct degraded behaviour for
  * something piped into `iex`.
  */
 const SCRIPT_URL =
-  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.4/scripts/install.ps1';
+  'https://raw.githubusercontent.com/helmcode/nan-cli/v0.1.5/scripts/install.ps1';
 
 export const GET: APIRoute = async () => {
   let upstream: Response;
