@@ -4,8 +4,11 @@ import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
 import remarkStringify from 'remark-stringify';
 import {
+  concurrencyValue,
   DEFAULT_RATE_LIMITS,
   formatTokens,
+  premiumConcurrency,
+  rateLimitsLabels,
   windowedModelNote,
   type RateLimitsConfig,
 } from './rateLimits';
@@ -416,13 +419,26 @@ function brandIntroToMd(node: MdxNode): string {
 }
 
 function rateLimitsToMd(config: RateLimitsConfig): string {
+  // The canonical text is English-only, so the labels resolve to the English
+  // table: the per-key block and the card must not be able to drift apart.
+  const L = rateLimitsLabels('en');
   const lines = [
-    '**rate limits per API key**',
+    `**${L.perKey}**`,
     '',
-    `- Requests / min: ${config.perKey.requestsPerMinute} rpm`,
-    `- Max parallel: ${config.perKey.maxParallel} concurrent`,
+    `- ${L.requestsPerMin}: ${config.perKey.requestsPerMinute} rpm`,
+    // Concurrency is enforced per model, so the per-key block points at the
+    // per-model table below instead of a flat number the tiers made false.
+    `- ${L.perKeyConcurrency}: ${L.concurrencyPointer}`,
     '',
   ];
+  if (config.concurrencyByModel.length) {
+    lines.push('**concurrent requests per model**', '');
+    for (const c of config.concurrencyByModel) lines.push(`- ${c.model}: ${concurrencyValue(c)}`);
+    // The card names the endpoints the list above does not cover; the bot
+    // consumer gets the same sentence, or the list reads as exhaustive. The
+    // blank line first keeps the note out of the last list item.
+    lines.push('', L.concurrencyExempt, '');
+  }
   for (const m of config.windowedModels) {
     lines.push(
       `**${m.model} · premium tier limits**`,
@@ -430,7 +446,9 @@ function rateLimitsToMd(config: RateLimitsConfig): string {
       `- Rolling ${m.windowHours}h window: ${formatTokens(m.windowTokens)} tokens`,
       `- Allowance / billing period: ${formatTokens(m.periodCapTokens)} tokens`,
       `- Context window: ${formatTokens(m.contextTokens)} tokens`,
-      `- Concurrent requests: ${m.maxParallel}`,
+      // The premium card addresses premium members, so it resolves the
+      // premium tier's number rather than the flat default.
+      `- Concurrent requests: ${premiumConcurrency(config, m.model, m.maxParallel)}`,
       '',
       windowedModelNote(m),
       '',

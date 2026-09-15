@@ -395,7 +395,7 @@
         "GLM 5.3, frontier open model with reasoning",
         "3,000M token allowance per billing period",
         "400M tokens per rolling 4h window: the limit a coding agent reaches first",
-        "1M context · 5 concurrent requests",
+        "1M context · 10 concurrent requests",
         "Everything in nan_member",
         "Access switches on a few minutes after payment"
       ],

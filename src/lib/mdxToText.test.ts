@@ -89,9 +89,13 @@ describe('mdxToText rate limits', () => {
 
   it('serves the values from the injected config, not hardcoded ones', async () => {
     const out = await mdxToText(input, {
-      perKey: { requestsPerMinute: 120, maxParallel: 8 },
+      perKey: { requestsPerMinute: 120, maxParallel: 8, tierMaxParallel: { inference: 7, premium: 10 } },
       tokensPerMinuteByModel: [{ model: 'foo', label: '2M tpm' }],
       requestsPerMinuteByModel: [{ model: 'bar', label: '500 rpm' }],
+      concurrencyByModel: [
+        { model: 'foo', maxParallel: 5, tierMaxParallel: { inference: 7, premium: 10 } },
+        { model: 'plain', maxParallel: 5 },
+      ],
       windowedModels: [
         {
           model: 'baz',
@@ -104,35 +108,70 @@ describe('mdxToText rate limits', () => {
       ],
     });
     expect(out).toContain('- Requests / min: 120 rpm');
-    expect(out).toContain('- Max parallel: 8 concurrent');
+    // maxParallel is the legacy outer cap: no surface renders it, the
+    // per-key row points at the per-model table instead.
+    expect(out).not.toContain('- Max parallel');
+    expect(out).toContain('- Concurrent requests: per model — see the per-model limits below');
     expect(out).toContain('- foo: 2M tpm');
     expect(out).toContain('- bar: 500 rpm');
+    expect(out).toContain('**concurrent requests per model**');
+    expect(out).toContain('- foo: 7 (base plan) · 10 (premium plan)');
+    expect(out).toContain('- plain: 5');
+    // The card names the exempt endpoints under the per-model table; the
+    // plain-text renderer says the same thing.
+    expect(out).toContain('Audio, embedding and rerank endpoints have no concurrency limit.');
     expect(out).toContain('**baz · premium tier limits**');
     expect(out).toContain('- Rolling 6h window: 7M tokens');
     expect(out).toContain('- Allowance / billing period: 9M tokens');
     expect(out).toContain('- Context window: 128K tokens');
+    // baz has no row in concurrencyByModel, so the card falls back to the
+    // windowed entry's own flat default.
     expect(out).toContain('- Concurrent requests: 2');
   });
 
   it('defaults to the same numbers <RateLimits /> renders', async () => {
     const out = await mdxToText(input);
     expect(out).toContain('- Requests / min: 60 rpm');
-    expect(out).toContain('- Max parallel: 5 concurrent');
+    // The per-key block no longer publishes a flat concurrency number (it
+    // said 5, which the per-model tiers made false): it points at the
+    // per-model table below instead.
+    expect(out).not.toContain('- Max parallel');
+    expect(out).not.toContain('5 concurrent');
+    expect(out).toContain('- Concurrent requests: per model — see the per-model limits below');
+    // The per-model concurrency card, with the tier numbers of the four
+    // frontier models and the flat 5 of the rest.
+    expect(out).toContain('**concurrent requests per model**');
+    expect(out).toContain('- glm5.3: 7 (base plan) · 10 (premium plan)');
+    expect(out).toContain('- glm5.3-flash: 7 (base plan) · 10 (premium plan)');
+    expect(out).toContain('- deepseek-v4-flash: 7 (base plan) · 10 (premium plan)');
+    expect(out).toContain('- qwen3.8-flash: 7 (base plan) · 10 (premium plan)');
+    expect(out).toContain('- mimo-v2.5: 5');
+    expect(out).toContain('- qwen3.6: 5');
+    expect(out).toContain('- gemma4: 5');
     // glm5.3 is gated by the window, not by a per-minute rate, and the docs
-    // had no row for it at all while the model was already being served.
+    // had no row for it at all while the model was already being served. Its
+    // concurrency row resolves the premium tier's number.
     expect(out).toContain('- Rolling 4h window: 400M tokens');
     expect(out).toContain('- Allowance / billing period: 3,000M tokens');
+    expect(out).toContain('- Concurrent requests: 10');
+    // The exempt-endpoints note travels with the per-model table on every
+    // surface, so a consumer never reads the list as exhaustive.
+    expect(out).toContain('Audio, embedding and rerank endpoints have no concurrency limit.');
   });
 
   it('omits the per-model blocks when they are empty', async () => {
     const out = await mdxToText(input, {
-      perKey: { requestsPerMinute: 60, maxParallel: 5 },
+      perKey: { requestsPerMinute: 60, maxParallel: 5, tierMaxParallel: { inference: 7, premium: 10 } },
       tokensPerMinuteByModel: [],
       requestsPerMinuteByModel: [],
+      concurrencyByModel: [],
       windowedModels: [],
     });
     expect(out).not.toContain('tokens / min per model');
     expect(out).not.toContain('requests / min per model');
+    expect(out).not.toContain('concurrent requests per model');
+    // The note is tied to the table's presence, not a standalone block.
+    expect(out).not.toContain('Audio, embedding and rerank endpoints have no concurrency limit.');
     expect(out).not.toContain('premium tier limits');
   });
 });

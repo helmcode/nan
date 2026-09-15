@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import {
   DEFAULT_RATE_LIMITS,
   formatTokens,
+  perKeyOuterCapValue,
   rateLimitsLabels,
   windowedModelBody,
   windowedModelHeadline,
@@ -48,8 +49,11 @@ function visible(lang: 'en' | 'es'): string {
   return [
     t.perKey,
     t.requestsPerMin,
-    t.maxParallel,
-    t.concurrent,
+    t.perKeyConcurrency,
+    t.concurrencyPointer,
+    t.perKeyAcrossModels,
+    t.simultaneousPerKey,
+    perKeyOuterCapValue(DEFAULT_RATE_LIMITS.perKey, lang),
     t.premium,
     t.window(model.windowHours),
     t.allowance,
@@ -57,6 +61,11 @@ function visible(lang: 'en' | 'es'): string {
     t.concurrentRequests,
     t.tokensPerModel,
     t.requestsPerModel,
+    t.concurrencyPerModel,
+    t.concurrencyNote,
+    t.concurrencyExempt,
+    t.tierBase,
+    t.tierPremium,
     windowedModelHeadline(model, lang),
     windowedModelBody(model, lang),
   ]
@@ -112,6 +121,19 @@ describe('the card renders no hardcoded copy', () => {
       ...markup.matchAll(/>\s*([A-Za-z][A-Za-z /]{6,})\s*</g),
     ].map((m) => m[1].trim());
     expect(literals, `inlined: ${literals.join(' | ')}`).toEqual([]);
+  });
+
+  it('publishes the per-key outer ceiling through the shared composition', () => {
+    // The ceiling is the number a member hits first when they spread requests
+    // across models; if the card drops the row again this fails, instead of a
+    // member eating an unexplained 429. The pointer row stays: the ceiling
+    // does not replace the per-model table.
+    const here = dirname(fileURLToPath(import.meta.url));
+    const source = readFileSync(resolve(here, '../components/docs/RateLimits.astro'), 'utf-8');
+    const markup = source.slice(source.lastIndexOf('---') + 3);
+    expect(markup).toContain('{perKeyOuterCapValue(perKey, lang)}');
+    expect(markup).toContain('{T.perKeyAcrossModels}');
+    expect(markup).toContain('{T.concurrencyPointer}');
   });
 });
 
