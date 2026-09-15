@@ -333,3 +333,39 @@ describe('escapes that were spent before they reached the page', () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * "OpenAI-compatible" said about something OpenAI does not define.
+ *
+ * `/rerank` closed with "the endpoint is OpenAI-compatible in authentication
+ * and payload format". Half of that is true and useful - the Bearer header is
+ * the same one - and half of it promises a spec to go and read that does not
+ * exist: OpenAI has no `/rerank`, so there is no payload to be compatible
+ * with. The body is ours.
+ *
+ * The page already knew: three lines above, in the snippet's own comment, it
+ * says the endpoint "is not part of the standard OpenAI client". And `/search`,
+ * the other endpoint of ours in the same file, already closes the right way -
+ * "send the JSON body with your Bearer key". So the rule is the page against
+ * itself: whatever it flags as outside the standard client cannot be sold two
+ * paragraphs later as compatible in its payload.
+ */
+describe('endpoints that are ours are not described as OpenAI-compatible', () => {
+  const OUTSIDE = /not part of the standard OpenAI client/i;
+  /** Authentication genuinely is compatible; it is the body that is not. */
+  const PAYLOAD_CLAIM = /compatible[^.]*\b(payload|body|cuerpo|formato del cuerpo)\b/i;
+
+  test.each(['docs', 'docs-es'] as const)('%s/examples.md', (locale) => {
+    const text = normalize(readFileSync(resolve(CONTENT, locale, 'examples.md'), 'utf-8'));
+    const sections = text.split(/\n(?=## )/);
+    const guilty = sections
+      .filter((s) => OUTSIDE.test(s) && PAYLOAD_CLAIM.test(s))
+      .map((s) => `${s.split('\n')[0]}: ${PAYLOAD_CLAIM.exec(s)![0]}`);
+    expect(
+      guilty,
+      `${locale}/examples.md: the page says these endpoints are outside the ` +
+        `standard OpenAI client and then calls their payload compatible with ` +
+        `it:\n${guilty.join('\n')}`,
+    ).toEqual([]);
+  });
+});

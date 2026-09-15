@@ -187,7 +187,7 @@ for r in response["results"]:
     print(f"{r['index']}: {r['relevance_score']:.3f}")
 ```
 
-También funciona con `requests` a pelo o con cualquier cliente HTTP: el endpoint es compatible con OpenAI tanto en la autenticación como en el formato del cuerpo.
+También funciona con `requests` a pelo o con cualquier cliente HTTP: manda el cuerpo JSON con tu key en el Bearer. `/rerank` es un endpoint nuestro, no está en la especificación de OpenAI: la autenticación es la misma, el cuerpo es nuestro.
 
 ## model: kokoro
 
