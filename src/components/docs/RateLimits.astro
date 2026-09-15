@@ -3,16 +3,18 @@ import { env } from 'cloudflare:workers';
 import {
   effectiveLimitNote,
   formatTokens,
-  getRateLimitsConfig,
   imageModelNote,
   modelRateLabel,
   windowedModelBody,
   windowedModelHeadline,
   rateLimitsLabels,
 } from '../../lib/rateLimits';
+import { resolveRateLimitsConfig } from '../../lib/limitsPolicy';
 
+// Awaited, not called: with LIMITS_POLICY_URL unset this resolves to the
+// built-in table without making a request. See src/lib/limitsPolicy.ts.
 const { perKey, tokensPerMinuteByModel, exemptModels, windowedModels, imageModels } =
-  getRateLimitsConfig(env);
+  await resolveRateLimitsConfig(env);
 
 // This card is embedded from both the English and the Spanish guides, and MDX
 // content cannot pass props down from the layout, so the locale is read off the
