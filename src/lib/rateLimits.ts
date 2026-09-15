@@ -46,6 +46,28 @@ export interface WindowedModelLimits {
   periodCapTokens: number;
 }
 
+/**
+ * Image generation, which is governed somewhere else entirely.
+ *
+ * It does not go through LiteLLM: cloud-api serves /v1/images itself against
+ * Workers AI, so the per-key 60 rpm and 5 concurrent do not apply to it and
+ * neither does anything in the tables above. Its own comment in
+ * cmd/server/main.go says so in as many words. The limiter is an in-process
+ * token bucket per user (`imagegen.NewRateLimiter(1, 3)`) plus a hard monthly
+ * count (`imagegen.MonthlyQuota`).
+ *
+ * Published because the alternative is what was there before: a page that
+ * quoted "20 requests per minute" for it, a number that appears nowhere in the
+ * platform.
+ */
+export interface ImageModelLimits {
+  model: string;
+  requestsPerSecond: number;
+  burst: number;
+  monthlyRequests: number;
+  maxVariants: number;
+}
+
 export interface RateLimitsConfig {
   perKey: PerKeyRateLimits;
   tokensPerMinuteByModel: ModelRate[];
@@ -59,6 +81,7 @@ export interface RateLimitsConfig {
    */
   exemptModels: string[];
   windowedModels: WindowedModelLimits[];
+  imageModels: ImageModelLimits[];
 }
 
 export interface RateLimitsEnv {
@@ -117,6 +140,18 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
   // turn the test below from an equality into a floor. The equality is the
   // mechanism: it is what makes a backend change fail here instead of
   // shipping quietly.
+  // cloud-api: imagegen.NewRateLimiter(1, 3), imagegen.MonthlyQuota = 100 and
+  // imagegen.MaxVariants = 4. The monthly count is REQUESTS, not images: one
+  // call asking for four variants still costs one.
+  imageModels: [
+    {
+      model: 'flux-2-klein',
+      requestsPerSecond: 1,
+      burst: 3,
+      monthlyRequests: 100,
+      maxVariants: 4,
+    },
+  ],
   windowedModels: [
     {
       model: 'glm5.3',
@@ -203,6 +238,31 @@ export function effectiveLimitNote(lang: DocsLocale = 'en'): string {
         `key's, the model's and the endpoint's. The key's 60 per minute and 5 at once ` +
         `count every call you make, so a model with a higher ceiling of its own does not ` +
         `raise them, and an endpoint with no ceiling of its own still spends the key's.`;
+}
+
+/**
+ * What image generation is governed by, written once.
+ *
+ * The first half is the part a reader cannot guess and the page never said:
+ * the API key's limits do not reach it at all.
+ */
+export function imageModelNote(m: ImageModelLimits, lang: DocsLocale = 'en'): string {
+  if (lang === 'es') {
+    return (
+      `La generación de imágenes no pasa por la API de inferencia compartida, así que los ` +
+      `límites de tu key no le aplican: tiene los suyos. ${m.requestsPerSecond} petición ` +
+      `por segundo con un burst de ${m.burst}, y ${m.monthlyRequests} peticiones por mes ` +
+      `natural. Una petición que pida varias imágenes sigue costando una, hasta ` +
+      `${m.maxVariants}. Necesita membresía de inferencia; sin ella responde 403.`
+    );
+  }
+  return (
+    `Image generation does not go through the shared inference API, so your key's limits ` +
+    `do not apply to it: it has its own. ${m.requestsPerSecond} request per second with a ` +
+    `burst of ${m.burst}, and ${m.monthlyRequests} requests per calendar month. A request ` +
+    `that asks for several images still costs one, up to ${m.maxVariants}. It needs ` +
+    `inference membership; without it the answer is a 403.`
+  );
 }
 
 /**
@@ -353,6 +413,11 @@ export function rateLimitsLabels(lang: DocsLocale) {
     concurrentRequests: 'Concurrent requests',
     tokensPerMin: 'Tokens / min',
     tokensPerModel: 'tokens / min per model',
+    images: 'image generation',
+    perSecond: 'Requests / sec',
+    burst: 'Burst',
+    monthlyRequests: 'Requests / month',
+    maxVariants: 'Images / request',
     exempt: 'no per-minute limit of their own',
     noOwnLimit: 'no limit of its own',
   },
@@ -368,6 +433,11 @@ export function rateLimitsLabels(lang: DocsLocale) {
     concurrentRequests: 'Peticiones concurrentes',
     tokensPerMin: 'Tokens / minuto',
     tokensPerModel: 'tokens / min por modelo',
+    images: 'generación de imágenes',
+    perSecond: 'Peticiones / seg',
+    burst: 'Ráfaga',
+    monthlyRequests: 'Peticiones / mes',
+    maxVariants: 'Imágenes / petición',
     exempt: 'sin límite por minuto propio',
     noOwnLimit: 'sin límite propio',
   },

@@ -4,13 +4,14 @@ import {
   effectiveLimitNote,
   formatTokens,
   getRateLimitsConfig,
+  imageModelNote,
   modelRateLabel,
   windowedModelBody,
   windowedModelHeadline,
   rateLimitsLabels,
 } from '../../lib/rateLimits';
 
-const { perKey, tokensPerMinuteByModel, exemptModels, windowedModels } =
+const { perKey, tokensPerMinuteByModel, exemptModels, windowedModels, imageModels } =
   getRateLimitsConfig(env);
 
 // This card is embedded from both the English and the Spanish guides, and MDX
@@ -116,6 +117,43 @@ const T = rateLimitsLabels(lang);
   </dl>
 </div>
 
-<p class="font-mono text-[11px] leading-relaxed text-neutral-400 mb-14">
+<p class="font-mono text-[11px] leading-relaxed text-neutral-400 mb-6">
   {effectiveLimitNote(lang)}
 </p>
+
+{
+  /* Image generation is served by cloud-api against Workers AI, not through
+     LiteLLM, so none of the limits above reach it. Its own block rather than a
+     row, because the first thing to say about it is that the key's limits do
+     not apply - which no row can say. */
+}
+{
+  imageModels.map((m) => (
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-14">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        {m.model} · {T.images}
+      </p>
+      <dl class="grid gap-3 sm:grid-cols-2">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.perSecond}</dt>
+          <dd class="text-neutral-200 text-right">{m.requestsPerSecond}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.burst}</dt>
+          <dd class="text-neutral-200 text-right">{m.burst}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.monthlyRequests}</dt>
+          <dd class="text-neutral-200 text-right">{m.monthlyRequests}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.maxVariants}</dt>
+          <dd class="text-neutral-200 text-right">{m.maxVariants}</dd>
+        </div>
+      </dl>
+      <p class="mt-4 font-mono text-[11px] leading-relaxed text-neutral-400">
+        {imageModelNote(m, lang)}
+      </p>
+    </div>
+  ))
+}

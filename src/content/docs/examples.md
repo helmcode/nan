@@ -472,7 +472,7 @@ console.log(image.data[0].url);
 
 `/images/edits` takes up to four reference images (PNG, JPEG or WebP, under 25 MB each) and does not support `mask`: sending one returns `400`.
 
-Images need inference membership, `403` otherwise, and they run on their own budget: 20 requests per minute and 100 per month, which does not touch your token quota.
+Images need inference membership, `403` otherwise, and they run on their own budget, which does not touch your token quota and is not your key's either: image generation does not go through the shared inference API at all. One request per second with a burst of 3, and 100 requests per calendar month. A request asking for several images still costs one.
 
 ## tool: web search
 

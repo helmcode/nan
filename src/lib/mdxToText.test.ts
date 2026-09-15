@@ -92,6 +92,9 @@ describe('mdxToText rate limits', () => {
       perKey: { requestsPerMinute: 120, maxParallel: 8 },
       tokensPerMinuteByModel: [{ model: 'foo', contextTokens: 1_000_000, fillsPerMinute: 2 }],
       exemptModels: ['bar'],
+      imageModels: [
+        { model: 'qux', requestsPerSecond: 2, burst: 7, monthlyRequests: 50, maxVariants: 3 },
+      ],
       windowedModels: [
         {
           model: 'baz',
@@ -114,6 +117,9 @@ describe('mdxToText rate limits', () => {
     expect(out).toContain('- Context window: 128K tokens');
     expect(out).toContain('- Tokens / min: 384K tpm');
     expect(out).toContain('- Concurrent requests: 2');
+    expect(out).toContain('- Requests / sec: 2 (burst 7)');
+    expect(out).toContain('- Requests / month: 50');
+    expect(out).toContain('- Images / request: up to 3');
   });
 
   it('defaults to the same numbers <RateLimits /> renders', async () => {
@@ -131,10 +137,12 @@ describe('mdxToText rate limits', () => {
       perKey: { requestsPerMinute: 60, maxParallel: 5 },
       tokensPerMinuteByModel: [],
       exemptModels: [],
+      imageModels: [],
       windowedModels: [],
     });
     expect(out).not.toContain('tokens / min per model');
     expect(out).not.toContain('no per-minute limit of their own');
+    expect(out).not.toContain('image generation');
     expect(out).not.toContain('premium tier limits');
   });
 });

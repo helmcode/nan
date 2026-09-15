@@ -182,6 +182,40 @@ describe('the per-minute ceilings mirror cloud-api', () => {
     }
   });
 
+  /**
+   * Image generation is governed by a different subsystem entirely: cloud-api
+   * serves /v1/images itself against Workers AI, so it never reaches the
+   * LiteLLM hook and none of the limits above apply to it. These mirror
+   * `imagegen.NewRateLimiter(1, 3)`, `imagegen.MonthlyQuota` and
+   * `imagegen.MaxVariants`.
+   *
+   * The page used to publish "20 requests per minute" for it, a figure that
+   * appears nowhere in the platform.
+   */
+  test('image generation mirrors its own limiter', () => {
+    const flux = DEFAULT_RATE_LIMITS.imageModels.find((m) => m.model === 'flux-2-klein');
+    expect(flux, 'flux-2-klein carries no published limit').toBeDefined();
+    expect(flux!.requestsPerSecond, 'requests per second').toBe(1);
+    expect(flux!.burst, 'burst').toBe(3);
+    expect(flux!.monthlyRequests, 'monthly requests').toBe(100);
+    expect(flux!.maxVariants, 'images per request').toBe(4);
+  });
+
+  /**
+   * And it is not quietly folded into the tables that do not govern it: a row
+   * in the per-minute table would say the key's 60 a minute reach it, and they
+   * do not.
+   */
+  test('image generation stays out of the LiteLLM tables', () => {
+    const inLiteLLM = [
+      ...published.map((m) => m.model),
+      ...DEFAULT_RATE_LIMITS.exemptModels,
+    ];
+    for (const m of DEFAULT_RATE_LIMITS.imageModels) {
+      expect(inLiteLLM, `${m.model} is governed outside LiteLLM`).not.toContain(m.model);
+    }
+  });
+
   test('the exempt list is the backend list', () => {
     expect([...DEFAULT_RATE_LIMITS.exemptModels].sort()).toEqual([...BACKEND_EXEMPT].sort());
   });
@@ -197,15 +231,16 @@ describe('the per-minute ceilings mirror cloud-api', () => {
       readFileSync(resolve(here, '../../data/modelos.json'), 'utf-8'),
     ) as { categorias: Array<{ id: string; modelos: Array<{ id: string }> }> };
 
-    // Image generation goes to /images/generations and carries no published
-    // per-minute policy of its own; cloud-api has no row for it either, so it
-    // falls to defaultRateLimit. Listed explicitly rather than skipped, so it
-    // is a decision on the record and not an omission.
-    const NOT_PUBLISHED = ['flux-2-klein', 'minimax-h3'];
+    // minimax-h3 is listed by /v1/models and answers 401: it is the video
+    // model, gated to an allowlist in cloud-api, and it is not documented.
+    // Listed explicitly rather than skipped, so it is a decision on the
+    // record and not an omission.
+    const NOT_PUBLISHED = ['minimax-h3'];
 
     const accounted = new Set([
       ...published.map((m) => m.model),
       ...DEFAULT_RATE_LIMITS.exemptModels,
+      ...DEFAULT_RATE_LIMITS.imageModels.map((m) => m.model),
       ...NOT_PUBLISHED,
     ]);
 

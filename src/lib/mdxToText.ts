@@ -7,6 +7,7 @@ import {
   DEFAULT_RATE_LIMITS,
   effectiveLimitNote,
   formatTokens,
+  imageModelNote,
   modelRateLabel,
   windowedModelNote,
   type RateLimitsConfig,
@@ -443,6 +444,18 @@ function rateLimitsToMd(config: RateLimitsConfig): string {
     lines.push('**tokens / min per model**', '');
     for (const m of config.tokensPerMinuteByModel) lines.push(`- ${m.model}: ${modelRateLabel(m)}`);
     lines.push('');
+  }
+  for (const m of config.imageModels) {
+    lines.push(
+      `**${m.model} · image generation**`,
+      '',
+      `- Requests / sec: ${m.requestsPerSecond} (burst ${m.burst})`,
+      `- Requests / month: ${m.monthlyRequests}`,
+      `- Images / request: up to ${m.maxVariants}`,
+      '',
+      imageModelNote(m),
+      '',
+    );
   }
   if (config.exemptModels.length) {
     lines.push('**no per-minute limit of their own**', '');

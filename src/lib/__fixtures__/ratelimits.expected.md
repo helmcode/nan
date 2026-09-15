@@ -22,6 +22,14 @@
 - qwen3.6: 3M tpm
 - gemma4: 1M tpm
 
+**flux-2-klein · image generation**
+
+- Requests / sec: 1 (burst 3)
+- Requests / month: 100
+- Images / request: up to 4
+
+Image generation does not go through the shared inference API, so your key's limits do not apply to it: it has its own. 1 request per second with a burst of 3, and 100 requests per calendar month. A request that asks for several images still costs one, up to 4. It needs inference membership; without it the answer is a 403.
+
 **no per-minute limit of their own**
 
 - qwen3-embedding
