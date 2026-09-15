@@ -269,3 +269,67 @@ describe('every package a snippet imports is a package the page installs', () =>
     ).toEqual([]);
   });
 });
+
+/**
+ * The two shapes a collapsed escape leaves behind.
+ *
+ * `%LOCALAPPDATA%\Programs\nan` and `-InstallDir "C:\tools"` were published on
+ * /docs/nan-cli with their `\n` and their `\t` already spent: the first arrived
+ * as a real line break mid-path ("Programs" / "an"), the second as a tab
+ * ("C:<TAB>ools"). Both survived review in two languages because a Windows path
+ * is the one string nobody on this team pastes back, and neither is a syntax
+ * error anywhere - the PowerShell line runs perfectly, it just installs
+ * somewhere else.
+ *
+ * Nothing above caught them: those rules run the snippets, and a snippet that
+ * runs is all they ask for. These two look at the residue instead.
+ */
+describe('escapes that were spent before they reached the page', () => {
+  /**
+   * A tab in a Markdown source is either a collapsed `\t` or an indentation
+   * nobody can see. Neither is worth keeping, so the rule is the whole file
+   * rather than the paths: it costs nothing and it does not need to guess which
+   * strings are Windows.
+   */
+  test.each(ALL_PAGES.map((p) => p.id))('%s carries no literal tab', (id) => {
+    const page = ALL_PAGES.find((p) => p.id === id)!;
+    const hits = page.text
+      .split('\n')
+      .map((line, i) => ({ line, n: i + 1 }))
+      .filter(({ line }) => line.includes('\t'))
+      .map(({ line, n }) => `${n}: ${line.replace(/\t/g, '<TAB>').trim()}`);
+    expect(
+      hits,
+      `${id}: a literal tab, which is what a \t looks like once something has ` +
+        `interpreted it:\n${hits.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  /**
+   * A `\n` inside inline code leaves a sharper mark than a stray line break: it
+   * splits the span across two lines, so each of them carries an odd number of
+   * backticks. Markdown does allow a span to wrap, but no guide here writes one
+   * that way, so the odd count is the collapsed escape every time.
+   *
+   * Fenced blocks are skipped - their backticks are the fence.
+   */
+  test.each(ALL_PAGES.map((p) => p.id))('%s closes every inline code span', (id) => {
+    const page = ALL_PAGES.find((p) => p.id === id)!;
+    let inFence = false;
+    const hits: string[] = [];
+    page.text.split('\n').forEach((line, i) => {
+      if (/^\s*```/.test(line)) {
+        inFence = !inFence;
+        return;
+      }
+      if (inFence) return;
+      const ticks = (line.match(/`/g) ?? []).length;
+      if (ticks % 2 === 1) hits.push(`${i + 1}: ${line.trim()}`);
+    });
+    expect(
+      hits,
+      `${id}: an inline code span opens on one line and closes on another, ` +
+        `which is what a \n looks like once it has become a line break:\n${hits.join('\n')}`,
+    ).toEqual([]);
+  });
+});

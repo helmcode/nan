@@ -81,13 +81,12 @@ On Windows, from PowerShell:
 irm https://nan.builders/install.ps1 | iex
 ```
 
-It does the same work: resolves the latest release, downloads the `.zip` for your architecture, **verifies its checksum** and puts `nan.exe` in `%LOCALAPPDATA%\Programs
-an`, adding that directory to your user `PATH` if it is not there already. Terminals you already had open will not see it until you restart them.
+It does the same work: resolves the latest release, downloads the `.zip` for your architecture, **verifies its checksum** and puts `nan.exe` in `%LOCALAPPDATA%\Programs\nan`, adding that directory to your user `PATH` if it is not there already. Terminals you already had open will not see it until you restart them.
 
 It installs for your user and not for the whole machine, deliberately: the Windows equivalent of the `sudo` prompt is an elevation dialog out of a piped script, which is worse. To put it elsewhere:
 
 ```powershell
-& ([scriptblock]::Create((irm https://nan.builders/install.ps1))) -InstallDir "C:	ools"
+& ([scriptblock]::Create((irm https://nan.builders/install.ps1))) -InstallDir "C:\tools"
 ```
 
 There are binaries for macOS, Linux and Windows, on Intel and on ARM.
