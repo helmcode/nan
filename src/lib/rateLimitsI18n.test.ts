@@ -55,8 +55,10 @@ function visible(lang: 'en' | 'es'): string {
     t.allowance,
     t.context,
     t.concurrentRequests,
+    t.tokensPerMin,
     t.tokensPerModel,
-    t.requestsPerModel,
+    t.exempt,
+    t.noOwnLimit,
     windowedModelHeadline(model, lang),
     windowedModelBody(model, lang),
   ]
@@ -142,9 +144,7 @@ describe('no guide denies the per-model limits this module publishes', () => {
     'sólo por api key',
   ];
 
-  const perModel =
-    DEFAULT_RATE_LIMITS.tokensPerMinuteByModel.length +
-    DEFAULT_RATE_LIMITS.requestsPerMinuteByModel.length;
+  const perModel = DEFAULT_RATE_LIMITS.tokensPerMinuteByModel.length;
 
   it.each(LOCALES)('%s', (locale) => {
     if (perModel === 0) return;

@@ -90,12 +90,13 @@ describe('mdxToText rate limits', () => {
   it('serves the values from the injected config, not hardcoded ones', async () => {
     const out = await mdxToText(input, {
       perKey: { requestsPerMinute: 120, maxParallel: 8 },
-      tokensPerMinuteByModel: [{ model: 'foo', label: '2M tpm' }],
-      requestsPerMinuteByModel: [{ model: 'bar', label: '500 rpm' }],
+      tokensPerMinuteByModel: [{ model: 'foo', contextTokens: 1_000_000, fillsPerMinute: 2 }],
+      exemptModels: ['bar'],
       windowedModels: [
         {
           model: 'baz',
           contextTokens: 128_000,
+          fillsPerMinute: 3,
           maxParallel: 2,
           windowHours: 6,
           windowTokens: 7_000_000,
@@ -106,11 +107,12 @@ describe('mdxToText rate limits', () => {
     expect(out).toContain('- Requests / min: 120 rpm');
     expect(out).toContain('- Max parallel: 8 concurrent');
     expect(out).toContain('- foo: 2M tpm');
-    expect(out).toContain('- bar: 500 rpm');
+    expect(out).toContain('- bar');
     expect(out).toContain('**baz · premium tier limits**');
     expect(out).toContain('- Rolling 6h window: 7M tokens');
     expect(out).toContain('- Allowance / billing period: 9M tokens');
     expect(out).toContain('- Context window: 128K tokens');
+    expect(out).toContain('- Tokens / min: 384K tpm');
     expect(out).toContain('- Concurrent requests: 2');
   });
 
@@ -128,11 +130,11 @@ describe('mdxToText rate limits', () => {
     const out = await mdxToText(input, {
       perKey: { requestsPerMinute: 60, maxParallel: 5 },
       tokensPerMinuteByModel: [],
-      requestsPerMinuteByModel: [],
+      exemptModels: [],
       windowedModels: [],
     });
     expect(out).not.toContain('tokens / min per model');
-    expect(out).not.toContain('requests / min per model');
+    expect(out).not.toContain('no per-minute limit of their own');
     expect(out).not.toContain('premium tier limits');
   });
 });

@@ -218,8 +218,8 @@ describe('openapi.json: rate limits come from the single source of truth', () =>
     for (const m of DEFAULT_RATE_LIMITS.tokensPerMinuteByModel) {
       expect(description, m.model).toContain(`\`${m.model}\``);
     }
-    for (const m of DEFAULT_RATE_LIMITS.requestsPerMinuteByModel) {
-      expect(description, m.model).toContain(`\`${m.model}\``);
+    for (const m of DEFAULT_RATE_LIMITS.exemptModels) {
+      expect(description, m).toContain(`\`${m}\``);
     }
   });
 

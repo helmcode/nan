@@ -5,7 +5,9 @@ import remarkMdx from 'remark-mdx';
 import remarkStringify from 'remark-stringify';
 import {
   DEFAULT_RATE_LIMITS,
+  effectiveLimitNote,
   formatTokens,
+  modelRateLabel,
   windowedModelNote,
   type RateLimitsConfig,
 } from './rateLimits';
@@ -430,6 +432,7 @@ function rateLimitsToMd(config: RateLimitsConfig): string {
       `- Rolling ${m.windowHours}h window: ${formatTokens(m.windowTokens)} tokens`,
       `- Allowance / billing period: ${formatTokens(m.periodCapTokens)} tokens`,
       `- Context window: ${formatTokens(m.contextTokens)} tokens`,
+      `- Tokens / min: ${modelRateLabel(m)}`,
       `- Concurrent requests: ${m.maxParallel}`,
       '',
       windowedModelNote(m),
@@ -438,14 +441,15 @@ function rateLimitsToMd(config: RateLimitsConfig): string {
   }
   if (config.tokensPerMinuteByModel.length) {
     lines.push('**tokens / min per model**', '');
-    for (const m of config.tokensPerMinuteByModel) lines.push(`- ${m.model}: ${m.label}`);
+    for (const m of config.tokensPerMinuteByModel) lines.push(`- ${m.model}: ${modelRateLabel(m)}`);
     lines.push('');
   }
-  if (config.requestsPerMinuteByModel.length) {
-    lines.push('**requests / min per model**', '');
-    for (const m of config.requestsPerMinuteByModel) lines.push(`- ${m.model}: ${m.label}`);
+  if (config.exemptModels.length) {
+    lines.push('**no per-minute limit of their own**', '');
+    for (const m of config.exemptModels) lines.push(`- ${m}`);
     lines.push('');
   }
+  lines.push(effectiveLimitNote(), '');
   return lines.join('\n');
 }
 

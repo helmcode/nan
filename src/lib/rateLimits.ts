@@ -17,7 +17,17 @@ export interface PerKeyRateLimits {
 
 export interface ModelRate {
   model: string;
-  label: string;
+  /**
+   * The model's real context window and how many times a minute a member may
+   * refill the whole of it. cloud-api stores the policy as these two factors
+   * (`modelRateLimits`: ContextWindow, FillsPerMin) and derives the ceiling
+   * from them, so this publishes the factors and derives it too.
+   *
+   * The previous shape was a hand-typed `label`, and all four of the labels it
+   * carried were wrong. A product nobody multiplies cannot come out wrong.
+   */
+  contextTokens: number;
+  fillsPerMinute: number;
 }
 
 /**
@@ -29,6 +39,7 @@ export interface ModelRate {
 export interface WindowedModelLimits {
   model: string;
   contextTokens: number;
+  fillsPerMinute: number;
   maxParallel: number;
   windowHours: number;
   windowTokens: number;
@@ -38,7 +49,15 @@ export interface WindowedModelLimits {
 export interface RateLimitsConfig {
   perKey: PerKeyRateLimits;
   tokensPerMinuteByModel: ModelRate[];
-  requestsPerMinuteByModel: ModelRate[];
+  /**
+   * The non-chat endpoints, which carry no per-minute limit of their own.
+   * cloud-api calls them `rateLimitExemptModels` and the rate-limit hook
+   * mirrors them in FALLBACK_EXEMPT_MODELS. They are published as a list
+   * rather than left out, so "no limit of its own" cannot be mistaken for
+   * "we forgot to write it down" - which is exactly what happened when
+   * `rerank` sat here with an invented 1000 rpm.
+   */
+  exemptModels: string[];
   windowedModels: WindowedModelLimits[];
 }
 
@@ -53,17 +72,36 @@ export interface RateLimitsEnv {
  */
 export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
   perKey: { requestsPerMinute: 60, maxParallel: 5 },
+  // Every chat model the cluster serves, with the two factors cloud-api keys
+  // its policy on. Mirrors `modelRateLimits` in cloud-api's usage_quota.go,
+  // which the rate-limit hook mirrors again in FALLBACK_MODEL_LIMITS; the
+  // three tables are required to agree and a divergence shows up as
+  // intermittent 429s depending on which worker took the request.
+  //
+  // FillsPerMin is calibrated per model from p99.9 of measured per-member
+  // usage and is deliberately NOT one shared number: the fraction of its
+  // window a request uses varies about 20x, so a common value starves the
+  // models with long requests. Do not flatten these to look tidy.
   tokensPerMinuteByModel: [
-    { model: 'deepseek-v4-flash', label: '1.5M tpm' },
-    { model: 'mimo-v2.5', label: '1.5M tpm' },
-    { model: 'qwen3.6', label: '1.5M tpm' },
-    { model: 'gemma4', label: '1.5M tpm' },
+    { model: 'deepseek-v4-flash', contextTokens: 1_048_576, fillsPerMinute: 6 },
+    { model: 'qwen3.8-flash', contextTokens: 1_048_576, fillsPerMinute: 6 },
+    { model: 'glm5.3-flash', contextTokens: 1_048_576, fillsPerMinute: 11 },
+    { model: 'mimo-v2.5', contextTokens: 1_050_000, fillsPerMinute: 4 },
+    { model: 'qwen3.6', contextTokens: 262_144, fillsPerMinute: 12 },
+    { model: 'gemma4', contextTokens: 262_144, fillsPerMinute: 4 },
   ],
-  requestsPerMinuteByModel: [{ model: 'rerank', label: '1000 rpm' }],
-  // glm5.3 (premium tier) is absent from the per-minute tables on purpose: its
-  // gate is the 4h sliding window plus the allowance per billing period. These
-  // mirror the backend policy (cloud-api modelRateLimits + the token cap for
-  // glm5.3) and the usage hook's window budget, which is the same set of
+  exemptModels: ['qwen3-embedding', 'rerank', 'kokoro', 'whisper'],
+  // glm5.3 (premium tier) keeps its own block rather than a row in the table
+  // above. It DOES carry a per-minute ceiling like every other model - the
+  // same 1M window and 11 fills as glm5.3-flash - but the 4h sliding window
+  // bites long before that ceiling could: 400M per 4h averages 1.67M/min
+  // against a 11.5M/min ceiling, so the window is the number a member plans
+  // against. The ceiling is published in the block too, because "is this
+  // gated per minute?" deserves an answer and the old one, "not at all",
+  // was wrong.
+  //
+  // These mirror the backend policy (cloud-api modelRateLimits + the token cap
+  // for glm5.3) and the usage hook's window budget, which is the same set of
   // numbers the member portal publishes.
   //
   // contextTokens mirrors the backend EXACTLY: 1,048,576, raised from 500,000
@@ -83,6 +121,7 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
     {
       model: 'glm5.3',
       contextTokens: 1_048_576,
+      fillsPerMinute: 11,
       maxParallel: 5,
       windowHours: 4,
       windowTokens: 400_000_000,
@@ -124,6 +163,46 @@ export function formatTokens(tokens: number, lang: DocsLocale = 'en'): string {
   if (tokens >= 1_000_000) return `${fmt.format(tokens / 1_000_000)}M`;
   if (tokens >= 1_000) return `${fmt.format(tokens / 1_000)}K`;
   return String(tokens);
+}
+
+/**
+ * The per-minute ceiling, derived rather than published.
+ *
+ * cloud-api does not store a tokens-per-minute number at all: it stores the
+ * context window and how many times a minute a member may refill it, and the
+ * ceiling is the product. Publishing the product as a literal is how this page
+ * came to carry "1.5M tpm" for four models whose real ceilings were 6.3M, 4.2M,
+ * 3.1M and 1.0M - one of them BELOW what was advertised, which is the half that
+ * actually costs a member their afternoon.
+ */
+export function modelTokensPerMinute(m: ModelRate | WindowedModelLimits): number {
+  return m.contextTokens * m.fillsPerMinute;
+}
+
+/** The label the cards and /api/docs both print for that ceiling. */
+export function modelRateLabel(m: ModelRate | WindowedModelLimits, lang: DocsLocale = 'en'): string {
+  return `${formatTokens(modelTokensPerMinute(m), lang)} tpm`;
+}
+
+/**
+ * Which limit a member actually feels.
+ *
+ * Three of them apply at once and the strictest wins, which is not obvious and
+ * was the one question an outside reviewer could not answer from this page:
+ * `rerank` appeared to promise 1000 rpm while the key allows 60, so either the
+ * page was wrong or the 1000 was unreachable. It was wrong - rerank carries no
+ * per-minute limit of its own - but the hierarchy needed saying either way.
+ */
+export function effectiveLimitNote(lang: DocsLocale = 'en'): string {
+  return lang === 'es'
+    ? `El límite que notas es siempre el más estricto de los que te apliquen: el de tu ` +
+        `key, el del modelo y el del endpoint. Los 60 por minuto y las 5 a la vez de la ` +
+        `key se cuentan sobre todo lo que llames, así que un modelo con un techo más alto ` +
+        `no te sube ese, y un endpoint sin techo propio sigue gastando el de la key.`
+    : `The limit you feel is always the strictest of the ones that apply to you: your ` +
+        `key's, the model's and the endpoint's. The key's 60 per minute and 5 at once ` +
+        `count every call you make, so a model with a higher ceiling of its own does not ` +
+        `raise them, and an endpoint with no ceiling of its own still spends the key's.`;
 }
 
 /**
@@ -218,26 +297,32 @@ export function rateLimitsToSpecMarkdown(config: RateLimitsConfig): string {
     `| Requests per minute | ${config.perKey.requestsPerMinute} |`,
     `| Concurrent requests | ${config.perKey.maxParallel} |`,
   ];
-  if (tpm.length) {
-    // The label already carries its unit ("1.5M tpm"), so the value column
-    // takes it verbatim and the models are listed in the limit column.
-    const models = tpm.map((m) => `\`${m.model}\``).join(', ');
-    rows.push(`| Tokens per minute (${models}) | ${tpm[0].label.replace(/\s*tpm$/, '')} |`);
+  // One row per model, not one row listing them all. The previous version put
+  // every model in a single row and took the value from `tpm[0]`, which is a
+  // shape that can only be right while every model shares a number - and they
+  // never did: the four it collapsed had ceilings of 6.3M, 4.2M, 3.1M and 1.0M
+  // behind one printed "1.5M".
+  for (const m of tpm) {
+    rows.push(`| Tokens per minute (\`${m.model}\`) | ${formatTokens(modelTokensPerMinute(m))} |`);
   }
-  for (const m of config.requestsPerMinuteByModel) {
-    rows.push(`| Requests per minute (\`${m.model}\`) | ${m.label.replace(/\s*rpm$/, '')} |`);
+  if (config.exemptModels.length) {
+    const models = config.exemptModels.map((m) => `\`${m}\``).join(', ');
+    rows.push(`| Tokens per minute (${models}) | no limit of their own |`);
   }
 
   const out = [
     'Limits apply per API key (RPM and concurrency), not on total token volume:',
     '',
     ...rows,
+    '',
+    effectiveLimitNote(),
   ];
 
   for (const m of config.windowedModels) {
     out.push(
       '',
-      `\`${m.model}\` is not gated by a per-minute rate but by a rolling window plus an ` +
+      `\`${m.model}\` carries a ${modelRateLabel(m)} ceiling like the others, but what ` +
+        `gates it in practice is a rolling window plus an ` +
         `allowance per billing period: ${formatTokens(m.windowTokens)} tokens per rolling ` +
         `${m.windowHours} hours and a ${formatTokens(m.periodCapTokens)}-token allowance that ` +
         `returns to zero when your billing period starts. The window is rolling, not a daily ` +
@@ -266,8 +351,10 @@ export function rateLimitsLabels(lang: DocsLocale) {
     allowance: 'Allowance / billing period',
     context: 'Context window',
     concurrentRequests: 'Concurrent requests',
+    tokensPerMin: 'Tokens / min',
     tokensPerModel: 'tokens / min per model',
-    requestsPerModel: 'requests / min per model',
+    exempt: 'no per-minute limit of their own',
+    noOwnLimit: 'no limit of its own',
   },
   es: {
     perKey: 'límites por API key',
@@ -279,8 +366,10 @@ export function rateLimitsLabels(lang: DocsLocale) {
     allowance: 'Cuota / periodo de facturación',
     context: 'Contexto',
     concurrentRequests: 'Peticiones concurrentes',
+    tokensPerMin: 'Tokens / minuto',
     tokensPerModel: 'tokens / min por modelo',
-    requestsPerModel: 'peticiones / min por modelo',
+    exempt: 'sin límite por minuto propio',
+    noOwnLimit: 'sin límite propio',
   },
 }[lang];
 }

@@ -1,14 +1,16 @@
 ---
 import { env } from 'cloudflare:workers';
 import {
+  effectiveLimitNote,
   formatTokens,
   getRateLimitsConfig,
+  modelRateLabel,
   windowedModelBody,
   windowedModelHeadline,
   rateLimitsLabels,
 } from '../../lib/rateLimits';
 
-const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel, windowedModels } =
+const { perKey, tokensPerMinuteByModel, exemptModels, windowedModels } =
   getRateLimitsConfig(env);
 
 // This card is embedded from both the English and the Spanish guides, and MDX
@@ -61,6 +63,10 @@ const T = rateLimitsLabels(lang);
           <dd class="text-neutral-200 text-right">{formatTokens(m.contextTokens, lang)} tokens</dd>
         </div>
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.tokensPerMin}</dt>
+          <dd class="text-neutral-200 text-right">{modelRateLabel(m, lang)}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
           <dt class="text-neutral-500 uppercase tracking-wider">{T.concurrentRequests}</dt>
           <dd class="text-neutral-200 text-right">{m.maxParallel}</dd>
         </div>
@@ -82,25 +88,34 @@ const T = rateLimitsLabels(lang);
       tokensPerMinuteByModel.map((m) => (
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
           <dt class="text-neutral-500 uppercase tracking-wider">{m.model}</dt>
-          <dd class="text-neutral-200 text-right">{m.label}</dd>
+          <dd class="text-neutral-200 text-right">{modelRateLabel(m, lang)}</dd>
         </div>
       ))
     }
   </dl>
 </div>
 
-<div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-14">
+{
+  /* Published as a list rather than left out. An endpoint missing from the
+     table above cannot be told apart from one we forgot to measure, which is
+     how `rerank` came to sit here with an invented 1000 rpm for months. */
+}
+<div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
   <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
-    {T.requestsPerModel}
+    {T.exempt}
   </p>
   <dl class="grid gap-3 sm:grid-cols-2">
     {
-      requestsPerMinuteByModel.map((m) => (
+      exemptModels.map((model) => (
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-          <dt class="text-neutral-500 uppercase tracking-wider">{m.model}</dt>
-          <dd class="text-neutral-200 text-right">{m.label}</dd>
+          <dt class="text-neutral-500 uppercase tracking-wider">{model}</dt>
+          <dd class="text-neutral-200 text-right">{T.noOwnLimit}</dd>
         </div>
       ))
     }
   </dl>
 </div>
+
+<p class="font-mono text-[11px] leading-relaxed text-neutral-400 mb-14">
+  {effectiveLimitNote(lang)}
+</p>
