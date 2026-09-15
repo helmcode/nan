@@ -197,3 +197,86 @@ describe('frontmatter of the docs collection', () => {
     expect(orders).toEqual(orders.map((_, i) => i));
   });
 });
+
+/**
+ * The chrome around the prose, in the reader's language.
+ *
+ * docsCopyIsEnglish.test.ts guards this same surface in the other direction:
+ * Spanish had leaked into the English docs, the copy button said "Copiar" and
+ * the toast "¡Copiado al portapapeles!". It was fixed by writing those strings
+ * in English - which is right for /docs and leaves /es/docs showing "Copied to
+ * clipboard", "Copy", "No results" and an aria-label of "Search documentation"
+ * under Spanish prose.
+ *
+ * The layout already has the table that solves it, `T`, with an `en` branch and
+ * an `es` one; these strings are simply the ones that never made it in, because
+ * they live down in the client scripts rather than in the markup. So the rule
+ * is not "which language is this" but "does it come from the table": a literal
+ * a reader can see, sitting outside `T`, is a string that has only one
+ * language whichever one it happens to be.
+ */
+describe('Docs.astro: the chrome comes from the translation table', () => {
+  const start = layout.indexOf('const T = {');
+  const end = layout.indexOf('}[lang];', start);
+
+  it('has a table to come from', () => {
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+  });
+
+  const table = layout.slice(start, end);
+  const outside = layout.slice(0, start) + layout.slice(end);
+
+  it('translates every key it defines', () => {
+    const branch = (name: 'en' | 'es') => {
+      const from = table.indexOf(`  ${name}: {`);
+      const to = table.indexOf('  },', from);
+      return [...table.slice(from, to).matchAll(/^\s{4}(\w+):/gm)].map((m) => m[1]).sort();
+    };
+    expect(branch('es'), 'the es branch is missing keys the en branch has').toEqual(branch('en'));
+  });
+
+  /**
+   * Written as they appear in the source, because that is what has to go. Each
+   * one is a string the reader sees: the toast, the copy button in both of its
+   * states, the empty search panel and two aria-labels.
+   */
+  const HARDCODED = [
+    ">Copied to clipboard<",
+    "showCopyToast('Copied to clipboard')",
+    "'Copy failed'",
+    '>No results<',
+    '"Search documentation"',
+    'aria-label="Documentation"',
+    '>Copy</span>',
+    "textContent = 'Copied'",
+    "textContent = 'Copy'",
+    'Copy ${lang.label}',
+  ];
+
+  /**
+   * The copy button reads its labels off the toast element's dataset, because
+   * that script is bundled and typed and so cannot take define:vars. It has no
+   * English fallback on purpose - a fallback is exactly how the Spanish pages
+   * came to say "Copied to clipboard" - which means a missing data attribute
+   * shows as a button with no label instead of a button in the wrong language.
+   * Silent either way, so it is pinned here.
+   */
+  it('hands the bundled script every label it reads', () => {
+    const toast = /<div\s+class="copy-toast"[\s\S]*?>/.exec(layout)?.[0] ?? '';
+    for (const attr of ['data-toast', 'data-copy', 'data-copied', 'data-failed', 'data-copy-aria']) {
+      expect(toast, `the copy toast does not carry ${attr}`).toContain(attr);
+    }
+    for (const read of ['L.toast', 'L.copy', 'L.copied', 'L.failed', 'L.copyAria']) {
+      expect(layout, `nothing reads ${read}`).toContain(read);
+    }
+  });
+
+  it.each(HARDCODED)('does not hardcode %s', (snippet) => {
+    expect(
+      outside.includes(snippet),
+      `${snippet} is written into the layout instead of coming from T, so it ` +
+        `shows in English under the Spanish guides`,
+    ).toBe(false);
+  });
+});
