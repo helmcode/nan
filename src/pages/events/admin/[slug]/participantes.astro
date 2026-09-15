@@ -1,0 +1,18 @@
+---
+export const prerender = false;
+import { reloadAdminEventView, resolveAdminEventRoute } from '../../../../lib/eventsAdmin';
+import { handleParticipantsForm } from '../../../../lib/eventsAdminParticipants';
+import Page from './_participantes.astro';
+
+const route = await resolveAdminEventRoute(Astro);
+if (route.notFound) return route.notFound;
+const outcome = await handleParticipantsForm(Astro.request, route.cookie, route.slug);
+if (outcome.redirect) return Astro.redirect(outcome.redirect, 303);
+// La importación es el único POST que escribe y se queda aquí (hay que pintar
+// el informe): la ficha es anterior a esa escritura, así que se recarga.
+const view = outcome.action === 'import' && outcome.result?.ok
+  ? await reloadAdminEventView(route.cookie, route.slug, route.view)
+  : route.view;
+---
+
+<Page staff={route.staff} cookie={route.cookie} view={view} outcome={outcome} />

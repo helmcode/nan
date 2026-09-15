@@ -1,0 +1,43 @@
+---
+/**
+ * Avisos del panel: confirmación tras redirección (`?ok=`), avisos del
+ * backend (§8, traducidos) y error de la última respuesta. Cada bloque solo
+ * se pinta si tiene contenido.
+ */
+import type { ApiResult } from '../../../lib/eventsAdmin';
+import { warningLabel } from '../../../lib/eventsAdminForms';
+
+interface Props {
+  ok?: string | null;
+  warnings?: string[];
+  result?: ApiResult<unknown>;
+  /** Texto que precede a la lista de avisos (p. ej. "Simulación: no se ha guardado nada"). */
+  warningsTitle?: string;
+  forbidden?: boolean;
+}
+const { ok = null, warnings = [], result, warningsTitle, forbidden = false } = Astro.props;
+const errorText = result && !result.ok
+  ? [result.message ?? result.error ?? 'error', result.fields.length ? `campos: ${result.fields.join(', ')}` : '', result.detail ?? '']
+      .filter(Boolean)
+      .join(' · ')
+  : '';
+const showWarnings = warnings.length > 0 || (result?.ok && (result.warnings.length > 0 || warningsTitle));
+---
+
+{forbidden && <p class="adm-msg adm-msg-error">La petición no venía de nan.builders y no se ha procesado.</p>}
+{ok && <p class="adm-msg adm-msg-ok">{ok}</p>}
+{errorText && (
+  <p class="adm-msg adm-msg-error">
+    <span class="adm-muted">Error {result?.status || ''}:</span> {errorText}
+  </p>
+)}
+{showWarnings && (
+  <div class="adm-msg adm-msg-warn">
+    {warningsTitle && <p>{warningsTitle}</p>}
+    {(warnings.length ? warnings : result?.warnings ?? []).length > 0 && (
+      <ul>
+        {(warnings.length ? warnings : result?.warnings ?? []).map((w) => <li><code>{w}</code> — {warningLabel(w)}</li>)}
+      </ul>
+    )}
+  </div>
+)}

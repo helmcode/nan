@@ -1,8 +1,10 @@
 import { env } from 'cloudflare:workers';
 import { getLocale, withLang } from './i18n';
 
-// Paths admin nunca deben atravesar el proxy público (SPEC §8.1): ni
-// `admin/reload` (global) ni `{slug}/admin/*` (por evento).
+// Paths admin (`admin/*` global y `{slug}/admin/*` por evento) solo
+// atraviesan el proxy con cookie de sesión (SPEC v3 §8): la autorización
+// (staff o no) la decide el backend. Sin cookie no hay nada que autorizar y
+// el proxy responde 404 sin tocar el backend, como antes de la v3.
 const ADMIN_SEGMENT = 'admin';
 
 export function isAdminPath(path: string): boolean {
@@ -25,6 +27,18 @@ export function isAdminPath(path: string): boolean {
  * `hackaton-2026-1/vote`), así que el coste de esta estrechez es cero.
  */
 const SAFE_SEGMENT = /^[A-Za-z0-9._-]+$/;
+
+/**
+ * Parte una ruta relativa al backend en segmentos y devuelve `null` si está
+ * vacía o algún segmento no es llano (ver SAFE_SEGMENT). Lo usan el proxy
+ * y `adminFetch`.
+ */
+export function safeSegments(path: string): string[] | null {
+  const segments = (path ?? '').split('/').filter((s) => s !== '');
+  if (segments.length === 0) return null;
+  if (!segments.every((s) => SAFE_SEGMENT.test(s) && s !== '.' && s !== '..')) return null;
+  return segments;
+}
 
 /**
  * Construye la URL destino en el backend conservando query string.
@@ -52,12 +66,10 @@ const SAFE_SEGMENT = /^[A-Za-z0-9._-]+$/;
  *      codificaciones de `..`.
  */
 export function backendURL(path: string, search: string): string | null {
-  const base = env.CLOUD_API_URL.replace(/\/$/, '');
-  const prefix = `${base}/api/events/`;
+  const prefix = `${apiBase()}/api/events/`;
 
-  const segments = (path ?? '').split('/').filter((s) => s !== '');
-  if (segments.length === 0) return null;
-  if (!segments.every((s) => SAFE_SEGMENT.test(s) && s !== '.' && s !== '..')) return null;
+  const segments = safeSegments(path);
+  if (!segments) return null;
 
   let target: URL;
   let expected: URL;
@@ -78,12 +90,17 @@ export function backendURL(path: string, search: string): string | null {
 }
 
 // Cabeceras a reenviar al backend: preserva cookie/sesión NaN; nunca reenvía la
-// admin key (§9.2). Fija Origin para la política CORS del backend (§13).
+// admin key (§9.2): esa vía es solo directa contra cloud-api. Fija Origin para
+// la política CORS del backend (§13). Siempre JSON salvo el CSV que sube el
+// panel de admin (`participants/import`): un fetch con cuerpo de texto y sin
+// content-type explícito llega como text/plain, y eso no debe cambiar lo que
+// recibe el backend.
 export function forwardHeaders(request: Request): Headers {
   const out = new Headers();
   const cookie = request.headers.get('cookie');
   if (cookie) out.set('cookie', cookie);
-  out.set('content-type', 'application/json');
+  const contentType = request.headers.get('content-type') ?? '';
+  out.set('content-type', /^text\/csv\b/i.test(contentType) ? contentType : 'application/json');
   out.set('origin', 'https://nan.builders');
   // Backend de eventos lee CF-Connecting-IP; otros endpoints X-Forwarded-For.
   // Reenviamos ambos para que el rate-limit por IP funcione en cualquier ruta.
@@ -96,7 +113,7 @@ export function forwardHeaders(request: Request): Headers {
 // que consume el SSR; el backend es la fuente de verdad.
 export type EventFormat = 'solo' | 'team';
 export type EventPhase =
-  | 'draft' | 'registration' | 'building_pending' | 'building'
+  | 'draft' | 'published' | 'registration' | 'building_pending' | 'building'
   | 'submission' | 'voting' | 'closed_pending' | 'closed';
 export type FieldMode = 'required' | 'optional' | 'hidden';
 /** registration.discord_user (SPEC §3.1): `none` = no se pide. */
@@ -110,6 +127,8 @@ export interface EventDates {
   voting_open?: string | null;
   voting_close?: string | null;
   demo_day?: string | null;
+  /** Fin del demo day (W-10); sin él, el calendario asume dos horas. */
+  demo_day_end?: string | null;
 }
 export interface SubmissionFields {
   description: FieldMode;
@@ -132,6 +151,9 @@ export interface EventInfo {
   description: string;
   rules: string;
   prize: string;
+  /** Dónde se celebra (texto libre) y enlace de acceso; opcionales (SPEC v3 §3.1, B-25). */
+  location: string;
+  url: string;
   format: EventFormat;
   status: string;
   dates: EventDates;
@@ -139,15 +161,25 @@ export interface EventInfo {
     capacity: number;
     reserve_capacity: number;
     discord_user: DiscordMode;
-    specialties: string[];
-    levels: string[];
+    /**
+     * Listas que el backend serializa como `null` cuando el slice va nil
+     * (event.json escrito a mano, o un evento anterior al saneo de
+     * `applyCreateDefaults`). El `| null` no es defensivo: es lo que llega por
+     * el cable, y tiparlo así hace que `astro check` marque en rojo cualquier
+     * lectura sin `?? []`, incluidas las que pasan por una desestructuración
+     * y que ningún barrido de texto puede ver.
+     */
+    specialties: string[] | null;
+    levels: string[] | null;
   };
   /** Solo presente en formato `team` (SPEC §6.1). */
   team?: { size: number; min_size: number; max_teams: number };
   submission: {
+    /** Struct por valor en el backend: siempre llega como objeto, nunca null. */
     fields: SubmissionFields;
-    checks: string[];
-    prize_requires: string[];
+    /** Ver el comentario de `registration.specialties`. */
+    checks: string[] | null;
+    prize_requires: string[] | null;
     gallery_visibility: string;
   };
   /** Sin los interruptores de admin (open, leaderboard_public): lo que manda es `windows`. */
@@ -171,7 +203,15 @@ export interface Team {
   name?: string;
   members?: Participant[];
 }
-export interface Check { pass: boolean; checked_at?: string | null; http_status?: number; host?: string }
+/** Un check de la entrega (`checks[name]`). `forced`/`reason` solo los pone el admin (§6.4). */
+export interface Check {
+  pass: boolean;
+  checked_at?: string | null;
+  http_status?: number;
+  host?: string;
+  forced?: boolean;
+  reason?: string;
+}
 export interface Submission {
   id: string;
   title: string;
@@ -199,6 +239,11 @@ export interface LeaderboardRow {
   total: number;
   not_prize_eligible: boolean;
 }
+/** Respuesta del ranking (público y admin): filas y si ya es público. */
+export interface LeaderboardView {
+  rows: LeaderboardRow[];
+  public: boolean;
+}
 export interface MeData {
   participant?: Participant | null;
   team?: Team | null;
@@ -214,14 +259,15 @@ export async function jsonData<T = unknown>(res: Response): Promise<T | null> {
   catch { return null; }
 }
 
-// Cabeceras para las llamadas SSR al backend (mismo Origin que el proxy).
-function ssrHeaders(cookie?: string): HeadersInit {
+/** Cabeceras para las llamadas SSR al backend (mismo Origin que el proxy). */
+export function ssrHeaders(cookie?: string): Record<string, string> {
   const h: Record<string, string> = { origin: 'https://nan.builders' };
   if (cookie) h.cookie = cookie;
   return h;
 }
 
-function apiBase(): string {
+/** Base del backend sin barra final, para las llamadas SSR. */
+export function apiBase(): string {
   return env.CLOUD_API_URL.replace(/\/$/, '');
 }
 
@@ -280,6 +326,16 @@ export async function fetchMe(slug: string, cookie: string): Promise<{ me: MeDat
   }
 }
 
+/**
+ * Sesión del visitante en la landing de un evento: `me` si hay cookie y el
+ * backend la acepta; `sessionOk` es false sin cookie o con cookie caducada.
+ */
+export async function eventSession(request: Request, slug: string): Promise<{ me: MeData | null; sessionOk: boolean }> {
+  if (!hasSessionCookie(request)) return { me: null, sessionOk: false };
+  const { me, unauthorized } = await fetchMe(slug, request.headers.get('cookie') ?? '');
+  return { me, sessionOk: !unauthorized };
+}
+
 /** Recurso público de un evento (`submissions`, `leaderboard`). */
 export async function fetchPublic<T>(slug: string, resource: string): Promise<T | null> {
   if (!SAFE_SEGMENT.test(slug) || !SAFE_SEGMENT.test(resource)) return null;
@@ -292,19 +348,39 @@ export async function fetchPublic<T>(slug: string, resource: string): Promise<T 
   }
 }
 
-/** ¿Hay cookie de sesión NaN? Heurística: el backend es la autoridad real. */
-export function hasSessionCookie(request: Request): boolean {
-  return (request.headers.get('cookie') ?? '').includes('nan_session');
+/** Nombre de la cookie de sesión de NaN, la que emite platform-api. */
+export const SESSION_COOKIE = 'nan_session';
+
+/**
+ * ¿Trae la cabecera `Cookie` una cookie llamada `nan_session`? Se compara el
+ * NOMBRE de cada cookie, no la subcadena: `basura=xx-nan_session-xx` no cuenta.
+ * Es una heurística para no molestar al backend; la autoridad es el backend.
+ */
+export function cookieHeaderHasSession(cookie: string): boolean {
+  return cookie.split(';').some((c) => {
+    const eq = c.indexOf('=');
+    return (eq === -1 ? c : c.slice(0, eq)).trim() === SESSION_COOKIE;
+  });
 }
 
-/** Fecha ISO → texto corto en el idioma del visitante (UTC, como el backend). */
-export function fmtDate(iso?: string | null, locale = 'en', withTime = false): string {
+export function hasSessionCookie(request: Request): boolean {
+  return cookieHeaderHasSession(request.headers.get('cookie') ?? '');
+}
+
+/** Fecha ISO formateada en UTC (como el backend); `''` si no hay fecha o no es válida. */
+export function fmtUTC(iso: string | null | undefined, opts: { locale?: string; withTime?: boolean; withYear?: boolean } = {}): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', timeZone: 'UTC' };
-  if (withTime) { opts.hour = '2-digit'; opts.minute = '2-digit'; }
-  return d.toLocaleString(locale === 'es' ? 'es-ES' : 'en-GB', opts) + (withTime ? ' UTC' : '');
+  const o: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', timeZone: 'UTC' };
+  if (opts.withYear) o.year = 'numeric';
+  if (opts.withTime) { o.hour = '2-digit'; o.minute = '2-digit'; }
+  return d.toLocaleString(opts.locale === 'es' ? 'es-ES' : 'en-GB', o) + (opts.withTime ? ' UTC' : '');
+}
+
+/** Fecha ISO → texto corto en el idioma del visitante. */
+export function fmtDate(iso?: string | null, locale = 'en', withTime = false): string {
+  return fmtUTC(iso, { locale, withTime });
 }
 
 /** Rango "1 sept – 3 sept"; si falta un extremo, muestra el que haya. */

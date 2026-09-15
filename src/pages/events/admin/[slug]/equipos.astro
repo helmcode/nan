@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+import { resolveAdminEventRoute } from '../../../../lib/eventsAdmin';
+import { handleTeamsForm } from '../../../../lib/eventsAdminTeams';
+import Page from './_equipos.astro';
+
+const route = await resolveAdminEventRoute(Astro);
+if (route.notFound) return route.notFound;
+const outcome = await handleTeamsForm(Astro.request, route.cookie, route.slug);
+if (outcome.redirect) return Astro.redirect(outcome.redirect, 303);
+---
+
+<Page staff={route.staff} cookie={route.cookie} view={route.view} outcome={outcome} />

@@ -3,12 +3,31 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 // Mock de cloudflare:workers env (patrón del repo).
 vi.mock('cloudflare:workers', () => ({ env: { CLOUD_API_URL: 'https://api.test' } }));
 
-import { isAdminPath, backendURL } from '../../lib/events';
+import { isAdminPath, backendURL, cookieHeaderHasSession, hasSessionCookie } from '../../lib/events';
 import { GET, POST } from '../../pages/api/events/[...path]';
 import { POST as LOGIN_POST } from '../../pages/api/auth/login-request';
 
 describe('events proxy lib', () => {
-  it('bloquea paths admin, globales y por evento (SPEC §8.1)', () => {
+  it('cookieHeaderHasSession compares the cookie name, not a substring', () => {
+    expect(cookieHeaderHasSession('basura=xx-nan_session-xx')).toBe(false);
+    expect(cookieHeaderHasSession('no_es_nan_session_de_verdad=1')).toBe(false);
+    expect(cookieHeaderHasSession('a=1; nan_session=abc')).toBe(true);
+    expect(cookieHeaderHasSession('')).toBe(false);
+  });
+
+  it('hasSessionCookie mira el nombre de la cookie, no la subcadena', () => {
+    const req = (cookie?: string) => new Request('https://nan.builders/api/events/admin', { headers: cookie ? { cookie } : {} });
+    expect(hasSessionCookie(req())).toBe(false);
+    expect(hasSessionCookie(req('nan_session=abc'))).toBe(true);
+    expect(hasSessionCookie(req('otra=1; nan_session=abc; mas=2'))).toBe(true);
+    expect(hasSessionCookie(req('  nan_session=abc'))).toBe(true);
+    // Señuelos: el texto aparece, la cookie no.
+    expect(hasSessionCookie(req('basura=xx-nan_session-xx'))).toBe(false);
+    expect(hasSessionCookie(req('no_es_nan_session_de_verdad=1'))).toBe(false);
+    expect(hasSessionCookie(req('nan_session_old=1'))).toBe(false);
+  });
+
+  it('detecta paths admin, globales y por evento (SPEC v3 §8)', () => {
     expect(isAdminPath('admin')).toBe(true);
     expect(isAdminPath('admin/reload')).toBe(true);
     expect(isAdminPath('gauntlet-2026-08/admin')).toBe(true);
@@ -98,13 +117,93 @@ function ctx(path: string, init?: { method?: string; cookie?: string; ip?: strin
 describe('events proxy handler', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('responde 404 a paths admin sin llamar al backend', async () => {
+  it('responde 404 a paths admin sin cookie de sesión, sin llamar al backend', async () => {
     const spy = vi.spyOn(globalThis, 'fetch');
     expect((await GET(ctx('admin/reload'))).status).toBe(404);
-    const resp = await GET(ctx('gauntlet-2026-08/admin/state'));
+    const resp = await GET(ctx('gauntlet-2026-08/admin/state', { cookie: 'otra=1' }));
     expect(resp.status).toBe(404);
+    // El texto `nan_session` dentro de otra cookie no es la cookie de sesión.
+    expect((await GET(ctx('admin/events', { cookie: 'basura=xx-nan_session-xx' }))).status).toBe(404);
     expect(spy).not.toHaveBeenCalled();
     expect(await resp.json()).toEqual({ ok: false, error: 'not_found' });
+  });
+
+  it('deja pasar paths admin con cookie de sesión y nunca reenvía la admin key (SPEC v3 §8)', async () => {
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{"ok":false,"error":"forbidden"}', { status: 403 }));
+    const headers = new Headers({ cookie: 'nan_session=xyz', 'x-hackaton-admin-key': 'no-debe-pasar', 'x-hackaton-actor': 'x' });
+    const request = new Request('https://nan.builders/api/events/gauntlet-2026-08/admin/state', {
+      method: 'POST', headers, body: '{"status":"registration","dry_run":true}',
+    });
+    const resp = await POST({ params: { path: 'gauntlet-2026-08/admin/state' }, request, url: new URL(request.url) } as never);
+    // La autorización la decide el backend: el proxy propaga su respuesta tal cual.
+    expect(resp.status).toBe(403);
+    expect(spy).toHaveBeenCalledOnce();
+    const [target, reqInit] = spy.mock.calls[0] as [string, RequestInit];
+    expect(target).toBe('https://api.test/api/events/gauntlet-2026-08/admin/state');
+    const h = reqInit.headers as Headers;
+    expect(h.get('cookie')).toBe('nan_session=xyz');
+    expect(h.get('origin')).toBe('https://nan.builders');
+    expect(h.get('x-hackaton-admin-key')).toBeNull();
+    expect(h.get('x-hackaton-actor')).toBeNull();
+    expect(reqInit.body).toBe('{"status":"registration","dry_run":true}');
+  });
+
+  it('conserva content-type y Content-Disposition (CSV de import/export del panel)', async () => {
+    const upstream = new Response('email,name\n', {
+      status: 200,
+      headers: { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="p.csv"' },
+    });
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(upstream);
+    const headers = new Headers({ cookie: 'nan_session=xyz', 'content-type': 'text/csv' });
+    const request = new Request('https://nan.builders/api/events/gauntlet-2026-08/admin/participants/import?dry_run=true', {
+      method: 'POST', headers, body: 'email\na@b.c\n',
+    });
+    const resp = await POST({ params: { path: 'gauntlet-2026-08/admin/participants/import' }, request, url: new URL(request.url) } as never);
+    const [target, reqInit] = spy.mock.calls[0] as [string, RequestInit];
+    expect(target).toBe('https://api.test/api/events/gauntlet-2026-08/admin/participants/import?dry_run=true');
+    expect((reqInit.headers as Headers).get('content-type')).toBe('text/csv');
+    expect(resp.headers.get('content-type')).toBe('text/csv; charset=utf-8');
+    expect(resp.headers.get('content-disposition')).toBe('attachment; filename="p.csv"');
+    expect(await resp.text()).toBe('email,name\n');
+  });
+
+  it('forwards an empty CSV body as is instead of padding it with {}', async () => {
+    const upstream = new Response('', {
+      status: 200,
+      headers: { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="p.csv"' },
+    });
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(upstream);
+    const resp = await GET(ctx('gauntlet-2026-08/admin/participants/export.csv', { cookie: 'nan_session=xyz', search: '?download=1' }));
+    expect(resp.headers.get('content-type')).toBe('text/csv; charset=utf-8');
+    expect(await resp.text()).toBe('');
+    // The JSON fallback is untouched: an empty JSON upstream still parses.
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 200 }));
+    const empty = await GET(ctx('gauntlet-2026-08/me', { cookie: 'nan_session=xyz' }));
+    expect(await empty.text()).toBe('{}');
+  });
+
+  it('deja pasar el feed iCalendar con su content-type y su caché (W-10)', async () => {
+    const upstream = new Response('BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n', {
+      status: 200,
+      headers: { 'content-type': 'text/calendar; charset=utf-8', 'cache-control': 'public, max-age=300', 'content-disposition': 'inline; filename="nan-eventos.ics"' },
+    });
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(upstream);
+    const resp = await GET(ctx('calendar.ics'));
+    expect(spy.mock.calls[0][0]).toBe('https://api.test/api/events/calendar.ics');
+    expect(resp.headers.get('content-type')).toBe('text/calendar; charset=utf-8');
+    expect(resp.headers.get('cache-control')).toBe('public, max-age=300');
+    expect(resp.headers.get('content-disposition')).toBe('inline; filename="nan-eventos.ics"');
+    expect(await resp.text()).toBe('BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n');
+    // Por evento, mismo camino.
+    expect(backendURL('taller-agentes/calendar.ics', '')).toBe('https://api.test/api/events/taller-agentes/calendar.ics');
+  });
+
+  it('sigue enviando JSON por defecto a las rutas públicas', async () => {
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{"ok":true}', { status: 200 }));
+    const resp = await POST(ctx('gauntlet-2026-08/register', { method: 'POST', body: '{}' }));
+    expect((spy.mock.calls[0][1] as RequestInit).headers as Headers).toBeInstanceOf(Headers);
+    expect(((spy.mock.calls[0][1] as RequestInit).headers as Headers).get('content-type')).toBe('application/json');
+    expect(resp.headers.get('content-type')).toBe('application/json');
   });
 
   it('responde 404 a una ruta fuera del prefijo sin llamar al backend', async () => {

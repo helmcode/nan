@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { t, tArr, tObj, getLocale, withLang, switchLocalePath } from '../../lib/i18n';
+import { t, tArr, tObj, getLocale, withLang, switchLocalePath, optionLabel } from '../../lib/i18n';
 
 /**
  * Los asserts de t/tArr/tObj se anclan a `events.*` a propósito: es copy que
@@ -133,5 +133,19 @@ describe('i18n', () => {
       expect(switchLocalePath('/es/community', 'es')).toBe('/es/community');
       expect(switchLocalePath('/community', 'en')).toBe('/community');
     });
+  });
+});
+
+describe('optionLabel', () => {
+  const options = { frontend: 'Frontend', junior: 'Junior' };
+
+  test('traduce lo conocido y sube la inicial de lo que no', () => {
+    expect(optionLabel(options, 'frontend')).toBe('Frontend');
+    // En v3 las especialidades las escribe quien organiza: "devops" no está
+    // en events.options y no puede salir en minúscula al lado de "Frontend".
+    expect(optionLabel(options, 'devops')).toBe('Devops');
+    expect(optionLabel(options, 'ML/IA')).toBe('ML/IA');
+    expect(optionLabel(options, '')).toBe('');
+    expect(optionLabel(options, null)).toBe('');
   });
 });

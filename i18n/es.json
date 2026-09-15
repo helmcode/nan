@@ -58,6 +58,13 @@
       "voting": "Votación",
       "demoDay": "Demo Day"
     },
+    "where": {
+      "label": "Dónde",
+      "link": "Enlace",
+      "calendar": "Añadir a mi calendario",
+      "calendarTitle": "Añadir este evento a Google Calendar",
+      "ics": "o descarga el .ics"
+    },
     "login": {
       "prompt": "Entra con tu cuenta NaN",
       "description": "Introduce el email de tu cuenta NaN y te enviaremos un enlace para iniciar sesión. Es el mismo acceso que la plataforma.",
@@ -75,15 +82,18 @@
       "notOpenTitle": "Todavía no está abierto",
       "notOpen": "La inscripción a este evento aún no está abierta. Vuelve pronto para apuntarte.",
       "submissionNotOpen": "Las entregas abren el {date}. Vuelve entonces para entregar tu proyecto.",
+      "submissionNotOpenNoDate": "Las entregas todavía no están abiertas. Vuelve pronto para entregar tu proyecto.",
       "closedTitle": "Inscripción cerrada",
       "closed": "El plazo de inscripción ha terminado. ¡Esperamos verte en el próximo evento de NaN!",
       "inProgressTitle": "El evento está en marcha",
       "inProgress": "La inscripción está cerrada, pero tú ya estás dentro. Consulta tu estado y tu equipo.",
       "buildingTitle": "Entregas abiertas",
       "building": "Entrega tu proyecto antes del {date}. Puedes editarlo tantas veces como quieras hasta entonces.",
+      "buildingNoDate": "Entrega tu proyecto. Puedes editarlo tantas veces como quieras mientras el plazo siga abierto.",
       "buildingCta": "Entregar mi proyecto",
       "submittedTitle": "Entrega recibida ✓",
       "submitted": "Tu proyecto está dentro. Puedes editarlo hasta el {date}.",
+      "submittedNoDate": "Tu proyecto está dentro. Puedes editarlo mientras el plazo siga abierto.",
       "submittedCta": "Editar mi entrega",
       "submissionClosedTitle": "Entregas cerradas",
       "submissionClosed": "El plazo de entrega ha terminado. La votación abre pronto.",
@@ -96,7 +106,10 @@
       "results": "El evento ha terminado. Consulta la clasificación final.",
       "resultsCta": "Ver clasificación",
       "closedEventTitle": "Evento cerrado",
-      "closedEvent": "Este evento ha terminado. ¡Gracias a todos los que habéis participado!"
+      "closedEvent": "Este evento ha terminado. ¡Gracias a todos los que habéis participado!",
+      "publishedTitle": "Abierto a todos",
+      "published": "Este evento no necesita inscripción. Apúntalo en tu calendario y entra por el enlace el día del evento.",
+      "publishedCta": "Ir al evento"
     },
     "alreadyRegistered": {
       "title": "Ya estás inscrito",
@@ -165,11 +178,12 @@
       "reassignCta": "Convocar reasignación",
       "reassignPending": "Convocatoria registrada. Hace falta que otro compañero la confirme ({have}/{need}).",
       "reassignFilled": "Reasignación completada: se ha incorporado un miembro de la pool de reservas.",
-      "reassignNoPool": "Reasignación completada: no quedaba nadie en la pool, el equipo continúa con 3 miembros.",
+      "reassignNoPool": "Reasignación completada: no quedaba nadie en la pool, el equipo sigue con los miembros que quedan.",
       "reassignAlready": "Ya has convocado esta reasignación. Falta que otro compañero la confirme.",
       "reassignSelectAbsent": "Selecciona ausente",
       "reassignErrorSubmit": "No se pudo registrar.",
       "reassignSending": "Enviando…",
+      "reassignRefresh": "Ver el equipo actualizado",
       "reassignInfo": {
         "label": "Reasignar miembro ausente",
         "toggleAria": "Más información sobre la reasignación",
@@ -179,7 +193,7 @@
           "Hacen falta DOS miembros del equipo: la convocatoria no se ejecuta hasta que un segundo compañero confirma la misma reasignación.",
           "Cuando se alcanza ese acuerdo, esa persona se marca como ausente y sale de tu equipo y del hackatón. La acción es inmediata e irreversible.",
           "El sistema busca automáticamente al primer candidato de la pool de reservas (por orden de inscripción) y lo añade a tu equipo en su lugar.",
-          "Si no queda nadie en la pool, tu equipo continúa con 3 miembros (el mínimo permitido) y se avisa a la organización.",
+          "Si no queda nadie en la pool, tu equipo sigue con los miembros que quedan y se avisa a la organización.",
           "Solo está disponible durante la fase de construcción."
         ]
       }
@@ -224,8 +238,10 @@
       "errorEligible": "Tu cuenta de NaN no puede participar en este evento.",
       "notOpenTitle": "Entregas aún no abiertas",
       "notOpen": "Las entregas abren el {date}.",
+      "notOpenNoDate": "Las entregas todavía no están abiertas.",
       "closedTitle": "Plazo de entrega cerrado",
       "closedNote": "Las entregas cerraron el {date}. Ya no se pueden crear ni editar.",
+      "closedNoteNoDate": "El plazo de entrega está cerrado. Ya no se pueden crear ni editar.",
       "notSubmitted": "No se entregó nada antes de que cerrara el plazo.",
       "checks": "Comprobaciones automáticas",
       "notPrizeEligible": "No cumple los requisitos del premio (ver reglas del evento)."
@@ -578,8 +594,18 @@
       "types": {
         "workshop": "workshop",
         "event": "evento",
-        "hackathon": "hackathon"
+        "hackathon": "hackathon",
+        "challenge": "reto",
+        "other": "evento"
       },
+      "calendarTitle": "Llévate la agenda a tu calendario.",
+      "calendarBody": "Añade el calendario de NaN una vez y te aparecerán los eventos publicados y los que vayamos anunciando, sin volver aquí.",
+      "calendarGoogle": "Añadir a Google Calendar",
+      "calendarIcs": "Apple, Outlook u otro (.ics)",
+      "calendarFeedLabel": "URL del calendario",
+      "calendarAdd": "+ calendario",
+      "calendarAddTitle": "Añadir este evento a Google Calendar",
+      "calendarTz": "Horas en Europe/Madrid.",
       "workshopsLabel": "workshops",
       "workshopsTitle": "Workshops.",
       "workshopsSub": "Sesiones prácticas sobre agentes, tooling y lanzar con modelos abiertos. Grabadas para miembros.",

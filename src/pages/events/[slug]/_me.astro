@@ -5,8 +5,8 @@ import NanPage from '../../../layouts/NanPage.astro';
 import EventHeader from '../../../components/events/EventHeader.astro';
 import ReassignForm from '../../../components/events/ReassignForm.tsx';
 import LoginForm, { type LoginStrings } from '../../../components/events/LoginForm.tsx';
-import { getLocale, t, tObj, withLang } from '../../../lib/i18n';
-import { fetchMe, hasSessionCookie, type EventInfo } from '../../../lib/events';
+import { getLocale, optionLabel, t, tObj, withLang } from '../../../lib/i18n';
+import { eventSession, type EventInfo } from '../../../lib/events';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -16,17 +16,13 @@ interface Props {
 const ev = Astro.props.event;
 const slug = ev.slug;
 
-const hasSession = hasSessionCookie(Astro.request);
-const { me, unauthorized } = hasSession
-  ? await fetchMe(slug, Astro.request.headers.get('cookie') ?? '')
-  : { me: null, unauthorized: false };
-const sessionOk = hasSession && !unauthorized;
+const { me, sessionOk } = await eventSession(Astro.request, slug);
 const participant = me?.participant ?? null;
 const team = me?.team ?? null;
 const submission = me?.submission ?? null;
 const isTeam = ev.format === 'team';
 const options = tObj<Record<string, string>>('events.options', locale);
-const label = (v?: string | null) => (v ? options[v] ?? v : '');
+const label = (v?: string | null) => optionLabel(options, v);
 const m = tObj<Record<string, string>>('events.me', locale);
 const login = tObj<LoginStrings>('events.login', locale);
 const submissionUrl = withLang(`/events/${slug}/submission`, locale);
@@ -34,6 +30,11 @@ const title = isTeam ? m.title : m.titleSolo;
 const statusLabel = participant?.status === 'withdrawn'
   ? m.statusWithdrawn
   : participant?.is_reserve ? m.statusReserve : m.statusRegistered;
+// Candidatos a ausente: los compañeros, nunca uno mismo. El backend rechaza
+// señalarse a sí mismo (§7.6.3) con un error genérico, así que la opción no
+// llega a ofrecerse; si no queda nadie más en el equipo, no hay a quién
+// reasignar y el formulario sobra.
+const absent = (team?.members ?? []).filter((x) => x.id !== participant?.id);
 ---
 {/* Detrás de sesión: fuera del sitemap y también fuera del índice. */}
 <NanPage scale={false} noindex title={`${title} · ${ev.name} — nan.builders`}>
@@ -82,11 +83,11 @@ const statusLabel = participant?.status === 'withdrawn'
                   {submission ? m.submissionCta : m.submissionCreateCta}
                 </a>
               </div>
-              {ev.phase === 'building' && team.members && (
+              {ev.phase === 'building' && absent.length > 0 && (
                 <div class="mt-6">
-                  <ReassignForm client:visible slug={slug} members={team.members.map((x) => ({ id: x.id, name: x.name, discord_user: x.discord_user ?? undefined }))}
+                  <ReassignForm client:visible slug={slug} members={absent.map((x) => ({ id: x.id, name: x.name, discord_user: x.discord_user ?? undefined }))}
                     ctaLabel={m.reassignCta} info={tObj('events.me.reassignInfo', locale)}
-                    labels={{ pending: m.reassignPending, filled: m.reassignFilled, noPool: m.reassignNoPool, already: m.reassignAlready, selectAbsent: m.reassignSelectAbsent, errorSubmit: m.reassignErrorSubmit, sending: m.reassignSending }} />
+                    labels={{ pending: m.reassignPending, filled: m.reassignFilled, noPool: m.reassignNoPool, already: m.reassignAlready, selectAbsent: m.reassignSelectAbsent, errorSubmit: m.reassignErrorSubmit, sending: m.reassignSending, refresh: m.reassignRefresh }} />
                 </div>
               )}
             </div>
