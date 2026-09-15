@@ -476,6 +476,8 @@ Images need inference membership, `403` otherwise, and they run on their own bud
 
 ## tool: web search
 
+**Deprecated.** Web search is being retired, through this endpoint and through the [MCP server](/docs/mcp) alike. It still works today and a removal date will be announced before it stops, but do not build anything new on it.
+
 authenticated web search for agents — `POST /v1/search`
 
 ### curl

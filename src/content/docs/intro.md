@@ -28,7 +28,7 @@ Limits are per API key — a cap on requests per minute and a maximum number of 
 - [Choose your model](/docs/choose-a-model): which model to ask for each task, and how its id is spelled.
 - [Set up your agent](/docs/agent-setup): Claude Code, Codex, Cursor, Cline, OpenCode, Zed and company.
 - [NaN CLI](/docs/nan-cli): the official terminal tool, which also configures several of them for you.
-- [MCP server](/docs/mcp): NaN's web search inside your agent.
+- [MCP server](/docs/mcp): NaN's web search inside your agent. **Deprecated**, being retired along with web search.
 - [API reference](/docs/api): every endpoint, field by field.
 - [Models](/docs/models): the spec sheets and the limits.
 - [Examples](/docs/examples): snippets in Python, Node.js and curl.

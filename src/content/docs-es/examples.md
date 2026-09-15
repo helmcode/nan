@@ -476,6 +476,8 @@ Las imágenes necesitan membresía de inferencia, `403` si no la tienes, y van p
 
 ## tool: web search
 
+**Deprecado.** La búsqueda web se retira, tanto por este endpoint como por el [servidor MCP](/es/docs/mcp). Hoy sigue funcionando y anunciaremos una fecha antes de que deje de hacerlo, pero no construyas nada nuevo encima.
+
 búsqueda web autenticada para agentes: `POST /v1/search`
 
 ### curl
