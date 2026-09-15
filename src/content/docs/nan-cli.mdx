@@ -129,7 +129,7 @@ Inside OpenCode, `/models` shows you the NaN models, already available.
 
 <Details summary="Building from source">
 
-This is the path on Windows, and the one you want if you are going to work on the CLI itself. You need [Go](https://go.dev) 1.26 or newer:
+This is the one you want if you are going to work on the CLI itself. You need [Go](https://go.dev) 1.26 or newer:
 
 ```bash
 git clone https://github.com/helmcode/nan-cli
@@ -182,7 +182,6 @@ The result is the same. The only thing you miss out on are the usage and cost ta
 
 <Details summary="Known issues">
 
-- **On Windows you have to build.** The published releases carry macOS and Linux binaries; for Windows, the path for now is `go build`.
-- **The installer asks GitHub for the list of releases.** If you are behind a proxy that blocks `api.github.com`, it will find nothing to download. In that case, grab the `.tar.gz` for your system by hand from the [releases page](https://github.com/helmcode/nan-cli/releases).
+- **The installer asks GitHub for the list of releases.** If you are behind a proxy that blocks `api.github.com`, it will find nothing to download. In that case, grab the archive for your system by hand from the [releases page](https://github.com/helmcode/nan-cli/releases).
 
 </Details>
