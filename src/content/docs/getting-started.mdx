@@ -153,7 +153,7 @@ The full detail, endpoint by endpoint, is in the [API reference](/docs/api).
 
 Two limits are per API key and apply to everything you call: requests per minute, and requests at once.
 
-On top of those, some models carry one of their own: a tokens-per-minute ceiling on the big chat models, and a requests-per-minute one on `rerank`. `glm5.3` is not gated per minute at all, but by a rolling token window plus an allowance per billing period. Web search runs on a budget separate from the models'.
+On top of those, every chat model carries a tokens-per-minute ceiling of its own, and they are not the same number: each one is that model's context window times how many times a minute you may refill it. The non-chat endpoints, `rerank`, `qwen3-embedding`, `kokoro` and `whisper`, carry none of their own, which does not make them free: your key's 60 a minute still count them. `glm5.3` has a ceiling like the rest, but what gates it in practice is a rolling token window plus an allowance per billing period. Web search runs on a budget separate from the models'.
 
 The current figures are at the end of [Models](/docs/models), which is where they are published so that no two versions of the same number go around.
 

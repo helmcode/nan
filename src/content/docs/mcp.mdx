@@ -1,17 +1,24 @@
 ---
 title: MCP server
-description: Plug NaN's web search into any MCP-compatible agent.
+description: "Deprecated: NaN's web search inside any MCP-compatible agent. Being retired along with web search itself."
 order: 16
 group: Set up your agent
 ---
 
 import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
 
 # MCP server.
 
+<Callout title="Deprecated: this server is being retired" variant="warning">
+Web search is going away, through the API and through this server alike, and web search is the only tool this server has. So the MCP server goes with it.
+
+It all still works today, and a removal date will be announced before anything stops. What this notice is for is the decision in front of you: **do not build anything new on it**, and if you already have, plan on moving off. Everything else in this section, the models, is unaffected.
+</Callout>
+
 On top of the models, NaN exposes its own tools through an **MCP** server ([Model Context Protocol](https://modelcontextprotocol.io)). It is for the opposite of the rest of this section: here you are not giving your agent models, you are giving it **capabilities**.
 
-Today the available tool is **web search**. The registry will grow, so ask the server what it has rather than trusting this sentence.
+The only tool is **web search**, and it is deprecated. The page below describes what is still running today.
 
 | Field | Value |
 |---|---|

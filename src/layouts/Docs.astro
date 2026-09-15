@@ -46,6 +46,14 @@ const T = {
     next: 'Next →',
     docs: 'Docs',
     close: 'Close menu',
+    searchAria: 'Search documentation',
+    sidebarAria: 'Documentation',
+    noResults: 'No results',
+    copy: 'Copy',
+    copied: 'Copied',
+    copyAria: 'Copy',
+    copyToast: 'Copied to clipboard',
+    copyFailed: 'Copy failed',
   },
   es: {
     onThisPage: 'En esta página',
@@ -55,6 +63,14 @@ const T = {
     next: 'Siguiente →',
     docs: 'Docs',
     close: 'Cerrar menú',
+    searchAria: 'Buscar en la documentación',
+    sidebarAria: 'Documentación',
+    noResults: 'Sin resultados',
+    copy: 'Copiar',
+    copied: 'Copiado',
+    copyAria: 'Copiar',
+    copyToast: 'Copiado al portapapeles',
+    copyFailed: 'No se pudo copiar',
   },
 }[lang];
 
@@ -206,7 +222,7 @@ const searchData = [
     <div class="docs-backdrop" id="docs-backdrop" hidden></div>
 
     <div class="docs-wrap">
-      <aside class="docs-side" id="docs-side" aria-label="Documentation">
+      <aside class="docs-side" id="docs-side" aria-label={T.sidebarAria}>
         {/*
           Closing from inside the panel itself. Visible on mobile only, where
           the sidebar is a drawer: the previous layout had it and porting
@@ -229,7 +245,7 @@ const searchData = [
             type="search"
             placeholder={T.search}
             autocomplete="off"
-            aria-label="Search documentation"
+            aria-label={T.searchAria}
           />
           <span class="ds-kbd">⌘K</span>
           <div id="docs-search-results" class="ds-results" hidden></div>
@@ -316,9 +332,17 @@ const searchData = [
     </div>
 
     <!-- Copy toast notification -->
-    <div class="copy-toast" id="copy-toast">Copied to clipboard</div>
+    <div
+      class="copy-toast"
+      id="copy-toast"
+      data-toast={T.copyToast}
+      data-copy={T.copy}
+      data-copied={T.copied}
+      data-failed={T.copyFailed}
+      data-copy-aria={T.copyAria}
+    >{T.copyToast}</div>
 
-    <script define:vars={{ searchData }} is:inline>
+    <script define:vars={{ searchData, T }} is:inline>
       // Search: filters by title, description and headings. No dependencies and
       // no inverted index; with seven pages an `includes` is plenty.
       (function () {
@@ -357,7 +381,7 @@ const searchData = [
                     }</a>`,
                 )
                 .join('')
-            : '<div class="ds-empty">No results</div>';
+            : `<div class="ds-empty">${escape(T.noResults)}</div>`;
           panel.hidden = false;
         };
 
@@ -487,6 +511,10 @@ const searchData = [
       };
 
       const copyToast = document.getElementById('copy-toast');
+      // Rendered unconditionally by this same layout, with the locale's copy in
+      // its dataset. No English fallback on purpose: a fallback here is how the
+      // Spanish pages ended up saying "Copied to clipboard" in the first place.
+      const L = copyToast?.dataset ?? ({} as DOMStringMap);
       const showCopyToast = (text: string) => {
         if (!copyToast) return;
         copyToast.textContent = text;
@@ -515,22 +543,22 @@ const searchData = [
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'copy-btn';
-        button.setAttribute('aria-label', `Copy ${lang.label}`);
-        button.innerHTML = '<span class="copy-label">Copy</span>';
+        button.setAttribute('aria-label', `${L.copyAria ?? ''} ${lang.label}`.trim());
+        button.innerHTML = `<span class="copy-label">${L.copy ?? ''}</span>`;
         button.addEventListener('click', async () => {
           const text = pre.textContent || '';
           try {
             await navigator.clipboard.writeText(text);
             const copyLabel = button.querySelector('.copy-label');
-            if (copyLabel) copyLabel.textContent = 'Copied';
-            showCopyToast('Copied to clipboard');
+            if (copyLabel) copyLabel.textContent = L.copied ?? '';
+            showCopyToast(L.toast ?? '');
             window.setTimeout(() => {
               const resetLabel = button.querySelector('.copy-label');
-              if (resetLabel) resetLabel.textContent = 'Copy';
+              if (resetLabel) resetLabel.textContent = L.copy ?? '';
             }, 1500);
           } catch (err) {
             console.error('copy failed', err);
-            showCopyToast('Copy failed');
+            showCopyToast(L.failed ?? '');
           }
         });
 

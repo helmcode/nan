@@ -10,7 +10,7 @@ group: Guías
 NaN Cloud te permite desplegar agentes de IA en tu propia **microVM**: una máquina virtual ligera con QEMU y KVM, con su propio kernel, su propio sistema de ficheros y acceso root completo. Aislada del host y del resto de miembros. El primer tipo de agente disponible es **Hermes**.
 
 > **¿Usas un agente que alojas tú?**
-> Si ejecutas tu propio agente compatible con MCP en otro sitio, puedes enchufarle nuestras herramientas (como la búsqueda web) directamente, con la misma API key, a través de nuestro [servidor MCP](/es/docs/api#tag/mcp) remoto.
+> Si ejecutas tu propio agente compatible con MCP en otro sitio, puedes enchufarle nuestras herramientas (como la búsqueda web) directamente, con la misma API key, a través de nuestro [servidor MCP](/es/docs/api#tag/mcp) remoto. Ojo: el servidor MCP y la búsqueda web están **deprecados** y se van a retirar.
 
 ## Arquitectura
 

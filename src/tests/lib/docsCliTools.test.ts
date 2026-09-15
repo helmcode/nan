@@ -95,3 +95,46 @@ describe.each(['docs', 'docs-es'] as const)('the Pi page in %s', (locale) => {
     expect(text, 'nothing for Windows').toContain('install.ps1');
   });
 });
+
+/**
+ * Windows, told once.
+ *
+ * The page acquired its PowerShell installer in #60 and kept everything that
+ * was written when Windows had no binary: "This is the path on Windows" in
+ * Building from source, and a known issue saying the published releases carry
+ * macOS and Linux only. So the same page offered a one-liner at the top and
+ * told you to install Go two screens down, in both languages.
+ *
+ * Both halves cannot be true at once, and the release settles it: v0.1.19
+ * publishes windows_amd64.zip and windows_arm64.zip. What this pins is the
+ * shape of the mistake - a page that ships an installer for a platform and
+ * also tells that platform to compile - because the next platform added will
+ * arrive the same way, by adding the new text and leaving the old.
+ */
+describe.each(['docs', 'docs-es'] as const)('the Windows story on the CLI page in %s', (locale) => {
+  const body = read(locale, 'nan-cli');
+
+  test('publishes the PowerShell installer', () => {
+    expect(body).toContain('install.ps1');
+  });
+
+  /**
+   * Building from source stays on the page - it is the right answer for
+   * working on the CLI itself. What it may not be is the answer for a
+   * platform we publish a binary for.
+   */
+  test('never sends Windows off to compile', () => {
+    const WINDOWS = /windows/i;
+    const BUILD = /go build|go\.dev|compilar|compile|build from source|desde el c[óo]digo/i;
+    const guilty = body
+      .split('\n')
+      .map((line, i) => ({ line: line.trim(), n: i + 1 }))
+      .filter(({ line }) => WINDOWS.test(line) && BUILD.test(line))
+      .map(({ line, n }) => `${n}: ${line}`);
+    expect(
+      guilty,
+      `${locale}/nan-cli: the page installs Windows from a published binary and ` +
+        `these lines still tell it to build:\n${guilty.join('\n')}`,
+    ).toEqual([]);
+  });
+});

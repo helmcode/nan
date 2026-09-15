@@ -153,7 +153,7 @@ El detalle completo, endpoint a endpoint, está en la [referencia de la API](/es
 
 Dos límites van por API key y se aplican a todo lo que llames: peticiones por minuto y peticiones a la vez.
 
-Encima de esos, algunos modelos llevan el suyo: un techo de tokens por minuto en los modelos de chat grandes, y uno de peticiones por minuto en `rerank`. `glm5.3` no se rige por minuto en absoluto, sino por una ventana móvil de tokens más una asignación por periodo de facturación. La búsqueda web va por un presupuesto separado del de los modelos.
+Encima de esos, cada modelo de chat lleva su propio techo de tokens por minuto, y no son el mismo número: cada uno es el contexto de ese modelo por las veces que puedes rellenarlo en un minuto. Los endpoints que no son de chat, `rerank`, `qwen3-embedding`, `kokoro` y `whisper`, no llevan techo propio, lo que no los hace gratis: los 60 por minuto de tu key los siguen contando. `glm5.3` tiene techo como los demás, pero lo que de verdad lo limita es una ventana móvil de tokens más una asignación por periodo de facturación. La búsqueda web va por un presupuesto separado del de los modelos.
 
 Las cifras vigentes están al final de [Modelos](/es/docs/models), que es donde se publican para que no haya dos versiones de la misma cifra dando vueltas.
 

@@ -1,15 +1,20 @@
 ---
 import { env } from 'cloudflare:workers';
 import {
+  effectiveLimitNote,
   formatTokens,
-  getRateLimitsConfig,
+  imageModelNote,
+  modelRateLabel,
   windowedModelBody,
   windowedModelHeadline,
   rateLimitsLabels,
 } from '../../lib/rateLimits';
+import { resolveRateLimitsConfig } from '../../lib/limitsPolicy';
 
-const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel, windowedModels } =
-  getRateLimitsConfig(env);
+// Awaited, not called: with LIMITS_POLICY_URL unset this resolves to the
+// built-in table without making a request. See src/lib/limitsPolicy.ts.
+const { perKey, tokensPerMinuteByModel, exemptModels, windowedModels, imageModels } =
+  await resolveRateLimitsConfig(env);
 
 // This card is embedded from both the English and the Spanish guides, and MDX
 // content cannot pass props down from the layout, so the locale is read off the
@@ -61,6 +66,10 @@ const T = rateLimitsLabels(lang);
           <dd class="text-neutral-200 text-right">{formatTokens(m.contextTokens, lang)} tokens</dd>
         </div>
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.tokensPerMin}</dt>
+          <dd class="text-neutral-200 text-right">{modelRateLabel(m, lang)}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
           <dt class="text-neutral-500 uppercase tracking-wider">{T.concurrentRequests}</dt>
           <dd class="text-neutral-200 text-right">{m.maxParallel}</dd>
         </div>
@@ -82,25 +91,71 @@ const T = rateLimitsLabels(lang);
       tokensPerMinuteByModel.map((m) => (
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
           <dt class="text-neutral-500 uppercase tracking-wider">{m.model}</dt>
-          <dd class="text-neutral-200 text-right">{m.label}</dd>
+          <dd class="text-neutral-200 text-right">{modelRateLabel(m, lang)}</dd>
         </div>
       ))
     }
   </dl>
 </div>
 
-<div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-14">
+{
+  /* Published as a list rather than left out. An endpoint missing from the
+     table above cannot be told apart from one we forgot to measure, which is
+     how `rerank` came to sit here with an invented 1000 rpm for months. */
+}
+<div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
   <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
-    {T.requestsPerModel}
+    {T.exempt}
   </p>
   <dl class="grid gap-3 sm:grid-cols-2">
     {
-      requestsPerMinuteByModel.map((m) => (
+      exemptModels.map((model) => (
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-          <dt class="text-neutral-500 uppercase tracking-wider">{m.model}</dt>
-          <dd class="text-neutral-200 text-right">{m.label}</dd>
+          <dt class="text-neutral-500 uppercase tracking-wider">{model}</dt>
+          <dd class="text-neutral-200 text-right">{T.noOwnLimit}</dd>
         </div>
       ))
     }
   </dl>
 </div>
+
+<p class="font-mono text-[11px] leading-relaxed text-neutral-400 mb-6">
+  {effectiveLimitNote(lang)}
+</p>
+
+{
+  /* Image generation is served by cloud-api against Workers AI, not through
+     LiteLLM, so none of the limits above reach it. Its own block rather than a
+     row, because the first thing to say about it is that the key's limits do
+     not apply - which no row can say. */
+}
+{
+  imageModels.map((m) => (
+    <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-14">
+      <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+        {m.model} · {T.images}
+      </p>
+      <dl class="grid gap-3 sm:grid-cols-2">
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.perSecond}</dt>
+          <dd class="text-neutral-200 text-right">{m.requestsPerSecond}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.burst}</dt>
+          <dd class="text-neutral-200 text-right">{m.burst}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.monthlyRequests}</dt>
+          <dd class="text-neutral-200 text-right">{m.monthlyRequests}</dd>
+        </div>
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{T.maxVariants}</dt>
+          <dd class="text-neutral-200 text-right">{m.maxVariants}</dd>
+        </div>
+      </dl>
+      <p class="mt-4 font-mono text-[11px] leading-relaxed text-neutral-400">
+        {imageModelNote(m, lang)}
+      </p>
+    </div>
+  ))
+}

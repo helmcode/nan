@@ -13,6 +13,10 @@ declare namespace Cloudflare {
     // Optional: both fall back to the defaults in src/lib/rateLimits.ts.
     RATE_LIMIT_RPM?: string;
     RATE_LIMIT_PARALLEL?: string;
+    // Optional and unset today. With no URL the docs render from the built-in
+    // table and never call out; see src/lib/limitsPolicy.ts.
+    LIMITS_POLICY_URL?: string;
+    LIMITS_POLICY_TOKEN?: string;
   }
 }
 

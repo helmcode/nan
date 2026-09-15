@@ -1,17 +1,24 @@
 ---
 title: Servidor MCP
-description: Enchufa la búsqueda web de NaN en cualquier agente compatible con MCP.
+description: "Deprecado: la búsqueda web de NaN dentro de cualquier agente compatible con MCP. Se retira junto con la búsqueda web."
 order: 16
 group: Configurar tu agente
 ---
 
 import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
 
 # Servidor MCP.
 
+<Callout title="Deprecado: este servidor se retira" variant="warning">
+La búsqueda web se va, tanto por API como por este servidor, y la búsqueda web es la única herramienta que este servidor tiene. Así que el servidor MCP se va con ella.
+
+Todo sigue funcionando hoy, y anunciaremos una fecha de retirada antes de que nada deje de hacerlo. Para lo que sirve este aviso es para la decisión que tienes delante: **no construyas nada nuevo encima**, y si ya lo has hecho, cuenta con moverte. El resto de esta sección, los modelos, no se ve afectado.
+</Callout>
+
 Además de los modelos, NaN expone sus propias herramientas a través de un servidor **MCP** ([Model Context Protocol](https://modelcontextprotocol.io)). Sirve para lo contrario que el resto de esta sección: aquí no le das modelos a tu agente, le das **capacidades**.
 
-Hoy la herramienta disponible es la **búsqueda web**. El registro irá creciendo, así que pregúntale al servidor qué tiene en vez de fiarte de esta frase.
+La única herramienta es la **búsqueda web**, y está deprecada. Lo que viene debajo describe lo que sigue funcionando hoy.
 
 | Campo | Valor |
 |---|---|

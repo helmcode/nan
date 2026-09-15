@@ -81,13 +81,12 @@ En Windows, desde PowerShell:
 irm https://nan.builders/install.ps1 | iex
 ```
 
-Hace el mismo trabajo: resuelve la última release, descarga el `.zip` de tu arquitectura, **verifica su checksum** y deja `nan.exe` en `%LOCALAPPDATA%\Programs
-an`, añadiendo esa carpeta a tu `PATH` de usuario si no estaba. Las terminales que ya tuvieras abiertas no lo verán hasta que las reinicies.
+Hace el mismo trabajo: resuelve la última release, descarga el `.zip` de tu arquitectura, **verifica su checksum** y deja `nan.exe` en `%LOCALAPPDATA%\Programs\nan`, añadiendo esa carpeta a tu `PATH` de usuario si no estaba. Las terminales que ya tuvieras abiertas no lo verán hasta que las reinicies.
 
 Instala para tu usuario y no para toda la máquina, a propósito: el equivalente en Windows del `sudo` es un diálogo de elevación saliendo de un script por tubería, que es peor. Para ponerlo en otro sitio:
 
 ```powershell
-& ([scriptblock]::Create((irm https://nan.builders/install.ps1))) -InstallDir "C:	ools"
+& ([scriptblock]::Create((irm https://nan.builders/install.ps1))) -InstallDir "C:\tools"
 ```
 
 Hay binarios para macOS, Linux y Windows, en Intel y en ARM.
@@ -130,7 +129,7 @@ Dentro de OpenCode, `/models` te enseña los modelos de NaN ya disponibles.
 
 <Details summary="Compilar desde el código">
 
-Es la vía para Windows, y la que quieres si vas a tocar el CLI. Hace falta [Go](https://go.dev) 1.26 o superior:
+Es la que quieres si vas a tocar el CLI. Hace falta [Go](https://go.dev) 1.26 o superior:
 
 ```bash
 git clone https://github.com/helmcode/nan-cli
@@ -183,7 +182,6 @@ El resultado es el mismo. Lo único que te pierdes son las pestañas de consumo 
 
 <Details summary="Problemas conocidos">
 
-- **En Windows hay que compilar.** Las versiones publicadas traen binarios de macOS y Linux; para Windows, de momento, la vía es `go build`.
-- **El instalador pide la lista de versiones a GitHub.** Si estás detrás de un proxy que bloquea `api.github.com`, no encontrará nada que descargar. En ese caso, baja el `.tar.gz` de tu sistema a mano desde la [página de releases](https://github.com/helmcode/nan-cli/releases).
+- **El instalador pide la lista de versiones a GitHub.** Si estás detrás de un proxy que bloquea `api.github.com`, no encontrará nada que descargar. En ese caso, baja a mano el archivo de tu sistema desde la [página de releases](https://github.com/helmcode/nan-cli/releases).
 
 </Details>

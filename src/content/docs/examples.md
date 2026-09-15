@@ -187,7 +187,7 @@ for r in response["results"]:
     print(f"{r['index']}: {r['relevance_score']:.3f}")
 ```
 
-Also works with raw `requests` or any HTTP client — the endpoint is OpenAI-compatible in authentication and payload format.
+Also works with raw `requests` or any HTTP client — send the JSON body with your Bearer key. `/rerank` is an endpoint of ours, not part of the OpenAI specification: the authentication is the same one, the body is ours.
 
 ## model: kokoro
 
@@ -472,9 +472,11 @@ console.log(image.data[0].url);
 
 `/images/edits` takes up to four reference images (PNG, JPEG or WebP, under 25 MB each) and does not support `mask`: sending one returns `400`.
 
-Images need inference membership, `403` otherwise, and they run on their own budget: 20 requests per minute and 100 per month, which does not touch your token quota.
+Images need inference membership, `403` otherwise, and they run on their own budget, which does not touch your token quota and is not your key's either: image generation does not go through the shared inference API at all. One request per second with a burst of 3, and 100 requests per calendar month. A request asking for several images still costs one.
 
 ## tool: web search
+
+**Deprecated.** Web search is being retired, through this endpoint and through the [MCP server](/docs/mcp) alike. It still works today and a removal date will be announced before it stops, but do not build anything new on it.
 
 authenticated web search for agents — `POST /v1/search`
 
