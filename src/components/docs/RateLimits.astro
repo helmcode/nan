@@ -1,15 +1,19 @@
 ---
 import { env } from 'cloudflare:workers';
 import {
+  concurrencyValue,
   formatTokens,
   getRateLimitsConfig,
+  perKeyOuterCapValue,
+  premiumConcurrency,
   windowedModelBody,
   windowedModelHeadline,
   rateLimitsLabels,
 } from '../../lib/rateLimits';
 
-const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel, windowedModels } =
-  getRateLimitsConfig(env);
+const config = getRateLimitsConfig(env);
+const { perKey, tokensPerMinuteByModel, requestsPerMinuteByModel, windowedModels, concurrencyByModel } =
+  config;
 
 // This card is embedded from both the English and the Spanish guides, and MDX
 // content cannot pass props down from the layout, so the locale is read off the
@@ -29,10 +33,32 @@ const T = rateLimitsLabels(lang);
       <dd class="text-neutral-200 text-right">{perKey.requestsPerMinute} rpm</dd>
     </div>
     <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
-      <dt class="text-neutral-500 uppercase tracking-wider">{T.maxParallel}</dt>
-      <dd class="text-neutral-200 text-right">{perKey.maxParallel} {T.concurrent}</dd>
+      <dt class="text-neutral-500 uppercase tracking-wider">{T.perKeyConcurrency}</dt>
+      <dd class="text-neutral-200 text-right">{T.concurrencyPointer}</dd>
+    </div>
+    <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+      <dt class="text-neutral-500 uppercase tracking-wider">{T.perKeyAcrossModels}</dt>
+      <dd class="text-neutral-200 text-right">{perKeyOuterCapValue(perKey, lang)}</dd>
     </div>
   </dl>
+</div>
+
+<div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
+  <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
+    {T.concurrencyPerModel}
+  </p>
+  <p class="font-mono text-[11px] leading-relaxed text-neutral-400 mb-4">{T.concurrencyNote}</p>
+  <dl class="grid gap-3 sm:grid-cols-2">
+    {
+      concurrencyByModel.map((c) => (
+        <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
+          <dt class="text-neutral-500 uppercase tracking-wider">{c.model}</dt>
+          <dd class="text-neutral-200 text-right">{concurrencyValue(c, lang)}</dd>
+        </div>
+      ))
+    }
+  </dl>
+  <p class="mt-4 font-mono text-[11px] leading-relaxed text-neutral-400">{T.concurrencyExempt}</p>
 </div>
 
 {
@@ -62,7 +88,7 @@ const T = rateLimitsLabels(lang);
         </div>
         <div class="flex items-baseline justify-between gap-4 font-mono text-xs">
           <dt class="text-neutral-500 uppercase tracking-wider">{T.concurrentRequests}</dt>
-          <dd class="text-neutral-200 text-right">{m.maxParallel}</dd>
+          <dd class="text-neutral-200 text-right">{premiumConcurrency(config, m.model, m.maxParallel)}</dd>
         </div>
       </dl>
       <p class="mt-4 font-mono text-[11px] leading-relaxed text-neutral-400">

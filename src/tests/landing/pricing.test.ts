@@ -167,7 +167,10 @@ describe.each(locales)('Pricing copy — %s', (locale) => {
   test('publishes context and concurrency', () => {
     const copy = premium().join(' ');
     expect(copy).toMatch(/1M context|Contexto de 1M/);
-    expect(copy).toMatch(/5 (concurrent requests|peticiones en paralelo)/);
+    // The bullet is the glm5.3 family's concurrency for a PREMIUM member:
+    // 10 under the per-model tier model (inference members get 7).
+    expect(copy).toMatch(/10 (concurrent requests|peticiones en paralelo)/);
+    expect(copy).not.toMatch(/5 (concurrent requests|peticiones en paralelo)/);
   });
 
   test('refers to the member tier by the name the section renders', () => {
