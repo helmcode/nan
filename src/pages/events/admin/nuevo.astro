@@ -1,0 +1,16 @@
+---
+// Envoltorio de ruta del alta de eventos (SPEC v3 §8, W-03): guardia de
+// staff y procesado del POST aquí (fichero de ruta), cuerpo en _nuevo.astro.
+import Page from './_nuevo.astro';
+import { resolveAdminRoute } from '../../../lib/eventsAdmin';
+import { handleNewEventForm } from '../../../lib/eventsAdminForms';
+
+export const prerender = false;
+
+const route = await resolveAdminRoute(Astro);
+if (route.notFound) return route.notFound;
+const outcome = await handleNewEventForm(Astro.request, route.cookie);
+if (outcome.redirect) return Astro.redirect(outcome.redirect, 303);
+---
+
+<Page staff={route.staff} cookie={route.cookie} outcome={outcome} />

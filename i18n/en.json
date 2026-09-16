@@ -58,6 +58,13 @@
       "voting": "Voting",
       "demoDay": "Demo Day"
     },
+    "where": {
+      "label": "Where",
+      "link": "Link",
+      "calendar": "Add to my calendar",
+      "calendarTitle": "Add this event to Google Calendar",
+      "ics": "or download the .ics"
+    },
     "login": {
       "prompt": "Sign in with your NaN account",
       "description": "Enter your NaN account email and we'll send you a link to sign in. It's the same access as the platform.",
@@ -75,15 +82,18 @@
       "notOpenTitle": "Not open yet",
       "notOpen": "Registration for this event isn't open yet. Check back soon to sign up.",
       "submissionNotOpen": "Submissions open on {date}. Come back then to submit your project.",
+      "submissionNotOpenNoDate": "Submissions aren't open yet. Come back soon to submit your project.",
       "closedTitle": "Registration closed",
       "closed": "The registration window has closed. We hope to see you at the next NaN event!",
       "inProgressTitle": "The event is underway",
       "inProgress": "Registration is closed, but you're already in. Check your status and your team.",
       "buildingTitle": "Submissions are open",
       "building": "Submit your project before {date}. You can edit it as many times as you want until then.",
+      "buildingNoDate": "Submit your project. You can edit it as many times as you want while the window is open.",
       "buildingCta": "Submit my project",
       "submittedTitle": "Submission received ✓",
       "submitted": "Your project is in. You can edit it until {date}.",
+      "submittedNoDate": "Your project is in. You can edit it while the window is open.",
       "submittedCta": "Edit my submission",
       "submissionClosedTitle": "Submissions closed",
       "submissionClosed": "The submission window has closed. Voting opens soon.",
@@ -96,7 +106,10 @@
       "results": "The event has ended. Check out the final leaderboard.",
       "resultsCta": "View leaderboard",
       "closedEventTitle": "Event closed",
-      "closedEvent": "This event has ended. Thanks to everyone who took part!"
+      "closedEvent": "This event has ended. Thanks to everyone who took part!",
+      "publishedTitle": "Open to everyone",
+      "published": "No registration needed. Add it to your calendar and join through the link on the day.",
+      "publishedCta": "Join the event"
     },
     "alreadyRegistered": {
       "title": "You're already registered",
@@ -165,11 +178,12 @@
       "reassignCta": "Request reassignment",
       "reassignPending": "Request registered. Another teammate must confirm it ({have}/{need}).",
       "reassignFilled": "Reassignment complete: a member from the reserve pool has joined.",
-      "reassignNoPool": "Reassignment complete: the pool was empty, your team continues with the minimum size.",
+      "reassignNoPool": "Reassignment complete: the pool was empty, your team continues with the remaining members.",
       "reassignAlready": "You've already requested this reassignment. Another teammate still needs to confirm it.",
       "reassignSelectAbsent": "Select absent member",
       "reassignErrorSubmit": "Couldn't register.",
       "reassignSending": "Sending…",
+      "reassignRefresh": "See the updated team",
       "reassignInfo": {
         "label": "Reassign absent member",
         "toggleAria": "More information about reassignment",
@@ -179,7 +193,7 @@
           "It takes TWO team members: the request isn't executed until a second teammate confirms the same reassignment.",
           "Once that agreement is reached, that person is marked absent and removed from your team and from the hackathon. The action is immediate and irreversible.",
           "The system automatically picks the first candidate from the reserve pool (by registration order) and adds them to your team in their place.",
-          "If the pool is empty, your team continues with 3 members (the allowed minimum) and the organizers are notified.",
+          "If the pool is empty, your team continues with the remaining members and the organizers are notified.",
           "It's only available during the building phase."
         ]
       }
@@ -224,8 +238,10 @@
       "errorEligible": "Your NaN account is not eligible for this event.",
       "notOpenTitle": "Submissions not open yet",
       "notOpen": "Submissions open on {date}.",
+      "notOpenNoDate": "Submissions aren't open yet.",
       "closedTitle": "Submission window closed",
       "closedNote": "Submissions closed on {date}. They can no longer be created or edited.",
+      "closedNoteNoDate": "The submission window is closed. Submissions can no longer be created or edited.",
       "notSubmitted": "Nothing was submitted before the deadline closed.",
       "checks": "Automatic checks",
       "notPrizeEligible": "Prize requirements not met (see the event rules)."
@@ -578,8 +594,18 @@
       "types": {
         "workshop": "workshop",
         "event": "event",
-        "hackathon": "hackathon"
+        "hackathon": "hackathon",
+        "challenge": "challenge",
+        "other": "event"
       },
+      "calendarTitle": "Take the agenda to your calendar.",
+      "calendarBody": "Add the NaN calendar once and the published events, plus the ones we announce later, show up on their own.",
+      "calendarGoogle": "Add to Google Calendar",
+      "calendarIcs": "Apple, Outlook or other (.ics)",
+      "calendarFeedLabel": "Calendar URL",
+      "calendarAdd": "+ calendar",
+      "calendarAddTitle": "Add this event to Google Calendar",
+      "calendarTz": "Times in Europe/Madrid.",
       "workshopsLabel": "workshops",
       "workshopsTitle": "Workshops.",
       "workshopsSub": "Hands-on sessions on agents, tooling and shipping with open models. Recorded for members.",

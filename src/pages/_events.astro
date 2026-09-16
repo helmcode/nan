@@ -10,6 +10,15 @@ import {
   type AgendaItem,
   type Localized,
 } from '../lib/agenda';
+import {
+  CALENDAR_PATH,
+  calendarFeedURL,
+  fetchEvents,
+  googleSubscribeURL,
+  mergeAgenda,
+  toAgendaItems,
+  webcalURL,
+} from '../lib/eventsCalendar';
 
 const lang = getLang(Astro.url);
 const tt = useT(lang).events;
@@ -32,8 +41,17 @@ const events: VideoCard[] = eventos.events;
 // para quien esté en Canarias o LATAM cerca de medianoche, "hoy" puede ir un
 // día adelantado. Si algún día se prerenderiza, el calendario sí se congelaría
 // en el build y habría que moverlo a cliente o a una isla.
-const agenda: AgendaItem[] = eventos.agenda ?? [];
+//
+// La agenda mezcla lo estático de eventos.json con los eventos publicados en
+// la API (SPEC v3 §8, W-10). Si la API no responde, sale solo lo estático.
+const fromAPI = toAgendaItems(await fetchEvents(), Astro.site);
+const agenda: AgendaItem[] = mergeAgenda(eventos.agenda ?? [], fromAPI);
 const today = new Date();
+
+// Feed iCalendar (§6.1 bis): suscripción, no descarga. Google necesita la URL
+// pública absoluta; el enlace `.ics` es relativo para que funcione en cualquier
+// despliegue. Astro.site viene de astro.config.mjs.
+const feed = calendarFeedURL(Astro.site);
 const days = calendarDays(agenda, today);
 const upcoming = upcomingIn(agenda, today);
 
@@ -77,7 +95,10 @@ const hack = eventos.hackathons[0];
         <ul class="agenda" data-reveal-stagger>
           {upcoming.map((a) => (
             <li class="agenda__row">
-              <span class="agenda__date mono">{spanLabel(a, lang)}</span>
+              <span class="agenda__date mono">
+                {spanLabel(a, lang)}
+                {a.time && <span class="agenda__time">{a.time}</span>}
+              </span>
               <span class="agenda__type mono">{tt.types[a.type as keyof typeof tt.types]}</span>
               {/* Solo las entradas con landing propia son clicables; el resto
                   sigue siendo texto, para no prometer una página que no existe. */}
@@ -86,13 +107,33 @@ const hack = eventos.hackathons[0];
                   ? <a class="agenda__link" href={withLang(a.href, lang)}>{loc(a.title)}</a>
                   : loc(a.title)}
               </span>
-              <span class="agenda__by mono">{a.by}</span>
+              <span class="agenda__by mono">
+                {a.by}
+                {a.calendar && (
+                  <a class="agenda__cal" href={a.calendar} target="_blank" rel="noopener" title={tt.calendarAddTitle}>{tt.calendarAdd}</a>
+                )}
+              </span>
             </li>
           ))}
         </ul>
       ) : (
         <p class="agenda__empty">{tt.monthEmpty}</p>
       )}
+
+      <!-- SUSCRIPCIÓN AL CALENDARIO (W-10): una vez añadido, se actualiza solo -->
+      <div class="calsub" data-reveal>
+        <h3 class="calsub__title">{tt.calendarTitle}</h3>
+        <p class="calsub__body">{tt.calendarBody}</p>
+        <div class="calsub__actions">
+          <a class="btn btn-primary" href={googleSubscribeURL(feed)} target="_blank" rel="noopener">{tt.calendarGoogle}</a>
+          <a class="btn btn-ghost" href={webcalURL(feed)}>{tt.calendarIcs}</a>
+        </div>
+        <p class="calsub__feed mono">
+          <span class="calsub__feed-l">{tt.calendarFeedLabel}</span>
+          <a class="calsub__feed-u" href={CALENDAR_PATH}>{feed}</a>
+        </p>
+        <p class="calsub__tz mono">{tt.calendarTz}</p>
+      </div>
     </div>
   </section>
 
@@ -275,7 +316,31 @@ const hack = eventos.hackathons[0];
     transition: color var(--dur-micro) var(--ease), border-color var(--dur-micro) var(--ease);
   }
   .agenda__link:hover { color: var(--color-link); border-bottom-color: var(--color-link); }
-  .agenda__by { font-size: 13px; color: var(--color-muted); }
+  .agenda__time { display: block; font-size: 11px; color: var(--color-muted); letter-spacing: 0.04em; }
+  .agenda__by { font-size: 13px; color: var(--color-muted); display: inline-flex; gap: var(--space-3); align-items: baseline; }
+  .agenda__cal {
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--color-violet-2); text-decoration: none; white-space: nowrap;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-violet) 45%, transparent);
+  }
+  .agenda__cal:hover { color: var(--color-link); border-bottom-color: var(--color-link); }
+
+  /* suscripción al calendario */
+  .calsub {
+    margin-top: var(--space-8); border: 1px solid var(--color-line); padding: clamp(20px, 3vw, 36px);
+    background: var(--color-surface);
+  }
+  .calsub__title {
+    font-family: var(--font-serif); font-weight: 400; color: var(--color-text);
+    font-size: clamp(22px, 2.2vw, 30px); line-height: 1.1;
+  }
+  .calsub__body { margin-top: var(--space-3); max-width: 56ch; color: var(--color-muted); font-size: 15px; line-height: 1.6; }
+  .calsub__actions { margin-top: var(--space-5); display: flex; flex-wrap: wrap; gap: var(--space-3); }
+  .calsub__feed { margin-top: var(--space-5); display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3); font-size: 12px; color: var(--color-muted); }
+  .calsub__feed-l { text-transform: uppercase; letter-spacing: 0.08em; }
+  .calsub__feed-u { color: var(--color-violet-2); text-decoration: none; word-break: break-all; }
+  .calsub__feed-u:hover { color: var(--color-link); }
+  .calsub__tz { margin-top: var(--space-2); font-size: 11px; color: var(--color-muted); }
   .agenda__empty { margin-top: var(--space-6); color: var(--color-muted); font-family: var(--font-serif); font-size: 17px; }
 
   @media (max-width: 620px) {

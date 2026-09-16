@@ -66,34 +66,33 @@ export default function LoginForm({ t }: { t: LoginStrings }) {
 
   if (status.kind === 'success') {
     return (
-      <div role="status" class="rounded-xl border border-violet-500/30 bg-violet-950/20 p-6 text-center">
-        <p class="text-sm text-white leading-relaxed">{t.success}</p>
+      <div role="status" class="border border-violet-500/40 bg-violet-500/10 p-8 text-center md:p-10">
+        <p class="text-lg leading-relaxed text-white">{t.success}</p>
       </div>
     );
   }
 
   const submitting = status.kind === 'submitting';
   const err = status.kind === 'error' ? status.message : null;
-  const inputCls =
-    'w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-3 text-sm text-white font-mono placeholder-neutral-600 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/40 transition-colors';
+  // .field y .btn son los controles de la casa (styles/nan-system.css).
+  const inputCls = 'field w-full';
 
   return (
-    <form onSubmit={onSubmit} noValidate class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6 md:p-8 space-y-4">
+    <form onSubmit={onSubmit} noValidate class="grid gap-6 border border-neutral-800 bg-neutral-900/40 p-8 md:p-10">
       <div>
-        <p class="font-mono text-sm text-white">{t.prompt}</p>
-        <p class="mt-2 text-sm text-neutral-400 leading-relaxed">{t.description}</p>
+        <p class="font-mono text-sm uppercase tracking-[0.2em] text-violet-300">{t.prompt}</p>
+        <p class="mt-3 max-w-prose text-base leading-relaxed text-neutral-300">{t.description}</p>
       </div>
       <div>
-        <label class="block font-mono text-[10px] uppercase tracking-widest text-violet-400 mb-2" for="hk-email">
+        <label class="mb-2 block font-mono text-xs uppercase tracking-[0.2em] text-violet-400" for="hk-email">
           {t.emailLabel}
         </label>
         <input id="hk-email" type="email" required disabled={submitting} value={email}
                placeholder={t.emailPlaceholder}
                onInput={(e) => setEmail((e.currentTarget as HTMLInputElement).value)} class={inputCls} />
       </div>
-      {err && <p role="alert" class="text-sm text-red-400 font-mono">{err}</p>}
-      <button type="submit" disabled={submitting}
-        class="w-full font-mono text-sm px-8 py-3 rounded-lg bg-violet-600 text-white hover:bg-violet-500 hover:shadow-[0_0_24px_rgba(139,92,246,0.4)] transition-all disabled:opacity-50">
+      {err && <p role="alert" class="font-mono text-sm text-red-400">{err}</p>}
+      <button type="submit" disabled={submitting} class="btn btn-primary w-full disabled:opacity-50">
         {submitting ? t.submitting : t.submit}
       </button>
     </form>

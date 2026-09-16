@@ -8,7 +8,9 @@ import RegisterForm, { type FormStrings } from '../../../components/events/Regis
 import LoginForm, { type LoginStrings } from '../../../components/events/LoginForm.tsx';
 import RegistrationBar from '../../../components/events/RegistrationBar.astro';
 import { getLocale, t, tObj, withLang } from '../../../lib/i18n';
-import { fetchMe, fmtDate, fmtRange, hasSessionCookie, type EventInfo } from '../../../lib/events';
+import { eventSession, fmtDate, fmtRange, type EventInfo } from '../../../lib/events';
+import { eventCalendarPath, googleEventURL } from '../../../lib/eventsCalendar';
+import { safeImage, safeUrl } from '../../../lib/projects';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -18,12 +20,8 @@ interface Props {
 const ev = Astro.props.event;
 const slug = ev.slug;
 
-// Sesión: /me solo si hay cookie. Si el backend devuelve 401, la sesión caducó.
-const hasSession = hasSessionCookie(Astro.request);
-const { me, unauthorized } = hasSession
-  ? await fetchMe(slug, Astro.request.headers.get('cookie') ?? '')
-  : { me: null, unauthorized: false };
-const sessionOk = hasSession && !unauthorized;
+// Sesión: /me solo si hay cookie; si el backend devuelve 401, la sesión caducó.
+const { me, sessionOk } = await eventSession(Astro.request, slug);
 const participant = me?.participant ?? null;
 const registered = !!participant && participant.status !== 'withdrawn';
 const hasSubmission = !!me?.submission;
@@ -58,25 +56,48 @@ if (ev.dates.submission_open || ev.dates.submission_close)
   dates.push({ label: dl.submission, value: fmtRange(ev.dates.submission_open, ev.dates.submission_close, locale) });
 if (ev.voting.enabled && (ev.dates.voting_open || ev.dates.voting_close))
   dates.push({ label: dl.voting, value: fmtRange(ev.dates.voting_open, ev.dates.voting_close, locale) });
-if (ev.dates.demo_day) dates.push({ label: dl.demoDay, value: fmtDate(ev.dates.demo_day, locale) });
+if (ev.dates.demo_day)
+  dates.push({
+    label: dl.demoDay,
+    // Con hora (y fin si lo tiene): es la cita a la que hay que ir.
+    value: ev.dates.demo_day_end
+      ? `${fmtDate(ev.dates.demo_day, locale, true)} – ${fmtDate(ev.dates.demo_day_end, locale, true)}`
+      : fmtDate(ev.dates.demo_day, locale, true),
+  });
+
+// Dónde, enlace y "añadir a mi calendario" (W-10): solo si el evento tiene fecha.
+const where = tObj<Record<string, string>>('events.where', locale);
+const calendarLink = googleEventURL(ev, Astro.site);
+const icsHref = eventCalendarPath(ev);
 
 // Panel principal por fase (§8.2). `null` → se pinta el bloque de inscripción.
 type Panel = { title: string; body: string; href?: string; cta?: string; tone?: 'muted' | 'accent' };
 let panel: Panel | null = null;
 const closeAt = fmtDate(ev.dates.submission_close, locale, true);
 const openAt = fmtDate(ev.dates.submission_open, locale, true);
+// En v3 todas las fechas son opcionales, así que la copia que las nombra tiene
+// gemela sin fecha: si no, la frase queda coja ("entrega antes del .").
+const notOpenBody = openAt ? fill(phase.submissionNotOpen, { date: openAt }) : phase.submissionNotOpenNoDate;
+const buildingBody = closeAt ? fill(phase.building, { date: closeAt }) : phase.buildingNoDate;
+const submittedBody = closeAt ? fill(phase.submitted, { date: closeAt }) : phase.submittedNoDate;
 switch (ev.phase) {
+  case 'published':
+    // Informativo anunciado (B-26): no hay inscripción; el CTA es el enlace del evento si lo tiene.
+    panel = ev.url
+      ? { title: phase.publishedTitle, body: phase.published, href: ev.url, cta: phase.publishedCta, tone: 'accent' }
+      : { title: phase.publishedTitle, body: phase.published, tone: 'accent' };
+    break;
   case 'draft':
   case 'registration':
     if (isTeam) panel = null; // bloque de inscripción
-    else panel = { title: phase.notOpenTitle, body: fill(phase.submissionNotOpen, { date: openAt }), tone: 'muted' };
+    else panel = { title: phase.notOpenTitle, body: notOpenBody, tone: 'muted' };
     break;
   case 'building_pending':
     panel = isTeam && registered
       ? { title: phase.inProgressTitle, body: phase.inProgress, href: meUrl, cta: already.cta, tone: 'accent' }
       : isTeam
         ? { title: phase.closedTitle, body: phase.closed, tone: 'muted' }
-        : { title: phase.notOpenTitle, body: fill(phase.submissionNotOpen, { date: openAt }), tone: 'muted' };
+        : { title: phase.notOpenTitle, body: notOpenBody, tone: 'muted' };
     break;
   case 'building':
     if (isTeam) {
@@ -84,9 +105,9 @@ switch (ev.phase) {
         ? { title: phase.inProgressTitle, body: phase.inProgress, href: meUrl, cta: already.cta, tone: 'accent' }
         : { title: phase.closedTitle, body: phase.closed, tone: 'muted' };
     } else if (hasSubmission) {
-      panel = { title: phase.submittedTitle, body: fill(phase.submitted, { date: closeAt }), href: submissionUrl, cta: phase.submittedCta, tone: 'accent' };
+      panel = { title: phase.submittedTitle, body: submittedBody, href: submissionUrl, cta: phase.submittedCta, tone: 'accent' };
     } else {
-      panel = { title: phase.buildingTitle, body: fill(phase.building, { date: closeAt }), href: submissionUrl, cta: phase.buildingCta, tone: 'accent' };
+      panel = { title: phase.buildingTitle, body: buildingBody, href: submissionUrl, cta: phase.buildingCta, tone: 'accent' };
     }
     break;
   case 'submission':
@@ -107,93 +128,137 @@ switch (ev.phase) {
     break;
 }
 
+// Cover (B-27). The backend already validates http/https, but the CSP only
+// allows https images and the browser blocks mixed content, so an http cover
+// would render as a broken icon in production. In dev the covers point at
+// localhost, hence the looser check there.
+const cover = import.meta.env.DEV ? safeUrl(ev.image_url) : safeImage(ev.image_url);
+
 const pageTitle = `${ev.name} — nan.builders`;
 const closedNote = fill(cap.closedNote, { cap: capacity, res: reserve });
 ---
 
-<NanPage scale={false} noindex title={pageTitle} description={ev.description}>
-  <main class="px-6 pt-24 pb-32 md:pt-32">
-    <div class="mx-auto max-w-2xl">
+{/* Ficha: una columna centrada (max-w-3xl) con aire entre bloques. Las tarjetas
+    siguen la casa: esquina recta (la impone nan-system.css), hairline y tinte
+    violeta para lo que importa (fechas, premio, CTA). Botones = .btn de la casa. */}
+<NanPage scale={false} noindex title={pageTitle} description={ev.description} image={cover || undefined}>
+  <main class="px-6 pt-28 pb-32 md:pt-36 md:pb-40">
+    <div class="mx-auto w-full max-w-3xl">
       <EventHeader event={ev} locale={locale} current="index" hasSession={sessionOk} />
 
-      <section class="mt-6">
+      {/* Decorative: the name is already the H1 right above. */}
+      {cover && (
+        <img src={cover} alt="" loading="eager" decoding="async" fetchpriority="high"
+             class="mt-10 w-full border border-neutral-800 bg-neutral-900/40 md:mt-12" />
+      )}
+
+      <section class="mt-10 md:mt-12">
         {ev.description && (
-          <p class="text-sm md:text-base text-neutral-300 leading-relaxed whitespace-pre-line">{ev.description}</p>
+          <p class="max-w-prose text-lg leading-relaxed text-neutral-300 whitespace-pre-line md:text-xl">{ev.description}</p>
         )}
+
         {dates.length > 0 && (
-          <dl class="mt-5 grid gap-2 font-mono text-xs">
+          <dl class="mt-10 grid gap-3 sm:grid-cols-2">
             {dates.map((d) => (
-              <div class="flex flex-wrap gap-x-3 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 text-violet-300">
-                <dt class="uppercase tracking-widest text-violet-400">{d.label}</dt>
-                <dd>{d.value}</dd>
+              <div class="border border-violet-500/30 bg-violet-500/10 p-5">
+                <dt class="font-mono text-xs uppercase tracking-[0.2em] text-violet-400">{d.label}</dt>
+                <dd class="mt-2 font-mono text-base leading-snug text-white">{d.value}</dd>
               </div>
             ))}
           </dl>
         )}
-        {ev.prize && (
-          <p class="mt-4 text-sm text-neutral-300"><span class="font-mono text-xs uppercase tracking-widest text-violet-400">{t('events.prize', locale)}</span> · {ev.prize}</p>
+
+        {(ev.location || ev.url) && (
+          <dl class="mt-3 grid gap-3 sm:grid-cols-2">
+            {ev.location && (
+              <div class="border border-neutral-800 bg-neutral-900/40 p-5">
+                <dt class="font-mono text-xs uppercase tracking-[0.2em] text-neutral-500">{where.label}</dt>
+                <dd class="mt-2 text-base leading-snug text-white">{ev.location}</dd>
+              </div>
+            )}
+            {ev.url && (
+              <div class="border border-neutral-800 bg-neutral-900/40 p-5">
+                <dt class="font-mono text-xs uppercase tracking-[0.2em] text-neutral-500">{where.link}</dt>
+                <dd class="mt-2 font-mono text-sm leading-snug">
+                  <a href={ev.url} rel="noopener" target="_blank"
+                     class="break-all text-violet-300 underline decoration-violet-500/50 underline-offset-4 transition-colors hover:text-white">{ev.url}</a>
+                </dd>
+              </div>
+            )}
+          </dl>
         )}
+
+        {calendarLink && (
+          <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <a href={calendarLink} rel="noopener" target="_blank" title={where.calendarTitle} class="btn btn-ghost">
+              {where.calendar}
+            </a>
+            <a href={icsHref} class="font-mono text-sm text-neutral-400 underline decoration-neutral-700 underline-offset-4 transition-colors hover:text-white">{where.ics}</a>
+          </div>
+        )}
+
+        {ev.prize && (
+          <div class="mt-10 border-l-2 border-violet-500 pl-5">
+            <p class="font-mono text-xs uppercase tracking-[0.2em] text-violet-400">{t('events.prize', locale)}</p>
+            <p class="mt-2 text-lg leading-relaxed text-white">{ev.prize}</p>
+          </div>
+        )}
+
         {ev.rules && (
-          <p class="mt-3 text-xs text-neutral-500 font-mono whitespace-pre-line">{ev.rules}</p>
+          <p class="mt-8 max-w-prose font-mono text-sm leading-relaxed text-neutral-500 whitespace-pre-line">{ev.rules}</p>
         )}
       </section>
 
-      <section class="mt-12">
+      <section class="mt-16 md:mt-20">
         {panel ? (
           <div class={panel.tone === 'accent'
-            ? 'rounded-xl border border-violet-500/30 bg-violet-500/10 p-6'
-            : 'rounded-xl border border-neutral-800 bg-neutral-900/30 p-6'}>
-            <p class={`font-mono text-xs uppercase tracking-widest ${panel.tone === 'accent' ? 'text-violet-300' : 'text-neutral-400'}`}>
+            ? 'border border-violet-500/40 bg-violet-500/10 p-8 md:p-10'
+            : 'border border-neutral-800 bg-neutral-900/40 p-8 md:p-10'}>
+            <p class={`font-mono text-sm uppercase tracking-[0.2em] ${panel.tone === 'accent' ? 'text-violet-300' : 'text-neutral-400'}`}>
               {panel.title}
             </p>
-            <p class="mt-2 text-sm text-neutral-200 leading-relaxed">{panel.body}</p>
+            <p class="mt-3 max-w-prose text-lg leading-relaxed text-white">{panel.body}</p>
             {panel.href && panel.cta && (
               /* En solo, entregar requiere sesión: si no la hay, enseñamos el login en vez del CTA. */
               !isTeam && ev.phase === 'building' && !sessionOk ? (
-                <div class="mt-5">
-                  <p class="mb-3 text-xs text-neutral-400">{t('events.submission.loginNote', locale)}</p>
+                <div class="mt-8">
+                  <p class="mb-4 text-base text-neutral-400">{t('events.submission.loginNote', locale)}</p>
                   <LoginForm client:load t={login} />
                 </div>
               ) : (
-                <a href={panel.href}
-                   class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500">
-                  {panel.cta}
-                </a>
+                <a href={panel.href} class="btn btn-primary mt-8">{panel.cta}</a>
               )
             )}
           </div>
         ) : !ev.windows.registration.open ? (
-          <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
-            <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">{phase.notOpenTitle}</p>
-            <p class="mt-2 text-sm text-neutral-300 leading-relaxed">{phase.notOpen}</p>
+          <div class="border border-neutral-800 bg-neutral-900/40 p-8 md:p-10">
+            <p class="font-mono text-sm uppercase tracking-[0.2em] text-neutral-400">{phase.notOpenTitle}</p>
+            <p class="mt-3 max-w-prose text-lg leading-relaxed text-neutral-300">{phase.notOpen}</p>
           </div>
         ) : (
-          <div class="space-y-6">
+          <div class="grid gap-6">
             {hasCapacity && (
               <RegistrationBar registered={ev.counts.registered} capacity={capacity} reserve={reserve} locale={locale} />
             )}
             {registered ? (
-              <div class="rounded-xl border border-violet-500/30 bg-violet-500/10 p-6">
-                <p class="font-mono text-xs uppercase tracking-widest text-violet-300">{already.title}</p>
-                <p class="mt-2 text-sm text-neutral-200 leading-relaxed">
+              <div class="border border-violet-500/40 bg-violet-500/10 p-8 md:p-10">
+                <p class="font-mono text-sm uppercase tracking-[0.2em] text-violet-300">{already.title}</p>
+                <p class="mt-3 max-w-prose text-lg leading-relaxed text-white">
                   {participant?.is_reserve ? already.reserve : already.confirmed}
                 </p>
-                <a href={meUrl}
-                   class="mt-5 inline-block font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white transition-colors hover:bg-violet-500">
-                  {already.cta}
-                </a>
+                <a href={meUrl} class="btn btn-primary mt-8">{already.cta}</a>
               </div>
             ) : full ? (
-              <div class="rounded-xl border border-neutral-800 bg-neutral-900/30 p-6">
-                <p class="font-mono text-xs uppercase tracking-widest text-neutral-400">{cap.closedTitle}</p>
-                <p class="mt-2 text-sm text-neutral-300 leading-relaxed">{closedNote}</p>
+              <div class="border border-neutral-800 bg-neutral-900/40 p-8 md:p-10">
+                <p class="font-mono text-sm uppercase tracking-[0.2em] text-neutral-400">{cap.closedTitle}</p>
+                <p class="mt-3 max-w-prose text-lg leading-relaxed text-neutral-300">{closedNote}</p>
               </div>
             ) : !sessionOk ? (
               <LoginForm client:load t={login} />
             ) : (
               <RegisterForm client:load slug={slug} t={form} meHref={meUrl}
                 discordMode={ev.registration.discord_user}
-                specialties={ev.registration.specialties} levels={ev.registration.levels}
+                specialties={ev.registration.specialties ?? []} levels={ev.registration.levels ?? []}
                 options={options} />
             )}
           </div>

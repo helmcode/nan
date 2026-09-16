@@ -21,12 +21,28 @@
    Quedan sueltos algunos 520/720/760/900 de la primera iteración; migrarlos
    pide un repaso visual ancho a ancho, no un buscar-y-reemplazar. */
 
+/* BASE EN CAPA. El reset y los estilos de elemento (p, a, button…) van dentro
+   de @layer base para que las utilidades de Tailwind (que viven en la capa
+   utilities, siempre posterior) puedan pisarlos: sin la capa, una regla sin
+   capa como `* { margin: 0 }` o `p { color: … }` gana a cualquier utilidad por
+   muy específica que sea, y las pantallas escritas con utilidades (eventos,
+   community) pierden márgenes, centrado, colores y monoespaciada. Para el
+   resto del CSS (scoped, sin capa) no cambia nada: ya ganaba a estas reglas.
+   La esquina recta se queda FUERA de la capa a propósito: es regla de la casa
+   y debe ganar también a cualquier rounded-* que quede por ahí. */
+*,
+*::before,
+*::after {
+  border-radius: var(--radius-ui);
+}
+
+@layer base {
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
   margin: 0;
-  border-radius: var(--radius-ui);
 }
 
 html {
@@ -65,6 +81,8 @@ body {
   pointer-events: none;
 }
 main, footer { position: relative; z-index: 1; }
+
+} /* @layer base (sigue más abajo con p, a, button…) */
 
 /* Titulares: Archivo variable EXPANDIDO (wdth+wght) y en mayúsculas.
    Sistema UNIFORME en toda la web (mismos tamaños). El !important gana a los
@@ -105,6 +123,8 @@ main, footer { position: relative; z-index: 1; }
 /* segunda línea de un titular en violeta (como "Start burning tokens") */
 .hl { color: var(--color-violet-2); }
 
+@layer base {
+
 strong, b { font-weight: 700; }
 /* párrafo de la casa: Archivo, anchura por defecto, blanco */
 p { color: var(--color-text); font-family: var(--font-serif); font-variation-settings: normal; }
@@ -114,6 +134,8 @@ a { color: inherit; text-decoration: none; transition: color var(--dur-micro) va
 code, pre, kbd { font-family: var(--font-mono); font-size: 0.9em; }
 img, svg { max-width: 100%; display: block; }
 button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+} /* @layer base */
 
 ::selection { background: var(--color-violet); color: #fff; }
 /* Anillo de foco en violeta CLARO: el violeta base sobre off-black se queda en

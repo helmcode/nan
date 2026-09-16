@@ -2,7 +2,9 @@
 /**
  * Cabecera común de las pantallas de un evento: enlace atrás, etiqueta del
  * tipo de evento, nombre y navegación entre pantallas (solo las que aplican
- * al formato/fase).
+ * al formato/fase). El titular usa la Archivo expandida del sistema, pero con
+ * un tamaño propio: estas pantallas montan el shell con scale={false} porque
+ * la escala de 96px parte las palabras en columnas estrechas.
  */
 import { t, withLang } from '../../lib/i18n';
 import type { EventInfo } from '../../lib/events';
@@ -28,19 +30,32 @@ if (event.windows.leaderboard.visible) nav.push({ key: 'leaderboard', href: `${b
 ---
 
 <a href={withLang(current === 'index' ? '/events' : base, locale)}
-   class="font-mono text-xs text-neutral-500 transition-colors hover:text-violet-400">
+   class="inline-block font-mono text-sm text-neutral-500 transition-colors hover:text-violet-400">
   {current === 'index' ? t('events.backToEvents', locale) : t('events.backToEvent', locale)}
 </a>
-<header class="mt-8">
-  <p class="font-mono text-xs uppercase tracking-widest text-violet-400">// {kindLabel}</p>
-  <h1 class="mt-3 font-mono text-2xl md:text-3xl text-white tracking-tight leading-snug">
-    {event.name}
-  </h1>
+<header class="mt-10">
+  <p class="font-mono text-sm uppercase tracking-[0.2em] text-violet-400">// {kindLabel}</p>
+  <h1 class="ev-title mt-4 text-white">{event.name}</h1>
   {nav.length > 0 && (
-    <nav class="mt-5 flex flex-wrap gap-4 font-mono text-xs" aria-label={t('events.nav.aria', locale)}>
+    <nav class="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-neutral-800 pt-4 font-mono text-sm" aria-label={t('events.nav.aria', locale)}>
       {nav.map((n) => n.key === current
-        ? <span class="text-white">{n.label}</span>
-        : <a href={withLang(n.href, locale)} class="text-neutral-400 hover:text-violet-400">{n.label}</a>)}
+        ? <span class="text-white" aria-current="page">{n.label}</span>
+        : <a href={withLang(n.href, locale)} class="text-neutral-400 transition-colors hover:text-violet-400">{n.label}</a>)}
     </nav>
   )}
 </header>
+
+<style>
+  /* Titular de la casa (Archivo expandida, mayúsculas) a una escala que cabe
+     en la columna de la ficha; sin !important para no pelear con .nan-scale. */
+  .ev-title {
+    font-family: var(--font-serif);
+    font-variation-settings: 'wdth' 118, 'wght' 850;
+    font-size: clamp(2rem, 5.5vw, 3.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+  }
+</style>

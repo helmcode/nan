@@ -1,0 +1,116 @@
+---
+// Ficha del evento (SPEC v3 §8, W-03): resumen (fase, ventanas, contadores,
+// avisos de coherencia), control de estado (W-04), editor del event.json,
+// clonado y archivado. El POST lo procesa el envoltorio de ruta.
+import '../../../../styles/global.css';
+import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
+import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
+import EventForm from '../../../../components/events/admin/EventForm.astro';
+import StateControl from '../../../../components/events/admin/StateControl.astro';
+import { adminHref, fmtAdminDate, PHASE_LABELS, type AdminScreenProps } from '../../../../lib/eventsAdmin';
+import { eventToForm, readFlash, warningLabel } from '../../../../lib/eventsAdminForms';
+
+type Props = AdminScreenProps;
+const { staff, view, outcome } = Astro.props;
+const ev = view.event;
+const archived = Boolean(ev.archived_at);
+const flash = readFlash(Astro.url, outcome);
+const values = outcome.values && ['save', 'simulate'].includes(outcome.action ?? '') ? outcome.values : eventToForm(ev);
+const cloneSlug = outcome.action === 'clone' && outcome.values ? String(outcome.values.clone_slug ?? '') : '';
+const canArchiveDirect = ev.status === 'closed' || ev.status === 'cancelled';
+// La previsualización de estado y el sweep sin transición los pinta StateControl; arriba solo van los errores.
+const topResult = ['state_preview', 'sweep'].includes(outcome.action ?? '') && outcome.result?.ok ? undefined : outcome.result;
+const windows = [
+  { label: 'Inscripción', open: view.windows.registration.open },
+  { label: 'Entregas', open: view.windows.submission.open },
+  { label: 'Votación', open: view.windows.voting.open },
+  { label: 'Galería', open: view.windows.gallery.visible },
+  { label: 'Ranking', open: view.windows.leaderboard.visible },
+];
+---
+
+<EventsAdmin title={ev.name} staff={staff} event={{ slug: ev.slug, name: ev.name, status: ev.status }} current="evento">
+  <AdminNotices
+    ok={flash.ok}
+    warnings={flash.warnings}
+    result={topResult}
+    forbidden={outcome.forbidden}
+    warningsTitle={outcome.action === 'simulate' && outcome.result?.ok
+      ? 'Simulación: los cambios serían válidos. No se ha guardado nada.'
+      : outcome.action === 'archive' && outcome.result?.ok ? 'No se ha archivado.' : undefined}
+  />
+
+  <section class="adm-card">
+    <h2 class="adm-h2">Ahora mismo</h2>
+    <dl class="adm-facts">
+      <div><dt>Fase</dt><dd>{PHASE_LABELS[view.phase] ?? view.phase}</dd></div>
+      <div><dt>Inscritos</dt><dd>{view.counts.registered} <span class="adm-muted">/ {ev.registration.capacity || '∞'}</span></dd></div>
+      <div><dt>Reserva</dt><dd>{view.counts.reserve}</dd></div>
+      <div><dt>Bajas</dt><dd>{view.counts.withdrawn}</dd></div>
+      <div><dt>Equipos</dt><dd>{view.counts.teams}</dd></div>
+      <div><dt>Entregas</dt><dd>{view.counts.submissions}</dd></div>
+      <div><dt>Votos</dt><dd>{view.counts.votes}</dd></div>
+      <div><dt>Actualizado</dt><dd>{fmtAdminDate(ev.updated_at)}</dd></div>
+      {archived && <div><dt>Archivado</dt><dd>{fmtAdminDate(ev.archived_at)}</dd></div>}
+    </dl>
+    <div class="adm-actions" style="gap:.5rem">
+      {windows.map((w) => <span class:list={['adm-pill', { 'adm-pill-warn': !w.open }]}>{w.label}: {w.open ? 'abierta' : 'cerrada'}</span>)}
+    </div>
+    {view.warnings.length > 0 && (
+      <div class="adm-msg adm-msg-warn">
+        <p>Avisos de coherencia:</p>
+        <ul>{view.warnings.map((w) => <li><code>{w}</code> — {warningLabel(w)}</li>)}</ul>
+      </div>
+    )}
+    <p class="adm-muted" style="margin-top:1rem;font-family:var(--font-mono);font-size:12px">
+      Público: <a href={`/events/${ev.slug}`} style="color:#d4d4d4">/events/{ev.slug}</a> (solo a partir de inscripción).
+      Pantallas: <a href={adminHref(ev.slug, 'participantes')} style="color:#d4d4d4">participantes</a>,
+      <a href={adminHref(ev.slug, 'equipos')} style="color:#d4d4d4">equipos</a>,
+      <a href={adminHref(ev.slug, 'entregas')} style="color:#d4d4d4">entregas</a>,
+      <a href={adminHref(ev.slug, 'votos')} style="color:#d4d4d4">votos</a> y
+      <a href={adminHref(ev.slug, 'auditoria')} style="color:#d4d4d4">auditoría</a>.
+    </p>
+  </section>
+
+  {archived && <p class="adm-msg adm-msg-warn">Evento archivado: solo lectura. Para editarlo hay que desarchivarlo.</p>}
+
+  <StateControl view={view} outcome={outcome} disabled={archived} />
+
+  <EventForm values={values} mode="edit" disabled={archived} slugLocked={ev.status !== 'draft'} />
+
+  <section class="adm-card">
+    <h2 class="adm-h2">Clonar</h2>
+    <p class="adm-muted" style="font-family:var(--font-mono);font-size:13px">
+      Copia la configuración a un evento nuevo en borrador, sin participantes, equipos, entregas ni votos y con las fechas vacías.
+    </p>
+    <form method="post" class="adm-actions">
+      <input type="hidden" name="action" value="clone" />
+      <label style="flex:1;min-width:14rem">
+        <span class="adm-label">Slug del evento nuevo</span>
+        <input class="adm-input" name="clone_slug" value={cloneSlug} pattern="[a-z0-9]+(-[a-z0-9]+)*" required />
+      </label>
+      <button class="adm-btn" type="submit" style="align-self:end">Clonar</button>
+    </form>
+  </section>
+
+  <section class="adm-card">
+    <h2 class="adm-h2">{archived ? 'Desarchivar' : 'Archivar'}</h2>
+    {archived ? (
+      <form method="post" class="adm-actions">
+        <input type="hidden" name="action" value="unarchive" />
+        <button class="adm-btn" type="submit">Desarchivar</button>
+      </form>
+    ) : (
+      <form method="post" class="adm-actions">
+        <input type="hidden" name="action" value="archive" />
+        <p class="adm-muted" style="font-family:var(--font-mono);font-size:13px;flex-basis:100%">
+          {canArchiveDirect
+            ? 'El evento está cerrado o cancelado: se puede archivar. Queda en solo lectura y desaparece de la lista de activos.'
+            : 'El evento no está cerrado ni cancelado. Archivarlo ahora lo saca de circulación tal como está; marca "forzar" si es lo que quieres.'}
+        </p>
+        {!canArchiveDirect && <label class="adm-check"><input type="checkbox" name="force" /> Forzar el archivado</label>}
+        <button class="adm-btn adm-btn-danger" type="submit">Archivar</button>
+      </form>
+    )}
+  </section>
+</EventsAdmin>

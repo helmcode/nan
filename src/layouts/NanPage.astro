@@ -14,9 +14,10 @@ interface Props {
   description?: string;
   noindex?: boolean;
   nofollow?: boolean;
+  image?: string;
   scale?: boolean;
 }
-const { title, description, noindex, nofollow, scale } = Astro.props;
+const { title, description, noindex, nofollow, image, scale } = Astro.props;
 ---
 
 <NanBase
@@ -24,6 +25,7 @@ const { title, description, noindex, nofollow, scale } = Astro.props;
   description={description}
   noindex={noindex}
   nofollow={nofollow}
+  image={image}
   scale={scale}
 >
   <slot name="head" slot="head" />

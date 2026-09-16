@@ -21,6 +21,7 @@ interface ReassignLabels {
   selectAbsent: string;
   errorSubmit: string;
   sending: string;
+  refresh: string;
 }
 
 export default function ReassignForm({
@@ -39,6 +40,10 @@ export default function ReassignForm({
   const [ghostId, setGhostId] = useState('');
   const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
   const [result, setResult] = useState('');
+  // La convocatoria que se ejecuta cambia el equipo (sale el ausente, entra la
+  // reserva), y la lista de compañeros viene del servidor: sin recargar seguiría
+  // enseñando el equipo de antes justo debajo del aviso de que ha cambiado.
+  const [resolved, setResolved] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
 
   async function submit() {
@@ -62,8 +67,8 @@ export default function ReassignForm({
         return;
       }
       const r = body?.data;
-      if (r?.status === 'filled') setResult(labels.filled);
-      else if (r?.status === 'no_pool') setResult(labels.noPool);
+      if (r?.status === 'filled') { setResult(labels.filled); setResolved(true); }
+      else if (r?.status === 'no_pool') { setResult(labels.noPool); setResolved(true); }
       else {
         const have = String(r?.requested_by?.length ?? 1);
         const need = String(r?.quorum ?? 2);
@@ -76,7 +81,17 @@ export default function ReassignForm({
   }
 
   if (state === 'done') {
-    return <p class="font-mono text-sm text-violet-400">{result}</p>;
+    return (
+      <div class="space-y-3">
+        <p class="font-mono text-sm text-violet-400">{result}</p>
+        {resolved && (
+          <button type="button" onClick={() => location.reload()}
+            class="font-mono text-xs px-5 py-2 rounded-lg border border-neutral-700 text-neutral-300 hover:border-violet-400 hover:text-violet-300">
+            {labels.refresh}
+          </button>
+        )}
+      </div>
+    );
   }
 
   return (

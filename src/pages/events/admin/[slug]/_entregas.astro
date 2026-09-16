@@ -1,0 +1,238 @@
+---
+// Entregas del evento (SPEC v3 §6.4 y §8, W-07): tabla con propietario,
+// URLs, checks y premio; retirar/restaurar por fila; tarjeta de edición
+// (?editar=<id>) con los campos, el forzado de checks y la elegibilidad de
+// premio; y "verificar todas". El POST lo procesa el envoltorio de ruta;
+// aquí solo se consulta y se pinta.
+import '../../../../styles/global.css';
+import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
+import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
+import { adminFetch, adminHref, fmtAdminDate, ownerKind, type AdminScreenProps } from '../../../../lib/eventsAdmin';
+import { readFlash } from '../../../../lib/eventsAdminForms';
+import { CHECK_LABELS, SUBMISSION_EDIT_FIELDS, type AdminSubmissionRow } from '../../../../lib/eventsAdminSubmissions';
+
+type Props = AdminScreenProps;
+const { staff, cookie, view, outcome } = Astro.props;
+const ev = view.event;
+const archived = Boolean(ev.archived_at);
+const enabled = ev.modules.submissions;
+const flash = readFlash(Astro.url, outcome);
+const here = adminHref(ev.slug, 'entregas');
+
+const res = enabled ? await adminFetch<AdminSubmissionRow[]>(cookie, `${ev.slug}/admin/submissions`) : null;
+// Activas primero, y dentro de cada grupo por fecha de entrega.
+const rows = (res?.data ?? []).slice().sort((a, b) =>
+  Number(Boolean(a.withdrawn_at)) - Number(Boolean(b.withdrawn_at)) || a.submitted_at.localeCompare(b.submitted_at));
+const active = rows.filter((r) => !r.withdrawn_at);
+// Las listas del evento llegan como null cuando el slice va nil en el backend
+// (ver EventInfo): nunca reventamos la pantalla por eso, y el tipo obliga.
+const checks = ev.submission.checks ?? [];
+const prizeRequires = ev.submission.prize_requires ?? [];
+// fields NO necesita guarda: es un struct por valor en el backend y siempre
+// llega como objeto. El `?? 'optional'` de fieldOn cubre el modo vacío.
+const fieldModes: Record<string, string> = ev.submission.fields;
+
+// Edición: ?editar=<id> abre la tarjeta con los datos de esa fila (o los que se escribieron si falló).
+const editId = outcome.action && outcome.action !== 'verify' && outcome.values ? String(outcome.values.id ?? '') : (Astro.url.searchParams.get('editar') ?? '');
+const editRow = rows.find((r) => r.id === editId) ?? null;
+const ev2 = (k: string, fallback: string) => (outcome.action === 'update' && outcome.values ? String(outcome.values[k] ?? '') : fallback);
+const rv = (action: string, k: string) => (outcome.action === action && outcome.values ? String(outcome.values[k] ?? '') : '');
+
+// Campos que el evento muestra (título y URL pública siempre; el resto según `submission.fields`).
+const fieldOn = (key: string) => key === 'title' || key === 'public_url' || (fieldModes[key] ?? 'optional') !== 'hidden';
+const fields = SUBMISSION_EDIT_FIELDS.filter((f) => fieldOn(f.key));
+const urlKeys = ['public_url', 'space_url', 'repo_url', 'image_url', 'video_url'] as const;
+const URL_LABELS: Record<string, string> = { public_url: 'pública', space_url: 'space', repo_url: 'repo', image_url: 'imagen', video_url: 'vídeo' };
+
+const checkLabel = (name: string) => CHECK_LABELS[name] ?? name;
+const prizeText = (r: AdminSubmissionRow) => {
+  if (r.prize_eligible === undefined) return r.not_prize_eligible ? 'no opta (automático)' : prizeRequires.length ? 'opta (automático)' : 'opta';
+  return r.prize_eligible ? 'opta (fijado)' : 'no opta (fijado)';
+};
+---
+
+<EventsAdmin title={`Entregas · ${ev.name}`} staff={staff} event={{ slug: ev.slug, name: ev.name, status: ev.status }} current="entregas">
+  <AdminNotices ok={flash.ok} warnings={flash.warnings} result={outcome.result} forbidden={outcome.forbidden} />
+
+  {!enabled && (
+    <p class="adm-msg">Este evento no tiene el módulo de entregas. Se activa en la <a href={adminHref(ev.slug)}>ficha del evento</a>.</p>
+  )}
+
+  {enabled && (
+    <section class="adm-card">
+      <dl class="adm-facts">
+        <div><dt>Entregas activas</dt><dd>{active.length}</dd></div>
+        <div><dt>Retiradas</dt><dd>{rows.length - active.length}</dd></div>
+        <div><dt>Ventana</dt><dd>{view.windows.submission.open ? 'abierta' : 'cerrada'}</dd></div>
+        <div><dt>Checks</dt><dd>{checks.length ? checks.map(checkLabel).join(', ') : <span class="adm-muted">ninguno</span>}</dd></div>
+        <div><dt>Premio exige</dt><dd>{prizeRequires.length ? prizeRequires.map(checkLabel).join(', ') : <span class="adm-muted">nada</span>}</dd></div>
+      </dl>
+      <p class="adm-muted" style="margin-top:.75rem;font-family:var(--font-mono);font-size:12px">
+        Los checks se ejecutan al entregar y al cambiar una URL. "Verificar todas" los repite en las entregas activas sin pisar los fijados a mano.
+        Retirar no borra: la entrega se puede restaurar mientras su propietario siga en el evento.
+      </p>
+      {!archived && checks.length > 0 && (
+        <form method="post" class="adm-actions" style="margin-top:.5rem">
+          <input type="hidden" name="action" value="verify" />
+          <button class="adm-btn" type="submit">Verificar todas</button>
+        </form>
+      )}
+    </section>
+  )}
+
+  {res && !res.ok && <AdminNotices result={res} />}
+  {res?.ok && rows.length === 0 && <p class="adm-msg">Todavía no hay entregas.</p>}
+
+  {rows.length > 0 && (
+    <div class="adm-table-wrap" style="margin-top:1.5rem">
+      <table class="adm-table">
+        <thead>
+          <tr>
+            <th>Propietario</th>
+            <th>Entrega</th>
+            {checks.length > 0 && <th>Checks</th>}
+            <th>Puntos</th>
+            <th>Premio</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr id={r.id}>
+              <td>
+                <div>{r.owner.name}</div>
+                <div class="adm-muted" style="font-size:12px">{ownerKind(r.owner.type)} · {r.owner_emails.join(', ') || '—'}</div>
+              </td>
+              <td>
+                <a href={`${here}?editar=${r.id}#editar`}>{r.title}</a>
+                <div class="adm-muted" style="font-size:12px">
+                  {urlKeys.filter((k) => r[k]).map((k) => (
+                    <><a href={r[k]} target="_blank" rel="noopener noreferrer" title={r[k]}>{URL_LABELS[k]}</a>{' '}</>
+                  ))}
+                </div>
+              </td>
+              {checks.length > 0 && (
+                <td>
+                  {checks.map((name) => {
+                    const c = r.checks?.[name];
+                    return (
+                      <span class:list={['adm-pill', { 'adm-pill-warn': c && !c.pass }]} title={c ? [c.forced ? `fijado a mano${c.reason ? `: ${c.reason}` : ''}` : '', c.http_status ? `HTTP ${c.http_status}` : '', c.host ?? ''].filter(Boolean).join(' · ') || checkLabel(name) : 'sin ejecutar'}>
+                        {c ? (c.pass ? '✓' : '✗') : '·'} {checkLabel(name)}{c?.forced ? ' *' : ''}
+                      </span>
+                    );
+                  })}
+                </td>
+              )}
+              <td>{r.auto_points} <span class="adm-muted">/ {ev.voting.auto_max}</span></td>
+              <td>
+                <span class:list={['adm-pill', { 'adm-pill-warn': r.not_prize_eligible }]}>{prizeText(r)}</span>
+                {r.prize_reason && <div class="adm-muted" style="font-size:12px">motivo: {r.prize_reason}</div>}
+              </td>
+              <td>
+                {r.withdrawn_at
+                  ? <><span class="adm-pill adm-pill-warn">retirada</span><div class="adm-muted" style="font-size:12px">{fmtAdminDate(r.withdrawn_at)}</div></>
+                  : <><span class="adm-pill">activa</span><div class="adm-muted" style="font-size:12px">{fmtAdminDate(r.submitted_at)}</div></>}
+              </td>
+              <td class="adm-actions-cell">
+                {!archived && <a class="adm-btn adm-btn-sm" href={`${here}?editar=${r.id}#editar`}>Editar</a>}
+                {!archived && !r.withdrawn_at && (
+                  <form method="post" class="adm-inline">
+                    <input type="hidden" name="action" value="withdraw" />
+                    <input type="hidden" name="id" value={r.id} />
+                    <button class="adm-btn adm-btn-sm adm-btn-danger" type="submit">Retirar</button>
+                  </form>
+                )}
+                {!archived && r.withdrawn_at && (
+                  <form method="post" class="adm-inline">
+                    <input type="hidden" name="action" value="restore" />
+                    <input type="hidden" name="id" value={r.id} />
+                    <button class="adm-btn adm-btn-sm adm-btn-primary" type="submit">Restaurar</button>
+                  </form>
+                )}
+                {archived && <span class="adm-muted">solo lectura</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {checks.length > 0 && <p class="adm-muted" style="font-size:12px;margin-top:.5rem">* check fijado a mano por un admin (verify no lo pisa).</p>}
+    </div>
+  )}
+
+  {editRow && !archived && (
+    <section class="adm-card" id="editar">
+      <h2 class="adm-h2">Editar: {editRow.title}</h2>
+      <p class="adm-muted" style="font-family:var(--font-mono);font-size:12px">
+        {ownerKind(editRow.owner.type)} {editRow.owner.name} · entregada el {fmtAdminDate(editRow.submitted_at)}
+        {editRow.withdrawn_at ? ` · retirada el ${fmtAdminDate(editRow.withdrawn_at)}` : ''} · <code>{editRow.id}</code>
+      </p>
+      <form method="post">
+        <input type="hidden" name="action" value="update" />
+        <input type="hidden" name="id" value={editRow.id} />
+        <div class="adm-grid">
+          {fields.map((f) => f.kind === 'textarea'
+            ? <label class="adm-span"><span class="adm-label">{f.label}</span><textarea class="adm-input" name={f.key} rows="3">{ev2(f.key, editRow[f.key])}</textarea></label>
+            : <label><span class="adm-label">{f.label}</span><input class="adm-input" name={f.key} type={f.kind} value={ev2(f.key, editRow[f.key])} required={f.key === 'title' || f.key === 'public_url' || fieldModes[f.key] === 'required'} /></label>)}
+        </div>
+        <p class="adm-muted" style="font-size:12px">Cambiar la URL pública, la del space o la del repo vuelve a ejecutar los checks (salvo los fijados a mano).</p>
+        <div class="adm-actions">
+          <button class="adm-btn adm-btn-primary" type="submit">Guardar</button>
+          <a class="adm-btn" href={here}>Cancelar</a>
+        </div>
+      </form>
+
+      {checks.length > 0 && (
+        <>
+          <h3 class="adm-label" style="margin-top:1.5rem">Checks</h3>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead><tr><th>Check</th><th>Resultado</th><th>Fijar a mano</th></tr></thead>
+              <tbody>
+                {checks.map((name) => {
+                  const c = editRow.checks?.[name];
+                  return (
+                    <tr>
+                      <td>{checkLabel(name)}</td>
+                      <td>
+                        {c ? <span class:list={['adm-pill', { 'adm-pill-warn': !c.pass }]}>{c.pass ? 'pasa' : 'falla'}{c.forced ? ' (fijado)' : ''}</span> : <span class="adm-muted">sin ejecutar</span>}
+                        <div class="adm-muted" style="font-size:12px">
+                          {c?.checked_at ? fmtAdminDate(c.checked_at) : ''}{c?.http_status ? ` · HTTP ${c.http_status}` : ''}{c?.host ? ` · ${c.host}` : ''}{c?.reason ? ` · ${c.reason}` : ''}
+                        </div>
+                      </td>
+                      <td class="adm-actions-cell">
+                        <form method="post" class="adm-inline">
+                          <input type="hidden" name="action" value="check" />
+                          <input type="hidden" name="id" value={editRow.id} />
+                          <input type="hidden" name="name" value={name} />
+                          <input class="adm-input adm-input-sm" name="reason" placeholder="motivo" maxlength="200" value={rv('check', 'name') === name ? rv('check', 'reason') : ''} style="min-width:10rem" />
+                          <button class="adm-btn adm-btn-sm" type="submit" name="pass" value="true">Pasa</button>
+                          <button class="adm-btn adm-btn-sm adm-btn-danger" type="submit" name="pass" value="false">Falla</button>
+                          {c?.forced && <button class="adm-btn adm-btn-sm" type="submit" name="reset" value="on">Volver al automático</button>}
+                        </form>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      <h3 class="adm-label" style="margin-top:1.5rem">Premio</h3>
+      <p class="adm-muted" style="font-size:12px">
+        Ahora: <strong>{prizeText(editRow)}</strong>{editRow.prize_reason ? ` · ${editRow.prize_reason}` : ''}.
+        {prizeRequires.length ? ` En automático exige: ${prizeRequires.map(checkLabel).join(', ')}.` : ' En automático todas optan.'}
+      </p>
+      <form method="post" class="adm-inline">
+        <input type="hidden" name="action" value="prize" />
+        <input type="hidden" name="id" value={editRow.id} />
+        <input class="adm-input adm-input-sm" name="reason" placeholder="motivo" maxlength="200" value={rv('prize', 'reason')} style="min-width:12rem" />
+        <button class="adm-btn adm-btn-sm" type="submit" name="eligible" value="true">Opta</button>
+        <button class="adm-btn adm-btn-sm adm-btn-danger" type="submit" name="eligible" value="false">No opta</button>
+        {editRow.prize_eligible !== undefined && <button class="adm-btn adm-btn-sm" type="submit" name="reset" value="on">Volver al automático</button>}
+      </form>
+    </section>
+  )}
+</EventsAdmin>

@@ -6,7 +6,7 @@ import EventHeader from '../../../components/events/EventHeader.astro';
 import SubmissionForm from '../../../components/events/SubmissionForm.tsx';
 import LoginForm, { type LoginStrings } from '../../../components/events/LoginForm.tsx';
 import { getLocale, tObj } from '../../../lib/i18n';
-import { fetchMe, fmtDate, hasSessionCookie, type EventInfo } from '../../../lib/events';
+import { eventSession, fmtDate, type EventInfo, type SubmissionFields } from '../../../lib/events';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -16,24 +16,34 @@ interface Props {
 const ev = Astro.props.event;
 const slug = ev.slug;
 
-const hasSession = hasSessionCookie(Astro.request);
-const { me, unauthorized } = hasSession
-  ? await fetchMe(slug, Astro.request.headers.get('cookie') ?? '')
-  : { me: null, unauthorized: false };
-const sessionOk = hasSession && !unauthorized;
+const { me, sessionOk } = await eventSession(Astro.request, slug);
 const isTeam = ev.format === 'team';
 const hasTeam = Boolean(me?.team?.id);
 const hasParticipant = Boolean(me?.participant && me.participant.status !== 'withdrawn');
 const existing = me?.submission ?? null;
 const canEdit = ev.windows.submission.open;
-const beforeOpen = ev.phase === 'draft' || ev.phase === 'registration' || ev.phase === 'building_pending';
+const beforeOpen = ev.phase === 'draft' || ev.phase === 'published' || ev.phase === 'registration' || ev.phase === 'building_pending';
 
 const s = tObj<Record<string, string>>('events.submission', locale);
 const options = tObj<Record<string, string>>('events.options', locale);
 const login = tObj<LoginStrings>('events.login', locale);
 const fill = (str: string, vars: Record<string, string>) =>
   Object.entries(vars).reduce((acc, [k, v]) => acc.replaceAll(`{${k}}`, v), str);
-const fields = ev.submission.fields;
+// Las fechas son opcionales (v3): sin ellas la frase que las nombra queda coja,
+// así que cada aviso tiene gemelo sin fecha.
+const openAt = fmtDate(ev.dates.submission_open, locale, true);
+const closeAt = fmtDate(ev.dates.submission_close, locale, true);
+const windowNotOpen = openAt ? fill(s.notOpen, { date: openAt }) : s.notOpenNoDate;
+const windowClosed = closeAt ? fill(s.closedNote, { date: closeAt }) : s.closedNoteNoDate;
+// Las listas del evento llegan como null cuando el slice va nil en el backend
+// (ver EventInfo): nunca reventamos la pantalla por eso, y el tipo obliga.
+const specialties = ev.registration.specialties ?? [];
+const levels = ev.registration.levels ?? [];
+const checks = ev.submission.checks ?? [];
+// fields NO necesita guarda: en el backend es un struct por valor, así que
+// siempre se serializa como objeto. Un modo en cadena vacía (event.json v2)
+// cae en "visible y opcional", que es el trato correcto.
+const fields: SubmissionFields = ev.submission.fields;
 const readonlyRows = existing
   ? [
       { label: s.fTitle, value: existing.title },
@@ -63,18 +73,16 @@ const readonlyRows = existing
       ) : canEdit ? (
         <SubmissionForm client:load slug={slug} t={s} existing={existing}
           fields={fields} format={ev.format} hasParticipant={hasParticipant}
-          checks={ev.submission.checks} autoMax={ev.voting.auto_max}
+          checks={checks} autoMax={ev.voting.auto_max}
           discordMode={ev.registration.discord_user}
-          specialties={ev.registration.specialties} levels={ev.registration.levels}
+          specialties={specialties} levels={levels}
           options={options} />
       ) : (
         <div class="space-y-4">
           <div class="rounded-lg border border-neutral-700/60 bg-neutral-900/50 p-4">
             <p class="font-mono text-sm text-neutral-200">{beforeOpen ? s.notOpenTitle : s.closedTitle}</p>
             <p class="mt-1 text-xs leading-relaxed text-neutral-400">
-              {beforeOpen
-                ? fill(s.notOpen, { date: fmtDate(ev.dates.submission_open, locale, true) })
-                : fill(s.closedNote, { date: fmtDate(ev.dates.submission_close, locale, true) })}
+              {beforeOpen ? windowNotOpen : windowClosed}
             </p>
           </div>
           {existing ? (
@@ -88,11 +96,11 @@ const readonlyRows = existing
                   </div>
                 ))}
               </dl>
-              {ev.submission.checks.length > 0 && (
+              {checks.length > 0 && (
                 <div class="mt-2 text-sm font-mono text-neutral-300">
                   <p>{s.checks}: {existing.auto_points ?? 0}/{ev.voting.auto_max}</p>
                   <ul class="mt-1 space-y-1">
-                    {ev.submission.checks.map((k) => (
+                    {checks.map((k) => (
                       <li>{existing.checks?.[k]?.pass ? '✓' : '✗'} {options[k] ?? k}</li>
                     ))}
                   </ul>

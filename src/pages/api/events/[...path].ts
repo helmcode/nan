@@ -1,29 +1,25 @@
 import type { APIRoute } from 'astro';
-import { backendURL, forwardHeaders, isAdminPath } from '../../../lib/events';
+import { backendURL, forwardHeaders, hasSessionCookie, isAdminPath } from '../../../lib/events';
+import { json } from '../../../lib/apiResponse';
 
 export const prerender = false;
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
-  });
-}
 
 /**
  * Proxy same-origin `/api/events/*` → `${CLOUD_API_URL}/api/events/*` (SPEC §8.1).
  *
  * Existe porque la CSP de la landing es `connect-src 'self'`: las islas solo
  * pueden hacer fetch a este origen. Reenvía cookie de sesión e IP real; nunca
- * la admin key, y nunca rutas con un segmento `admin`.
+ * la admin key. Las rutas con un segmento `admin` solo pasan con cookie de
+ * sesión (SPEC v3 §8): el backend decide si esa sesión es de staff y responde
+ * 401/403 si no; el panel `/events/admin` es el que las usa.
  */
 const handler: APIRoute = async ({ params, request, url }) => {
   const path = (params.path ?? '').toString();
 
-  // No exponer endpoints de operación desde el navegador público. Se mantiene
-  // como primera barrera aunque `backendURL` ya acote la ruta: dice
-  // explícitamente qué es lo que no debe atravesar el proxy.
-  if (isAdminPath(path)) {
+  // Sin sesión, los endpoints de operación no existen de cara al exterior:
+  // 404 sin tocar el backend. Se mantiene como primera barrera aunque
+  // `backendURL` ya acote la ruta.
+  if (isAdminPath(path) && !hasSessionCookie(request)) {
     return json({ ok: false, error: 'not_found' }, 404);
   }
 
@@ -50,13 +46,28 @@ const handler: APIRoute = async ({ params, request, url }) => {
     return json({ ok: false, error: 'server_error' }, 500);
   }
 
-  // Reenviar cuerpo y status; normalizar a JSON. Propagar Set-Cookie si lo hubiera.
+  // Reenviar cuerpo y status; normalizar a JSON salvo el CSV de
+  // `participants/export.csv` y el feed iCalendar (`calendar.ics`, W-10).
+  // Content-Disposition se conserva para las descargas del panel
+  // (`export?download=1`). Propagar Set-Cookie.
   const text = await resp.text();
-  const headers = new Headers({ 'content-type': 'application/json', 'cache-control': 'no-store' });
+  const upstreamType = resp.headers.get('content-type') ?? '';
+  const passthrough = /^text\/(csv|calendar)\b/i.test(upstreamType);
+  const headers = new Headers({
+    'content-type': passthrough ? upstreamType : 'application/json',
+    // El feed es público y lo releen los clientes de calendario: se respeta
+    // la caché corta que fija el backend. Todo lo demás, sin caché.
+    'cache-control': (/^text\/calendar\b/i.test(upstreamType) && resp.headers.get('cache-control')) || 'no-store',
+  });
+  const disposition = resp.headers.get('content-disposition');
+  if (disposition) headers.set('content-disposition', disposition);
   // getSetCookie() devuelve un array sin colapsar comas (WHATWG); preserva
   // múltiples cookies (login + refresh, handoff de onboarding, etc.).
   for (const cookie of resp.headers.getSetCookie()) headers.append('set-cookie', cookie);
-  return new Response(text || '{}', { status: resp.status, headers });
+  // A CSV or iCalendar body is forwarded as is, even when empty: padding it
+  // with `{}` would hand the operator a download with `{}` inside. The `{}`
+  // fallback only applies to the JSON responses, so callers can always parse.
+  return new Response(passthrough ? text : text || '{}', { status: resp.status, headers });
 };
 
 export const GET = handler;

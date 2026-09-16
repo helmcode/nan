@@ -1,0 +1,191 @@
+---
+/**
+ * Formulario del `event.json` (SPEC v3 §3.1, API.md §5.1), compartido por
+ * el alta (`/events/admin/nuevo`) y la ficha (`/events/admin/{slug}`). Sin
+ * JavaScript: los botones llevan `name="action"` y el fichero de ruta decide
+ * qué hacer (`create`/`save`, o `simulate` para un `dry_run`).
+ */
+import type { EventFormValues } from '../../../lib/eventsAdminForms';
+import { CHECKS, DATE_FIELDS, EVENT_KINDS, FIELD_MODES, SUBMISSION_FIELDS } from '../../../lib/eventsAdminForms';
+
+interface Props {
+  values: EventFormValues;
+  mode: 'new' | 'edit';
+  /** Solo lectura (evento archivado). */
+  disabled?: boolean;
+  /** Fuera de `draft` el slug no se puede cambiar (409 slug_immutable). */
+  slugLocked?: boolean;
+}
+const { values, mode, disabled = false, slugLocked = false } = Astro.props;
+const v = (k: string) => (typeof values[k] === 'string' ? (values[k] as string) : '');
+const has = (k: string, item: string) => Array.isArray(values[k]) && (values[k] as string[]).includes(item);
+const checked = (k: string) => v(k) !== '';
+---
+
+<form method="post" class="adm-form">
+  <section class="adm-card">
+    <h2 class="adm-h2">Datos básicos</h2>
+    <div class="adm-grid">
+      <label>
+        <span class="adm-label">Nombre</span>
+        <input class="adm-input" name="name" value={v('name')} required disabled={disabled} />
+      </label>
+      <label>
+        <span class="adm-label">Slug {slugLocked && <span class="adm-muted">(fijo fuera de borrador)</span>}</span>
+        <input class="adm-input" name="slug" value={v('slug')} pattern="[a-z0-9]+(-[a-z0-9]+)*" required disabled={disabled} readonly={slugLocked} />
+      </label>
+      <label>
+        <span class="adm-label">Tipo</span>
+        <select class="adm-input" name="kind" disabled={disabled}>
+          {EVENT_KINDS.map((k) => <option value={k.value} selected={v('kind') === k.value}>{k.label}</option>)}
+        </select>
+      </label>
+      <label>
+        <span class="adm-label">Formato</span>
+        <select class="adm-input" name="format" disabled={disabled}>
+          <option value="team" selected={v('format') !== 'solo'}>Por equipos</option>
+          <option value="solo" selected={v('format') === 'solo'}>Individual</option>
+        </select>
+      </label>
+      <label class="adm-span">
+        <span class="adm-label">Descripción</span>
+        <textarea class="adm-input" name="description" disabled={disabled}>{v('description')}</textarea>
+      </label>
+      <label class="adm-span">
+        <span class="adm-label">Reglas</span>
+        <textarea class="adm-input" name="rules" disabled={disabled}>{v('rules')}</textarea>
+      </label>
+      <label class="adm-span">
+        <span class="adm-label">Premio</span>
+        <textarea class="adm-input" name="prize" disabled={disabled}>{v('prize')}</textarea>
+      </label>
+    </div>
+    <div class="adm-checks" style="margin-top:1rem">
+      <label class="adm-check"><input type="checkbox" name="module_registration" checked={checked('module_registration')} disabled={disabled} /> Módulo de inscripción</label>
+      <label class="adm-check"><input type="checkbox" name="module_submissions" checked={checked('module_submissions')} disabled={disabled} /> Módulo de entregas</label>
+      <label class="adm-check"><input type="checkbox" name="voting_enabled" checked={checked('voting_enabled')} disabled={disabled} /> Módulo de votación</label>
+      <label class="adm-check"><input type="checkbox" name="date_transitions" checked={checked('date_transitions')} disabled={disabled} /> Transiciones automáticas por fecha</label>
+      <p class="adm-muted" style="font-size:12px">El módulo de equipos va con el formato: por equipos lo activa, individual lo apaga.</p>
+    </div>
+  </section>
+
+  <section class="adm-card">
+    <h2 class="adm-h2">Fechas (UTC)</h2>
+    <div class="adm-grid">
+      {DATE_FIELDS.map((d) => (
+        <label>
+          <span class="adm-label">{d.label}</span>
+          <input class="adm-input" type="datetime-local" name={`date_${d.key}`} value={v(`date_${d.key}`)} disabled={disabled} />
+        </label>
+      ))}
+    </div>
+  </section>
+
+  <section class="adm-card">
+    <h2 class="adm-h2">Inscripción</h2>
+    <div class="adm-grid">
+      <label>
+        <span class="adm-label">Aforo</span>
+        <input class="adm-input" type="number" min="0" name="capacity" value={v('capacity')} disabled={disabled} />
+      </label>
+      <label>
+        <span class="adm-label">Plazas de reserva</span>
+        <input class="adm-input" type="number" min="0" name="reserve_capacity" value={v('reserve_capacity')} disabled={disabled} />
+      </label>
+      <label>
+        <span class="adm-label">Usuario de Discord</span>
+        <select class="adm-input" name="discord_user" disabled={disabled}>
+          <option value="required" selected={v('discord_user') === 'required'}>Obligatorio</option>
+          <option value="optional" selected={v('discord_user') === 'optional'}>Opcional</option>
+          <option value="none" selected={v('discord_user') === 'none'}>No se pide</option>
+        </select>
+      </label>
+      <label>
+        <span class="adm-label">Especialidades (separadas por comas)</span>
+        <input class="adm-input" name="specialties" value={v('specialties')} disabled={disabled} />
+      </label>
+      <label>
+        <span class="adm-label">Niveles (separados por comas)</span>
+        <input class="adm-input" name="levels" value={v('levels')} disabled={disabled} />
+      </label>
+    </div>
+  </section>
+
+  <section class="adm-card">
+    <h2 class="adm-h2">Equipos (solo formato por equipos)</h2>
+    <div class="adm-grid">
+      <label>
+        <span class="adm-label">Tamaño</span>
+        <input class="adm-input" type="number" min="1" name="team_size" value={v('team_size')} disabled={disabled} />
+      </label>
+      <label>
+        <span class="adm-label">Mínimo</span>
+        <input class="adm-input" type="number" min="1" name="team_min_size" value={v('team_min_size')} disabled={disabled} />
+      </label>
+      <label>
+        <span class="adm-label">Máximo de equipos</span>
+        <input class="adm-input" type="number" min="1" name="team_max_teams" value={v('team_max_teams')} disabled={disabled} />
+      </label>
+    </div>
+  </section>
+
+  <section class="adm-card">
+    <h2 class="adm-h2">Entregas</h2>
+    <div class="adm-grid">
+      {SUBMISSION_FIELDS.map((f) => (
+        <label>
+          <span class="adm-label">{f.label}</span>
+          <select class="adm-input" name={`field_${f.key}`} disabled={disabled}>
+            {FIELD_MODES.map((m) => <option value={m.value} selected={v(`field_${f.key}`) === m.value}>{m.label}</option>)}
+          </select>
+        </label>
+      ))}
+      <label>
+        <span class="adm-label">Galería visible</span>
+        <select class="adm-input" name="gallery_visibility" disabled={disabled}>
+          <option value="from_voting" selected={v('gallery_visibility') !== 'during_submission'}>Desde la votación</option>
+          <option value="during_submission" selected={v('gallery_visibility') === 'during_submission'}>Durante las entregas</option>
+        </select>
+      </label>
+    </div>
+    <div class="adm-grid">
+      <div>
+        <span class="adm-label">Checks automáticos</span>
+        <div class="adm-checks">
+          {CHECKS.map((c) => (
+            <label class="adm-check"><input type="checkbox" name="checks" value={c.value} checked={has('checks', c.value)} disabled={disabled} /> {c.label}</label>
+          ))}
+        </div>
+      </div>
+      <div>
+        <span class="adm-label">El premio exige</span>
+        <div class="adm-checks">
+          {CHECKS.map((c) => (
+            <label class="adm-check"><input type="checkbox" name="prize_requires" value={c.value} checked={has('prize_requires', c.value)} disabled={disabled} /> {c.label.replace(/ \(.*\)$/, '')}</label>
+          ))}
+        </div>
+        <p class="adm-muted" style="font-size:12px;margin-top:.5rem">Solo cuenta si el check también está activo.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="adm-card">
+    <h2 class="adm-h2">Votación</h2>
+    <div class="adm-grid">
+      <label>
+        <span class="adm-label">Peso de cada voto</span>
+        <input class="adm-input" type="number" min="0" name="vote_weight" value={v('vote_weight')} disabled={disabled} />
+      </label>
+      <p class="adm-muted" style="font-size:12px;align-self:end">Los puntos automáticos máximos se derivan de los checks que puntúan.</p>
+    </div>
+  </section>
+
+  {!disabled && (
+    <div class="adm-actions">
+      <button class="adm-btn adm-btn-primary" type="submit" name="action" value={mode === 'new' ? 'create' : 'save'}>
+        {mode === 'new' ? 'Crear en borrador' : 'Guardar cambios'}
+      </button>
+      <button class="adm-btn" type="submit" name="action" value="simulate">Simular (dry run)</button>
+    </div>
+  )}
+</form>

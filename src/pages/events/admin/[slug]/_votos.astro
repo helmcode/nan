@@ -1,0 +1,163 @@
+---
+// Votos y ranking del evento (SPEC v3 §6.5 y §8, W-08): resumen de la
+// votación, ranking calculado al momento (aunque no sea público), lista de
+// votos solo lectura (decisión 23: no se anulan ni se editan) y los atajos
+// de abrir y cerrar la votación con previsualización. El POST lo procesa el
+// envoltorio de ruta; aquí solo se consulta y se pinta.
+import '../../../../styles/global.css';
+import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
+import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
+import { adminFetch, adminHref, fmtAdminDate, ownerKind, STATUS_LABELS, type AdminScreenProps } from '../../../../lib/eventsAdmin';
+import { readFlash } from '../../../../lib/eventsAdminForms';
+import { voteStats, type AdminVoteRow, type LeaderboardView } from '../../../../lib/eventsAdminVotes';
+
+type Props = AdminScreenProps;
+const { staff, cookie, view, outcome } = Astro.props;
+const ev = view.event;
+const archived = Boolean(ev.archived_at);
+const enabled = ev.modules.voting;
+const flash = readFlash(Astro.url, outcome);
+
+const [votesRes, boardRes] = enabled
+  ? await Promise.all([
+      adminFetch<AdminVoteRow[]>(cookie, `${ev.slug}/admin/votes`),
+      adminFetch<LeaderboardView>(cookie, `${ev.slug}/admin/leaderboard`),
+    ])
+  : [null, null];
+// Más recientes primero.
+const votes = (votesRes?.data ?? []).slice().sort((a, b) => b.created_at.localeCompare(a.created_at));
+const stats = voteStats(votes);
+const board = boardRes?.data ?? { rows: [], public: ev.voting.leaderboard_public };
+
+// Atajos de §4.4: abrir solo en building/submission/voting con la votación cerrada; cerrar solo en voting.
+const canOpen = !archived && enabled && !ev.voting.open && ['building', 'submission', 'voting'].includes(ev.status);
+const canClose = !archived && enabled && ev.status === 'voting';
+
+// Previsualización: la respuesta de `?dry_run=true` se queda en la página con el botón de confirmar.
+const preview = outcome.result?.ok && (outcome.action === 'open_preview' || outcome.action === 'close_preview') ? outcome.result : null;
+const previewVerb = outcome.action === 'close_preview' ? 'close' : 'open';
+const previewBoard = previewVerb === 'close' ? (preview?.data as LeaderboardView | null) : null;
+
+const voteState = (v: AdminVoteRow) => (!v.owner ? 'entrega eliminada' : v.withdrawn ? 'entrega retirada' : 'cuenta');
+const num = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
+---
+
+<EventsAdmin title={`Votos · ${ev.name}`} staff={staff} event={{ slug: ev.slug, name: ev.name, status: ev.status }} current="votos">
+  <AdminNotices ok={flash.ok} warnings={flash.warnings} result={preview ? undefined : outcome.result} forbidden={outcome.forbidden} />
+
+  {!enabled && (
+    <p class="adm-msg">Este evento no tiene el módulo de votación. Se activa en la <a href={adminHref(ev.slug)}>ficha del evento</a>.</p>
+  )}
+
+  {enabled && (
+    <section class="adm-card">
+      <dl class="adm-facts">
+        <div><dt>Estado</dt><dd>{STATUS_LABELS[ev.status] ?? ev.status}</dd></div>
+        <div><dt>Votación</dt><dd>{ev.voting.open ? 'abierta' : 'cerrada'}{view.windows.voting.open ? '' : ev.voting.open ? <span class="adm-muted"> (fuera de fecha)</span> : ''}</dd></div>
+        <div><dt>Ranking</dt><dd>{board.public ? 'público' : <span class="adm-muted">solo admin</span>}</dd></div>
+        <div><dt>Votos</dt><dd>{stats.counted}{stats.discarded ? <span class="adm-muted"> + {stats.discarded} que no cuentan</span> : ''}</dd></div>
+        <div><dt>Votantes</dt><dd>{stats.voters}</dd></div>
+        <div><dt>Peso del voto</dt><dd>{ev.voting.vote_weight} <span class="adm-muted">+ hasta {ev.voting.auto_max} por checks</span></dd></div>
+      </dl>
+      <p class="adm-muted" style="margin-top:.75rem;font-family:var(--font-mono);font-size:12px">
+        Total = peso · votos / máximo de votos + puntos por checks. Los votos a entregas retiradas no cuentan ni fijan el máximo.
+        Los votos no se anulan ni se editan (decisión 23). Cerrar la votación congela el ranking y lo publica.
+      </p>
+      {/*
+        Los dos atajos pueden convivir: en `voting` con la votación todavía
+        cerrada se puede abrir Y se puede cerrar (que congela el ranking). Antes
+        se pintaba solo uno y ganaba el de cerrar, así que desde ese estado —el
+        que deja `voting_not_open`— no había forma de abrir la votación.
+      */}
+      {(canOpen || canClose) && (
+        <form method="post" class="adm-actions" style="margin-top:.5rem">
+          {canOpen && <button class="adm-btn" type="submit" name="action" value="open_preview">Previsualizar apertura de la votación</button>}
+          {canClose && <button class="adm-btn" type="submit" name="action" value="close_preview">Previsualizar cierre de la votación</button>}
+        </form>
+      )}
+      {!archived && enabled && !canOpen && !canClose && (
+        <p class="adm-muted" style="font-size:12px;margin-top:.5rem">
+          La votación se abre desde <em>construcción</em>, <em>entrega</em> o <em>votación</em>, y se cierra desde <em>votación</em>. El estado se cambia en la <a href={adminHref(ev.slug)}>ficha del evento</a>.
+        </p>
+      )}
+    </section>
+  )}
+
+  {preview && (
+    <div class="adm-msg adm-msg-warn">
+      <p>
+        Simulación de <strong>{previewVerb === 'close' ? 'cerrar' : 'abrir'} la votación</strong>: no se ha cambiado nada todavía.
+        {previewVerb === 'close' ? ' El evento pasaría a Cerrado y este ranking quedaría congelado y público.' : ' El evento pasaría a Votación si no lo estaba.'}
+      </p>
+      {preview.warnings.length > 0 && <AdminNotices warnings={preview.warnings} warningsTitle="Consecuencias" />}
+      {previewBoard && previewBoard.rows.length > 0 && (
+        <ol style="margin:.5rem 0 0 1.25rem">
+          {previewBoard.rows.map((r) => <li>{r.title} <span class="adm-muted">({r.owner.name}) · {num(r.total)} puntos{r.not_prize_eligible ? ' · no opta a premio' : ''}</span></li>)}
+        </ol>
+      )}
+      <form method="post" class="adm-actions" style="margin-top:.75rem">
+        <input type="hidden" name="action" value={previewVerb} />
+        <button class="adm-btn adm-btn-primary" type="submit">{previewVerb === 'close' ? 'Cerrar la votación' : 'Abrir la votación'}</button>
+        <a class="adm-btn" href={adminHref(ev.slug, 'votos')}>Cancelar</a>
+      </form>
+    </div>
+  )}
+
+  {boardRes && !boardRes.ok && <AdminNotices result={boardRes} />}
+  {votesRes && !votesRes.ok && <AdminNotices result={votesRes} />}
+
+  {enabled && boardRes?.ok && (
+    <section style="margin-top:1.5rem">
+      <h2 class="adm-h2">Ranking {board.public ? '' : <span class="adm-muted">(no publicado)</span>}</h2>
+      {board.rows.length === 0 && <p class="adm-msg">Todavía no hay entregas activas que clasificar.</p>}
+      {board.rows.length > 0 && (
+        <div class="adm-table-wrap">
+          <table class="adm-table">
+            <thead>
+              <tr><th>#</th><th>Entrega</th><th>Propietario</th><th>Votos</th><th>Puntos voto</th><th>Checks</th><th>Total</th><th>Premio</th></tr>
+            </thead>
+            <tbody>
+              {board.rows.map((r) => (
+                <tr>
+                  <td>{r.rank}</td>
+                  <td><a href={`${adminHref(ev.slug, 'entregas')}?editar=${r.submission_id}#editar`}>{r.title}</a></td>
+                  <td>{r.owner.name} <span class="adm-muted" style="font-size:12px">({ownerKind(r.owner.type)})</span></td>
+                  <td>{r.votes}</td>
+                  <td>{num(r.vote_points)}</td>
+                  <td>{r.auto_points} <span class="adm-muted">/ {ev.voting.auto_max}</span></td>
+                  <td><strong>{num(r.total)}</strong></td>
+                  <td><span class:list={['adm-pill', { 'adm-pill-warn': r.not_prize_eligible }]}>{r.not_prize_eligible ? 'no opta' : 'opta'}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  )}
+
+  {enabled && votesRes?.ok && (
+    <section style="margin-top:1.5rem">
+      <h2 class="adm-h2">Votos <span class="adm-muted">({votes.length})</span></h2>
+      {votes.length === 0 && <p class="adm-msg">Todavía no hay votos.</p>}
+      {votes.length > 0 && (
+        <div class="adm-table-wrap">
+          <table class="adm-table">
+            <thead><tr><th>Votante</th><th>Entrega</th><th>Propietario</th><th>Fecha</th><th>Estado</th></tr></thead>
+            <tbody>
+              {votes.map((v) => (
+                <tr id={v.id}>
+                  <td>{v.voter_email}</td>
+                  <td>{v.submission_title || <span class="adm-muted">—</span>}</td>
+                  <td>{v.owner ? <>{v.owner.name} <span class="adm-muted" style="font-size:12px">({ownerKind(v.owner.type)})</span></> : <span class="adm-muted">—</span>}</td>
+                  <td>{fmtAdminDate(v.created_at)}</td>
+                  <td><span class:list={['adm-pill', { 'adm-pill-warn': !v.owner || v.withdrawn }]}>{voteState(v)}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  )}
+</EventsAdmin>

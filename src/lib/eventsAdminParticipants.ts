@@ -1,0 +1,195 @@
+import { adminFetch } from './eventsAdmin';
+import { badForm, beginForm, on, SAFE_ID, str, type FormOutcome } from './eventsAdminForms';
+import { optionLabel, tObj } from './i18n';
+
+/**
+ * Pantalla de participantes del panel (SPEC v3 §6.2 y §8, W-05): tabla con
+ * filtros, alta manual, edición, baja, reincorporación, promoción, paso a
+ * reserva, importación CSV (con previsualización) y exportación. Igual que
+ * el resto del panel: formularios sin JavaScript que procesa el fichero de
+ * ruta y acaban en redirección o en la misma página con la respuesta.
+ */
+
+/** Fila de `GET /{slug}/admin/participants` (participante completo más equipo y entrega). */
+export interface AdminParticipantRow {
+  id: string;
+  position: number;
+  member_uuid: string;
+  name: string;
+  email: string;
+  discord_user: string;
+  specialty: string | null;
+  level: string | null;
+  status: string;
+  is_reserve: boolean;
+  team_id: string | null;
+  team_name: string | null;
+  submission_id: string | null;
+  source: string;
+  added_by: { actor: string; email?: string } | null;
+  notes: string;
+  withdrawn_reason: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Etiquetas de especialidad y nivel dentro del panel.
+ *
+ * El vocabulario lo escribe quien organiza el evento (SPEC §3.2), así que
+ * `events.options` solo traduce el fijo de v2 y el resto sale con la inicial
+ * en mayúscula: sin esto, "devops" aparecía en minúscula al lado de
+ * "Frontend" en la misma lista. La parte pública ya lo hacía; el panel no, y
+ * el mismo dato se veía de dos formas según la pantalla.
+ *
+ * El panel es solo español (no tiene variante `/es/`), de ahí el locale fijo.
+ * El diccionario se resuelve una vez: es constante en todo el proceso.
+ */
+const ADMIN_OPTIONS = tObj<Record<string, string>>('events.options', 'es');
+
+export function adminOptionLabel(value?: string | null): string {
+  return optionLabel(ADMIN_OPTIONS, value);
+}
+
+/**
+ * Especialidad y nivel de un participante, ya etiquetados, para las fichas
+ * del panel. Devuelve cadena vacía si no tiene ninguno de los dos: quien
+ * llama decide el relleno ("—", el email…).
+ */
+export function participantProfile(m: { specialty?: string | null; level?: string | null }): string {
+  return [adminOptionLabel(m.specialty), adminOptionLabel(m.level)].filter(Boolean).join(' · ');
+}
+
+export const PARTICIPANT_STATUS_LABELS: Record<string, string> = {
+  registered: 'Inscrito',
+  reserve: 'Reserva',
+  promoted: 'Promovido',
+  withdrawn: 'Baja',
+};
+
+export const PARTICIPANT_SOURCE_LABELS: Record<string, string> = {
+  register: 'inscripción',
+  submission: 'entrega',
+  import: 'importación',
+  admin: 'alta manual',
+};
+
+/** Informe de `POST …/participants/import` (SPEC v3 §6.2, B-12). */
+export interface ImportReport {
+  rows: { line: number; email: string; action: string; error?: string | null; participant_id?: string | null; warnings?: string[] }[];
+  created: number;
+  updated: number;
+  restored: number;
+  unchanged: number;
+  rejected: number;
+}
+
+export const IMPORT_ACTION_LABELS: Record<string, string> = {
+  created: 'creada',
+  updated: 'actualizada',
+  restored: 'reincorporada',
+  unchanged: 'sin cambios',
+  rejected: 'rechazada',
+};
+
+/** Filtros de la tabla leídos de la URL (`?estado=&equipo=&reserva=&q=`). */
+export interface ParticipantFilters {
+  status: string;
+  team: string;
+  reserve: string;
+  q: string;
+}
+
+export function readParticipantFilters(url: URL): ParticipantFilters {
+  const p = url.searchParams;
+  const status = p.get('estado') ?? '';
+  const reserve = p.get('reserva') ?? '';
+  return {
+    status: status in PARTICIPANT_STATUS_LABELS ? status : '',
+    team: (p.get('equipo') ?? '').trim().slice(0, 64),
+    reserve: reserve === 'si' ? 'si' : reserve === 'no' ? 'no' : '',
+    q: (p.get('q') ?? '').trim().slice(0, 100),
+  };
+}
+
+/** Filtros → query string de `GET …/admin/participants` (`?status=&team=&reserve=&q=`). */
+export function participantsSearch(f: ParticipantFilters): string {
+  const q = new URLSearchParams();
+  if (f.status) q.set('status', f.status);
+  if (f.team) q.set('team', f.team);
+  if (f.reserve) q.set('reserve', f.reserve === 'si' ? 'true' : 'false');
+  if (f.q) q.set('q', f.q);
+  const s = q.toString();
+  return s ? `?${s}` : '';
+}
+
+/**
+ * `/events/admin/{slug}/participantes`: procesa el POST según `action`
+ * (`add`, `update`, `withdraw`, `reinstate`, `promote`, `demote`,
+ * `import_preview`, `import`). Las acciones que escriben redirigen a la
+ * pantalla con `?ok=`; la previsualización de la importación y los errores
+ * vuelven a pintar la página con la respuesta.
+ */
+export async function handleParticipantsForm(request: Request, cookie: string, slug: string): Promise<FormOutcome> {
+  const f = await beginForm(request, { slug, screen: 'participantes' });
+  if (f.done) return f.done;
+  const { fd, values, action, back } = f;
+
+  if (action === 'add') {
+    const body = {
+      email: str(values, 'email'),
+      name: str(values, 'name'),
+      discord_user: str(values, 'discord_user'),
+      specialty: str(values, 'specialty'),
+      level: str(values, 'level'),
+      reserve: on(values, 'reserve'),
+      notes: str(values, 'notes'),
+    };
+    const result = await adminFetch(cookie, `${slug}/admin/participants`, { method: 'POST', body });
+    if (result.ok) return { redirect: back('alta', result.warnings) };
+    return { action, result, values };
+  }
+
+  if (action === 'import_preview' || action === 'import') {
+    const file = fd.get('csv');
+    const csv = file instanceof File ? await file.text() : typeof file === 'string' ? file : '';
+    if (!csv.trim()) {
+      return badForm(action, values, ['csv'], 'Falta el fichero CSV.', 'csv_invalid');
+    }
+    const result = await adminFetch<ImportReport>(cookie, `${slug}/admin/participants/import`, {
+      method: 'POST',
+      body: csv,
+      search: action === 'import_preview' ? '?dry_run=true' : '',
+    });
+    // La importación real también se queda en la página: el informe fila a fila es lo útil.
+    return { action, result, values };
+  }
+
+  const id = str(values, 'id');
+  if (!SAFE_ID.test(id)) {
+    return badForm(action, values, ['id'], 'Falta el participante.');
+  }
+
+  if (action === 'update') {
+    const body = {
+      name: str(values, 'name'),
+      discord_user: str(values, 'discord_user'),
+      specialty: str(values, 'specialty'),
+      level: str(values, 'level'),
+      notes: str(values, 'notes'),
+    };
+    const result = await adminFetch(cookie, `${slug}/admin/participants/${id}`, { method: 'PUT', body });
+    if (result.ok) return { redirect: back('editado', result.warnings) };
+    return { action, result, values };
+  }
+
+  const STATUS_ACTIONS: Record<string, string> = { withdraw: 'baja', reinstate: 'reincorporado', promote: 'promovido', demote: 'reserva' };
+  if (action in STATUS_ACTIONS) {
+    const body = action === 'reinstate' ? { reserve: on(values, 'reserve'), restore_submission: on(values, 'restore_submission') } : {};
+    const result = await adminFetch(cookie, `${slug}/admin/participants/${id}/${action}`, { method: 'POST', body });
+    if (result.ok) return { redirect: back(STATUS_ACTIONS[action], result.warnings) };
+    return { action, result, values };
+  }
+
+  return badForm(action, values, ['action'], 'Acción desconocida.');
+}

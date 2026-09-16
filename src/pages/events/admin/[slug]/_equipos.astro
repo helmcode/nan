@@ -1,0 +1,200 @@
+---
+// Equipos del evento (SPEC v3 §6.3 y §8, W-06): tablero con una columna por
+// equipo y otra con los inscritos sin equipo; mover entre columnas, crear,
+// renombrar, disolver y generar con previsualización. El POST lo procesa el
+// envoltorio de ruta; aquí solo se consulta y se pinta.
+import '../../../../styles/global.css';
+import EventsAdmin from '../../../../layouts/EventsAdmin.astro';
+import AdminNotices from '../../../../components/events/admin/AdminNotices.astro';
+import { adminFetch, adminHref, type AdminScreenProps } from '../../../../lib/eventsAdmin';
+import { readFlash, warningLabel } from '../../../../lib/eventsAdminForms';
+import { adminOptionLabel, participantProfile, type AdminParticipantRow } from '../../../../lib/eventsAdminParticipants';
+import { NO_TEAM, TEAM_ORIGIN_LABELS, type AdminTeamRow, type GenerateReport } from '../../../../lib/eventsAdminTeams';
+
+type Props = AdminScreenProps;
+const { staff, cookie, view, outcome } = Astro.props;
+const ev = view.event;
+const archived = Boolean(ev.archived_at);
+const isTeam = ev.format === 'team';
+const flash = readFlash(Astro.url, outcome);
+const limits = ev.team ?? null;
+
+const teamsRes = isTeam ? await adminFetch<AdminTeamRow[]>(cookie, `${ev.slug}/admin/teams`) : null;
+const freeRes = isTeam ? await adminFetch<AdminParticipantRow[]>(cookie, `${ev.slug}/admin/participants`, { search: '?team=none' }) : null;
+const teams = (teamsRes?.data ?? []).slice().sort((a, b) => a.id.localeCompare(b.id));
+// Solo los inscritos activos pueden entrar en un equipo (reserva y bajas no).
+const free = (freeRes?.data ?? []).filter((p) => p.status !== 'withdrawn' && !p.is_reserve).sort((a, b) => a.position - b.position);
+const locked = teams.filter((t) => t.locked).length;
+
+const previewing = outcome.action === 'generate_preview' && outcome.result?.ok;
+const report = previewing ? (outcome.result?.data as GenerateReport | null) : null;
+const topResult = previewing ? undefined : outcome.result;
+const v = (k: string, action: string, fallback = '') => (outcome.action === action && outcome.values ? String(outcome.values[k] ?? '') : fallback);
+
+const SIZE_PILLS: Record<string, string> = { team_empty: 'vacío', team_under_min: 'bajo mínimo', team_over_size: 'sobre tamaño' };
+const profile = participantProfile;
+const balance = (t: AdminTeamRow) => {
+  const parts = Object.entries(t.balance_score.specialties ?? {}).map(([k, n]) => `${adminOptionLabel(k)}×${n}`);
+  return [t.balance_score.avg_level ? `nivel medio ${t.balance_score.avg_level.toFixed(1)}` : '', ...parts].filter(Boolean).join(' · ');
+};
+---
+
+<EventsAdmin title={`Equipos · ${ev.name}`} staff={staff} event={{ slug: ev.slug, name: ev.name, status: ev.status }} current="equipos">
+  <AdminNotices ok={flash.ok} warnings={flash.warnings} result={topResult} forbidden={outcome.forbidden} />
+
+  {!isTeam && (
+    <p class="adm-msg">Este evento es individual: no tiene equipos. El formato se cambia en la <a href={adminHref(ev.slug)}>ficha del evento</a> (solo en borrador).</p>
+  )}
+
+  {isTeam && (
+    <section class="adm-card">
+      <dl class="adm-facts">
+        <div><dt>Equipos</dt><dd>{teams.length} <span class="adm-muted">/ máx {limits?.max_teams || '∞'}</span></dd></div>
+        <div><dt>Tamaño</dt><dd>{limits?.min_size ?? '—'}–{limits?.size ?? '—'} <span class="adm-muted">(mín–objetivo)</span></dd></div>
+        <div><dt>Sin equipo</dt><dd>{free.length}</dd></div>
+        <div><dt>Con entrega</dt><dd>{locked} <span class="adm-muted">bloqueados</span></dd></div>
+        <div><dt>Inscritos activos</dt><dd>{view.counts.registered}</dd></div>
+      </dl>
+      <p class="adm-muted" style="margin-top:.75rem;font-family:var(--font-mono);font-size:12px">
+        Los límites de tamaño solo avisan. Un equipo con entrega activa queda bloqueado: no se mueve a nadie ni se disuelve (decisión 19).
+        A los de reserva o de baja primero hay que <a href={adminHref(ev.slug, 'participantes')}>promoverlos o reincorporarlos</a>.
+      </p>
+    </section>
+  )}
+
+  {teamsRes && !teamsRes.ok && <AdminNotices result={teamsRes} />}
+  {freeRes && !freeRes.ok && <AdminNotices result={freeRes} />}
+
+  {isTeam && (
+    <div class="adm-board">
+      <section class="adm-col adm-col-free">
+        <h3>Sin equipo <span class="adm-muted">({free.length})</span></h3>
+        {free.length === 0 && <p class="adm-muted" style="font-size:13px">Todos los inscritos activos tienen equipo.</p>}
+        <ul class="adm-members">
+          {free.map((p) => (
+            <li>
+              <div>{p.name}</div>
+              <div class="adm-muted" style="font-size:12px">{profile(p) || p.email}</div>
+              {!archived && teams.some((t) => !t.locked) && (
+                <form method="post" class="adm-inline">
+                  <input type="hidden" name="action" value="move" />
+                  <input type="hidden" name="participant_id" value={p.id} />
+                  <select class="adm-input adm-input-sm" name="to" aria-label={`Equipo para ${p.name}`}>
+                    {teams.filter((t) => !t.locked).map((t) => <option value={t.id}>{t.name}</option>)}
+                  </select>
+                  <button class="adm-btn adm-btn-sm" type="submit">Añadir</button>
+                </form>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {teams.map((t) => (
+        <section class="adm-col" id={t.id}>
+          <h3>
+            {t.name} <span class="adm-muted">· {t.size}</span>
+          </h3>
+          <div>
+            <span class="adm-pill">{TEAM_ORIGIN_LABELS[t.origin] ?? t.origin}</span>
+            {t.locked && <span class="adm-pill adm-pill-warn" title="Tiene entrega activa">con entrega</span>}
+            {t.warnings.map((w) => <span class="adm-pill adm-pill-warn" title={warningLabel(w)}>{SIZE_PILLS[w] ?? w}</span>)}
+          </div>
+          {balance(t) && <p class="adm-muted" style="font-size:12px;margin:0">{balance(t)}</p>}
+          <ul class="adm-members">
+            {t.members.length === 0 && <li class="adm-muted">Sin miembros.</li>}
+            {t.members.map((m) => (
+              <li>
+                <div>{m.name}</div>
+                <div class="adm-muted" style="font-size:12px">{profile(m) || m.email}</div>
+                {!archived && !t.locked && (
+                  <form method="post" class="adm-inline">
+                    <input type="hidden" name="action" value="move" />
+                    <input type="hidden" name="participant_id" value={m.id} />
+                    <input type="hidden" name="from" value={t.id} />
+                    <select class="adm-input adm-input-sm" name="to" aria-label={`Mover a ${m.name}`}>
+                      <option value={NO_TEAM}>sin equipo</option>
+                      {teams.filter((o) => o.id !== t.id && !o.locked).map((o) => <option value={o.id}>{o.name}</option>)}
+                    </select>
+                    <button class="adm-btn adm-btn-sm" type="submit">Mover</button>
+                  </form>
+                )}
+              </li>
+            ))}
+          </ul>
+          {!archived && (
+            <div class="adm-col-foot">
+              <form method="post" class="adm-inline">
+                <input type="hidden" name="action" value="rename" />
+                <input type="hidden" name="id" value={t.id} />
+                <input class="adm-input adm-input-sm" name="name" value={t.name} maxlength="60" required aria-label="Nuevo nombre" style="flex:1;min-width:8rem" />
+                <button class="adm-btn adm-btn-sm" type="submit">Renombrar</button>
+              </form>
+              {t.submission_id && <a class="adm-muted" style="font-size:12px" href={adminHref(ev.slug, 'entregas')}>Ver la entrega</a>}
+              {!t.locked && (
+                <form method="post" class="adm-inline">
+                  <input type="hidden" name="action" value="delete" />
+                  <input type="hidden" name="id" value={t.id} />
+                  <button class="adm-btn adm-btn-sm adm-btn-danger" type="submit">Disolver</button>
+                  <span class="adm-muted" style="font-size:12px">los miembros siguen inscritos</span>
+                </form>
+              )}
+            </div>
+          )}
+        </section>
+      ))}
+    </div>
+  )}
+
+  {isTeam && !archived && (
+    <details class="adm-details" open={outcome.action === 'create'}>
+      <summary>Crear equipo</summary>
+      <div class="adm-details-body">
+        <form method="post">
+          <input type="hidden" name="action" value="create" />
+          <div class="adm-grid">
+            <label><span class="adm-label">Nombre <span class="adm-muted">(vacío: "Equipo N")</span></span><input class="adm-input" name="name" value={v('name', 'create')} maxlength="60" /></label>
+          </div>
+          {free.length > 0 && (
+            <>
+              <p class="adm-label" style="margin-top:1rem">Miembros iniciales (inscritos sin equipo)</p>
+              <div class="adm-checks" style="grid-template-columns:repeat(auto-fill,minmax(14rem,1fr))">
+                {free.map((p) => (
+                  <label class="adm-check"><input type="checkbox" name="member_ids" value={p.id} /> {p.name} <span class="adm-muted">{profile(p)}</span></label>
+                ))}
+              </div>
+            </>
+          )}
+          <div class="adm-actions"><button class="adm-btn adm-btn-primary" type="submit">Crear equipo</button></div>
+        </form>
+      </div>
+    </details>
+  )}
+
+  {isTeam && !archived && (
+    <details class="adm-details" open={outcome.action === 'generate_preview' || outcome.action === 'generate'}>
+      <summary>Generar equipos automáticamente</summary>
+      <div class="adm-details-body">
+        <p class="adm-muted" style="font-family:var(--font-mono);font-size:12px">
+          Reparte a los inscritos activos equilibrando especialidad y nivel. Sin "conservar manuales" descarta todos los equipos actuales;
+          con ella conserva los manuales y reparte solo al resto. No se puede generar con entregas hechas.
+        </p>
+        <form method="post" class="adm-actions" style="align-items:center">
+          <label class="adm-check"><input type="checkbox" name="keep_manual" checked={v('keep_manual', outcome.action ?? '') !== ''} /> conservar los equipos manuales</label>
+          <button class="adm-btn" type="submit" name="action" value="generate_preview">Previsualizar</button>
+          <button class="adm-btn adm-btn-danger" type="submit" name="action" value="generate">Generar</button>
+        </form>
+        {report && (
+          <div class="adm-msg adm-msg-warn" style="margin-top:1rem">
+            <p>
+              <strong>Previsualización</strong> (no se ha escrito nada): quedarían {report.teams} equipos, {report.kept} conservados y {report.created} nuevos.
+            </p>
+            {(outcome.result?.warnings ?? []).length > 0 && (
+              <ul>{(outcome.result?.warnings ?? []).map((w) => <li><code>{w}</code> — {warningLabel(w)}</li>)}</ul>
+            )}
+          </div>
+        )}
+      </div>
+    </details>
+  )}
+</EventsAdmin>

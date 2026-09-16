@@ -5,7 +5,7 @@ import NanPage from '../../../layouts/NanPage.astro';
 import EventHeader from '../../../components/events/EventHeader.astro';
 import VoteButton from '../../../components/events/VoteButton.tsx';
 import { getLocale, tObj, withLang } from '../../../lib/i18n';
-import { fetchMe, fetchPublic, hasSessionCookie, type PublicSubmission, type EventInfo } from '../../../lib/events';
+import { eventSession, fetchPublic, type PublicSubmission, type EventInfo } from '../../../lib/events';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -15,16 +15,14 @@ interface Props {
 const ev = Astro.props.event;
 const slug = ev.slug;
 
-const hasSession = hasSessionCookie(Astro.request);
 // Entregas + voto actual del visitante en paralelo (el voto permite marcar la
 // tarjeta votada y ofrecer cambiarlo; sin sesión queda null).
-const [projects, meRes] = await Promise.all([
+const [projects, { me, sessionOk }] = await Promise.all([
   ev.windows.gallery.visible ? fetchPublic<PublicSubmission[]>(slug, 'submissions') : Promise.resolve([]),
-  hasSession ? fetchMe(slug, Astro.request.headers.get('cookie') ?? '') : Promise.resolve({ me: null, unauthorized: false }),
+  eventSession(Astro.request, slug),
 ]);
 const list = projects ?? [];
-const sessionOk = hasSession && !meRes.unauthorized;
-const myVote = meRes.me?.my_vote ?? null;
+const myVote = me?.my_vote ?? null;
 const canVote = ev.windows.voting.open;
 const pr = tObj<Record<string, string>>('events.projects', locale);
 
