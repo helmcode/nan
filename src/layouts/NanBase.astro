@@ -27,6 +27,11 @@ interface Props {
    */
   nofollow?: boolean;
   /**
+   * Social preview image (absolute URL). Pages with their own cover, like an
+   * event page, pass it here; the rest keep the generic NaN card.
+   */
+  image?: string;
+  /**
    * Escala de titulares del sistema (H1 gigante en mayúsculas). Se apaga en
    * las pantallas que todavía se escriben con utilidades de Tailwind y
    * columnas estrechas, donde un H1 de 96px parte las palabras. Esas páginas
@@ -41,6 +46,7 @@ const {
   description = t('nan.meta.description', locale),
   noindex = false,
   nofollow = false,
+  image,
   scale = true,
 } = Astro.props;
 
@@ -55,7 +61,10 @@ const abs = (p: string) => new URL(normalize(p), site).href;
 const absAsset = (p: string) => new URL(p, site).href;
 
 const canonical = abs(path);
-const ogImage = absAsset(`/og/og-${locale}.png`);
+// The generic card is 1200×630; a custom cover has whatever size it has, so
+// the width/height hints only go out with the generic one.
+const ogImage = image ?? absAsset(`/og/og-${locale}.png`);
+const ogImageGeneric = !image;
 const alternates = LOCALES.map((l) => ({ lang: l, href: abs(switchLocalePath(path, l)) }));
 const xDefault = abs(switchLocalePath(path, 'en'));
 const ogLocale = locale === 'es' ? 'es_ES' : 'en_US';
@@ -120,8 +129,8 @@ const csp = [
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    {ogImageGeneric && <meta property="og:image:width" content="1200" />}
+    {ogImageGeneric && <meta property="og:image:height" content="630" />}
     <meta property="og:image:alt" content={title} />
     <meta property="og:locale" content={ogLocale} />
     <meta property="og:locale:alternate" content={locale === 'es' ? 'en_US' : 'es_ES'} />

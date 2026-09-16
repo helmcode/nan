@@ -92,7 +92,7 @@ describe('formToEventBody', () => {
   it('eventToForm → formToEventBody conserva un event.json real', () => {
     const ev = {
       ...NEW_EVENT_DEFAULTS, slug: 'gauntlet-2026-08', name: 'Gauntlet', description: 'd', rules: 'r', prize: 'p',
-      location: 'Madrid', url: 'https://nan.builders/gauntlet',
+      location: 'Madrid', url: 'https://nan.builders/gauntlet', image_url: 'https://nan.builders/img/events/gauntlet.webp',
       dates: { registration_open: '2026-08-01T00:00:00Z', registration_close: '2026-08-10T00:00:00Z', submission_open: null, submission_close: '2026-08-20T00:00:00Z', voting_open: null, voting_close: null, demo_day: null, demo_day_end: '2026-08-25T18:00:00Z' },
       submission: { ...NEW_EVENT_DEFAULTS.submission!, checks: ['url_live', 'in_nan_space', 'repo_public'], prize_requires: ['repo_public'] },
       voting: { enabled: true, vote_weight: 8, auto_max: 2 },
@@ -101,13 +101,14 @@ describe('formToEventBody', () => {
     expect(body.submission.checks).toEqual(ev.submission.checks);
     expect(body.voting).toEqual(ev.voting);
     expect(body.description).toBe('d');
-    // El formulario no expone location, url ni demo_day_end: NO van en el
+    // El formulario no expone location, url, image_url ni demo_day_end: NO van en el
     // cuerpo, y sobreviven al guardar porque el PUT del backend es un merge
     // por claves (UpdateEvent hace json.Unmarshal sobre el evento actual).
     // Si algún día el formulario los mandara como null o vacío, se
     // borrarían; este test es el que lo detectaría.
     expect(body).not.toHaveProperty('location');
     expect(body).not.toHaveProperty('url');
+    expect(body).not.toHaveProperty('image_url');
     expect(body.dates).not.toHaveProperty('demo_day_end');
     const { demo_day_end: _omitido, ...fechasDelFormulario } = ev.dates;
     expect(body.dates).toEqual(fechasDelFormulario);

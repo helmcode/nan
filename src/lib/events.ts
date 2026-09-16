@@ -154,6 +154,8 @@ export interface EventInfo {
   /** Dónde se celebra (texto libre) y enlace de acceso; opcionales (SPEC v3 §3.1, B-25). */
   location: string;
   url: string;
+  /** Cover image (http/https, optional; B-27): shown on the public page and used as og:image. */
+  image_url: string;
   format: EventFormat;
   status: string;
   dates: EventDates;

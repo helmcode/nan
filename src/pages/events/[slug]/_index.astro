@@ -134,10 +134,16 @@ const closedNote = fill(cap.closedNote, { cap: capacity, res: reserve });
 {/* Ficha: una columna centrada (max-w-3xl) con aire entre bloques. Las tarjetas
     siguen la casa: esquina recta (la impone nan-system.css), hairline y tinte
     violeta para lo que importa (fechas, premio, CTA). Botones = .btn de la casa. */}
-<NanPage scale={false} noindex title={pageTitle} description={ev.description}>
+<NanPage scale={false} noindex title={pageTitle} description={ev.description} image={ev.image_url || undefined}>
   <main class="px-6 pt-28 pb-32 md:pt-36 md:pb-40">
     <div class="mx-auto w-full max-w-3xl">
       <EventHeader event={ev} locale={locale} current="index" hasSession={sessionOk} />
+
+      {/* Cover (B-27). Decorative: the name is already the H1 right above. */}
+      {ev.image_url && (
+        <img src={ev.image_url} alt="" loading="eager" decoding="async"
+             class="mt-10 w-full border border-neutral-800 bg-neutral-900/40 md:mt-12" />
+      )}
 
       <section class="mt-10 md:mt-12">
         {ev.description && (

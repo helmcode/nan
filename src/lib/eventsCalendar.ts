@@ -16,7 +16,7 @@ import { apiBase, jsonData, ssrHeaders, type EventInfo } from './events';
 /** Resumen de `GET /api/events`: los campos de la ficha que usa la página. */
 export type PublicEventSummary = Pick<
   EventInfo,
-  'slug' | 'kind' | 'name' | 'description' | 'location' | 'url' | 'status' | 'dates'
+  'slug' | 'kind' | 'name' | 'description' | 'location' | 'url' | 'image_url' | 'status' | 'dates'
 >;
 
 /** Ruta del feed dentro del sitio: pasa por el proxy same-origin. */
