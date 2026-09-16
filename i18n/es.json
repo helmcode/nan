@@ -395,7 +395,7 @@
         "GLM 5.3, modelo abierto frontier con razonamiento",
         "Asignación de 3.000M de tokens por periodo de facturación",
         "400M de tokens por ventana deslizante de 4h: el límite que un agente de código alcanza primero",
-        "Contexto de 1M · 5 peticiones en paralelo",
+        "Contexto de 1M · 10 peticiones en paralelo",
         "Todo lo incluido en nan_member",
         "El acceso se activa pocos minutos después del pago"
       ],

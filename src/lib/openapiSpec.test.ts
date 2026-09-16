@@ -197,20 +197,23 @@ describe('openapi.json: rate limits come from the single source of truth', () =>
     expect(description).toContain(
       `| Requests per minute | ${DEFAULT_RATE_LIMITS.perKey.requestsPerMinute} |`,
     );
-    expect(description).toContain(
-      `| Concurrent requests | ${DEFAULT_RATE_LIMITS.perKey.maxParallel} |`,
-    );
+    // Concurrency is enforced per model, so the row points at the per-model
+    // table below instead of a flat per-key number.
+    expect(description).toContain('| Concurrent requests | per model — see the per-model limits below |');
   });
 
   /** An env override has to reach /docs/api, not only /docs/models. */
-  it('follows an env override of the per-key limits', () => {
+  it('follows an env override of the per-key rate, and leaks no legacy parallel cap', () => {
     const overridden = getRateLimitsConfig({ RATE_LIMIT_RPM: '250', RATE_LIMIT_PARALLEL: '9' });
     const description = resolveSpec(overridden).info.description;
     expect(description).toContain('| Requests per minute | 250 |');
-    expect(description).toContain('| Concurrent requests | 9 |');
     expect(description).not.toContain(
       `| Requests per minute | ${DEFAULT_RATE_LIMITS.perKey.requestsPerMinute} |`,
     );
+    // RATE_LIMIT_PARALLEL is the legacy outer cap: it still parses (env
+    // overrides must not crash) but no surface publishes it any more.
+    expect(description).not.toContain('| Concurrent requests | 9 |');
+    expect(description).toContain('| Concurrent requests | per model — see the per-model limits below |');
   });
 
   it('publishes every model that carries a per-minute limit', () => {
@@ -230,6 +233,41 @@ describe('openapi.json: rate limits come from the single source of truth', () =>
       expect(description).toContain(`${formatTokens(m.periodCapTokens)}-token allowance`);
       expect(description).toContain(`${formatTokens(m.contextTokens)} tokens`);
     }
+  });
+
+  it('publishes the per-model concurrency with the tier numbers', () => {
+    const description = resolveSpec(DEFAULT_RATE_LIMITS).info.description;
+    expect(description).toContain('Concurrency is enforced per model');
+    // Grouped the way the per-minute rows are, so the Rate limits section
+    // grows no `| `glm5.3` |` row of its own that could shadow the Model
+    // catalog's row for the same model.
+    expect(description).toContain(
+      '| `glm5.3`, `glm5.3-flash`, `deepseek-v4-flash`, `qwen3.8-flash` | 7 (base plan) · 10 (premium plan) |',
+    );
+    expect(description).toContain('| `mimo-v2.5`, `qwen3.6`, `gemma4` | 5 |');
+  });
+
+  it('names the endpoints the per-model concurrency table does not cover', () => {
+    const description = resolveSpec(DEFAULT_RATE_LIMITS).info.description;
+    expect(description).toContain('Audio, embedding and rerank endpoints have no concurrency limit.');
+  });
+
+  it('gives a model whose numbers differ its own row, not its neighbour\'s', () => {
+    const config = {
+      ...DEFAULT_RATE_LIMITS,
+      concurrencyByModel: [
+        ...DEFAULT_RATE_LIMITS.concurrencyByModel,
+        { model: 'frontier-next', maxParallel: 5, tierMaxParallel: { inference: 8, premium: 12 } },
+      ],
+    };
+    const description = resolveSpec(config).info.description;
+    expect(description).toContain('| `frontier-next` | 8 (base plan) · 12 (premium plan) |');
+  });
+
+  it('resolves the premium concurrency in the windowed note', () => {
+    const description = resolveSpec(DEFAULT_RATE_LIMITS).info.description;
+    // glm5.3 is premium-only, so the note states the premium tier's number.
+    expect(description).toMatch(/Context window: 1M tokens, 10 concurrent requests\./);
   });
 });
 

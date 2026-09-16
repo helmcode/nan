@@ -12,12 +12,52 @@
 
 export interface PerKeyRateLimits {
   requestsPerMinute: number;
+  /**
+   * Legacy flat outer cap default. Kept only so the RATE_LIMIT_PARALLEL env
+   * override keeps parsing (an override must not crash the config), but no
+   * published surface renders it any more: concurrency is enforced per model
+   * (see concurrencyByModel), and the real per-key ceiling is tiered (see
+   * tierMaxParallel below). It used to render as "Max parallel: 5 concurrent",
+   * which the per-model tiers made false.
+   */
   maxParallel: number;
+  /**
+   * The per-key outer ceiling, per member tier: LiteLLM caps the KEY at
+   * max_parallel_requests across ALL models combined — 7 for the base
+   * (inference) plan, 10 for premium. It is enforced on the key itself, so a
+   * base member who sums the per-model allowances (7+7+5+5) and plans more
+   * than 7 in flight hits this cap first, on models whose own limit was never
+   * reached. Enforced by LiteLLM on the key, not by this site's env, so it is
+   * a code constant like the per-model tables, and the per-key card publishes
+   * it (perKeyOuterCapValue).
+   */
+  tierMaxParallel: { inference: number; premium: number };
 }
 
 export interface ModelRate {
   model: string;
   label: string;
+}
+
+/**
+ * Concurrency a model allows, per member tier.
+ *
+ * Concurrency is enforced per model, not per key: every model allows the flat
+ * default below, and the frontier models raise it for the member's tier, 7
+ * concurrent for inference-tier members and 10 for premium (glm_access)
+ * members. glm5.2 is premium too but intentionally stays at the flat 5, and
+ * it is hidden by owner decision; served via the glm5.3 group alias, so it
+ * has no row here.
+ */
+export interface ModelConcurrency {
+  model: string;
+  /** The flat default every tier falls back to; mirrors the backend default. */
+  maxParallel: number;
+  /** Per-tier overrides; when present they supersede maxParallel for that tier.
+   *  `inference` is the backend's name for the base plan; the published labels
+   *  render it as "base plan" — the vocabulary a member knows — not as
+   *  "inference tier". */
+  tierMaxParallel?: { inference: number; premium: number };
 }
 
 /**
@@ -39,6 +79,7 @@ export interface RateLimitsConfig {
   perKey: PerKeyRateLimits;
   tokensPerMinuteByModel: ModelRate[];
   requestsPerMinuteByModel: ModelRate[];
+  concurrencyByModel: ModelConcurrency[];
   windowedModels: WindowedModelLimits[];
 }
 
@@ -52,7 +93,12 @@ export interface RateLimitsEnv {
  * model is added or removed, which is a code change anyway.
  */
 export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
-  perKey: { requestsPerMinute: 60, maxParallel: 5 },
+  // maxParallel is the legacy outer cap default (see PerKeyRateLimits): no
+  // surface renders it; it exists for RATE_LIMIT_PARALLEL env-override compat.
+  // tierMaxParallel is the real per-key ceiling: LiteLLM caps the key at
+  // max_parallel_requests across all models combined, and the per-key card
+  // publishes it.
+  perKey: { requestsPerMinute: 60, maxParallel: 5, tierMaxParallel: { inference: 7, premium: 10 } },
   tokensPerMinuteByModel: [
     { model: 'deepseek-v4-flash', label: '1.5M tpm' },
     { model: 'mimo-v2.5', label: '1.5M tpm' },
@@ -60,6 +106,24 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
     { model: 'gemma4', label: '1.5M tpm' },
   ],
   requestsPerMinuteByModel: [{ model: 'rerank', label: '1000 rpm' }],
+  // Per-model concurrency. The flat default (5) is what every model allows;
+  // the four frontier models raise it per tier. The chat models are
+  // enumerated because they are the ones a member runs agents against; the
+  // utility endpoints have no rows because the hook does not govern them:
+  // audio, embeddings and rerank are exempt from the concurrency limit
+  // (FALLBACK_EXEMPT_MODELS), and images are not hook-governed at all.
+  // Env overrides do not reach this table: RATE_LIMIT_PARALLEL moves
+  // only the legacy per-key outer cap (PerKeyRateLimits.maxParallel), which
+  // no surface renders any more.
+  concurrencyByModel: [
+    { model: 'glm5.3', maxParallel: 5, tierMaxParallel: { inference: 7, premium: 10 } },
+    { model: 'glm5.3-flash', maxParallel: 5, tierMaxParallel: { inference: 7, premium: 10 } },
+    { model: 'deepseek-v4-flash', maxParallel: 5, tierMaxParallel: { inference: 7, premium: 10 } },
+    { model: 'qwen3.8-flash', maxParallel: 5, tierMaxParallel: { inference: 7, premium: 10 } },
+    { model: 'mimo-v2.5', maxParallel: 5 },
+    { model: 'qwen3.6', maxParallel: 5 },
+    { model: 'gemma4', maxParallel: 5 },
+  ],
   // glm5.3 (premium tier) is absent from the per-minute tables on purpose: its
   // gate is the 4h sliding window plus the allowance per billing period. These
   // mirror the backend policy (cloud-api modelRateLimits + the token cap for
@@ -166,6 +230,50 @@ export function windowedModelNote(m: WindowedModelLimits, lang: DocsLocale = 'en
   return `${windowedModelHeadline(m, lang)} ${windowedModelBody(m, lang)}`;
 }
 
+/**
+ * The concurrency a model allows a premium member: the number the premium
+ * card ("glm5.3 · premium tier limits") and the spec's windowed note publish.
+ * Those surfaces are addressed to premium members, so they resolve the
+ * premium variant; a model without a tier variant falls back to the flat
+ * default the caller hands in.
+ */
+export function premiumConcurrency(
+  config: RateLimitsConfig,
+  model: string,
+  fallback: number,
+): number {
+  const entry = config.concurrencyByModel.find((c) => c.model === model);
+  return entry?.tierMaxParallel?.premium ?? fallback;
+}
+
+/**
+ * The value of a per-model concurrency row: the flat number, or the pair of
+ * tier numbers when the model carries them. Shared by <RateLimits />,
+ * rateLimitsToMd() and rateLimitsToSpecMarkdown() so the three surfaces
+ * cannot disagree about the wording either.
+ */
+export function concurrencyValue(c: ModelConcurrency, lang: DocsLocale = 'en'): string {
+  if (!c.tierMaxParallel) return `${c.maxParallel}`;
+  const L = rateLimitsLabels(lang);
+  return `${c.tierMaxParallel.inference} (${L.tierBase}) · ${c.tierMaxParallel.premium} (${L.tierPremium})`;
+}
+
+/**
+ * The per-key card's outer-ceiling value: the number a member plans against
+ * when they run requests across models, because the key caps the total before
+ * any per-model limit is reached. Composed from the label table (the way
+ * concurrencyValue composes the per-model values) so the two locales cannot
+ * drift, and so the numbers come from the config instead of being retyped on
+ * the page.
+ */
+export function perKeyOuterCapValue(perKey: PerKeyRateLimits, lang: DocsLocale = 'en'): string {
+  const L = rateLimitsLabels(lang);
+  return (
+    `${perKey.tierMaxParallel.inference} (${L.tierBase}) · ` +
+    `${perKey.tierMaxParallel.premium} (${L.tierPremium}) ${L.simultaneousPerKey}`
+  );
+}
+
 function parsePositiveInt(raw: string | undefined, fallback: number, varName: string): number {
   if (raw === undefined || raw.trim() === '') return fallback;
   const n = Number(raw);
@@ -191,6 +299,9 @@ export function getRateLimitsConfig(env: RateLimitsEnv = {}): RateLimitsConfig {
         DEFAULT_RATE_LIMITS.perKey.maxParallel,
         'RATE_LIMIT_PARALLEL',
       ),
+      // The outer ceiling per tier is a code constant like the per-model
+      // table: LiteLLM enforces it on the key, so no env var reaches it.
+      tierMaxParallel: DEFAULT_RATE_LIMITS.perKey.tierMaxParallel,
     },
   };
 }
@@ -212,11 +323,16 @@ export function getRateLimitsConfig(env: RateLimitsEnv = {}): RateLimitsConfig {
  */
 export function rateLimitsToSpecMarkdown(config: RateLimitsConfig): string {
   const tpm = config.tokensPerMinuteByModel;
+  // The spec is English-only, so the labels resolve to the English table.
+  const L = rateLimitsLabels('en');
   const rows = [
     '| Limit | Value |',
     '| --- | --- |',
     `| Requests per minute | ${config.perKey.requestsPerMinute} |`,
-    `| Concurrent requests | ${config.perKey.maxParallel} |`,
+    // Concurrency is enforced per model, so instead of a flat per-key number
+    // (which the per-model tiers made false) the row points at the per-model
+    // table below.
+    `| ${L.perKeyConcurrency} | ${L.concurrencyPointer} |`,
   ];
   if (tpm.length) {
     // The label already carries its unit ("1.5M tpm"), so the value column
@@ -229,10 +345,47 @@ export function rateLimitsToSpecMarkdown(config: RateLimitsConfig): string {
   }
 
   const out = [
-    'Limits apply per API key (RPM and concurrency), not on total token volume:',
+    'Limits apply per API key (requests per minute) and per model (concurrent requests), not on total token volume:',
     '',
     ...rows,
   ];
+
+  if (config.concurrencyByModel.length) {
+    // Rows are grouped by value, the way the per-minute rows above group
+    // models comma-joined in the limit column. One row per model would also
+    // put `| `glm5.3` |` rows in the Rate limits section, ahead of the Model
+    // catalog's row for the same model, and any consumer reading "the first
+    // catalog row for X" would pick the wrong one. Grouping by VALUE rather
+    // than by shape keeps a model whose numbers differ from its neighbours on
+    // a row of its own instead of publishing their numbers for it.
+    out.push(
+      '',
+      'Concurrency is enforced per model, not per key. The frontier models raise the default for the member\'s tier:',
+      '',
+      '| Model | Concurrent requests |',
+      '| --- | --- |',
+    );
+    let group: string[] = [];
+    let groupValue = '';
+    const flush = () => {
+      if (group.length) {
+        out.push(`| ${group.map((m) => `\`${m}\``).join(', ')} | ${groupValue} |`);
+      }
+    };
+    for (const c of config.concurrencyByModel) {
+      const value = concurrencyValue(c);
+      if (value !== groupValue) {
+        flush();
+        group = [];
+        groupValue = value;
+      }
+      group.push(c.model);
+    }
+    flush();
+    // The card names the endpoints the table does not cover; the spec says
+    // the same, or a client author reads the rows above as exhaustive.
+    out.push('', L.concurrencyExempt);
+  }
 
   for (const m of config.windowedModels) {
     out.push(
@@ -242,7 +395,7 @@ export function rateLimitsToSpecMarkdown(config: RateLimitsConfig): string {
         `${m.windowHours} hours and a ${formatTokens(m.periodCapTokens)}-token allowance that ` +
         `returns to zero when your billing period starts. The window is rolling, not a daily ` +
         `reset. Context window: ${formatTokens(m.contextTokens)} tokens, ` +
-        `${m.maxParallel} concurrent requests.`,
+        `${premiumConcurrency(config, m.model, m.maxParallel)} concurrent requests.`,
     );
   }
 
@@ -259,8 +412,16 @@ export function rateLimitsLabels(lang: DocsLocale) {
   en: {
     perKey: 'rate limits per API key',
     requestsPerMin: 'Requests / min',
-    maxParallel: 'Max parallel',
-    concurrent: 'concurrent',
+    // The per-key concurrency row: concurrency is enforced per model, so the
+    // value points at the per-model card below instead of a flat number.
+    perKeyConcurrency: 'Concurrent requests',
+    concurrencyPointer: 'per model — see the per-model limits below',
+    // The per-key outer ceiling row: the key caps the total across all
+    // models, so the card states the ceiling next to the pointer — or a
+    // member summing the per-model numbers plans past it and eats an
+    // unexplained 429.
+    perKeyAcrossModels: 'Across all models',
+    simultaneousPerKey: 'simultaneous requests per key',
     premium: 'premium tier limits',
     window: (h: number) => `Rolling ${h}h window`,
     allowance: 'Allowance / billing period',
@@ -268,12 +429,22 @@ export function rateLimitsLabels(lang: DocsLocale) {
     concurrentRequests: 'Concurrent requests',
     tokensPerModel: 'tokens / min per model',
     requestsPerModel: 'requests / min per model',
+    concurrencyPerModel: 'concurrent requests per model',
+    concurrencyNote: 'Concurrency is enforced per model, not per API key.',
+    // The utility endpoints have no per-model concurrency row: name them, so
+    // a member scripting against them does not read the list above as
+    // applying to every endpoint.
+    concurrencyExempt: 'Audio, embedding and rerank endpoints have no concurrency limit.',
+    tierBase: 'base plan',
+    tierPremium: 'premium plan',
   },
   es: {
     perKey: 'límites por API key',
     requestsPerMin: 'Peticiones / min',
-    maxParallel: 'Máximo en paralelo',
-    concurrent: 'concurrentes',
+    perKeyConcurrency: 'Peticiones en paralelo',
+    concurrencyPointer: 'por modelo — ver los límites por modelo abajo',
+    perKeyAcrossModels: 'En todos los modelos',
+    simultaneousPerKey: 'peticiones simultáneas por key',
     premium: 'límites del tier premium',
     window: (h: number) => `Ventana móvil de ${h}h`,
     allowance: 'Cuota / periodo de facturación',
@@ -281,6 +452,11 @@ export function rateLimitsLabels(lang: DocsLocale) {
     concurrentRequests: 'Peticiones concurrentes',
     tokensPerModel: 'tokens / min por modelo',
     requestsPerModel: 'peticiones / min por modelo',
+    concurrencyPerModel: 'peticiones concurrentes por modelo',
+    concurrencyNote: 'La concurrencia se aplica por modelo, no por API key.',
+    concurrencyExempt: 'Los endpoints de audio, embeddings y rerank no tienen límite de concurrencia.',
+    tierBase: 'plan base',
+    tierPremium: 'plan premium',
   },
 }[lang];
 }

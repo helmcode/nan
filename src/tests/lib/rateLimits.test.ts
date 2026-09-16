@@ -3,10 +3,10 @@ import {
   DEFAULT_RATE_LIMITS,
   formatTokens,
   getRateLimitsConfig,
+  premiumConcurrency,
   windowedModelBody,
   windowedModelHeadline,
   windowedModelNote,
-  formatTokens,
 } from '../../lib/rateLimits';
 
 /**
@@ -18,7 +18,9 @@ import {
  * to what the platform actually enforces:
  *
  *   context 1,048,576      cloud-api usage_quota.go modelRateLimits
- *   concurrency 5          idem, and the ratelimit hook
+ *   concurrency 5          flat per-model default (idem, and the ratelimit hook);
+ *                          the frontier models raise it per tier, see
+ *                          concurrencyByModel: 7 inference / 10 premium
  *   400M per rolling 4h    ratelimit hook ROLLING_WINDOW_S / rolling budget
  *   3,000M per period      cloud-api usage_quota.go monthlyTokenCaps
  *
@@ -78,8 +80,38 @@ describe('rateLimits — glm5.3 windowed limits', () => {
 
   test('getRateLimitsConfig keeps the windowed models when env overrides the per-key values', () => {
     const config = getRateLimitsConfig({ RATE_LIMIT_RPM: '120', RATE_LIMIT_PARALLEL: '9' });
-    expect(config.perKey).toEqual({ requestsPerMinute: 120, maxParallel: 9 });
+    // The env moves the two env-driven fields; the outer ceiling per tier is a
+    // code constant (LiteLLM enforces it on the key) and stays put.
+    expect(config.perKey).toEqual({
+      ...DEFAULT_RATE_LIMITS.perKey,
+      requestsPerMinute: 120,
+      maxParallel: 9,
+    });
     expect(config.windowedModels).toEqual(DEFAULT_RATE_LIMITS.windowedModels);
+    expect(config.concurrencyByModel).toEqual(DEFAULT_RATE_LIMITS.concurrencyByModel);
+  });
+
+  test('the premium card resolves the tier raise: 10 concurrent for premium members', () => {
+    // The windowed card is titled "glm5.3 · premium tier limits", so its
+    // concurrency row is the premium tier's number, not the flat default.
+    expect(premiumConcurrency(DEFAULT_RATE_LIMITS, 'glm5.3', glm!.maxParallel)).toBe(10);
+  });
+
+  test('the frontier models carry the tier variants, the rest stay flat', () => {
+    const tiered = DEFAULT_RATE_LIMITS.concurrencyByModel.filter((c) => c.tierMaxParallel);
+    expect(tiered.map((c) => c.model)).toEqual([
+      'glm5.3',
+      'glm5.3-flash',
+      'deepseek-v4-flash',
+      'qwen3.8-flash',
+    ]);
+    for (const c of tiered) expect(c.tierMaxParallel).toEqual({ inference: 7, premium: 10 });
+    // glm5.2 is premium too but intentionally stays at the flat 5, and it is
+    // hidden by owner decision; served via the glm5.3 group alias, so it has
+    // no row here at all.
+    expect(DEFAULT_RATE_LIMITS.concurrencyByModel.map((c) => c.model)).not.toContain('glm5.2');
+    const flat = DEFAULT_RATE_LIMITS.concurrencyByModel.filter((c) => !c.tierMaxParallel);
+    for (const c of flat) expect(c.maxParallel, c.model).toBe(5);
   });
 });
 
