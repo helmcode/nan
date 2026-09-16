@@ -137,3 +137,22 @@ describe('_me.astro', () => {
     expect(source).toMatch(/optionLabel\(/);
   });
 });
+
+describe('event cover (B-27)', () => {
+  const page = readFileSync(resolve(src, 'pages/events/[slug]/_index.astro'), 'utf-8');
+  const base = readFileSync(resolve(src, 'layouts/NanBase.astro'), 'utf-8');
+
+  test('the page renders the cover only through the scheme guard', () => {
+    expect(page).toMatch(/const cover = import\.meta\.env\.DEV \? safeUrl\(ev\.image_url\) : safeImage\(ev\.image_url\)/);
+    expect(page).toMatch(/\{cover && \(\s*<img src=\{cover\} alt=""/);
+    expect(page).toContain('image={cover || undefined}');
+    // Nothing else prints the raw field.
+    expect(page.match(/ev\.image_url/g)).toHaveLength(2);
+  });
+
+  test('the layout only sends the 1200x630 hints with the generic card', () => {
+    expect(base).toContain('{ogImageGeneric && <meta property="og:image:width" content="1200" />}');
+    expect(base).toContain('{ogImageGeneric && <meta property="og:image:height" content="630" />}');
+    expect(base).toContain('const ogImageGeneric = !image;');
+  });
+});

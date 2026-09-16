@@ -104,7 +104,8 @@ describe('formToEventBody', () => {
     // El formulario no expone location, url, image_url ni demo_day_end: NO van en el
     // cuerpo, y sobreviven al guardar porque el PUT del backend es un merge
     // por claves (UpdateEvent hace json.Unmarshal sobre el evento actual).
-    // Si algún día el formulario los mandara como null o vacío, se
+    // Si algún día el formulario mandara location/url/image_url como cadena
+    // vacía (null no toca un string en Go) o demo_day_end como null, se
     // borrarían; este test es el que lo detectaría.
     expect(body).not.toHaveProperty('location');
     expect(body).not.toHaveProperty('url');

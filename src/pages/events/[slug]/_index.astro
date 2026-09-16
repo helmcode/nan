@@ -10,6 +10,7 @@ import RegistrationBar from '../../../components/events/RegistrationBar.astro';
 import { getLocale, t, tObj, withLang } from '../../../lib/i18n';
 import { eventSession, fmtDate, fmtRange, type EventInfo } from '../../../lib/events';
 import { eventCalendarPath, googleEventURL } from '../../../lib/eventsCalendar';
+import { safeImage, safeUrl } from '../../../lib/projects';
 
 const locale = getLocale(Astro.url);
 // El evento lo resuelve el envoltorio de ruta (resolveEventRoute) y llega por props.
@@ -127,6 +128,12 @@ switch (ev.phase) {
     break;
 }
 
+// Cover (B-27). The backend already validates http/https, but the CSP only
+// allows https images and the browser blocks mixed content, so an http cover
+// would render as a broken icon in production. In dev the covers point at
+// localhost, hence the looser check there.
+const cover = import.meta.env.DEV ? safeUrl(ev.image_url) : safeImage(ev.image_url);
+
 const pageTitle = `${ev.name} — nan.builders`;
 const closedNote = fill(cap.closedNote, { cap: capacity, res: reserve });
 ---
@@ -134,14 +141,14 @@ const closedNote = fill(cap.closedNote, { cap: capacity, res: reserve });
 {/* Ficha: una columna centrada (max-w-3xl) con aire entre bloques. Las tarjetas
     siguen la casa: esquina recta (la impone nan-system.css), hairline y tinte
     violeta para lo que importa (fechas, premio, CTA). Botones = .btn de la casa. */}
-<NanPage scale={false} noindex title={pageTitle} description={ev.description} image={ev.image_url || undefined}>
+<NanPage scale={false} noindex title={pageTitle} description={ev.description} image={cover || undefined}>
   <main class="px-6 pt-28 pb-32 md:pt-36 md:pb-40">
     <div class="mx-auto w-full max-w-3xl">
       <EventHeader event={ev} locale={locale} current="index" hasSession={sessionOk} />
 
-      {/* Cover (B-27). Decorative: the name is already the H1 right above. */}
-      {ev.image_url && (
-        <img src={ev.image_url} alt="" loading="eager" decoding="async"
+      {/* Decorative: the name is already the H1 right above. */}
+      {cover && (
+        <img src={cover} alt="" loading="eager" decoding="async" fetchpriority="high"
              class="mt-10 w-full border border-neutral-800 bg-neutral-900/40 md:mt-12" />
       )}
 

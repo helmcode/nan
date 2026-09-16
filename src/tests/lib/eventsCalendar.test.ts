@@ -21,7 +21,7 @@ import {
 
 const ev = (over: Partial<PublicEventSummary> = {}): PublicEventSummary => ({
   slug: 'taller-agentes', kind: 'workshop', name: 'Taller de agentes', description: 'Qué es un agente.',
-  location: 'Discord de NaN', url: '', status: 'closed',
+  location: 'Discord de NaN', url: '', image_url: '', status: 'closed',
   dates: { demo_day: '2026-09-16T17:00:00Z', demo_day_end: null },
   ...over,
 });

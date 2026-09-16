@@ -63,7 +63,7 @@ const absAsset = (p: string) => new URL(p, site).href;
 const canonical = abs(path);
 // The generic card is 1200×630; a custom cover has whatever size it has, so
 // the width/height hints only go out with the generic one.
-const ogImage = image ?? absAsset(`/og/og-${locale}.png`);
+const ogImage = image || absAsset(`/og/og-${locale}.png`);
 const ogImageGeneric = !image;
 const alternates = LOCALES.map((l) => ({ lang: l, href: abs(switchLocalePath(path, l)) }));
 const xDefault = abs(switchLocalePath(path, 'en'));

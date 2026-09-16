@@ -65,7 +65,7 @@ describe('NanBase — accesibilidad y SEO que no deben desaparecer', () => {
 
   it('lets a page replace the social image and NanPage forwards it (event covers, B-27)', () => {
     expect(nanBase).toContain('image?: string');
-    expect(nanBase).toContain('const ogImage = image ?? absAsset(');
+    expect(nanBase).toContain('const ogImage = image || absAsset(');
     expect(nanBase).toContain('<meta property="og:image" content={ogImage} />');
     expect(nanBase).toContain('<meta name="twitter:image" content={ogImage} />');
     expect(nanPage).toContain('image?: string');
