@@ -221,13 +221,15 @@
                   "reasoning_effort": {
                     "type": "string",
                     "enum": [
+                      "none",
+                      "minimal",
                       "low",
                       "medium",
-                      "high"
+                      "high",
+                      "max"
                     ],
-                    "default": "medium",
-                    "description": "Reasoning depth (`deepseek-v4-flash` only). The trace comes back in `message.reasoning_content`. More effort helps on hard problems, at the cost of latency and tokens.",
-                    "example": "medium"
+                    "description": "Reasoning depth. Per model: `glm5.3` and `glm5.3-flash` accept `low`, `medium`, `high` and `max` — deeper means the model reasons longer before answering. `qwen3.6` and `gemma4` accept `none` or `minimal` (no reasoning phase at all) and `low`, `medium`, `high`, `max`, which cap the reasoning phase at 2,048 / 8,192 / 16,384 / 32,768 tokens. `deepseek-v4-flash` reasons adaptively per request: the parameter is accepted and has no effect. The remaining chat models accept the parameter and manage their own depth. The reasoning trace arrives in `message.reasoning_content`. A value a model cannot apply is never rejected. Details: [Models](https://nan.builders/docs/models).",
+                    "example": "high"
                   },
                   "chat_template_kwargs": {
                     "type": "object",

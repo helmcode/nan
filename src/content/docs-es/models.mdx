@@ -309,4 +309,36 @@ OpenAI y la misma `base URL`.
   ]}
 />
 
+## Controlar el razonamiento.
+
+Todos los modelos de chat de arriba razonan antes de responder, y el
+razonamiento llega separado de la respuesta, en `message.reasoning_content`.
+Cuánto puede pensar cada modelo se elige por petición con el parámetro
+`reasoning_effort`, y cada modelo lo aplica distinto: la tabla es el contrato.
+Un valor que un modelo no puede aplicar nunca es un error.
+
+| Modelo | valores de `reasoning_effort` | Qué hace |
+| --- | --- | --- |
+| `glm5.3` · `glm5.3-flash` | `low`, `medium`, `high`, `max` | Control total. Valores más altos dejan que el modelo razone más antes de responder; `max` es el más profundo. |
+| `qwen3.6` | `none`, `minimal`, `low`, `medium`, `high`, `max` | `none` y `minimal` se saltan por completo la fase de razonamiento. Los otros cuatro la acotan: low 2.048, medium 8.192, high 16.384, max 32.768 tokens. |
+| `gemma4` | `none`, `minimal`, `low`, `medium`, `high`, `max` | Igual que `qwen3.6`: apagado, o un presupuesto de razonamiento entre 2.048 y 32.768 tokens. |
+| `deepseek-v4-flash` | cualquier valor (sin efecto) | El modelo decide por petición cuánto razona; el parámetro nunca cambia eso. |
+| `qwen3.8-flash` · `mimo-v2.5` | aceptado, profundidad no ajustable | El parámetro se acepta y nunca se rechaza, pero estos modelos gestionan su propia profundidad de razonamiento. |
+
+Sin parámetro, cada modelo usa su propio valor por defecto (razonamiento
+activo en `qwen3.6` y `gemma4`, con presupuesto de 16.384 tokens). Más
+razonamiento cuesta latencia y cuenta dentro de `max_tokens`; nunca cuesta
+configuración adicional.
+
+```bash
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Authorization: Bearer $NAN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "glm5.3-flash",
+    "reasoning_effort": "low",
+    "messages": [{"role": "user", "content": "Write a one-line summary of the CAP theorem."}]
+  }'
+```
+
 <RateLimits />
