@@ -23,6 +23,9 @@ const lang = Astro.url.pathname.startsWith('/es/') ? 'es' : 'en';
 const T = rateLimitsLabels(lang);
 ---
 
+<!-- The h2 gives the card stack a place in the docs layout's 'On this page' index, which is scraped from rendered h2/h3 (see Docs.astro): without it the rate limits section was invisible there. -->
+<h2 id="rate-limits" data-toc-text={T.sectionHeading}>{T.sectionHeading}</h2>
+
 <div class="rounded-xl border border-neutral-800/60 bg-[#0a0a0a] p-6 mb-6">
   <p class="font-mono text-[10px] text-violet-400 uppercase tracking-widest mb-4">
     {T.perKey}

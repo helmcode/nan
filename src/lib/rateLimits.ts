@@ -410,6 +410,11 @@ export function rateLimitsToSpecMarkdown(config: RateLimitsConfig): string {
 export function rateLimitsLabels(lang: DocsLocale) {
   return {
   en: {
+    // The section heading above the card stack. RateLimits renders it as a real
+    // h2 because the docs layout builds "On this page" by scraping rendered
+    // h2/h3 — the card stack had no heading at all, so /docs/models' TOC never
+    // mentioned the rate limits. data-toc-text keeps the TOC entry readable.
+    sectionHeading: 'Rate limits',
     perKey: 'rate limits per API key',
     requestsPerMin: 'Requests / min',
     // The per-key concurrency row: concurrency is enforced per model, so the
@@ -439,6 +444,7 @@ export function rateLimitsLabels(lang: DocsLocale) {
     tierPremium: 'premium plan',
   },
   es: {
+    sectionHeading: 'Límites de peticiones',
     perKey: 'límites por API key',
     requestsPerMin: 'Peticiones / min',
     perKeyConcurrency: 'Peticiones en paralelo',
