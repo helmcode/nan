@@ -341,4 +341,36 @@ curl https://api.nan.builders/v1/chat/completions \
   }'
 ```
 
+## Límite de stream solo-razonamiento.
+
+Los prompts que exigen mucho razonamiento pueden dejar al modelo pensando
+mucho tiempo antes de escribir nada. Cuando un turno en streaming produjo
+solo razonamiento — sin `content` ni tool calls — durante **60.000 caracteres
+de razonamiento** (unos 15.000 tokens) o **420 segundos**, la plataforma
+cierra el turno en lugar de dejarlo correr hacia un callejón sin salida:
+recibís `finish_reason: "length"` sobre un delta vacío, seguido de un chunk
+de usage.
+
+Ese chunk de usage es una estimación de lo que consumió el intento hasta el
+corte (tokens de prompt y de razonamiento), marcada con
+`"estimated": true, "billed": false` — los turnos cerrados así no se cobran
+de tu cuota — y lleva un marcador `nan_truncation` para que los clientes
+puedan distinguir este cierre de un corte real por longitud de contexto.
+Pedilo con `stream_options: {"include_usage": true}`.
+
+Dos cosas que conviene saber:
+
+- El límite no acota tu output. El primer token visible de contenido o
+  cualquier tool call lo desarma por el resto del turno: las respuestas que
+  escriben sobre la marcha nunca se cortan, por largas que sean.
+- Si un turno se cierra así, el modelo seguía planificando cuando tocó el
+  techo. Bajá `reasoning_effort` donde el modelo lo soporte (tabla de
+  arriba), o reestructurá el prompt para que empiece a escribir temprano.
+
+El límite existe para acotar un modo de fallo conocido de los modelos con
+thinking: a veces planifican sin converger durante 10–25 minutos y queman
+todo su presupuesto de output sin output visible. Está por encima del
+razonamiento legítimo más grande que medimos (~44.000 caracteres) y por
+debajo de toda corrida estancada.
+
 <RateLimits />

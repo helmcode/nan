@@ -339,4 +339,34 @@ curl https://api.nan.builders/v1/chat/completions \
   }'
 ```
 
+## Reasoning-only stream limit.
+
+Reasoning-heavy prompts can keep a model thinking for a long time before it
+writes anything. When a streaming turn has produced only reasoning — no
+`content`, no tool calls — for **60,000 reasoning characters** (roughly
+15,000 tokens) or **420 seconds**, the platform closes the turn instead of
+letting it run into a dead end: you receive `finish_reason: "length"` on an
+empty delta, followed by a usage chunk.
+
+That usage chunk is an estimate of what the attempt consumed up to the cut
+(prompt and reasoning tokens), marked `"estimated": true, "billed": false` —
+turns closed this way are not charged against your quota — and carries a
+`nan_truncation` marker so clients can tell this closure apart from a real
+context-length cut. Request it with `stream_options: {"include_usage": true}`.
+
+Two things worth knowing:
+
+- The limit does not cap your output. The first visible token of content or
+  any tool call disarms it for the rest of the turn: answers that write as
+  they go are never cut, however long they run.
+- If a turn closes this way, the model was still planning when it hit the
+  ceiling. Lower `reasoning_effort` where the model supports it (table
+  above), or restructure the prompt so the model starts writing early.
+
+The limit exists to bound a known failure mode of thinking models: they
+occasionally plan without converging for 10–25 minutes and burn their whole
+output budget with zero visible output. It sits above the largest legitimate
+reasoning trace we have measured (~44,000 characters) and below every
+stalled run.
+
 <RateLimits />
