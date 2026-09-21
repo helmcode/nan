@@ -47,6 +47,7 @@ function wordsIn(text: string, words: string[]): string[] {
 function visible(lang: 'en' | 'es'): string {
   const t = rateLimitsLabels(lang);
   return [
+    t.sectionHeading,
     t.perKey,
     t.requestsPerMin,
     t.perKeyConcurrency,
@@ -134,6 +135,19 @@ describe('the card renders no hardcoded copy', () => {
     expect(markup).toContain('{perKeyOuterCapValue(perKey, lang)}');
     expect(markup).toContain('{T.perKeyAcrossModels}');
     expect(markup).toContain('{T.concurrencyPointer}');
+  });
+
+  it('gives the card stack a heading the On this page index can find', () => {
+    // The docs layout builds "On this page" client-side by scraping rendered
+    // h2/h3 inside .docs-content (Docs.astro). The card stack had no heading
+    // at all, so /docs/models' TOC never mentioned the rate limits. The
+    // heading must stay an h2 carrying data-toc-text, and its text must come
+    // from the label table so each locale keeps its own wording.
+    const here = dirname(fileURLToPath(import.meta.url));
+    const source = readFileSync(resolve(here, '../components/docs/RateLimits.astro'), 'utf-8');
+    const markup = source.slice(source.lastIndexOf('---') + 3);
+    expect(markup).toContain('<h2 id="rate-limits" data-toc-text={T.sectionHeading}>');
+    expect(markup).toContain('{T.sectionHeading}</h2>');
   });
 });
 
