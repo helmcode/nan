@@ -35,6 +35,7 @@ If you do not know which one to pick, look for what you want to do in the first 
 | Turn text into audio | `kokoro` | 67 voices, two of them Spanish |
 | Transcribe audio | `whisper` | More than 99 languages, with automatic detection |
 | Generate or edit an image | `flux-2-klein` | Text to image and image to image |
+| Generate an image with clean text rendering | `qwen-image-2.1` | Text to image |
 
 ## Every model
 
@@ -53,6 +54,7 @@ If you do not know which one to pick, look for what you want to do in the first 
 | `kokoro` | Text to speech | - | text | no counter |
 | `whisper` | Speech to text | - | audio | no counter |
 | `flux-2-klein` | Generate and edit images | - | text · image | 100 requests/month |
+| `qwen-image-2.1` | Generate images (text→image) | - | text | 100 requests/month (shared pool) |
 
 The full spec sheets, with parameters, licenses and reasoning modes, are in [Models](/docs/models).
 

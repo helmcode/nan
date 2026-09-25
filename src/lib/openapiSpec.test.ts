@@ -53,6 +53,7 @@ const NAN_MODELS = [
   'kokoro',
   'whisper',
   'flux-2-klein',
+  'qwen-image-2.1',
 ];
 
 describe('openapi.json: structure', () => {

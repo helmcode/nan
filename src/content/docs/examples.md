@@ -473,6 +473,73 @@ console.log(image.data[0].url);
 `/images/edits` takes up to four reference images (PNG, JPEG or WebP, under 25 MB each) and does not support `mask`: sending one returns `400`.
 
 Images need inference membership, `403` otherwise, and they run on their own budget: 20 requests per minute and 100 per month, which does not touch your token quota.
+## model: qwen-image-2.1
+
+text-to-image generation
+
+### curl
+
+```bash
+curl https://api.nan.builders/v1/images/generations \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-your-key-here" \
+  -d '{
+    "model": "qwen-image-2.1",
+    "prompt": "A chalkboard with the word lighthouse written on it, clean lettering",
+    "size": "1024x1024",
+    "n": 1
+  }'
+# → {"created":...,"data":[{"url":"https://..."}]}
+```
+
+Each side of `size` has to be divisible by 16 and between 512 and 1280, with an aspect ratio between 1:3 and 3:1. `n` goes up to 4. No reference images: this model is text-to-image only. `seed` is an integer in 0..2147483647.
+
+### python
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-your-key-here",
+  base_url="https://api.nan.builders/v1"
+)
+
+image = client.images.generate(
+  model="flux-2-klein",
+  prompt="A chalkboard with the word lighthouse written on it, clean lettering",
+  size="1024x1024",
+  extra_body={"seed": 42}
+)
+
+print(image.data[0].url)
+```
+
+The link is temporary, about 60 minutes. Ask for `response_format="b64_json"` and the bytes arrive inline in `data[0].b64_json` instead, base64-encoded. `seed` and `guidance` are NaN extensions, so the OpenAI SDK sends them through `extra_body`.
+
+### node.js (image to image)
+
+```javascript
+import OpenAI from "openai";
+import fs from "fs";
+
+const client = new OpenAI({
+  apiKey: "sk-your-key-here",
+  baseURL: "https://api.nan.builders/v1",
+});
+
+const image = await client.images.edit({
+  model: "flux-2-klein",
+  image: fs.createReadStream("reference.png"),
+  prompt: "Turn the scene into winter, with snow",
+  size: "1024x1024",
+});
+
+console.log(image.data[0].url);
+```
+
+`/images/edits` takes up to four reference images (PNG, JPEG or WebP, under 25 MB each) and does not support `mask`: sending one returns `400`.
+
+Images need inference membership, `403` otherwise, and they run on their own budget: 20 requests per minute and 100 per month, which does not touch your token quota.
 
 ## Connect your editor or your agent
 

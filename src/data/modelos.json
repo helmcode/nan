@@ -129,6 +129,13 @@
           "specs": "FLUX diffusion · text→image · image→image · 256-1536 px · 1-4 per request",
           "cuota": "100 req/mes",
           "frontier": false
+        },
+        {
+          "id": "qwen-image-2.1",
+          "by": "Alibaba",
+          "specs": "Qwen diffusion · text→image · 512-1280 px · 1-4 per request",
+          "cuota": "100 req/mes",
+          "frontier": false
         }
       ]
     }

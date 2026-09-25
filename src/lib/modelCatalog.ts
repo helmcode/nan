@@ -224,6 +224,18 @@ export const MODELS: ModelSpec[] = [
       es: 'Generar y editar imágenes',
     },
   },
+  {
+    id: 'qwen-image-2.1',
+    by: 'Alibaba',
+    kind: 'image',
+    inputs: ['text'],
+    quota: { kind: 'monthly', label: { en: '100 requests / mo', es: '100 peticiones/mes' } },
+    endpoint: '/images/generations',
+    bestFor: {
+      en: 'Text-to-image with clean text rendering',
+      es: 'Texto a imagen con texto legible en la imagen',
+    },
+  },
 ];
 
 /** Every id the cluster answers to, for validating what the docs write. */

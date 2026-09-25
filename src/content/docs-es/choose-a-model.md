@@ -35,6 +35,7 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 | Convertir texto en audio | `kokoro` | 67 voces, dos de ellas en español |
 | Transcribir audio | `whisper` | Más de 99 idiomas, con detección automática |
 | Generar o editar una imagen | `flux-2-klein` | Texto a imagen e imagen a imagen |
+| Generar una imagen con texto legible | `qwen-image-2.1` | Texto a imagen |
 
 ## Todos los modelos
 
@@ -53,6 +54,7 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 | `kokoro` | Texto a voz | - | texto | sin contador |
 | `whisper` | Voz a texto | - | audio | sin contador |
 | `flux-2-klein` | Generar y editar imágenes | - | texto · imagen | 100 peticiones/mes |
+| `qwen-image-2.1` | Generar imágenes (texto→imagen) | - | texto | 100 peticiones/mes (pool compartido) |
 
 Las fichas completas, con parámetros, licencias y modos de razonamiento, están en [Modelos](/es/docs/models).
 
