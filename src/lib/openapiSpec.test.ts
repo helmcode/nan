@@ -17,13 +17,13 @@ import { DEFAULT_RATE_LIMITS, formatTokens, getRateLimitsConfig } from './rateLi
  * this mostly watches for is anything from there creeping back in.
  *
  * The endpoint surface was checked against the real backend by probing each
- * route: the 10 listed here answer 401 (they exist and want auth) while
+ * route: the 11 listed here answer 401 (they exist and want auth) while
  * /v1/moderations, /v1/batches and /v1/files answer 404 (not enabled on NaN).
  */
 
 const raw = JSON.stringify(spec);
 
-/** The 10 public routes verified against api.nan.builders. */
+/** The 11 public routes verified against api.nan.builders. */
 const PUBLIC_SURFACE: Array<[string, string]> = [
   ['/models', 'get'],
   ['/chat/completions', 'post'],
@@ -35,6 +35,7 @@ const PUBLIC_SURFACE: Array<[string, string]> = [
   ['/responses', 'post'],
   ['/images/generations', 'post'],
   ['/images/edits', 'post'],
+  ['/usage', 'get'],
 ];
 
 /** NaN's real catalogue (src/data/modelos.json + the API reference). */
