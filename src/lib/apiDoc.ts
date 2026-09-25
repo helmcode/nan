@@ -62,7 +62,7 @@ let cache: { key: string; text: string } | null = null;
  *
  * Memoised on the rate-limit values rather than unconditionally: the spec is
  * static within a deployment, but the limits come from the env, so a config
- * change has to produce different text. Walking 10 endpoints and 19 schemas on
+ * change has to produce different text. Walking 11 endpoints and 24 schemas on
  * every manifest request would otherwise be repeated work for an identical
  * result.
  */

@@ -159,6 +159,15 @@ Las cifras vigentes están al final de [Modelos](/es/docs/models), que es donde 
 
 </Details>
 
+## Métricas de uso
+
+La API también puede decirte cuánto has usado: `GET /v1/usage` devuelve tu propio consumo de tokens por día y por modelo, con los totales del periodo que pidas. Ese periodo cubre como máximo 90 días, y los rangos largos llegan paginados: pasa el `next_cursor` de una respuesta como `cursor` para obtener la siguiente página. La respuesta hace eco de los `start_date` y `end_date` efectivos que sirvió, así siempre sabes qué ventana cubren tus totales. Todos los parámetros están documentados en la [referencia de la API](/es/docs/api).
+
+```bash
+curl "https://api.nan.builders/v1/usage?start_date=2026-01-01&end_date=2026-01-31" \
+  -H "Authorization: Bearer $NAN_API_KEY"
+```
+
 ## Siguientes pasos
 
 - [Elige tu modelo](/es/docs/choose-a-model): qué modelo pedir para cada tarea, y cómo se escribe su id.

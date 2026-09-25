@@ -3,7 +3,7 @@
   "info": {
     "title": "NaN API",
     "version": "1.0.0",
-    "description": "Open models on a shared EU inference cluster. Zero logs.\n\nThe NaN API is OpenAI-compatible: predictable, resource-oriented URLs, JSON request and response bodies, and standard HTTP verbs and status codes. Point any OpenAI SDK at our base URL and your existing code keeps working. Change the base URL and the API key, and that's it.\n\nOne schema across every model, so you only learn the API once. Change the `model` field to switch models; everything else stays the same.\n\n- Base URL: `https://api.nan.builders/v1`\n- OpenAPI spec: this document. Import it into Postman, Insomnia, or your own tooling.\n\nIf you use the [Helmcode](https://helmcode.com) enterprise service, the base URL is `https://api.helmcode.com/v1` instead. Every other endpoint is identical.\n\n## Authentication\n\nEvery request authenticates with an API key, sent as a Bearer token:\n\n```\nAuthorization: Bearer $NAN_API_KEY\n```\n\nYou must be a NaN community member. Generate your key from user settings, under \"API Keys\", on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable. Keep it secret: never embed one in client-side code or commit it to source control. Requests must go over HTTPS; calls over plain HTTP fail.\n\n## Making requests\n\nThe API is OpenAI-compatible, so point an official OpenAI SDK at our base URL and change nothing else:\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.chat.completions.create(\n    model=\"deepseek-v4-flash\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello\"}],\n)\nprint(resp.choices[0].message.content)\n```\n\n## Streaming\n\nChat responses can stream token-by-token. Set `\"stream\": true` on `/chat/completions` and the response arrives as Server-Sent Events: each event is a `data:` line carrying a `chat.completion.chunk`, with the new text in `choices[0].delta.content`. A final `data: [DONE]` line ends the stream. Only `/chat/completions` streams incrementally; `/responses` currently emits a single terminal event.\n\n## Rate limits\n\n{{RATE_LIMITS}}\n\nImage endpoints run on their own budget, separate from the model endpoints: 20 requests per minute and 100 requests per month. Exceed any limit and you get a `429`.\n\n## Errors\n\nNaN uses conventional HTTP status codes: `2xx` on success, `4xx` for a problem with the request (a missing parameter, an invalid key, an unavailable model) and `5xx` for a server-side error. Every error returns a JSON body in the OpenAI shape:\n\n```json\n{\n  \"error\": {\n    \"message\": \"The model 'foo' does not exist.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"model\",\n    \"code\": \"model_not_found\"\n  }\n}\n```\n\n`message` is human-readable, `param` names the offending field when applicable, and `code` is a short machine-readable string you can branch on.\n\n| Status | Meaning | `code` |\n| --- | --- | --- |\n| `400` | Invalid or malformed parameter (`param` says which); or content blocked by the safety filter. | `invalid_request_error` · `content_policy_violation` |\n| `401` | Missing or invalid API key, or a key whose tier does not reach the requested model (`glm5.3`): \"This API key does not have access to the requested model\", `type: auth_error`. Measured 2026-09-12. | `invalid_api_key` |\n| `402` | The token allowance is spent on a model that carries one. Not retryable: the counter returns to zero when that model's quota period does, the calendar month for the models counted per month and your billing period for `glm5.3`. | `monthly_cap_reached` |\n| `403` | Your tier can't access this endpoint. Image generation requires inference membership. A model your tier cannot reach answers `401`, not this. | `tier_restricted` |\n| `404` | The requested model doesn't exist. | `model_not_found` |\n| `429` | Rate limit hit (`rpm_limit`, `max_parallel_requests`), the rolling 4h token budget of `glm5.3`, or a quota exhausted. | `rate_limit_exceeded` · `insufficient_quota` · `quota_exceeded` |\n| `500` | Something went wrong on our side (includes upstream model errors). | (none) |\n| `524` | Timeout, typical with large audio files on `/audio/transcriptions`. | (none) |\n\nRetry `429` and `5xx` responses with exponential backoff. Don't retry `400`, `401`, `403`, or `404` blindly: they'll fail the same way every time until you change the request. `402` cannot be fixed by repetition either: it clears when that model's quota period resets.\n\n## Model catalog\n\nEvery endpoint takes a `model` id. Capabilities vary by model:\n\n| Model | Use for | Capabilities |\n| --- | --- | --- |\n| `deepseek-v4-flash` | Chat, vision, reasoning | Streaming, tool calling, reasoning, image input, 1M-token context. 3B tokens/month per member |\n| `mimo-v2.5` | Chat, vision, audio | Streaming, tool calling, reasoning, image input, audio input, 1M-token context. 1.0B tokens/month per member |\n| `mimo-v2.6-flash` | Chat, vision, audio | Streaming, tool calling, reasoning, image input, audio input, 1M-token context. 1.0B tokens/month per member |\n| `qwen3.8-flash` | Chat, vision, agents | Streaming, tool calling, reasoning (on by default), vision, 262K-token context. 500M tokens/month per member |\n| `glm5.3-flash` | Chat, vision, agents | Streaming, tool calling, reasoning, vision, 1M-token context. 2B tokens/month per member |\n| `qwen3.6` | Chat, agents | Streaming, tool calling, vision, reasoning (opt-out, returns `reasoning_content`) |\n| `gemma4` | Chat, vision, agents | Streaming, tool calling, vision, reasoning (opt-in) |\n| `glm5.3` | Coding, long-horizon agents | Streaming, tool calling, reasoning trace, text-only input, 1M-token context. Premium tier only |\n| `qwen3-embedding` | Embeddings | 4096-dimension vectors |\n| `rerank` | RAG reranking | Qwen3-Reranker-8B, 100+ languages |\n| `kokoro` | Text-to-speech | Multiple voices and audio formats |\n| `whisper` | Speech-to-text | Transcription with word/segment timestamps |\n| `flux-2-klein` | Image generation | Text-to-image and image-to-image |\n\n`glm5.3` is served only to keys on the GLM 5.3 premium tier; every other model is available to any inference member. Call [List models](#tag/Models) for the exact set available to your key.\n\n## Versioning & compatibility\n\nThe API tracks the OpenAI API surface, so OpenAI SDKs and tools work against `https://api.nan.builders/v1` unchanged. This reference documents the stable public `/v1` endpoints, and we add capabilities without breaking existing fields.",
+    "description": "Open models on a shared EU inference cluster. Zero logs.\n\nThe NaN API is OpenAI-compatible: predictable, resource-oriented URLs, JSON request and response bodies, and standard HTTP verbs and status codes. Point any OpenAI SDK at our base URL and your existing code keeps working. Change the base URL and the API key, and that's it.\n\nOne schema across every model, so you only learn the API once. Change the `model` field to switch models; everything else stays the same.\n\n- Base URL: `https://api.nan.builders/v1`\n- OpenAPI spec: this document. Import it into Postman, Insomnia, or your own tooling.\n\nIf you use the [Helmcode](https://helmcode.com) enterprise service, the base URL is `https://api.helmcode.com/v1` instead. Every other endpoint is identical.\n\n## Authentication\n\nEvery request authenticates with an API key, sent as a Bearer token:\n\n```\nAuthorization: Bearer $NAN_API_KEY\n```\n\nYou must be a NaN community member. Generate your key from user settings, under \"API Keys\", on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable. Keep it secret: never embed one in client-side code or commit it to source control. Requests must go over HTTPS; calls over plain HTTP fail.\n\n## Making requests\n\nThe API is OpenAI-compatible, so point an official OpenAI SDK at our base URL and change nothing else:\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.chat.completions.create(\n    model=\"deepseek-v4-flash\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello\"}],\n)\nprint(resp.choices[0].message.content)\n```\n\n## Streaming\n\nChat responses can stream token-by-token. Set `\"stream\": true` on `/chat/completions` and the response arrives as Server-Sent Events: each event is a `data:` line carrying a `chat.completion.chunk`, with the new text in `choices[0].delta.content`. A final `data: [DONE]` line ends the stream. Only `/chat/completions` streams incrementally; `/responses` currently emits a single terminal event.\n\n## Rate limits\n\n{{RATE_LIMITS}}\n\nImage endpoints run on their own budget, separate from the model endpoints: 20 requests per minute and 100 requests per month. The usage endpoint is metered separately too: 30 requests per minute per member. Exceed any limit and you get a `429`.\n\n## Errors\n\nNaN uses conventional HTTP status codes: `2xx` on success, `4xx` for a problem with the request (a missing parameter, an invalid key, an unavailable model) and `5xx` for a server-side error. Every error returns a JSON body in the OpenAI shape:\n\n```json\n{\n  \"error\": {\n    \"message\": \"The model 'foo' does not exist.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"model\",\n    \"code\": \"model_not_found\"\n  }\n}\n```\n\n`message` is human-readable, `param` names the offending field when applicable, and `code` is a short machine-readable string you can branch on.\n\n| Status | Meaning | `code` |\n| --- | --- | --- |\n| `400` | Invalid or malformed parameter (`param` says which); or content blocked by the safety filter. | `invalid_request_error` · `content_policy_violation` |\n| `401` | Missing or invalid API key, or a key whose tier does not reach the requested model (`glm5.3`): \"This API key does not have access to the requested model\", `type: auth_error`. Measured 2026-09-12. | `invalid_api_key` |\n| `402` | The token allowance is spent on a model that carries one. Not retryable: the counter returns to zero when that model's quota period does, the calendar month for the models counted per month and your billing period for `glm5.3`. | `monthly_cap_reached` |\n| `403` | Your tier can't access this endpoint. Image generation requires inference membership. A model your tier cannot reach answers `401`, not this. | `tier_restricted` |\n| `404` | The requested model doesn't exist. | `model_not_found` |\n| `429` | Rate limit hit (`rpm_limit`, `max_parallel_requests`), the rolling 4h token budget of `glm5.3`, or a quota exhausted. | `rate_limit_exceeded` · `insufficient_quota` · `quota_exceeded` |\n| `500` | Something went wrong on our side (includes upstream model errors). | (none) |\n| `524` | Timeout, typical with large audio files on `/audio/transcriptions`. | (none) |\n\nRetry `429` and `5xx` responses with exponential backoff. Don't retry `400`, `401`, `403`, or `404` blindly: they'll fail the same way every time until you change the request. `402` cannot be fixed by repetition either: it clears when that model's quota period resets.\n\n## Model catalog\n\nEvery endpoint takes a `model` id. Capabilities vary by model:\n\n| Model | Use for | Capabilities |\n| --- | --- | --- |\n| `deepseek-v4-flash` | Chat, vision, reasoning | Streaming, tool calling, reasoning, image input, 1M-token context. 3B tokens/month per member |\n| `mimo-v2.5` | Chat, vision, audio | Streaming, tool calling, reasoning, image input, audio input, 1M-token context. 1.0B tokens/month per member |\n| `mimo-v2.6-flash` | Chat, vision, audio | Streaming, tool calling, reasoning, image input, audio input, 1M-token context. 1.0B tokens/month per member |\n| `qwen3.8-flash` | Chat, vision, agents | Streaming, tool calling, reasoning (on by default), vision, 262K-token context. 500M tokens/month per member |\n| `glm5.3-flash` | Chat, vision, agents | Streaming, tool calling, reasoning, vision, 1M-token context. 2B tokens/month per member |\n| `qwen3.6` | Chat, agents | Streaming, tool calling, vision, reasoning (opt-out, returns `reasoning_content`) |\n| `gemma4` | Chat, vision, agents | Streaming, tool calling, vision, reasoning (opt-in) |\n| `glm5.3` | Coding, long-horizon agents | Streaming, tool calling, reasoning trace, text-only input, 1M-token context. Premium tier only |\n| `qwen3-embedding` | Embeddings | 4096-dimension vectors |\n| `rerank` | RAG reranking | Qwen3-Reranker-8B, 100+ languages |\n| `kokoro` | Text-to-speech | Multiple voices and audio formats |\n| `whisper` | Speech-to-text | Transcription with word/segment timestamps |\n| `flux-2-klein` | Image generation | Text-to-image and image-to-image |\n\n`glm5.3` is served only to keys on the GLM 5.3 premium tier; every other model is available to any inference member. Call [List models](#tag/Models) for the exact set available to your key.\n\n## Versioning & compatibility\n\nThe API tracks the OpenAI API surface, so OpenAI SDKs and tools work against `https://api.nan.builders/v1` unchanged. This reference documents the stable public `/v1` endpoints, and we add capabilities without breaking existing fields.",
     "contact": {
       "name": "NaN",
       "url": "https://nan.builders"
@@ -53,6 +53,10 @@
     {
       "name": "Images",
       "description": "Text-to-image and image-to-image."
+    },
+    {
+      "name": "Usage",
+      "description": "Query your own token usage."
     }
   ],
   "paths": {
@@ -1390,6 +1394,184 @@
           }
         ]
       }
+    },
+    "/usage": {
+      "get": {
+        "operationId": "getUsage",
+        "tags": [
+          "Usage"
+        ],
+        "summary": "Get usage",
+        "description": "Returns your own token usage: one row per (date, model) pair, plus totals over the requested window and an all-time summary. Rows are ordered by date ascending, then model ascending.\n\n`totals` and `totals.by_model` cover the full requested window, not just the current page. `all_time` is always present.\n\nThe window may span at most 90 inclusive days: a wider window is rejected with `400`, never clamped.\n\nRate limit: 30 requests per minute per member, a budget separate from the model endpoints'. A `429` carries a `Retry-After` header with the seconds to wait.",
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Start of the window, `YYYY-MM-DD`, inclusive, in UTC. Defaults to `end_date` minus 30 days. A future `start_date` clamps to today (UTC)."
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "End of the window, `YYYY-MM-DD`, inclusive, in UTC. Defaults to today (UTC); future dates clamp to today."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque pagination cursor from a previous response's `next_cursor`. A malformed cursor returns `400`; a well-formed one simply positions the page — it is not validated against the current dataset."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "default": 100
+            },
+            "description": "Rows per page, 1–500. Out-of-range values are clamped into that range, and a non-numeric value falls back to the default of 100."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A usage report for the requested window.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageReport"
+                },
+                "example": {
+                  "object": "usage.report",
+                  "start_date": "2026-01-01",
+                  "end_date": "2026-01-31",
+                  "data": [
+                    {
+                      "date": "2026-01-15",
+                      "model": "glm5.3",
+                      "prompt_tokens": 120340,
+                      "completion_tokens": 45210,
+                      "total_tokens": 165550,
+                      "api_requests": 310
+                    }
+                  ],
+                  "totals": {
+                    "prompt_tokens": 2450000,
+                    "completion_tokens": 890000,
+                    "total_tokens": 3340000,
+                    "api_requests": 12500,
+                    "by_model": [
+                      {
+                        "model": "glm5.3",
+                        "prompt_tokens": 1300000,
+                        "completion_tokens": 440000,
+                        "total_tokens": 1740000,
+                        "api_requests": 8200
+                      }
+                    ]
+                  },
+                  "all_time": {
+                    "prompt_tokens": 9800000,
+                    "completion_tokens": 3400000,
+                    "total_tokens": 13200000,
+                    "api_requests": 41250,
+                    "cached_at": "2026-02-01T12:00:00Z"
+                  },
+                  "has_more": false,
+                  "next_cursor": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameter (`invalid_request_error`). The offending field is named in `param`: a window wider than 90 days (\"The requested window spans N days; the maximum is 90 inclusive days. Split the range into several requests.\"), `start_date` after `end_date`, a malformed date, a malformed `cursor` (\"Pass next_cursor from a previous response unchanged.\"), or a malformed account identity (`param` is `null`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "No usage identity for this member: the account has no API key, Discord link, or handle to resolve usage against, so there is nothing to report.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The API key alias is reserved for a service key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something failed on our side (`server_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many usage queries: 30 requests per minute per member (`rate_limit_exceeded`).",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl \"https://api.nan.builders/v1/usage?start_date=2026-01-01&end_date=2026-01-31\" \\\n  -H \"Authorization: Bearer $NAN_API_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "from openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\n# usage isn't part of the OpenAI SDK, so call it directly:\nresp = client.get(\"/usage?start_date=2026-01-01&end_date=2026-01-31\", cast_to=object)\nprint(resp[\"totals\"])"
+          },
+          {
+            "lang": "javascript",
+            "label": "Node.js",
+            "source": "// usage isn't part of the OpenAI SDK, so call it directly:\nconst res = await fetch(\"https://api.nan.builders/v1/usage?start_date=2026-01-01&end_date=2026-01-31\", {\n  headers: { Authorization: `Bearer ${process.env.NAN_API_KEY}` },\n});\nconsole.log(await res.json());"
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -2152,6 +2334,166 @@
           },
           "usage": {
             "$ref": "#/components/schemas/Usage"
+          }
+        }
+      },
+      "UsageReport": {
+        "type": "object",
+        "description": "Your token usage for the requested window.",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "usage.report"
+            ],
+            "description": "The object type, always `usage.report`."
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "description": "First day of the effective window actually served, `YYYY-MM-DD`, after any clamping: the window your totals cover."
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Last day of the effective window actually served, `YYYY-MM-DD`, after any clamping: the window your totals cover."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageRow"
+            },
+            "description": "One row per (date, model) pair in the window, ordered by date ascending, then model ascending. Long windows come back paginated."
+          },
+          "totals": {
+            "$ref": "#/components/schemas/UsageTotals",
+            "description": "Totals over the full requested window, not just the current page."
+          },
+          "all_time": {
+            "$ref": "#/components/schemas/UsageAllTime",
+            "description": "Your lifetime usage, always present."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more pages follow. When `true`, pass `next_cursor` back as the `cursor` parameter."
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The cursor for the next page, or `null` on the last page."
+          }
+        }
+      },
+      "UsageRow": {
+        "type": "object",
+        "description": "Usage for one model on one day.",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "The UTC day this row covers, `YYYY-MM-DD`."
+          },
+          "model": {
+            "type": "string",
+            "description": "The model id, as in the Model catalog."
+          },
+          "prompt_tokens": {
+            "type": "integer",
+            "description": "Input tokens used that day on that model."
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "description": "Output tokens generated that day on that model."
+          },
+          "total_tokens": {
+            "type": "integer",
+            "description": "`prompt_tokens` plus `completion_tokens`."
+          },
+          "api_requests": {
+            "type": "integer",
+            "description": "Requests made that day on that model. Request counts are only available from 2026-09-02 onward; older days report `0`."
+          }
+        }
+      },
+      "UsageTotals": {
+        "type": "object",
+        "description": "Totals over the full requested window, independent of pagination.",
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer",
+            "description": "Total input tokens in the window."
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "description": "Total output tokens in the window."
+          },
+          "total_tokens": {
+            "type": "integer",
+            "description": "`prompt_tokens` plus `completion_tokens`."
+          },
+          "api_requests": {
+            "type": "integer",
+            "description": "Total requests in the window. Request counts are only available from 2026-09-02 onward; older days report `0`."
+          },
+          "by_model": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageModelTotals"
+            },
+            "description": "The same totals, broken down per model."
+          }
+        }
+      },
+      "UsageModelTotals": {
+        "type": "object",
+        "description": "Window totals for one model.",
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "The model id, as in the Model catalog."
+          },
+          "prompt_tokens": {
+            "type": "integer",
+            "description": "Input tokens used on this model in the window."
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "description": "Output tokens generated on this model in the window."
+          },
+          "total_tokens": {
+            "type": "integer",
+            "description": "`prompt_tokens` plus `completion_tokens`."
+          },
+          "api_requests": {
+            "type": "integer",
+            "description": "Requests made on this model in the window. Request counts are only available from 2026-09-02 onward; older days report `0`."
+          }
+        }
+      },
+      "UsageAllTime": {
+        "type": "object",
+        "description": "Your lifetime usage across all models.",
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer",
+            "description": "Total input tokens ever used."
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "description": "Total output tokens ever generated."
+          },
+          "total_tokens": {
+            "type": "integer",
+            "description": "`prompt_tokens` plus `completion_tokens`."
+          },
+          "api_requests": {
+            "type": "integer",
+            "description": "Total requests recorded for this member. Request counts start on 2026-09-02; older days report `0`."
+          },
+          "cached_at": {
+            "type": "string",
+            "description": "When the all-time summary was last computed, as an ISO 8601 UTC timestamp."
           }
         }
       }
