@@ -1,7 +1,7 @@
 ---
 title: Ejemplos
 description: Fragmentos de código para conectarte a la API de NaN con Python, Node.js, curl y más.
-order: 19
+order: 18
 group: Guías
 ---
 
@@ -473,52 +473,6 @@ console.log(image.data[0].url);
 `/images/edits` acepta hasta cuatro imágenes de referencia (PNG, JPEG o WebP, de menos de 25 MB cada una) y no admite `mask`: mandar una devuelve `400`.
 
 Las imágenes necesitan membresía de inferencia, `403` si no la tienes, y van por su propio presupuesto: 20 peticiones por minuto y 100 al mes, que no toca tu cuota de tokens.
-
-## tool: web search
-
-búsqueda web autenticada para agentes: `POST /v1/search`
-
-### curl
-
-```bash
-curl https://api.nan.builders/v1/search \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-your-key-here" \
-  -d '{
-    "query": "latest go release",
-    "count": 5,
-    "freshness": "pw"
-  }'
-# → {"results":[{"title":...,"url":...,"snippet":...,"source":...}],"cached":false}
-```
-
-### python
-
-```python
-import os
-from openai import OpenAI
-
-client = OpenAI(
-  api_key=os.environ["NAN_API_KEY"],
-  base_url="https://api.nan.builders/v1"
-)
-
-# /search is not part of the standard OpenAI client, but we can invoke it with client.post().
-response = client.post(
-  path="/search",
-  cast_to=object,
-  body={
-    "query": "latest go release",
-    "count": 5,
-    "freshness": "pw",
-  },
-)
-
-for r in response["results"]:
-    print(r["title"], "-", r["url"])
-```
-
-También funciona con `requests` a pelo o con cualquier cliente HTTP: manda el cuerpo JSON con tu key en el Bearer.
 
 ## Conectar tu editor o tu agente
 

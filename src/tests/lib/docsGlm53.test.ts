@@ -133,8 +133,8 @@ describe('docs/api — glm5.3 is callable', () => {
   });
 
   test('the errors table documents the statuses the limits return', () => {
-    // The "## Errors" table, not the per-endpoint ones (web search has its own
-    // 429 rows and would answer first).
+    // The "## Errors" table, not the per-endpoint ones (an endpoint with its
+    // own 429 rows would answer first).
     const section = api.slice(api.indexOf('## Errors'));
     expect(section.length).toBeGreaterThan(0);
     const rows = section.split('\n').filter((l) => l.startsWith('|'));

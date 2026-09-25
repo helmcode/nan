@@ -40,12 +40,12 @@ const t = {
   en: {
     title: 'API Reference · NaN Docs',
     description:
-      'Interactive reference for the NaN API: OpenAI-compatible endpoints for chat, embeddings, rerank, audio, images and web search.',
+      'Interactive reference for the NaN API: OpenAI-compatible endpoints for chat, embeddings, rerank, audio and images.',
   },
   es: {
     title: 'Referencia API · NaN Docs',
     description:
-      'Referencia interactiva de la API de NaN: endpoints compatibles con OpenAI para chat, embeddings, rerank, audio, imágenes y búsqueda web.',
+      'Referencia interactiva de la API de NaN: endpoints compatibles con OpenAI para chat, embeddings, rerank, audio e imágenes.',
   },
 }[lang];
 
@@ -162,8 +162,7 @@ const CSP = [
         // "Generate MCP" is a hosted-product feature of Scalar: it queries
         // their registry at api.scalar.com on every load. Turned off here and
         // not merely by hiding the button with CSS, because hiding it does not
-        // stop the request. Nothing to do with NaN's /mcp endpoint, which IS
-        // documented: that is a spec route, this is a Scalar integration.
+        // stop the request.
         mcp: { disabled: true },
         // "Ask AI" is Scalar's hosted assistant. Hiding its button is not
         // enough: the component mounts anyway and queries api.scalar.com on

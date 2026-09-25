@@ -198,7 +198,3 @@ On either path, avoid `glm5.3` for tasks that involve reading screenshots: it do
 - **Agent behavior depends on the model.** Claude Code is tuned against Anthropic's models, and an open model may use its tools less well. That is to be expected, and it is not a cluster failure. This only affects the gateway path: when delegating, Claude Code is still Claude Code.
 - **Features tied to the Anthropic account do not travel.** Anything that depends on Anthropic's infrastructure does not work against another base URL.
 - **Context fills up fast.** An agent session eats tokens far quicker than a chat. If you use `glm5.3`, watch the rolling 4-hour window described in [Choose your model](/docs/choose-a-model).
-
-## NaN's tools, separately
-
-Whichever path you choose, you can give Claude Code the cluster's web search with a single command. It is in [MCP server](/docs/mcp).

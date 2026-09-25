@@ -151,9 +151,9 @@ function propertyTable(schema: SchemaLike | undefined): string {
  *
  * They are written for Scalar, which paints them inside the endpoint panel, so
  * they start at `##`. Dumped as-is into a flat document they would outrank the
- * `###` of the very endpoint they belong to: the `## Use it as an agent tool`
- * of /search read as a sibling section of "Search" instead of part of it. They
- * sink until they sit below, capped at `######`.
+ * `###` of the very endpoint they belong to: a `## Usage` inside an
+ * endpoint would read as a sibling section of its tag instead of part of it.
+ * They sink until they sit below, capped at `######`.
  *
  * Only headings at the start of a line and outside a code fence count: inside
  * a ``` a `#` is usually a shell comment.

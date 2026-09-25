@@ -109,6 +109,25 @@ describe('middleware — rutas antiguas del hackatón', () => {
   });
 });
 
+describe('middleware — páginas de docs retiradas', () => {
+  test('/docs/mcp lleva a /docs/agent-setup con 301', async () => {
+    const r = await run('https://nan.builders/docs/mcp');
+    expect(r.status).toBe(301);
+    expect(r.location).toBe('/docs/agent-setup');
+    expect(r.passedThrough).toBe(false);
+  });
+
+  test('conserva el prefijo de idioma', async () => {
+    expect((await run('https://nan.builders/es/docs/mcp')).location).toBe('/es/docs/agent-setup');
+  });
+
+  test('no toca las páginas que siguen vivas', async () => {
+    const r = await run('https://nan.builders/docs/agent-setup');
+    expect(r.location).toBeNull();
+    expect(r.passedThrough).toBe(true);
+  });
+});
+
 describe('middleware — cabeceras de seguridad', () => {
   test('las emite en las páginas', async () => {
     const { res } = await run('https://nan.builders/community');
