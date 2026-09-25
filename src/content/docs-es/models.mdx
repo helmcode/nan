@@ -332,6 +332,26 @@ OpenAI y la misma `base URL`.
   ]}
 />
 
+<ModelCard
+  id="qwen-image-2.1"
+  name="qwen-image-2.1"
+  leftLabel="generación de imágenes"
+  rightLabel="capacidades"
+  description="Modelo de imagen Qwen para texto a imagen con buena adherencia al prompt y texto legible dentro de la imagen. Compatible con la API de Images de OpenAI (/v1/images/generations). Requiere membresía del tier de inferencia."
+  specs={[
+    { label: 'Tipo', value: 'Difusión (Qwen-Image)' },
+    { label: 'Modalidades', value: 'texto→imagen' },
+    { label: 'Resolución', value: '512–1280 px (múltiplos de 16)' },
+    { label: 'Imágenes / petición', value: '1–4 (n)' },
+    { label: 'Cuota mensual', value: '100 peticiones / miembro (compartidas con flux-2-klein)' },
+  ]}
+  items={[
+    'Texto a imagen (<code>/v1/images/generations</code>)',
+    'Salida como URL temporal (R2, ~60 min) o base64',
+    'Reproducibilidad vía <code>seed</code> (0–2147483647)',
+  ]}
+/>
+
 ## Controlar el razonamiento.
 
 Todos los modelos de chat de arriba razonan antes de responder, y el

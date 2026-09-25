@@ -331,6 +331,26 @@ with the same `base URL`.
   ]}
 />
 
+<ModelCard
+  id="qwen-image-2.1"
+  name="qwen-image-2.1"
+  leftLabel="image generation"
+  rightLabel="capabilities"
+  description="Qwen image model for text-to-image with strong prompt adherence and clean text rendering inside the image. Compatible with OpenAI's Images API (/v1/images/generations). Requires inference-tier membership."
+  specs={[
+    { label: 'Type', value: 'Diffusion (Qwen-Image)' },
+    { label: 'Modalities', value: 'text→image' },
+    { label: 'Resolution', value: '512–1280 px (multiples of 16)' },
+    { label: 'Images / request', value: '1–4 (n)' },
+    { label: 'Monthly quota', value: '100 requests / member (shared with flux-2-klein)' },
+  ]}
+  items={[
+    'Text-to-image (<code>/v1/images/generations</code>)',
+    'Output as temporary URL (R2, ~60 min) or base64',
+    'Reproducibility via <code>seed</code> (0–2147483647)',
+  ]}
+/>
+
 ## Controlling reasoning.
 
 Every chat model above thinks before it answers, and the reasoning trace
