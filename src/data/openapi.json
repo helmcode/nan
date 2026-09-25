@@ -1411,7 +1411,7 @@
               "type": "string",
               "format": "date"
             },
-            "description": "Start of the window, `YYYY-MM-DD`, inclusive, in UTC. Defaults to `end_date` minus 30 days."
+            "description": "Start of the window, `YYYY-MM-DD`, inclusive, in UTC. Defaults to `end_date` minus 30 days. A future `start_date` clamps to today (UTC)."
           },
           {
             "name": "end_date",
@@ -1428,7 +1428,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Opaque pagination cursor from a previous response's `next_cursor`. An unknown cursor returns `400`."
+            "description": "Opaque pagination cursor from a previous response's `next_cursor`. A malformed cursor returns `400`; a well-formed one simply positions the page — it is not validated against the current dataset."
           },
           {
             "name": "limit",
@@ -1439,7 +1439,7 @@
               "maximum": 500,
               "default": 100
             },
-            "description": "Rows per page, 1–500."
+            "description": "Rows per page, 1–500. Out-of-range values are clamped into that range, and a non-numeric value falls back to the default of 100."
           }
         ],
         "responses": {
@@ -1452,6 +1452,8 @@
                 },
                 "example": {
                   "object": "usage.report",
+                  "start_date": "2026-01-01",
+                  "end_date": "2026-01-31",
                   "data": [
                     {
                       "date": "2026-01-15",
@@ -1481,6 +1483,7 @@
                     "prompt_tokens": 9800000,
                     "completion_tokens": 3400000,
                     "total_tokens": 13200000,
+                    "api_requests": 41250,
                     "cached_at": "2026-02-01T12:00:00Z"
                   },
                   "has_more": false,
@@ -1490,7 +1493,7 @@
             }
           },
           "400": {
-            "description": "Invalid parameter (`invalid_request_error`). The offending field is named in `param`: a window wider than 90 days (rejected, never clamped), `start_date` after `end_date`, a malformed date, or an unknown `cursor`.",
+            "description": "Invalid parameter (`invalid_request_error`). The offending field is named in `param`: a window wider than 90 days (\"The requested window spans N days; the maximum is 90 inclusive days. Split the range into several requests.\"), `start_date` after `end_date`, a malformed date, or a malformed `cursor` (\"Pass next_cursor from a previous response unchanged.\").",
             "content": {
               "application/json": {
                 "schema": {
@@ -1501,6 +1504,36 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "No usage identity for this member: no API key is associated with the member, so there is nothing to report.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The API key alias is reserved for a service key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something failed on our side (`server_error`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "429": {
             "description": "Too many usage queries: 30 requests per minute per member (`rate_limit_exceeded`).",
@@ -2315,6 +2348,16 @@
             ],
             "description": "The object type, always `usage.report`."
           },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "description": "First day of the effective window actually served, `YYYY-MM-DD`, after any clamping: the window your totals cover."
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Last day of the effective window actually served, `YYYY-MM-DD`, after any clamping: the window your totals cover."
+          },
           "data": {
             "type": "array",
             "items": {
@@ -2443,6 +2486,10 @@
           "total_tokens": {
             "type": "integer",
             "description": "`prompt_tokens` plus `completion_tokens`."
+          },
+          "api_requests": {
+            "type": "integer",
+            "description": "Total requests ever made."
           },
           "cached_at": {
             "type": "string",

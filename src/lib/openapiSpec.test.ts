@@ -393,3 +393,153 @@ describe('openapi.json: one language for the reader', () => {
     expect(offenders, offenders.join('\n')).toEqual([]);
   });
 });
+
+/**
+ * THE /USAGE CONTRACT, AS THE BACKEND SERVES IT.
+ *
+ * The response echoes the effective window it served (after future-date
+ * clamping), so a client can see the window its totals cover without
+ * reimplementing the server's clamping logic. These expectations were written
+ * against the corrected backend contract and pin the envelope shape, the
+ * parameter clamping behavior and the current error wording.
+ */
+describe('openapi.json: the /usage contract', () => {
+  const usage = (spec.paths as any)['/usage'].get;
+  const schemas = spec.components.schemas as any;
+  const example = usage.responses['200'].content['application/json'].example;
+
+  const param = (name: string) =>
+    usage.parameters.find((p: any) => p.name === name) as any;
+
+  it('echoes the effective window right after `object`', () => {
+    expect(Object.keys(schemas.UsageReport.properties)).toEqual([
+      'object',
+      'start_date',
+      'end_date',
+      'data',
+      'totals',
+      'all_time',
+      'has_more',
+      'next_cursor',
+    ]);
+    for (const key of ['start_date', 'end_date']) {
+      expect(schemas.UsageReport.properties[key]).toMatchObject({
+        type: 'string',
+        format: 'date',
+      });
+      expect(schemas.UsageReport.properties[key].description).toMatch(/effective|served/i);
+    }
+    // The example carries them in the same position, as real date strings.
+    expect(Object.keys(example)).toEqual([
+      'object',
+      'start_date',
+      'end_date',
+      'data',
+      'totals',
+      'all_time',
+      'has_more',
+      'next_cursor',
+    ]);
+    expect(example.start_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(example.end_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('counts api_requests in the all-time summary', () => {
+    expect(Object.keys(schemas.UsageAllTime.properties)).toEqual([
+      'prompt_tokens',
+      'completion_tokens',
+      'total_tokens',
+      'api_requests',
+      'cached_at',
+    ]);
+    expect(schemas.UsageAllTime.properties.api_requests).toMatchObject({ type: 'integer' });
+    expect(example.all_time.api_requests).toEqual(expect.any(Number));
+  });
+
+  it('keeps the window totals in the documented shape', () => {
+    expect(Object.keys(schemas.UsageTotals.properties)).toEqual([
+      'prompt_tokens',
+      'completion_tokens',
+      'total_tokens',
+      'api_requests',
+      'by_model',
+    ]);
+  });
+
+  it('does not claim an unknown cursor 400s', () => {
+    const description: string = param('cursor').description;
+    // The 400 case is a MALFORMED cursor; a well-formed one simply positions
+    // the page and is not validated against the current dataset.
+    expect(description.toLowerCase()).not.toContain('unknown');
+    expect(description).toMatch(/[Mm]alformed/);
+    expect(description).toContain('400');
+    expect(description).toMatch(/positions the page/);
+    expect(description).toMatch(/not validated|without being validated/);
+  });
+
+  it('documents the server-side clamping of limit', () => {
+    const description: string = param('limit').description;
+    expect(description.toLowerCase()).toMatch(/clamp/);
+    expect(description.toLowerCase()).toMatch(/falls? back|default/);
+  });
+
+  it('documents that a future start_date clamps to today', () => {
+    const description: string = param('start_date').description;
+    expect(description).toMatch(/[Ff]uture/);
+    expect(description.toLowerCase()).toMatch(/clamp/);
+  });
+
+  it('quotes the current window and cursor error wording', () => {
+    const description: string = usage.responses['400'].description;
+    expect(description).toContain(
+      'The requested window spans N days; the maximum is 90 inclusive days. Split the range into several requests.',
+    );
+    expect(description).toContain('Pass next_cursor from a previous response unchanged');
+    expect(description.toLowerCase()).not.toContain('unknown cursor');
+  });
+
+  it('documents the 404, 409 and 500 outcomes', () => {
+    expect(usage.responses['404'].description).toMatch(/no api key/i);
+    expect(usage.responses['409'].description).toMatch(/service key/i);
+    expect(usage.responses['500'].description).toContain('server_error');
+    for (const status of ['404', '409', '500']) {
+      expect(usage.responses[status].content['application/json'].schema).toEqual({
+        $ref: '#/components/schemas/Error',
+      });
+    }
+  });
+});
+
+/**
+ * THE GUIDES AND THE SPEC SPEAK THE SAME CONTRACT. The getting-started
+ * guides quote /usage's pagination, so the echoed effective window has to
+ * show up in both locales — the day one locale drifts, this fails.
+ */
+describe('getting-started guides: /usage parity', () => {
+  const readGuide = (locale: string) =>
+    readFileSync(
+      resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        `../content/docs${locale}/getting-started.mdx`,
+      ),
+      'utf-8',
+    );
+
+  const usageSection = (page: string, heading: string) => {
+    const start = page.indexOf(heading);
+    expect(start, `the guide no longer has a "${heading}" section`).toBeGreaterThan(-1);
+    const next = page.indexOf('\n## ', start + heading.length);
+    return page.slice(start, next === -1 ? page.length : next);
+  };
+
+  it('notes the echoed effective window in both locales', () => {
+    for (const [page, heading] of [
+      [readGuide(''), '## Usage metrics'],
+      [readGuide('-es'), '## Métricas de uso'],
+    ] as Array<[string, string]>) {
+      const section = usageSection(page, heading);
+      expect(section).toContain('`start_date`');
+      expect(section).toContain('`end_date`');
+    }
+  });
+});
