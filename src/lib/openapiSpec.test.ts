@@ -500,12 +500,23 @@ describe('openapi.json: the /usage contract', () => {
 
   it('documents the 404, 409 and 500 outcomes', () => {
     expect(usage.responses['404'].description).toMatch(/no api key/i);
+    expect(usage.responses['404'].description).toMatch(/discord link|handle/i);
     expect(usage.responses['409'].description).toMatch(/service key/i);
     expect(usage.responses['500'].description).toContain('server_error');
     for (const status of ['404', '409', '500']) {
       expect(usage.responses[status].content['application/json'].schema).toEqual({
         $ref: '#/components/schemas/Error',
       });
+    }
+  });
+
+  it('caveats every api_requests field with the request-counting cutover', () => {
+    // Request counts only exist from the usage-hook cutover (2026-09-02);
+    // older days report 0. Every api_requests description must say so, or
+    // tokens-per-request math in third-party tools silently lies.
+    for (const name of ['UsageRow', 'UsageTotals', 'UsageModelTotals', 'UsageAllTime']) {
+      const description: string = schemas[name].properties.api_requests.description;
+      expect(description, `${name}.api_requests`).toContain('2026-09-02');
     }
   });
 });

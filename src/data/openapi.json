@@ -1493,7 +1493,7 @@
             }
           },
           "400": {
-            "description": "Invalid parameter (`invalid_request_error`). The offending field is named in `param`: a window wider than 90 days (\"The requested window spans N days; the maximum is 90 inclusive days. Split the range into several requests.\"), `start_date` after `end_date`, a malformed date, or a malformed `cursor` (\"Pass next_cursor from a previous response unchanged.\").",
+            "description": "Invalid parameter (`invalid_request_error`). The offending field is named in `param`: a window wider than 90 days (\"The requested window spans N days; the maximum is 90 inclusive days. Split the range into several requests.\"), `start_date` after `end_date`, a malformed date, a malformed `cursor` (\"Pass next_cursor from a previous response unchanged.\"), or a malformed account identity (`param` is `null`).",
             "content": {
               "application/json": {
                 "schema": {
@@ -1506,7 +1506,7 @@
             "$ref": "#/components/responses/Unauthorized"
           },
           "404": {
-            "description": "No usage identity for this member: no API key is associated with the member, so there is nothing to report.",
+            "description": "No usage identity for this member: the account has no API key, Discord link, or handle to resolve usage against, so there is nothing to report.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2412,7 +2412,7 @@
           },
           "api_requests": {
             "type": "integer",
-            "description": "Requests made that day on that model."
+            "description": "Requests made that day on that model. Request counts are only available from 2026-09-02 onward; older days report `0`."
           }
         }
       },
@@ -2434,7 +2434,7 @@
           },
           "api_requests": {
             "type": "integer",
-            "description": "Total requests in the window."
+            "description": "Total requests in the window. Request counts are only available from 2026-09-02 onward; older days report `0`."
           },
           "by_model": {
             "type": "array",
@@ -2467,7 +2467,7 @@
           },
           "api_requests": {
             "type": "integer",
-            "description": "Requests made on this model in the window."
+            "description": "Requests made on this model in the window. Request counts are only available from 2026-09-02 onward; older days report `0`."
           }
         }
       },
@@ -2489,7 +2489,7 @@
           },
           "api_requests": {
             "type": "integer",
-            "description": "Total requests ever made."
+            "description": "Total requests recorded for this member. Request counts start on 2026-09-02; older days report `0`."
           },
           "cached_at": {
             "type": "string",
