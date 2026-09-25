@@ -198,7 +198,3 @@ En cualquiera de los dos, evita `glm5.3` para tareas que impliquen leer capturas
 - **El comportamiento del agente depende del modelo.** Claude Code está afinado contra los modelos de Anthropic, y un modelo abierto puede usar peor sus herramientas. Es esperable, y no es un fallo del clúster. Esto solo afecta al camino de la pasarela: delegando, Claude Code sigue siendo Claude Code.
 - **Las funciones atadas a la cuenta de Anthropic no viajan.** Lo que dependa de la infraestructura de Anthropic no funciona contra otra base URL.
 - **El contexto se llena rápido.** Una sesión de agente consume tokens mucho más deprisa que un chat. Si usas `glm5.3`, vigila la ventana móvil de 4 horas descrita en [Elige tu modelo](/es/docs/choose-a-model).
-
-## Las herramientas de NaN, aparte
-
-Independientemente del camino que elijas, puedes darle a Claude Code la búsqueda web del clúster con una sola orden. Está en [Servidor MCP](/es/docs/mcp).

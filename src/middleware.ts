@@ -90,6 +90,28 @@ function hackatonRedirect(context: Parameters<MiddlewareHandler>[0]): Response |
 }
 
 /**
+ * Páginas de docs retiradas, con su destino.
+ *
+ * `/docs/mcp` documentaba el servidor MCP de NaN, cuya única herramienta era la
+ * búsqueda web; se retiraron los dos (el endpoint `/mcp` y `POST /v1/search`).
+ * Los enlaces siguen circulando, así que se mandan con 301 a la página desde la
+ * que se llegaba a ella, en vez de dejar un 404. Se conserva el prefijo `/es`.
+ */
+const REMOVED_DOCS: Readonly<Record<string, string>> = {
+  mcp: 'agent-setup',
+};
+
+function removedDocsRedirect(context: Parameters<MiddlewareHandler>[0]): Response | null {
+  const { url } = context;
+  const m = /^(\/es)?\/docs\/([^/]+)\/?$/.exec(url.pathname);
+  if (!m) return null;
+  const [, prefix = '', slug] = m;
+  const target = REMOVED_DOCS[slug];
+  if (!target) return null;
+  return context.redirect(`${prefix}/docs/${target}${url.search}`, 301);
+}
+
+/**
  * OJO con prerenderizar: el middleware NO corre en las rutas prerenderizadas
  * (Astro lo ejecuta en tiempo de build para esas), así que activar
  * `prerender = true` en una página la deja a la vez sin la redirección de
@@ -97,7 +119,7 @@ function hackatonRedirect(context: Parameters<MiddlewareHandler>[0]): Response |
  * Hoy no hay ninguna prerenderizada, y por eso esto vale para todo el sitio.
  */
 export const onRequest: MiddlewareHandler = async (context, next) => {
-  const response = langRedirect(context) ?? hackatonRedirect(context) ?? (await next());
+  const response = langRedirect(context) ?? hackatonRedirect(context) ?? removedDocsRedirect(context) ?? (await next());
 
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
     response.headers.set(name, value);

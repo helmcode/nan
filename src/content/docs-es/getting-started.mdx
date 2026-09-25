@@ -109,7 +109,7 @@ const resp = await client.chat.completions.create({
 console.log(resp.choices[0].message.content);
 ```
 
-Tienes más ejemplos, incluidos embeddings, voz, imágenes y búsqueda web, en [Ejemplos](/es/docs/examples).
+Tienes más ejemplos, incluidos embeddings, voz e imágenes, en [Ejemplos](/es/docs/examples).
 
 ### Elige el modelo
 
@@ -153,7 +153,7 @@ El detalle completo, endpoint a endpoint, está en la [referencia de la API](/es
 
 Dos límites van por API key y se aplican a todo lo que llames: peticiones por minuto y peticiones a la vez.
 
-Encima de esos, algunos modelos llevan el suyo: un techo de tokens por minuto en los modelos de chat grandes, y uno de peticiones por minuto en `rerank`. `glm5.3` no se rige por minuto en absoluto, sino por una ventana móvil de tokens más una asignación por periodo de facturación. La búsqueda web va por un presupuesto separado del de los modelos.
+Encima de esos, algunos modelos llevan el suyo: un techo de tokens por minuto en los modelos de chat grandes, y uno de peticiones por minuto en `rerank`. `glm5.3` no se rige por minuto en absoluto, sino por una ventana móvil de tokens más una asignación por periodo de facturación. Los endpoints de imágenes van por un presupuesto separado del de los modelos.
 
 Las cifras vigentes están al final de [Modelos](/es/docs/models), que es donde se publican para que no haya dos versiones de la misma cifra dando vueltas.
 

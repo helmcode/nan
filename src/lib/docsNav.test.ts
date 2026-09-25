@@ -84,7 +84,7 @@ describe('slugifyAnchor', () => {
     ['Rate limits', 'rate-limits'],
     ['Versioning & compatibility', 'versioning-compatibility'],
     ['Model catalog', 'model-catalog'],
-    ['MCP', 'mcp'],
+    ['Images', 'images'],
   ])('%s -> %s', (input, expected) => {
     expect(slugifyAnchor(input)).toBe(expected);
   });
@@ -118,14 +118,11 @@ describe('apiSearchHeadings', () => {
     expect(tagSlugs.sort()).toEqual((spec.tags ?? []).map((t) => t.name).sort());
   });
 
-  /** agents.md links here by hand; if the tag is renamed, that link dies. */
-  it('keeps the MCP anchor that agents.md points at', () => {
-    expect(headings.some((h) => h.slug === 'tag/mcp')).toBe(true);
-  });
-
   it('takes only level-2 headings, not the level-3 ones nested under them', () => {
-    // "Use it as an agent tool" is a `#####` inside an operation description.
-    expect(headings.some((h) => h.text === 'Use it as an agent tool')).toBe(false);
+    const nested = apiSearchHeadings({
+      info: { description: '## Rate limits\n\n### Per model\n\n#### Per key' },
+    });
+    expect(nested.map((h) => h.text)).toEqual(['Rate limits']);
   });
 });
 
