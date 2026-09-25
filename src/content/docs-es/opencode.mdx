@@ -50,6 +50,11 @@ Escribe esto en `~/.config/opencode/opencode.json` para tenerlo en todos tus pro
           "limit": { "context": 1048576, "output": 32768 },
           "modalities": { "input": ["text", "image", "audio"], "output": ["text"] }
         },
+        "mimo-v2.6-flash": {
+          "name": "Xiaomi MiMo V2.6 Flash",
+          "limit": { "context": 1048576, "output": 32768 },
+          "modalities": { "input": ["text", "image", "audio"], "output": ["text"] }
+        },
         "gemma4": {
           "name": "Gemma 4",
           "limit": { "context": 262144, "output": 65536 },
@@ -76,7 +81,7 @@ Escribe esto en `~/.config/opencode/opencode.json` para tenerlo en todos tus pro
 }
 ```
 
-Esta es la configuración de los 7 modelos LLM que sirve NaN: `deepseek-v4-flash`, `glm5.3-flash`, `qwen3.8-flash`, `mimo-v2.5`, `gemma4`, `qwen3.6` y `glm5.3`.
+Esta es la configuración de los 8 modelos LLM que sirve NaN: `deepseek-v4-flash`, `glm5.3-flash`, `qwen3.8-flash`, `mimo-v2.5`, `mimo-v2.6-flash`, `gemma4`, `qwen3.6` y `glm5.3`.
 
 `@ai-sdk/openai-compatible` es el adaptador genérico, el que habla con cualquier API con forma de OpenAI. No uses `@ai-sdk/openai` a secas: ese espera la API de OpenAI de verdad.
 

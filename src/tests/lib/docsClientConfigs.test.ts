@@ -149,6 +149,7 @@ const EXPECTED_MODELS: Record<string, { context: number; output: number }> = {
   'deepseek-v4-flash': { context: 1_048_575, output: 32_768 },
   'qwen3.8-flash': { context: 262_144, output: 32_768 },
   'mimo-v2.5': { context: 1_048_576, output: 32_768 },
+  'mimo-v2.6-flash': { context: 1_048_576, output: 32_768 },
   'glm5.3-flash': { context: 1_048_576, output: 32_768 },
 };
 

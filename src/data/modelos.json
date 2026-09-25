@@ -28,6 +28,13 @@
           "mostUsed": true
         },
         {
+          "id": "mimo-v2.6-flash",
+          "by": "Xiaomi",
+          "specs": "omnimodal · 1M context · vision · audio · tool calling · reasoning",
+          "cuota": "1.0B tokens/mes",
+          "frontier": true
+        },
+        {
           "id": "glm5.3",
           "by": "Z.ai",
           "specs": "753B MoE · FP8 · sparse attention · 1M context · tool calling · reasoning",

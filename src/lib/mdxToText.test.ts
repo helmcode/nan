@@ -146,6 +146,7 @@ describe('mdxToText rate limits', () => {
     expect(out).toContain('- deepseek-v4-flash: 7 (base plan) · 10 (premium plan)');
     expect(out).toContain('- qwen3.8-flash: 7 (base plan) · 10 (premium plan)');
     expect(out).toContain('- mimo-v2.5: 5');
+    expect(out).toContain('- mimo-v2.6-flash: 5');
     expect(out).toContain('- qwen3.6: 5');
     expect(out).toContain('- gemma4: 5');
     // glm5.3 is gated by the window, not by a per-minute rate, and the docs

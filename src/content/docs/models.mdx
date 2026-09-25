@@ -143,6 +143,29 @@ with the same `base URL`.
 />
 
 <ModelCard
+  id="mimo-v2-6-flash"
+  name="mimo-v2.6-flash"
+  tag="omnimodal"
+  leftLabel="omnimodal — text, vision & audio"
+  rightLabel="capabilities"
+  description="The newest Xiaomi MiMo, natively omnimodal with vision and audio input. 1M token context. Tool calling and reasoning. Same limits as mimo-v2.5: 1.0B token monthly quota per member."
+  specs={[
+    { label: 'Context', value: '1M tokens' },
+    { label: 'Input modalities', value: 'text · image · audio' },
+    { label: 'Output modalities', value: 'text' },
+    { label: 'Monthly quota', value: '1.0B tokens / member' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Reasoning mode (recommended <code>max_tokens &ge; 300</code>)',
+    'Vision (image input)',
+    'Audio (audio input)',
+    '1M token context',
+    'Streaming generation (SSE)',
+  ]}
+/>
+
+<ModelCard
   id="gemma4"
   name="gemma4"
   tag="26B-A4B"
@@ -322,7 +345,7 @@ cannot apply is never an error.
 | `qwen3.6` | `none`, `minimal`, `low`, `medium`, `high`, `max` | `none` and `minimal` skip the reasoning phase entirely. The other four cap it: low 2,048, medium 8,192, high 16,384, max 32,768 tokens. |
 | `gemma4` | `none`, `minimal`, `low`, `medium`, `high`, `max` | Same as `qwen3.6`: off, or a reasoning budget between 2,048 and 32,768 tokens. |
 | `deepseek-v4-flash` | any value (no effect) | The model decides per request how much to reason; the parameter never changes that. |
-| `qwen3.8-flash` · `mimo-v2.5` | accepted, depth not adjustable | The parameter is accepted and never rejected, but these models manage their own reasoning depth. |
+| `qwen3.8-flash` · `mimo-v2.5` · `mimo-v2.6-flash` | accepted, depth not adjustable | The parameter is accepted and never rejected, but these models manage their own reasoning depth. |
 
 With no parameter, every model uses its own default (reasoning on for
 `qwen3.6` and `gemma4`, with a 16,384-token budget). More reasoning costs
