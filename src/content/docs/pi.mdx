@@ -69,6 +69,14 @@ In `~/.pi/agent/models.json`:
           "maxTokens": 32768
         },
         {
+          "id": "mimo-v2.6-flash",
+          "name": "Xiaomi MiMo V2.6 Flash",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 1048576,
+          "maxTokens": 32768
+        },
+        {
           "id": "gemma4",
           "name": "Gemma 4",
           "reasoning": true,
@@ -98,7 +106,7 @@ In `~/.pi/agent/models.json`:
 }
 ```
 
-This is the config for the 7 LLM models NaN serves: `deepseek-v4-flash`, `glm5.3-flash`, `qwen3.8-flash`, `mimo-v2.5`, `gemma4`, `qwen3.6` and `glm5.3`. It is the same set the [NaN CLI](/docs/nan-cli) writes, and the same one the [OpenCode](/docs/opencode) page publishes.
+This is the config for the 8 LLM models NaN serves: `deepseek-v4-flash`, `glm5.3-flash`, `qwen3.8-flash`, `mimo-v2.5`, `mimo-v2.6-flash`, `gemma4`, `qwen3.6` and `glm5.3`. It is the same set the [NaN CLI](/docs/nan-cli) writes, and the same one the [OpenCode](/docs/opencode) page publishes. It is the same set the [NaN CLI](/docs/nan-cli) writes, and the same one the [OpenCode](/docs/opencode) page publishes.
 
 `api: "openai-completions"` is what tells Pi which format to speak. `maxTokens` is the ceiling for one answer, not the context. It is the same figure the [OpenCode](/docs/opencode) block publishes as `limit.output`, because it answers the same question.
 
@@ -136,7 +144,7 @@ Ask it for something short. If it answers, it is going out through the cluster. 
 - **The key is written in the file.** `models.json` lives in your home directory, so it does not usually end up in a repository, but keep it in mind if you sync your configuration between machines.
 - **`maxTokens` is not the context.** It is the ceiling for each answer. Reasoning comes out of that same budget, so if you ask for long reasoned answers, raise it.
 - **The models you declare are the ones you get.** Pi does not ask the cluster what is available: it shows whatever is on the list.
-- **`mimo-v2.5` goes in without its audio.** Pi's schema accepts `"text"` and `"image"` for `input` and nothing else, and a third value does not fail that one model: Pi refuses the whole file, every other provider in it included. The model still hears audio through the API, just not from inside Pi.
+- **Both MiMo models go in without their audio.** `mimo-v2.5` and `mimo-v2.6-flash`: Pi's schema accepts `"text"` and `"image"` for `input` and nothing else, and a third value does not fail that one model: Pi refuses the whole file, every other provider in it included. The models still hear audio through the API, just not from inside Pi.
 - **`glm5.3` needs a key on the premium tier.** It is on the list so that a member who has it can see it. Without that tier the answer is a `401`, which is explained in [Choose your model](/docs/choose-a-model).
 
 </Details>

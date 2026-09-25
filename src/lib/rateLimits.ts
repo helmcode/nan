@@ -102,6 +102,7 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
   tokensPerMinuteByModel: [
     { model: 'deepseek-v4-flash', label: '1.5M tpm' },
     { model: 'mimo-v2.5', label: '1.5M tpm' },
+    { model: 'mimo-v2.6-flash', label: '1.5M tpm' },
     { model: 'qwen3.6', label: '1.5M tpm' },
     { model: 'gemma4', label: '1.5M tpm' },
   ],
@@ -121,6 +122,7 @@ export const DEFAULT_RATE_LIMITS: RateLimitsConfig = {
     { model: 'deepseek-v4-flash', maxParallel: 5, tierMaxParallel: { inference: 7, premium: 10 } },
     { model: 'qwen3.8-flash', maxParallel: 5, tierMaxParallel: { inference: 7, premium: 10 } },
     { model: 'mimo-v2.5', maxParallel: 5 },
+    { model: 'mimo-v2.6-flash', maxParallel: 5 },
     { model: 'qwen3.6', maxParallel: 5 },
     { model: 'gemma4', maxParallel: 5 },
   ],

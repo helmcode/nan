@@ -28,7 +28,7 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 | Mover un agente de código en sesiones largas | `glm5.3` | Está pensado para eso. Necesita el tier premium |
 | Lo mismo, pero sin el tier premium | `glm5.3-flash` | Mismo contexto de 1M y cuota generosa |
 | Que conteste rápido | `qwen3.8-flash` | Menos profundidad, mucha menos espera |
-| Pasarle un audio al modelo directamente | `mimo-v2.5` | Es el único que oye |
+| Pasarle un audio al modelo directamente | `mimo-v2.5` o `mimo-v2.6-flash` | Los dos oyen audio de forma nativa |
 | Describir o analizar una imagen | `deepseek-v4-flash` | Cualquiera menos `glm5.3` sirve; este es el mejor |
 | Probar cosas sin gastar cuota | `gemma4` | No tiene contador de tokens |
 | Montar un buscador o un RAG | `qwen3-embedding` y después `rerank` | Primero recuperas por similitud, luego reordenas por relevancia |
@@ -45,6 +45,7 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 | `glm5.3-flash` | Agentes de código, sin premium | 1M | texto · imagen | 2B tokens/mes |
 | `qwen3.8-flash` | Respuestas rápidas | 262K | texto · imagen | 500M tokens/mes |
 | `mimo-v2.5` | Audio de entrada, omnimodal | 1M | texto · imagen · audio | 1.0B tokens/mes |
+| `mimo-v2.6-flash` | El MiMo más nuevo, omnimodal | 1M | texto · imagen · audio | 1.0B tokens/mes |
 | `gemma4` | Tareas cortas y pruebas | 262K | texto · imagen | sin contador |
 | `qwen3.6` | Generación anterior | 262K | texto · imagen | sin contador |
 | `qwen3-embedding` | Vectores de 4096 dimensiones | - | texto | sin contador |

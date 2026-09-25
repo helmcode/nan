@@ -41,6 +41,7 @@ const PUBLIC_SURFACE: Array<[string, string]> = [
 const NAN_MODELS = [
   'deepseek-v4-flash',
   'mimo-v2.5',
+  'mimo-v2.6-flash',
   'qwen3.8-flash',
   'glm5.3-flash',
   'qwen3.6',
@@ -242,7 +243,7 @@ describe('openapi.json: rate limits come from the single source of truth', () =>
     expect(description).toContain(
       '| `glm5.3`, `glm5.3-flash`, `deepseek-v4-flash`, `qwen3.8-flash` | 7 (base plan) · 10 (premium plan) |',
     );
-    expect(description).toContain('| `mimo-v2.5`, `qwen3.6`, `gemma4` | 5 |');
+    expect(description).toContain('| `mimo-v2.5`, `mimo-v2.6-flash`, `qwen3.6`, `gemma4` | 5 |');
   });
 
   it('names the endpoints the per-model concurrency table does not cover', () => {

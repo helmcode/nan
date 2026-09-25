@@ -28,7 +28,7 @@ If you do not know which one to pick, look for what you want to do in the first 
 | Drive a coding agent through long sessions | `glm5.3` | It is built for that. Needs the premium tier |
 | The same, but without the premium tier | `glm5.3-flash` | Same 1M context and a generous quota |
 | Get an answer fast | `qwen3.8-flash` | Less depth, much less waiting |
-| Hand the model an audio file directly | `mimo-v2.5` | It is the only one that hears |
+| Hand the model an audio file directly | `mimo-v2.5` or `mimo-v2.6-flash` | Both hear audio natively |
 | Describe or analyze an image | `deepseek-v4-flash` | Any of them except `glm5.3` will do; this is the best |
 | Try things without spending quota | `gemma4` | It has no token counter |
 | Build a search engine or a RAG | `qwen3-embedding` and then `rerank` | First you retrieve by similarity, then you reorder by relevance |
@@ -45,6 +45,7 @@ If you do not know which one to pick, look for what you want to do in the first 
 | `glm5.3-flash` | Coding agents, without premium | 1M | text · image | 2B tokens/month |
 | `qwen3.8-flash` | Fast answers | 262K | text · image | 500M tokens/month |
 | `mimo-v2.5` | Audio input, omnimodal | 1M | text · image · audio | 1.0B tokens/month |
+| `mimo-v2.6-flash` | The newest MiMo, omnimodal | 1M | text · image · audio | 1.0B tokens/month |
 | `gemma4` | Short tasks and testing | 262K | text · image | no counter |
 | `qwen3.6` | Previous generation | 262K | text · image | no counter |
 | `qwen3-embedding` | 4096-dimension vectors | - | text | no counter |

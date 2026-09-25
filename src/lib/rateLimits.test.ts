@@ -112,5 +112,6 @@ describe('per-model concurrency', () => {
     expect(premiumConcurrency(DEFAULT_RATE_LIMITS, 'glm5.3', 5)).toBe(10);
     // A model without a tier variant falls back to the flat default.
     expect(premiumConcurrency(DEFAULT_RATE_LIMITS, 'mimo-v2.5', 5)).toBe(5);
+    expect(premiumConcurrency(DEFAULT_RATE_LIMITS, 'mimo-v2.6-flash', 5)).toBe(5);
   });
 });

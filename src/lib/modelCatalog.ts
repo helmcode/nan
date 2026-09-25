@@ -126,8 +126,21 @@ export const MODELS: ModelSpec[] = [
     quota: { kind: 'monthly', label: { en: '1.0B tokens / mo', es: '1.0B tokens/mes' } },
     endpoint: '/chat/completions',
     bestFor: {
-      en: 'Passing audio straight to the model. The only omnimodal one',
-      es: 'Pasarle audio directamente al modelo. El único omnimodal',
+      en: 'Passing audio straight to the model. Omnimodal, now alongside V2.6 Flash',
+      es: 'Pasarle audio directamente al modelo. Omnimodal, ahora junto a V2.6 Flash',
+    },
+  },
+  {
+    id: 'mimo-v2.6-flash',
+    by: 'Xiaomi',
+    kind: 'chat',
+    contextTokens: 1_000_000,
+    inputs: ['text', 'image', 'audio'],
+    quota: { kind: 'monthly', label: { en: '1.0B tokens / mo', es: '1.0B tokens/mes' } },
+    endpoint: '/chat/completions',
+    bestFor: {
+      en: 'The newest MiMo, omnimodal like V2.5: text, image and audio in one model',
+      es: 'El MiMo más nuevo, omnimodal como V2.5: texto, imagen y audio en un modelo',
     },
   },
   {
