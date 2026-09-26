@@ -21,6 +21,19 @@ This affects **chat and agent mode**. Inline completion, those grey suggestions 
 
 A version of VS Code with the **Custom Endpoint** provider (it arrived in 1.122; before that there was a `github.copilot.chat.customOAIModels` setting which is now deprecated), the Copilot Chat extension installed, and your NaN API key.
 
+## Optional: the community VS Code extension
+
+If you would rather not maintain `chatLanguageModels.json` by hand, there is a community extension that walks you through the same setup: [svg153/nan-vscode](https://github.com/svg153/nan-vscode). The manual flow below stays available as the reference path.
+
+1. Download the latest `.vsix` from the [Releases page](https://github.com/svg153/nan-vscode/releases).
+2. In VS Code, run **Extensions: Install from VSIX...** from the command palette and pick the file.
+3. Run **NaN Builders: Manage Provider**, paste your NaN API key (the one starting with `sk-`) and let it fetch the models your key can use.
+4. If your access changes later, run **NaN Builders: Refresh Models**.
+
+<Callout title="Community extension" variant="info">
+[svg153/nan-vscode](https://github.com/svg153/nan-vscode) is community-maintained: not an official NaN Builders product and not supported by NaN Builders. It configures **chat and agent mode** through the same Custom Endpoint, it does not touch inline completion, and it does not replace the manual instructions below.
+</Callout>
+
 ## Configuration
 
 <Steps>
