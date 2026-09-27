@@ -1,6 +1,6 @@
 import rawSpec from '../data/openapi.json';
 import { openapiToText } from './openapiToText';
-import { rateLimitsToSpecMarkdown, type RateLimitsConfig } from './rateLimits';
+import { rateLimitsToSpecMarkdown, USAGE_REQUESTS_PER_MINUTE, type RateLimitsConfig } from './rateLimits';
 
 /**
  * The API reference as a docs entry, generated from the spec.
@@ -46,12 +46,25 @@ export const API_DOC_META = {
  */
 const RATE_LIMITS_PLACEHOLDER = '{{RATE_LIMITS}}';
 
+/**
+ * The placeholder the spec carries where the /usage budget goes.
+ *
+ * Same story as {{RATE_LIMITS}}: the 30 lives in rateLimits.ts
+ * (USAGE_REQUESTS_PER_MINUTE, mirroring the backend's keyedLimiter value), so
+ * the overview prose cannot drift from the module every other surface reads.
+ * Unlike the rate-limit table this placeholder carries only the NUMBER — the
+ * sentence stays written in the spec, so the rendered text is byte-identical
+ * to what the spec said by hand. It is scoped to info.description: the /usage
+ * endpoint's own description and 429 response are part of the served contract
+ * and stay static (openapiSpec.test.ts pins their figures to the constant).
+ */
+const USAGE_RATE_LIMIT_PLACEHOLDER = '{{USAGE_RATE_LIMIT}}';
+
 /** The spec with its placeholders resolved, ready to serve or to render. */
 export function resolveSpec(rateLimits: RateLimitsConfig): typeof rawSpec {
-  const description = rawSpec.info.description.replace(
-    RATE_LIMITS_PLACEHOLDER,
-    rateLimitsToSpecMarkdown(rateLimits),
-  );
+  const description = rawSpec.info.description
+    .replace(RATE_LIMITS_PLACEHOLDER, rateLimitsToSpecMarkdown(rateLimits))
+    .replace(USAGE_RATE_LIMIT_PLACEHOLDER, String(USAGE_REQUESTS_PER_MINUTE));
   return { ...rawSpec, info: { ...rawSpec.info, description } };
 }
 
