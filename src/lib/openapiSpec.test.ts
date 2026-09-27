@@ -5,7 +5,7 @@ import { dirname, resolve } from 'node:path';
 import spec from '../data/openapi.json';
 import modelos from '../data/modelos.json';
 import { resolveSpec } from './apiDoc';
-import { DEFAULT_RATE_LIMITS, formatTokens, getRateLimitsConfig } from './rateLimits';
+import { DEFAULT_RATE_LIMITS, formatTokens, getRateLimitsConfig, USAGE_REQUESTS_PER_MINUTE } from './rateLimits';
 
 /**
  * Tripwire over src/data/openapi.json, the spec Scalar renders at /docs/api
@@ -215,6 +215,55 @@ describe('openapi.json: rate limits come from the single source of truth', () =>
     // overrides must not crash) but no surface publishes it any more.
     expect(description).not.toContain('| Concurrent requests | 9 |');
     expect(description).toContain('| Concurrent requests | per model — see the per-model limits below |');
+  });
+
+  /**
+   * The /usage budget is a number the backend hardcodes, so it is a code
+   * constant in rateLimits.ts (like the tier ceilings) and reaches the
+   * overview prose through its own placeholder — not a third handwritten
+   * "30". The wording stays in the spec; only the number is shared.
+   */
+  it('ships the usage budget as a placeholder rather than a number', () => {
+    expect(spec.info.description).toContain('{{USAGE_RATE_LIMIT}}');
+    // The overview must not still carry the handwritten figure the
+    // placeholder replaces — one copy, not two.
+    expect(spec.info.description).not.toMatch(
+      /The usage endpoint is metered separately too: \d+ requests per minute per member/,
+    );
+  });
+
+  /**
+   * The rendered overview is what the current spec published by hand, to the
+   * byte: the placeholder swap only shares the number, it rewrites nothing.
+   */
+  it('renders the usage sentence from the shared constant, unchanged', () => {
+    const description = resolveSpec(DEFAULT_RATE_LIMITS).info.description;
+    expect(description).not.toContain('{{USAGE_RATE_LIMIT}}');
+    expect(description).toContain(
+      'Image endpoints run on their own budget, separate from the model endpoints: ' +
+        '20 requests per minute and 100 requests per month. ' +
+        `The usage endpoint is metered separately too: ${USAGE_REQUESTS_PER_MINUTE} requests per minute per member. ` +
+        'Exceed any limit and you get a `429`.',
+    );
+  });
+
+  /**
+   * The /usage endpoint's own contract (operation description and 429) stays
+   * static — no placeholder there — but its figures have to agree with the
+   * shared constant, or the overview and the endpoint disagree about the
+   * budget, which is the drift this single source exists to prevent.
+   */
+  it('keeps the /usage endpoint contract static and consistent with the shared budget', () => {
+    const usage = (spec.paths as any)['/usage'].get;
+    expect(usage.description).toContain(
+      `Rate limit: ${USAGE_REQUESTS_PER_MINUTE} requests per minute per member, a budget separate from the model endpoints'.`,
+    );
+    expect(usage.responses['429'].description).toContain(
+      `${USAGE_REQUESTS_PER_MINUTE} requests per minute per member (\`rate_limit_exceeded\`)`,
+    );
+    // Static means static: no placeholder may leak into the served contract.
+    expect(usage.description).not.toContain('{{');
+    expect(usage.responses['429'].description).not.toContain('{{');
   });
 
   it('publishes every model that carries a per-minute limit', () => {
@@ -515,9 +564,17 @@ describe('openapi.json: the /usage contract', () => {
     // Request counts only exist from the usage-hook cutover (2026-09-02);
     // older days report 0. Every api_requests description must say so, or
     // tokens-per-request math in third-party tools silently lies.
+    //
+    // The sentence is asserted in full, not just by date: the four schemas
+    // were written on different days and had already drifted into two
+    // wordings ("only available from ... onward" against "start on"), and a
+    // substring check on the date alone cannot see that. One sentence, four
+    // fields, byte for byte.
+    const CUTOVER =
+      'Request counts are only available from 2026-09-02 onward; older days report `0`.';
     for (const name of ['UsageRow', 'UsageTotals', 'UsageModelTotals', 'UsageAllTime']) {
       const description: string = schemas[name].properties.api_requests.description;
-      expect(description, `${name}.api_requests`).toContain('2026-09-02');
+      expect(description, `${name}.api_requests`).toContain(CUTOVER);
     }
   });
 });

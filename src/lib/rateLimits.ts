@@ -89,6 +89,25 @@ export interface RateLimitsEnv {
 }
 
 /**
+ * The /usage budget: 30 requests per minute, per member.
+ *
+ * Mirrors the backend exactly: cloud-api hardcodes `usageRequestsPerMinute = 30`
+ * (internal/handlers/usage_public.go) and feeds it to a keyedLimiter, so the
+ * bucket is per KEY across every /usage call a member makes — a member with
+ * five sk- keys gets 30 rpm in total, not 150. That is why the docs say "per
+ * member", not "per key".
+ *
+ * A code constant like tierMaxParallel, for the same reason: the backend
+ * hardcodes it, so there is no env var to follow, and an override here could
+ * only make the docs disagree with the enforcement. Consumed by apiDoc.ts's
+ * {{USAGE_RATE_LIMIT}} placeholder in the overview prose. The /usage
+ * endpoint's own description and 429 response carry the same figure as static
+ * spec text (openapiSpec.test.ts pins them to this constant), so a change to
+ * either side fails there until both move together.
+ */
+export const USAGE_REQUESTS_PER_MINUTE = 30;
+
+/**
  * Per-model tables stay here rather than in env vars: they only change when a
  * model is added or removed, which is a code change anyway.
  */
