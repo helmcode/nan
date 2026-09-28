@@ -32,17 +32,19 @@ Edit `~/.codex/config.toml`:
 ```toml
 model_provider = "nan"
 model = "glm5.3-flash"
+model_context_window = 1048576
 
 [model_providers.nan]
 name = "NaN"
 base_url = "https://api.nan.builders/v1"
 env_key = "NAN_API_KEY"
-wire_api = "chat"
+wire_api = "responses"
 ```
 
-Three details that matter:
+Four details that matter:
 
-- **`wire_api = "chat"`** makes Codex use `/chat/completions`. That is what you want: the cluster's `/responses` endpoint answers in one go instead of streaming, so with `"responses"` you would see the answer appear all at once at the end.
+- **`wire_api = "responses"`** is the only value Codex still takes: since 0.154 `"chat"` does not degrade anything, it stops the file loading and Codex does not open. This page recommended `"chat"` back when `/responses` answered in one go; that endpoint streams now and the reason is gone.
+- **`model_context_window`** is needed because Codex has no metadata for the cluster's models: without it it assumes a window and compacts the conversation long before it has to. Use the one for the model you run; they are in [Models](/docs/models).
 - **The provider identifier cannot be `openai`, `ollama` or `lmstudio`**, which are reserved. That is why it is called `nan`.
 - **`base_url` ends at `/v1`** and nothing more. Do not add the endpoint path.
 
@@ -64,7 +66,24 @@ You can change it without touching the file:
 codex --model deepseek-v4-flash
 ```
 
-Or leave several providers declared and pick with `--profile` if you prefer separate profiles per task.
+With one catch: the `model_context_window` in the file does not follow the model, so a 262,144-token model keeps the window of whichever one you declared and Codex compacts when it should not.
+
+To keep the cluster's models at hand, each with its own window, write one file per model in `~/.codex/`. Codex 0.155 calls it a profile, and it is your `config.toml` with that file layered on top:
+
+```toml
+# ~/.codex/nan-qwen36.config.toml
+model = "qwen3.6"
+model_provider = "nan"
+model_context_window = 262144
+```
+
+```bash
+codex --profile nan-qwen36
+```
+
+Mind the name: Codex wants "a plain name" and **rejects dots**, so `qwen3.6` is not usable as a profile even though it is fine as a model.
+
+The rest of your `config.toml` - your provider, your MCP servers, your permissions - still applies; the profile only overrides what it names. The [NaN CLI](/docs/nan-cli) writes them for you, one per chat model on the cluster, prefixed `nan-` and with the dots dropped: `nan-glm53-flash`, `nan-deepseek-v4-flash`, `nan-qwen36`… Disconnecting Codex takes them away again.
 
 ## Recommended model
 
@@ -74,6 +93,9 @@ Or leave several providers declared and pick with `--profile` if you prefer sepa
 
 - **Codex's cloud features do not apply.** Once you declare a provider of your own, everything goes to NaN from your machine.
 - **Reasoning looks different depending on the model.** The cluster's models emit their reasoning trace their own way, and Codex does not always present it the way it does with OpenAI's models.
-- **If you change `wire_api` to `"responses"`**, the answer stops appearing gradually. It is not a hang: that endpoint does not stream yet.
+- **`wire_api = "chat"` in an older file.** Codex 0.154 dropped it: if you have it, neither the CLI nor the desktop app opens. Change it to `"responses"`, or go through the NaN CLI's Setup, which repairs it for you.
+- **A repeated `model_context_window`.** NaN CLI versions before 0.1.20 appended one at the end of the file on every setup run. Two of them is a duplicate key and Codex will not load the file: the CLI says `duplicate key` and the desktop app opens an error dialog and nothing else. 0.1.20 leaves one and puts it where it is read from.
+- **`401 This API key does not have access to the requested model`.** The `model_provider` points at the cluster but `model` is still an OpenAI one. Change the model too.
+- **`failed to refresh available models: missing field `models``** on startup. It is noise and you can ignore it: the session carries on and answers fine. The cluster answers `/v1/models` in the OpenAI API's own format (`{"object":"list","data":[…]}`) and Codex reads it as if it were its internal catalogue. It does the same against LM Studio, OpenRouter and Azure providers ([openai/codex#22205](https://github.com/openai/codex/issues/22205)), and on 0.155 `features.remote_models=false` does not silence it either. The side effect is that the cluster's models do not show up in Codex's model picker - that is what the profiles above are for.
 
 </Details>
