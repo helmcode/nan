@@ -28,7 +28,7 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 | Mover un agente de código en sesiones largas | `glm5.3` | Está pensado para eso. Necesita el tier premium |
 | Lo mismo, pero sin el tier premium | `glm5.3-flash` | Mismo contexto de 1M y cuota generosa |
 | Que conteste rápido | `qwen3.8-flash` | Menos profundidad, mucha menos espera |
-| Pasarle un audio al modelo directamente | `mimo-v2.5` o `mimo-v2.6-flash` | Los dos oyen audio de forma nativa |
+| Pasarle un audio al modelo directamente | `mimo-v2.6-flash` | Oye audio de forma nativa |
 | Describir o analizar una imagen | `deepseek-v4-flash` | Cualquiera menos `glm5.3` sirve; este es el mejor |
 | Probar cosas sin gastar cuota | `gemma4` | No tiene contador de tokens |
 | Montar un buscador o un RAG | `qwen3-embedding` y después `rerank` | Primero recuperas por similitud, luego reordenas por relevancia |
@@ -45,7 +45,6 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 | `glm5.3` | Agentes de código y tareas largas | 1M | texto | 3B tokens/periodo de facturación |
 | `glm5.3-flash` | Agentes de código, sin premium | 1M | texto · imagen | 2B tokens/mes |
 | `qwen3.8-flash` | Respuestas rápidas | 262K | texto · imagen | 500M tokens/mes |
-| `mimo-v2.5` | Audio de entrada, omnimodal | 1M | texto · imagen · audio | 1.0B tokens/mes |
 | `mimo-v2.6-flash` | El MiMo más nuevo, omnimodal | 1M | texto · imagen · audio | 1.0B tokens/mes |
 | `gemma4` | Tareas cortas y pruebas | 262K | texto · imagen | sin contador |
 | `qwen3.6` | Generación anterior | 262K | texto · imagen | sin contador |
@@ -67,7 +66,7 @@ Las fichas completas, con parámetros, licencias y modos de razonamiento, están
 
 - **El id no es el nombre comercial.** El modelo que en su casa se llama "GLM 5.3 Flash" aquí es `glm5.3-flash`, en minúsculas, sin espacios y con el punto de la versión.
 - **`-flash` significa rápido**, no pequeño ni peor: son variantes optimizadas para latencia.
-- **El punto de la versión cuenta.** `qwen3.6` y `qwen3.8-flash` son modelos distintos, y `mimo-v2.5` lleva el punto donde lo lleva.
+- **El punto de la versión cuenta.** `qwen3.6` y `qwen3.8-flash` son modelos distintos, y `mimo-v2.6-flash` lleva el punto donde lo lleva.
 - **Los ids no cambian de significado.** Cuando servimos una variante nueva de un modelo mantenemos su id si la API es la misma. `deepseek-v4-flash`, por ejemplo, pasó a leer imágenes sin cambiar de nombre.
 - **Los ids viejos no se apagan de golpe.** `qwen3.6` sigue respondiendo para que las configuraciones que ya lo nombran no se rompan, pero no es lo que te conviene si empiezas hoy.
 
