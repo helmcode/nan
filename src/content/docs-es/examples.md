@@ -343,7 +343,7 @@ console.log(result.language);   // "en"
 console.log(result.duration);   // 5.2
 ```
 
-## model: mimo-v2.5
+## model: mimo-v2.6-flash
 
 omnimodal: chat, visión y audio
 
@@ -354,7 +354,7 @@ curl https://api.nan.builders/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-your-key-here" \
   -d '{
-    "model": "mimo-v2.5",
+    "model": "mimo-v2.6-flash",
     "messages": [{"role": "user", "content": "Hello, how are you?"}],
     "max_tokens": 500
   }'
@@ -369,7 +369,7 @@ curl https://api.nan.builders/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-your-key-here" \
   -d '{
-    "model": "mimo-v2.5",
+    "model": "mimo-v2.6-flash",
     "messages": [{
       "role": "user",
       "content": [
@@ -392,7 +392,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-  model="mimo-v2.5",
+  model="mimo-v2.6-flash",
   messages=[{
     "role": "user",
     "content": [

@@ -66,7 +66,7 @@ const here = dirname(fileURLToPath(import.meta.url));
  *   deepseek-v4-flash  1048575 declared      glm5.3        1048576 declared
  *   qwen3.8-flash       262144 declared      glm5.3-flash  1048576 declared
  *   qwen3.6             262144 --max-model-len
- *   gemma4              262144 model card    mimo-v2.5     1048576 model card
+ *   gemma4              262144 model card    mimo-v2.6-flash 1048576 model card
  *
  * EVERY DISAGREEMENT WITH `modelRateLimits`, since the previous version of this
  * list claimed to be complete and was not:
@@ -75,7 +75,8 @@ const here = dirname(fileURLToPath(import.meta.url));
  *     declares 262144 and the model card calls 262K "the model's native
  *     window". Tracked as helmcode/nan#53; it also inflates that model's ITPM
  *     fourfold.
- *   * mimo-v2.5 -- 1048576 here against 1_050_000 there. 1,424 tokens.
+ *   * mimo-v2.6-flash -- 1048576 here against 1_050_000 there. 1,424 tokens
+ *     (inherited verbatim from the retired mimo-v2.5 row).
  *   * deepseek-v4-flash -- 1048575 here against 1_048_576 there. ONE token,
  *     and the odd number is the real declaration, corroborated at
  *     `litellm-community/values.yaml:199`.
@@ -91,7 +92,7 @@ const here = dirname(fileURLToPath(import.meta.url));
  * cornered):
  *
  *   deepseek-v4-flash  1048575     glm5.3-flash  1048575
- *   qwen3.8-flash       131072     mimo-v2.5      131072
+ *   qwen3.8-flash       131072     mimo-v2.6-flash 131072
  *   gemma4              262130     qwen3.6        262131
  *
  * Two things follow, and they are why these values stay where they are.
@@ -103,7 +104,7 @@ const here = dirname(fileURLToPath(import.meta.url));
  * 1048575. So 32768 and 65536 are a BUDGET this site recommends, not a limit
  * anything enforces, and a member who raises them is not doing anything wrong.
  *
- * TWO MODELS DO HAVE A REAL CAP: qwen3.8-flash and mimo-v2.5 refuse anything
+ * TWO MODELS DO HAVE A REAL CAP: qwen3.8-flash and mimo-v2.6-flash refuse anything
  * over 131072, well below their windows, because the upstream that serves them
  * enforces its own. That figure is a fact about the endpoint and is the one
  * models.dev already publishes for them.
@@ -148,7 +149,6 @@ const EXPECTED_MODELS: Record<string, { context: number; output: number }> = {
   gemma4: { context: 262_144, output: 65_536 },
   'deepseek-v4-flash': { context: 1_048_575, output: 32_768 },
   'qwen3.8-flash': { context: 262_144, output: 32_768 },
-  'mimo-v2.5': { context: 1_048_576, output: 32_768 },
   'mimo-v2.6-flash': { context: 1_048_576, output: 32_768 },
   'glm5.3-flash': { context: 1_048_576, output: 32_768 },
 };
@@ -451,7 +451,7 @@ describe.each(LOCALES)('models.json published in %s', (locale) => {
   /**
    * Pi's schema for `input` is `("text" | "image")[]`. A third value does not
    * fail the one model: Pi refuses the whole file, with every other provider
-   * in it. So mimo-v2.5 is published without its audio, and the page says so.
+   * in it. So mimo-v2.6-flash is published without its audio, and the page says so.
    */
   test('no model declares an input outside Pi schema', () => {
     for (const m of piModels(locale).providers.nan.models as any[]) {

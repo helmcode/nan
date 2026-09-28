@@ -9,7 +9,6 @@
 - glm5.3-flash: 7 (base plan) · 10 (premium plan)
 - deepseek-v4-flash: 7 (base plan) · 10 (premium plan)
 - qwen3.8-flash: 7 (base plan) · 10 (premium plan)
-- mimo-v2.5: 5
 - mimo-v2.6-flash: 5
 - qwen3.6: 5
 - gemma4: 5
@@ -28,7 +27,6 @@ Audio, embedding and rerank endpoints have no concurrency limit.
 **tokens / min per model**
 
 - deepseek-v4-flash: 1.5M tpm
-- mimo-v2.5: 1.5M tpm
 - mimo-v2.6-flash: 1.5M tpm
 - qwen3.6: 1.5M tpm
 - gemma4: 1.5M tpm

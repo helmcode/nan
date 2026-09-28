@@ -116,33 +116,6 @@ with the same `base URL`.
 />
 
 <ModelCard
-  id="mimo-v2-5"
-  name="mimo-v2.5"
-  tag="310B-15B"
-  leftLabel="omnimodal — text, vision & audio"
-  rightLabel="capabilities"
-  description="310B parameter MoE model (15B active), natively omnimodal with dedicated vision and audio encoders. 1M token context. Tool calling and reasoning. 1.0B token monthly quota per member. MIT license."
-  specs={[
-    { label: 'Type', value: 'MoE (310B total · 15B active)' },
-    { label: 'Quantization', value: 'FP8' },
-    { label: 'Context', value: '1M tokens' },
-    { label: 'Max answer', value: '131K tokens' },
-    { label: 'Input modalities', value: 'text · image · audio' },
-    { label: 'Output modalities', value: 'text' },
-    { label: 'Monthly quota', value: '1.0B tokens / member' },
-    { label: 'License', value: 'MIT' },
-  ]}
-  items={[
-    'Tool calling (function calling)',
-    'Reasoning mode (recommended <code>max_tokens &ge; 300</code>)',
-    'Vision (image input)',
-    'Audio (audio input)',
-    '1M token context',
-    'Streaming generation (SSE)',
-  ]}
-/>
-
-<ModelCard
   id="mimo-v2-6-flash"
   name="mimo-v2.6-flash"
   tag="omnimodal"
@@ -365,7 +338,7 @@ cannot apply is never an error.
 | `qwen3.6` | `none`, `minimal`, `low`, `medium`, `high`, `max` | `none` and `minimal` skip the reasoning phase entirely. The other four cap it: low 2,048, medium 8,192, high 16,384, max 32,768 tokens. |
 | `gemma4` | `none`, `minimal`, `low`, `medium`, `high`, `max` | Same as `qwen3.6`: off, or a reasoning budget between 2,048 and 32,768 tokens. |
 | `deepseek-v4-flash` | any value (no effect) | The model decides per request how much to reason; the parameter never changes that. |
-| `qwen3.8-flash` · `mimo-v2.5` · `mimo-v2.6-flash` | accepted, depth not adjustable | The parameter is accepted and never rejected, but these models manage their own reasoning depth. |
+| `qwen3.8-flash` · `mimo-v2.6-flash` | accepted, depth not adjustable | The parameter is accepted and never rejected, but these models manage their own reasoning depth. |
 
 With no parameter, every model uses its own default (reasoning on for
 `qwen3.6` and `gemma4`, with a 16,384-token budget). More reasoning costs

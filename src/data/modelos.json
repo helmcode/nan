@@ -20,14 +20,6 @@
           "mostUsed": true
         },
         {
-          "id": "mimo-v2.5",
-          "by": "Xiaomi",
-          "specs": "omnimodal · 310B-15B MoE · FP8 · 1M context · vision · audio · tool calling · reasoning",
-          "cuota": "1.0B tokens/mes",
-          "frontier": true,
-          "mostUsed": true
-        },
-        {
           "id": "mimo-v2.6-flash",
           "by": "Xiaomi",
           "specs": "omnimodal · 1M context · vision · audio · tool calling · reasoning",
