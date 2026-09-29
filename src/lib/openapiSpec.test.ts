@@ -875,6 +875,10 @@ describe('documented structured output: guarantees and the deepseek-v4-flash rec
     const strict = (spec.components.schemas as any).Tool.properties.function.properties.strict;
     expect(strict.type).toBe('boolean');
     expect(strict.description).toMatch(/deepseek-v4-flash/);
+    // Not a guarantee on every model: decode-time enforcement is per model.
+    expect(strict.description).toContain('Request that the generated arguments follow `parameters` exactly');
+    expect(strict.description).toContain('enforced where the model supports strict decoding');
+    expect(strict.description).not.toMatch(/^Constrain/);
   });
 
   it('the deepseek-v4-flash card says the same, in both locales', () => {
@@ -918,6 +922,9 @@ describe('documented structured output: guarantees and the deepseek-v4-flash rec
       expect(parsed.tools[0].function.parameters.type).toBe('object');
       expect(parsed.tool_choice.function.name).toBe(parsed.tools[0].function.name);
       expect(py).toContain('response.choices[0].message.tool_calls[0].function.arguments');
+      expect(section).toMatch(locale ? /devuelve argumentos que siguen el esquema/ : /returns arguments that follow the schema/);
+      expect(section).toMatch(locale ? /donde el modelo admite decodificación estricta/ : /where the model supports strict decoding/);
+      expect(section).not.toMatch(/guaranteed|garantizad/);
     });
   }
 });

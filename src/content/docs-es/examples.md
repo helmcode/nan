@@ -78,7 +78,7 @@ Instalación: `npm install openai`
 
 ### salida estructurada en deepseek-v4-flash
 
-`deepseek-v4-flash` rechaza `response_format` `json_schema` con un `400`, y `json_object` solo garantiza JSON válido, no su forma. Para obtener una salida que siga un esquema, define una única herramienta de tipo función cuyo `parameters` sea tu JSON Schema (raíz `"type": "object"`, `"strict": true`) y fuérzala con `tool_choice`. Los campos llegan en `choices[0].message.tool_calls[0].function.arguments`, como una cadena JSON.
+`deepseek-v4-flash` rechaza `response_format` `json_schema` con un `400`, y `json_object` solo garantiza JSON válido, no su forma. Para obtener una salida que siga un esquema, define una única herramienta de tipo función cuyo `parameters` sea tu JSON Schema (raíz `"type": "object"`, `"strict": true`) y fuérzala con `tool_choice`. El modelo devuelve argumentos que siguen el esquema en `choices[0].message.tool_calls[0].function.arguments`, como una cadena JSON. `strict` pide que se ajusten exactamente; se aplica donde el modelo admite decodificación estricta, así que valida los argumentos si tu código depende de ellos.
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \

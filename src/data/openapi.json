@@ -1750,7 +1750,7 @@
               "strict": {
                 "type": "boolean",
                 "default": false,
-                "description": "Constrain the generated arguments to `parameters` (fields, types and required keys). Combined with a forced `tool_choice`, it is the way to get schema-shaped output on `deepseek-v4-flash`."
+                "description": "Request that the generated arguments follow `parameters` exactly (fields, types and required keys); enforced where the model supports strict decoding. Combined with a forced `tool_choice`, it is the way to get schema-shaped output on `deepseek-v4-flash`, which returns arguments that follow the schema."
               },
               "parameters": {
                 "type": "object",
