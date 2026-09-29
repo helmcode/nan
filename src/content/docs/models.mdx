@@ -47,7 +47,7 @@ with the same `base URL`.
   tag="305B MoE"
   leftLabel="text generation, chat & vision"
   rightLabel="capabilities"
-  description="305B parameter MoE model, served as the Vision-Exp variant: it takes images as input. 1M token context. Tool calling and reasoning. 3B token monthly quota per member. Structured output: response_format json_object is supported (the prompt must contain the word JSON, otherwise it is rejected with a 400), json_schema is not and is rejected with a 400. For schema-constrained output, use qwen3.6 or gemma4."
+  description="305B parameter MoE model, served as the Vision-Exp variant: it takes images as input. 1M token context. Tool calling and reasoning. 3B token monthly quota per member. Structured output: response_format json_object is supported (the prompt must contain the word JSON, otherwise it is rejected with a 400), json_schema is not and is rejected with a 400. For schema-constrained output, use qwen3.6 or gemma4. A max_tokens below 16384 is raised to 16384 so the reasoning fits, so a prompt within 16384 tokens of the 1,048,576-token window is rejected with a 400 (Context length exceeded) even with a small max_tokens."
   specs={[
     { label: 'Type', value: 'MoE (305B total)' },
     { label: 'Quantization', value: 'FP8' },
@@ -97,10 +97,10 @@ with the same `base URL`.
   tag="125B-6B"
   leftLabel="text generation, chat & vision"
   rightLabel="capabilities"
-  description="125B parameter MoE model (6B active), multimodal with vision, tool calling and reasoning on by default. 262K token context, the model's native window. 500M token monthly quota per member."
+  description="125B parameter MoE model (6B active), multimodal with vision, tool calling and reasoning on by default. 1M token context (1,048,576 tokens). 500M token monthly quota per member."
   specs={[
     { label: 'Type', value: 'MoE (125B total · 6B active)' },
-    { label: 'Context', value: '262K tokens' },
+    { label: 'Context', value: '1M tokens' },
     { label: 'Max answer', value: '131K tokens' },
     { label: 'Input modalities', value: 'text · image' },
     { label: 'Output modalities', value: 'text' },
@@ -111,7 +111,7 @@ with the same `base URL`.
     'Tool calling (XML format)',
     'Reasoning mode (on by default)',
     'Vision (image input)',
-    '262K token context',
+    '1M token context',
     'Streaming generation (SSE)',
   ]}
 />

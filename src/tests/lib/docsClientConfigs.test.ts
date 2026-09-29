@@ -64,17 +64,16 @@ const here = dirname(fileURLToPath(import.meta.url));
  * `vllm-qwen36-*` deployments in `nan-inference`:
  *
  *   deepseek-v4-flash  1048575 declared      glm5.3        1048576 declared
- *   qwen3.8-flash       262144 declared      glm5.3-flash  1048576 declared
+ *   qwen3.8-flash      1048576 declared      glm5.3-flash  1048576 declared  (qwen3.8-flash re-measured 2026-09-29)
  *   qwen3.6             262144 --max-model-len
  *   gemma4              262144 model card    mimo-v2.6-flash 1048576 model card
  *
  * EVERY DISAGREEMENT WITH `modelRateLimits`, since the previous version of this
  * list claimed to be complete and was not:
- *   * qwen3.8-flash -- 262144 here, 1_048_576 there ("YaRN extends the native
- *     window to 1M, which is what we expose to members") while the deployment
- *     declares 262144 and the model card calls 262K "the model's native
- *     window". Tracked as helmcode/nan#53; it also inflates that model's ITPM
- *     fourfold.
+ *   * qwen3.8-flash -- RESOLVED. It was 262144 here against 1_048_576 there
+ *     (helmcode/nan#53). Re-measured 2026-09-29: the deployment now declares
+ *     `max_input_tokens` 1048576 and the rate-limit hook windows it at
+ *     1_048_576, so the configs, the model card and choose-a-model publish 1M.
  *   * mimo-v2.6-flash -- 1048576 here against 1_050_000 there. 1,424 tokens
  *     (inherited verbatim from the retired mimo-v2.5 row).
  *   * deepseek-v4-flash -- 1048575 here against 1_048_576 there. ONE token,
@@ -148,7 +147,7 @@ const EXPECTED_MODELS: Record<string, { context: number; output: number }> = {
   'qwen3.6': { context: 262_144, output: 65_536 },
   gemma4: { context: 262_144, output: 65_536 },
   'deepseek-v4-flash': { context: 1_048_575, output: 32_768 },
-  'qwen3.8-flash': { context: 262_144, output: 32_768 },
+  'qwen3.8-flash': { context: 1_048_576, output: 32_768 },
   'mimo-v2.6-flash': { context: 1_048_576, output: 32_768 },
   'glm5.3-flash': { context: 1_048_576, output: 32_768 },
 };

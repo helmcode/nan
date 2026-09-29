@@ -108,7 +108,7 @@ export const MODELS: ModelSpec[] = [
     id: 'qwen3.8-flash',
     by: 'Alibaba',
     kind: 'chat',
-    contextTokens: 262_144,
+    contextTokens: 1_000_000,
     inputs: ['text', 'image'],
     quota: { kind: 'monthly', label: { en: '500M tokens / mo', es: '500M tokens/mes' } },
     endpoint: '/chat/completions',

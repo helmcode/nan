@@ -42,7 +42,7 @@ Escribe esto en `~/.config/opencode/opencode.json` para tenerlo en todos tus pro
         },
         "qwen3.8-flash": {
           "name": "Qwen 3.8 Flash",
-          "limit": { "context": 262144, "output": 32768 },
+          "limit": { "context": 1048576, "output": 32768 },
           "modalities": { "input": ["text", "image"], "output": ["text"] }
         },
         "mimo-v2.6-flash": {
@@ -113,7 +113,7 @@ Después pega tu API key y pulsa Enter.
 
 `limit.context` y `limit.output` son los campos que OpenCode lee. Una versión anterior de esta documentación publicaba `contextWindow`, que no existe en [el esquema de OpenCode](https://opencode.ai/config.json): una clave desconocida no da ningún error que nadie vea, OpenCode se queda con su propia suposición sobre la ventana, y el síntoma es una sesión que compacta demasiado pronto en los modelos de contexto largo.
 
-`limit.context` es la ventana que acepta el proxy, que no siempre es aquella con la que se entrenó el modelo: `qwen3.8-flash` se sirve en sus 262K nativos, no en el 1M extendido con YaRN. `limit.output` es un presupuesto del cliente, no un tope del servidor, así que súbelo si necesitas respuestas más largas.
+`limit.context` es la ventana que acepta el proxy: `qwen3.8-flash` se sirve con la ventana completa de 1.048.576 tokens, igual que los demás modelos de 1M. `limit.output` es un presupuesto del cliente, no un tope del servidor, así que súbelo si necesitas respuestas más largas.
 
 ## El bloque de compactación
 

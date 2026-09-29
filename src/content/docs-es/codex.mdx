@@ -42,7 +42,7 @@ wire_api = "chat"
 
 Tres detalles que importan:
 
-- **`wire_api = "chat"`** hace que Codex use `/chat/completions`. Es lo que quieres: el endpoint `/responses` del clúster contesta de una sola vez en lugar de ir emitiendo la respuesta, así que con `"responses"` verías la respuesta aparecer de golpe al final.
+- **`wire_api = "chat"`** hace que Codex use `/chat/completions`. Es lo que quieres con la mayoría de modelos: el endpoint `/responses` del clúster solo va emitiendo la respuesta por partes con `deepseek-v4-flash`, y con los demás contesta de una sola vez, así que con `"responses"` verías la respuesta aparecer de golpe al final.
 - **El identificador del proveedor no puede ser `openai`, `ollama` ni `lmstudio`**, que están reservados. Por eso se llama `nan`.
 - **`base_url` termina en `/v1`** y nada más. No añadas la ruta del endpoint.
 
@@ -74,7 +74,7 @@ O dejar varios proveedores declarados y elegir con `--profile` si prefieres perf
 
 - **Las funciones en la nube de Codex no aplican.** Al declarar un proveedor propio, todo va contra NaN desde tu máquina.
 - **El razonamiento se ve distinto según el modelo.** Los modelos del clúster emiten su traza de razonamiento a su manera, y Codex no siempre la presenta como con los modelos de OpenAI.
-- **Si cambias `wire_api` a `"responses"`**, la respuesta deja de aparecer poco a poco. No es un cuelgue: es que ese endpoint todavía no emite la respuesta por partes.
+- **Si cambias `wire_api` a `"responses"`**, solo `deepseek-v4-flash` sigue mostrando la respuesta poco a poco. Con los demás modelos aparece de golpe al final. No es un cuelgue: es que con esos modelos ese endpoint todavía no emite la respuesta por partes.
 
 </Details>
 

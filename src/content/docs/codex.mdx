@@ -42,7 +42,7 @@ wire_api = "chat"
 
 Three details that matter:
 
-- **`wire_api = "chat"`** makes Codex use `/chat/completions`. That is what you want: the cluster's `/responses` endpoint answers in one go instead of streaming, so with `"responses"` you would see the answer appear all at once at the end.
+- **`wire_api = "chat"`** makes Codex use `/chat/completions`. That is what you want with most models: the cluster's `/responses` endpoint streams incrementally only on `deepseek-v4-flash`, and on the others it answers in one go, so with `"responses"` you would see the answer appear all at once at the end.
 - **The provider identifier cannot be `openai`, `ollama` or `lmstudio`**, which are reserved. That is why it is called `nan`.
 - **`base_url` ends at `/v1`** and nothing more. Do not add the endpoint path.
 
@@ -74,6 +74,6 @@ Or leave several providers declared and pick with `--profile` if you prefer sepa
 
 - **Codex's cloud features do not apply.** Once you declare a provider of your own, everything goes to NaN from your machine.
 - **Reasoning looks different depending on the model.** The cluster's models emit their reasoning trace their own way, and Codex does not always present it the way it does with OpenAI's models.
-- **If you change `wire_api` to `"responses"`**, the answer stops appearing gradually. It is not a hang: that endpoint does not stream yet.
+- **If you change `wire_api` to `"responses"`**, only `deepseek-v4-flash` keeps showing the answer gradually. With the other models it appears all at once at the end. It is not a hang: on those models that endpoint does not stream yet.
 
 </Details>

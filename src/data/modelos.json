@@ -37,7 +37,7 @@
         {
           "id": "qwen3.8-flash",
           "by": "Alibaba",
-          "specs": "125B-6B MoE · 262K context · vision · tool calling · reasoning",
+          "specs": "125B-6B MoE · 1M context · vision · tool calling · reasoning",
           "cuota": "500M tokens/mes",
           "frontier": true
         },

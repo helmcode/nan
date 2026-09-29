@@ -679,3 +679,154 @@ describe('documented 400s: tool names and structured output', () => {
     expect(es).toContain('<code>json_schema</code> no soportado (400)');
   });
 });
+
+/**
+ * /responses ON deepseek-v4-flash, AND ITS STREAMING, MEASURED 2026-09-29
+ * with a real request against api.nan.builders: 200 with a `reasoning` item
+ * and a `message` item, non-streaming; with `stream: true` it emits the full
+ * event sequence incrementally (`response.created` first, deltas as they are
+ * generated, `response.completed` last). qwen3.6 and gemma4 answer 200 too,
+ * but hold the answer and send every delta in one burst at the end, so the
+ * old "a single terminal event" sentence was no longer true for any model.
+ */
+describe('documented /responses: models and streaming', () => {
+  const op = (spec.paths as any)['/responses'].post;
+  const body = op.requestBody.content['application/json'].schema.properties;
+
+  it('lists deepseek-v4-flash next to qwen3.6 and gemma4, in text and in the enum', () => {
+    expect(op.description).toContain('Models: `deepseek-v4-flash`, `qwen3.6`, `gemma4`.');
+    expect(body.model.enum).toEqual(['deepseek-v4-flash', 'qwen3.6', 'gemma4']);
+    for (const id of body.model.enum) expect(NAN_MODELS, id).toContain(id);
+  });
+
+  it('says which models stream incrementally and which send one burst', () => {
+    expect(op.description).toMatch(/`deepseek-v4-flash` streams incrementally/);
+    expect(op.description).toContain('`response.created`');
+    expect(op.description).toMatch(/On `qwen3\.6` and `gemma4` the answer is held until it is complete/);
+    expect(op.description).toContain('[Create chat completion](#tag/Chat)');
+    expect(body.stream.type).toBe('boolean');
+    expect(body.stream.default).toBe(false);
+  });
+
+  it('drops the stale single-terminal-event claim everywhere', () => {
+    expect(raw).not.toMatch(/single terminal event/);
+    expect(spec.info.description).toContain(
+      '`/responses` streams incrementally only on `deepseek-v4-flash`',
+    );
+  });
+
+  it('the Codex guide agrees, in both locales', () => {
+    const page = (locale: string) =>
+      readFileSync(
+        resolve(dirname(fileURLToPath(import.meta.url)), `../content/docs${locale}/codex.mdx`),
+        'utf-8',
+      );
+    expect(page('')).toContain('streams incrementally only on `deepseek-v4-flash`');
+    expect(page('')).not.toContain('It is not a hang: that endpoint does not stream yet.');
+    expect(page('-es')).toContain('solo va emitiendo la respuesta por partes con `deepseek-v4-flash`');
+  });
+});
+
+/**
+ * qwen3.8-flash IS SERVED AT 1,048,576 TOKENS, not 262,144. Re-measured
+ * 2026-09-29: `max_input_tokens` 1048576 on the community proxy's deployment
+ * and a 1_048_576 window in the rate-limit hook. The old "262K, the model's
+ * native window" copy sent clients to compact at a quarter of what the API
+ * accepts. Other models' figures are untouched and are pinned elsewhere.
+ */
+describe('documented context: qwen3.8-flash is 1M', () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const read = (p: string) => readFileSync(resolve(here, p), 'utf-8');
+
+  it('the API reference catalog says 1M', () => {
+    const row = spec.info.description.split('\n').find((l: string) => l.startsWith('| `qwen3.8-flash`'));
+    expect(row).toContain('1M-token context');
+    expect(row).not.toMatch(/262/);
+  });
+
+  for (const locale of ['', '-es']) {
+    it(`no page gives qwen3.8-flash a 262K window (${locale || 'en'})`, () => {
+      const card = (() => {
+        const page = read(`../content/docs${locale}/models.mdx`);
+        const start = page.indexOf('id="qwen3-8-flash"');
+        expect(start).toBeGreaterThan(-1);
+        return page.slice(start, page.indexOf('/>', start));
+      })();
+      expect(card).not.toMatch(/262|native|nativa/);
+      expect(card).toMatch(/1M tokens/);
+      expect(card).toMatch(/1[.,]048[.,]576/);
+
+      expect(read(`../content/docs${locale}/choose-a-model.md`)).toMatch(/^\| `qwen3\.8-flash` \|[^|]+\| 1M \|/m);
+      expect(read(`../content/docs${locale}/cline.mdx`)).toMatch(/^\| `qwen3\.8-flash` \| 1000000 \|/m);
+      expect(read(`../content/docs${locale}/opencode.mdx`)).toMatch(
+        /"name": "Qwen 3\.8 Flash",\s*"limit": \{ "context": 1048576, "output": 32768 \}/,
+      );
+      // VS Code adds input and output, so the input is the window minus 32768.
+      expect(read(`../content/docs${locale}/vscode.mdx`)).toMatch(
+        /"id": "qwen3\.8-flash",[^}]*"maxInputTokens": 1015808,\s*"maxOutputTokens": 32768/,
+      );
+      expect(read(`../content/docs${locale}/pi.mdx`)).toMatch(
+        /"id": "qwen3\.8-flash",[^}]*"contextWindow": 1048576,/,
+      );
+    });
+  }
+
+  it('the home table says 1M', () => {
+    const row = JSON.stringify(modelos).match(/"id":"qwen3\.8-flash"[^}]*"specs":"([^"]+)"/);
+    expect(row, 'no qwen3.8-flash row in modelos.json').not.toBeNull();
+    expect(row![1]).toContain('1M context');
+  });
+});
+
+/**
+ * TWO MORE 400s FROM 2026-09-29. A tool whose `parameters` root is not
+ * `"type": "object"` is rejected before routing, on every model. A request
+ * that overflows the model's window answers 400 "Context length exceeded for
+ * model '...'" with the limit, and is not retried on another deployment; on
+ * deepseek-v4-flash a small `max_tokens` is raised to 16384 so the reasoning
+ * fits, which is why a prompt close to the window overflows with a small one.
+ */
+describe('documented 400s: tool parameters and context overflow', () => {
+  const schemas = spec.components.schemas as any;
+  const params = schemas.Tool.properties.function.properties.parameters;
+
+  it('pins the object root of tool parameters, machine-readably and in prose', () => {
+    expect(params.type).toBe('object');
+    expect(params.required).toEqual(['type']);
+    expect(params.properties.type.const).toBe('object');
+    expect(params.description).toContain('its root must be `"type": "object"`');
+    expect(params.description).toMatch(/rejected with a `400`/);
+    expect(params.description).toMatch(/every model/);
+    // `parameters` stays optional: a no-argument tool may omit it.
+    expect(schemas.Tool.properties.function.required).toEqual(['name']);
+  });
+
+  it('documents the context-overflow 400 in the errors table and the shared 400', () => {
+    const row = spec.info.description.split('\n').find((l: string) => l.startsWith('| `400` |'));
+    expect(row).toContain("Context length exceeded for model '...'");
+    expect(row).toMatch(/model's limit/);
+    const bad = (spec.components.responses as any).BadRequest.description;
+    expect(bad).toContain("Context length exceeded for model '...'");
+    expect(bad).toMatch(/not retried on another deployment/);
+  });
+
+  it('explains the deepseek-v4-flash 16384 floor on max_tokens, in the spec and on both cards', () => {
+    const maxTokens = (spec.paths as any)['/chat/completions'].post.requestBody.content['application/json']
+      .schema.properties.max_tokens.description;
+    expect(maxTokens).toContain('On `deepseek-v4-flash` a smaller value is raised to 16384');
+    expect(maxTokens).toContain('1,048,576-token window');
+
+    const card = (locale: string) => {
+      const page = readFileSync(
+        resolve(dirname(fileURLToPath(import.meta.url)), `../content/docs${locale}/models.mdx`),
+        'utf-8',
+      );
+      const start = page.indexOf('id="deepseek-v4-flash"');
+      return page.slice(start, page.indexOf('/>', start));
+    };
+    expect(card('')).toContain('A max_tokens below 16384 is raised to 16384 so the reasoning fits');
+    expect(card('')).toContain('rejected with a 400 (Context length exceeded)');
+    expect(card('-es')).toContain('Un max_tokens por debajo de 16384 se sube a 16384');
+    expect(card('-es')).toContain('se rechaza con un 400 (Context length exceeded)');
+  });
+});

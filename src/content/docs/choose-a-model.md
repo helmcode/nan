@@ -44,7 +44,7 @@ If you do not know which one to pick, look for what you want to do in the first 
 | `deepseek-v4-flash` | General chat and reasoning | 1M | text · image | 3B tokens/month |
 | `glm5.3` | Coding agents and long tasks | 1M | text | 3B tokens/billing period |
 | `glm5.3-flash` | Coding agents, without premium | 1M | text · image | 2B tokens/month |
-| `qwen3.8-flash` | Fast answers | 262K | text · image | 500M tokens/month |
+| `qwen3.8-flash` | Fast answers | 1M | text · image | 500M tokens/month |
 | `mimo-v2.6-flash` | The newest MiMo, omnimodal | 1M | text · image · audio | 1.0B tokens/month |
 | `gemma4` | Short tasks and testing | 262K | text · image | no counter |
 | `qwen3.6` | Previous generation | 262K | text · image | no counter |
