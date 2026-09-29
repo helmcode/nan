@@ -781,8 +781,11 @@ describe('documented context: qwen3.8-flash is 1M', () => {
 /**
  * TWO MORE 400s FROM 2026-09-29. A tool whose `parameters` root is not
  * `"type": "object"` is rejected before routing, on every model. A request
- * that overflows the model's window answers 400 "Context length exceeded for
- * model '...'" with the limit, and is not retried on another deployment; on
+ * that overflows the model's window answers 400 and is not retried
+ * automatically. The exact "Context length exceeded for model '...'" text was
+ * measured on the hosted models (gemma4); on deepseek-v4-flash an overflow
+ * measured 2026-09-29 came back as the GENERIC "Invalid request. Check your
+ * request parameters.", so the docs promise the text only where measured. On
  * deepseek-v4-flash a small `max_tokens` is raised to 16384 so the reasoning
  * fits, which is why a prompt close to the window overflows with a small one.
  */
@@ -794,6 +797,8 @@ describe('documented 400s: tool parameters and context overflow', () => {
     expect(params.type).toBe('object');
     expect(params.required).toEqual(['type']);
     expect(params.properties.type.enum).toEqual(['object']);
+    // Declaring properties.type must not read as "type is the only field".
+    expect(params.additionalProperties).toBe(true);
     expect(params.description).toContain('its root must be `"type": "object"`');
     expect(params.description).toMatch(/rejected with a `400`/);
     expect(params.description).toMatch(/every model/);
@@ -805,9 +810,19 @@ describe('documented 400s: tool parameters and context overflow', () => {
     const row = spec.info.description.split('\n').find((l: string) => l.startsWith('| `400` |'));
     expect(row).toContain("Context length exceeded for model '...'");
     expect(row).toMatch(/model's limit/);
+    // The exact text is promised only for the hosted models, where it was measured.
+    expect(row).toMatch(/hosted on the cluster \(`qwen3\.6`, `gemma4`\) the overflow message is "Context length exceeded/);
+    expect(row).toContain('Invalid request. Check your request parameters.');
+    expect(row).toMatch(/`max_tokens` above what the model can generate/);
+    // The API returns invalid_request_error in `type`; `code` is "400".
+    expect(row).toContain('`"400"` (with `type: invalid_request_error`)');
+    expect(spec.info.description).not.toMatch(/not retried on another deployment/);
+    expect(spec.info.description).toContain('not retried automatically either: shorten the input or pick a model with a larger window');
     const bad = (spec.components.responses as any).BadRequest.description;
     expect(bad).toContain("Context length exceeded for model '...'");
-    expect(bad).toMatch(/not retried on another deployment/);
+    expect(bad).toMatch(/not retried automatically: shorten the input or pick a model with a larger window/);
+    expect(bad).toMatch(/On `qwen3\.6` and `gemma4` the message is "Context length exceeded/);
+    expect(bad).toContain('Invalid request. Check your request parameters.');
   });
 
   it('explains the deepseek-v4-flash 16384 floor on max_tokens, in the spec and on both cards', () => {
@@ -815,6 +830,9 @@ describe('documented 400s: tool parameters and context overflow', () => {
       .schema.properties.max_tokens.description;
     expect(maxTokens).toContain('On `deepseek-v4-flash` a smaller value is raised to 16384');
     expect(maxTokens).toContain('1,048,576-token window');
+    // Not promised as the exact text on deepseek-v4-flash: measured generic there.
+    expect(maxTokens).not.toMatch(/deepseek-v4-flash[^.]*Context length exceeded/);
+    expect(maxTokens).toMatch(/above what the model can generate is rejected with a generic `400`/);
 
     const card = (locale: string) => {
       const page = readFileSync(
@@ -825,8 +843,8 @@ describe('documented 400s: tool parameters and context overflow', () => {
       return page.slice(start, page.indexOf('/>', start));
     };
     expect(card('')).toContain('A max_tokens below 16384 is raised to 16384 so the reasoning fits');
-    expect(card('')).toContain('rejected with a 400 (Context length exceeded)');
+    expect(card('')).toContain('rejected with a 400 even with a small max_tokens (usually Context length exceeded, sometimes a generic Invalid request)');
     expect(card('-es')).toContain('Un max_tokens por debajo de 16384 se sube a 16384');
-    expect(card('-es')).toContain('se rechaza con un 400 (Context length exceeded)');
+    expect(card('-es')).toContain('se rechaza con un 400 aunque pidas un max_tokens pequeño (normalmente Context length exceeded, a veces un Invalid request genérico)');
   });
 });
