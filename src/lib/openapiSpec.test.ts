@@ -793,7 +793,7 @@ describe('documented 400s: tool parameters and context overflow', () => {
   it('pins the object root of tool parameters, machine-readably and in prose', () => {
     expect(params.type).toBe('object');
     expect(params.required).toEqual(['type']);
-    expect(params.properties.type.const).toBe('object');
+    expect(params.properties.type.enum).toEqual(['object']);
     expect(params.description).toContain('its root must be `"type": "object"`');
     expect(params.description).toMatch(/rejected with a `400`/);
     expect(params.description).toMatch(/every model/);

@@ -1754,7 +1754,11 @@
                 ],
                 "properties": {
                   "type": {
-                    "const": "object"
+                    "type": "string",
+                    "enum": [
+                      "object"
+                    ],
+                    "description": "The root type of the schema. Must be `object`."
                   }
                 },
                 "description": "The parameters the function accepts, described as a JSON Schema object. When present, its root must be `\"type\": \"object\"`: a root of any other type, or with no `type`, is rejected with a `400` before the request reaches the model, on every model. A function that takes no arguments can omit `parameters` or send `{\"type\": \"object\", \"properties\": {}}`."
