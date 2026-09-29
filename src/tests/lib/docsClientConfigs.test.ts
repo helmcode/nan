@@ -63,7 +63,7 @@ const here = dirname(fileURLToPath(import.meta.url));
  * and, for qwen3.6, the live `--max-model-len=262144` on the five
  * `vllm-qwen36-*` deployments in `nan-inference`:
  *
- *   deepseek-v4-flash  1048575 declared      glm5.3        1048576 declared
+ *   deepseek-v4-flash  1048576 declared      glm5.3        1048576 declared  (deepseek-v4-flash re-measured 2026-09-29)
  *   qwen3.8-flash      1048576 declared      glm5.3-flash  1048576 declared  (qwen3.8-flash re-measured 2026-09-29)
  *   qwen3.6             262144 --max-model-len
  *   gemma4              262144 model card    mimo-v2.6-flash 1048576 model card
@@ -76,9 +76,9 @@ const here = dirname(fileURLToPath(import.meta.url));
  *     1_048_576, so the configs, the model card and choose-a-model publish 1M.
  *   * mimo-v2.6-flash -- 1048576 here against 1_050_000 there. 1,424 tokens
  *     (inherited verbatim from the retired mimo-v2.5 row).
- *   * deepseek-v4-flash -- 1048575 here against 1_048_576 there. ONE token,
- *     and the odd number is the real declaration, corroborated at
- *     `litellm-community/values.yaml:199`.
+ *   * deepseek-v4-flash -- RESOLVED. It was 1048575 here against 1_048_576
+ *     there, ONE token. Re-measured 2026-09-29: the deployment now declares
+ *     `max_input_tokens` 1048576, so every config publishes 1048576.
  * The three GLM groups agree since cloud-api `8aa5496` raised them to 1M.
  * `output` is NOT a server cap for the self-hosted models -- vLLM bounds the
  * completion by the context window minus the prompt, with no separate limit.
@@ -146,7 +146,7 @@ const ALLOWED_PLACEHOLDERS = new Set([
 const EXPECTED_MODELS: Record<string, { context: number; output: number }> = {
   'qwen3.6': { context: 262_144, output: 65_536 },
   gemma4: { context: 262_144, output: 65_536 },
-  'deepseek-v4-flash': { context: 1_048_575, output: 32_768 },
+  'deepseek-v4-flash': { context: 1_048_576, output: 32_768 },
   'qwen3.8-flash': { context: 1_048_576, output: 32_768 },
   'mimo-v2.6-flash': { context: 1_048_576, output: 32_768 },
   'glm5.3-flash': { context: 1_048_576, output: 32_768 },

@@ -32,7 +32,7 @@ Escribe esto en `~/.config/opencode/opencode.json` para tenerlo en todos tus pro
       "models": {
         "deepseek-v4-flash": {
           "name": "DeepSeek V4 Flash",
-          "limit": { "context": 1048575, "output": 32768 },
+          "limit": { "context": 1048576, "output": 32768 },
           "modalities": { "input": ["text", "image"], "output": ["text"] }
         },
         "glm5.3-flash": {
@@ -108,7 +108,7 @@ Después pega tu API key y pulsa Enter.
 ## Los límites de contexto
 
 ```json
-"limit": { "context": 1048575, "output": 32768 }
+"limit": { "context": 1048576, "output": 32768 }
 ```
 
 `limit.context` y `limit.output` son los campos que OpenCode lee. Una versión anterior de esta documentación publicaba `contextWindow`, que no existe en [el esquema de OpenCode](https://opencode.ai/config.json): una clave desconocida no da ningún error que nadie vea, OpenCode se queda con su propia suposición sobre la ventana, y el síntoma es una sesión que compacta demasiado pronto en los modelos de contexto largo.
