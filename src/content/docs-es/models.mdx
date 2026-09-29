@@ -47,7 +47,7 @@ OpenAI y la misma `base URL`.
   tag="305B MoE"
   leftLabel="generación de texto, chat y visión"
   rightLabel="capacidades"
-  description="Modelo MoE de 305B parámetros, servido en su variante Vision-Exp: acepta imágenes de entrada. Contexto de 1M tokens. Tool calling y razonamiento. Cuota de 3B tokens al mes por miembro."
+  description="Modelo MoE de 305B parámetros, servido en su variante Vision-Exp: acepta imágenes de entrada. Contexto de 1M tokens. Tool calling y razonamiento. Cuota de 3B tokens al mes por miembro. Salida estructurada: response_format json_object está soportado, json_schema no y se rechaza con un 400. Para salida restringida a un esquema, usa qwen3.6 o gemma4."
   specs={[
     { label: 'Tipo', value: 'MoE (305B total)' },
     { label: 'Cuantización', value: 'FP8' },
@@ -60,6 +60,7 @@ OpenAI y la misma `base URL`.
     'Tool calling',
     'Modo razonamiento',
     'Visión (entrada de imagen)',
+    'Modo JSON (<code>json_object</code>) · <code>json_schema</code> no soportado (400)',
     'Contexto de 1M tokens',
     'Generación en streaming (SSE)',
   ]}
