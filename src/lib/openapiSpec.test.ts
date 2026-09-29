@@ -653,7 +653,7 @@ describe('documented 400s: tool names and structured output', () => {
   it('says json_schema is rejected on deepseek-v4-flash and json_object works there', () => {
     const description: string = schemas.ResponseFormat.description;
     expect(description).toContain(
-      'On `deepseek-v4-flash` it is rejected with a `400` before the request reaches the model; `json_object` still works there.',
+      'On `deepseek-v4-flash` it is rejected with a `400` before the request reaches the model; `json_object` still works there, as long as the prompt contains the word JSON (otherwise `400`).',
     );
     const works = /`json_schema` works on (.+?)\.(?:\s|$)/.exec(description)!;
     expect(works[1]).not.toContain('deepseek-v4-flash');
@@ -670,11 +670,11 @@ describe('documented 400s: tool names and structured output', () => {
       return page.slice(start, page.indexOf('/>', start));
     };
     const en = card('');
-    expect(en).toContain('json_object is supported, json_schema is not and is rejected with a 400');
+    expect(en).toContain('json_object is supported (the prompt must contain the word JSON, otherwise it is rejected with a 400), json_schema is not and is rejected with a 400');
     expect(en).toContain('use qwen3.6 or gemma4');
     expect(en).toContain('<code>json_schema</code> not supported (400)');
     const es = card('-es');
-    expect(es).toContain('json_object está soportado, json_schema no y se rechaza con un 400');
+    expect(es).toContain('json_object es compatible (el prompt debe contener la palabra JSON; si no, se rechaza con un 400), json_schema no y se rechaza con un 400');
     expect(es).toContain('usa qwen3.6 o gemma4');
     expect(es).toContain('<code>json_schema</code> no soportado (400)');
   });

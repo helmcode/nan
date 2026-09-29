@@ -1796,7 +1796,7 @@
         }
       },
       "ResponseFormat": {
-        "description": "Force structured output. `json_object` guarantees syntactically valid JSON; `json_schema` (with `strict: true`) constrains the output to a schema. `json_schema` works on `qwen3.6` and `gemma4`. On `deepseek-v4-flash` it is rejected with a `400` before the request reaches the model; `json_object` still works there.",
+        "description": "Force structured output. `json_object` guarantees syntactically valid JSON; `json_schema` (with `strict: true`) constrains the output to a schema. `json_schema` works on `qwen3.6` and `gemma4`. On `deepseek-v4-flash` it is rejected with a `400` before the request reaches the model; `json_object` still works there, as long as the prompt contains the word JSON (otherwise `400`).",
         "oneOf": [
           {
             "type": "object",

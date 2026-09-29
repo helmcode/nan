@@ -47,7 +47,7 @@ with the same `base URL`.
   tag="305B MoE"
   leftLabel="text generation, chat & vision"
   rightLabel="capabilities"
-  description="305B parameter MoE model, served as the Vision-Exp variant: it takes images as input. 1M token context. Tool calling and reasoning. 3B token monthly quota per member. Structured output: response_format json_object is supported, json_schema is not and is rejected with a 400. For schema-constrained output, use qwen3.6 or gemma4."
+  description="305B parameter MoE model, served as the Vision-Exp variant: it takes images as input. 1M token context. Tool calling and reasoning. 3B token monthly quota per member. Structured output: response_format json_object is supported (the prompt must contain the word JSON, otherwise it is rejected with a 400), json_schema is not and is rejected with a 400. For schema-constrained output, use qwen3.6 or gemma4."
   specs={[
     { label: 'Type', value: 'MoE (305B total)' },
     { label: 'Quantization', value: 'FP8' },
@@ -60,7 +60,7 @@ with the same `base URL`.
     'Tool calling',
     'Reasoning mode (adaptive — not level-adjustable)',
     'Vision (image input)',
-    'JSON mode (<code>json_object</code>) · <code>json_schema</code> not supported (400)',
+    'JSON mode (<code>json_object</code>, the prompt must mention JSON) · <code>json_schema</code> not supported (400)',
     '1M token context',
     'Streaming generation (SSE)',
   ]}
