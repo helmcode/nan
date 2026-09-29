@@ -394,10 +394,19 @@ describe('openapi.json: the model it puts in front of a reader', () => {
     }
   });
 
-  /** The structured-output example is allowed to differ, but not to go stale. */
+  /**
+   * The structured-output example is allowed to differ, but not to go stale.
+   * The ResponseFormat description now also names a model that REJECTS
+   * `json_schema`, so "the description mentions the model" is no longer
+   * enough: the model has to be in the sentence that says where it works.
+   */
   it('keeps the structured-output example on a model that supports it', () => {
     const model = chat.requestBody.content['application/json'].examples.json_schema.value.model;
-    expect(spec.components.schemas.ResponseFormat.description).toContain(`\`${model}\``);
+    const works = /`json_schema` works on (.+?)\.(?:\s|$)/.exec(
+      spec.components.schemas.ResponseFormat.description,
+    );
+    expect(works, 'ResponseFormat no longer says where json_schema works').not.toBeNull();
+    expect(works![1]).toContain(`\`${model}\``);
   });
 });
 
@@ -609,5 +618,64 @@ describe('getting-started guides: /usage parity', () => {
       expect(section).toContain('`start_date`');
       expect(section).toContain('`end_date`');
     }
+  });
+});
+
+/**
+ * THE GATEWAY REJECTS TWO REQUEST SHAPES WITH A 400 BEFORE ROUTING: a tool
+ * name outside ^[a-zA-Z0-9_-]{1,64}$ (any model) and `response_format`
+ * `json_schema` on `deepseek-v4-flash` (`json_object` still works there).
+ * A member who hits either should find it in the reference and on the model
+ * card, in both locales, not learn it from the error.
+ */
+describe('documented 400s: tool names and structured output', () => {
+  const schemas = spec.components.schemas as any;
+  const TOOL_NAME = '^[a-zA-Z0-9_-]{1,64}$';
+
+  it('publishes the tool-name pattern the gateway enforces', () => {
+    const name = schemas.Tool.properties.function.properties.name;
+    expect(name.pattern).toBe(TOOL_NAME);
+    expect(name.description).toContain('Up to 64 characters; letters, digits, underscores and dashes.');
+    expect(name.description).toMatch(/rejected with a `400`/);
+    expect(name.description).toMatch(/every model/);
+  });
+
+  it('the published pattern accepts and rejects what the description says', () => {
+    const re = new RegExp(TOOL_NAME);
+    for (const ok of ['get_weather', 'search-web', 'A1', 'x'.repeat(64)]) {
+      expect(re.test(ok), ok).toBe(true);
+    }
+    for (const bad of ['', 'x'.repeat(65), 'files.read', 'mcp:search', 'with space', 'ñandú']) {
+      expect(re.test(bad), bad).toBe(false);
+    }
+  });
+
+  it('says json_schema is rejected on deepseek-v4-flash and json_object works there', () => {
+    const description: string = schemas.ResponseFormat.description;
+    expect(description).toContain(
+      'On `deepseek-v4-flash` it is rejected with a `400` before the request reaches the model; `json_object` still works there, as long as the prompt contains the word JSON (otherwise `400`).',
+    );
+    const works = /`json_schema` works on (.+?)\.(?:\s|$)/.exec(description)!;
+    expect(works[1]).not.toContain('deepseek-v4-flash');
+  });
+
+  it('states the same on the deepseek-v4-flash model card, in both locales', () => {
+    const card = (locale: string) => {
+      const page = readFileSync(
+        resolve(dirname(fileURLToPath(import.meta.url)), `../content/docs${locale}/models.mdx`),
+        'utf-8',
+      );
+      const start = page.indexOf('id="deepseek-v4-flash"');
+      expect(start, `${locale || 'en'}: no deepseek-v4-flash card`).toBeGreaterThan(-1);
+      return page.slice(start, page.indexOf('/>', start));
+    };
+    const en = card('');
+    expect(en).toContain('json_object is supported (the prompt must contain the word JSON, otherwise it is rejected with a 400), json_schema is not and is rejected with a 400');
+    expect(en).toContain('use qwen3.6 or gemma4');
+    expect(en).toContain('<code>json_schema</code> not supported (400)');
+    const es = card('-es');
+    expect(es).toContain('json_object es compatible (el prompt debe contener la palabra JSON; si no, se rechaza con un 400), json_schema no y se rechaza con un 400');
+    expect(es).toContain('usa qwen3.6 o gemma4');
+    expect(es).toContain('<code>json_schema</code> no soportado (400)');
   });
 });
