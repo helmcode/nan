@@ -76,6 +76,80 @@ for await (const chunk of stream) {
 
 Instalación: `npm install openai`
 
+### salida estructurada en deepseek-v4-flash
+
+`deepseek-v4-flash` rechaza `response_format` `json_schema` con un `400`, y `json_object` solo garantiza JSON válido, no su forma. Para obtener una salida que siga un esquema, define una única herramienta de tipo función cuyo `parameters` sea tu JSON Schema (raíz `"type": "object"`, `"strict": true`) y fuérzala con `tool_choice`. Los campos llegan en `choices[0].message.tool_calls[0].function.arguments`, como una cadena JSON.
+
+```bash
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-your-key-here" \
+  -d '{
+    "model": "deepseek-v4-flash",
+    "messages": [{"role": "user", "content": "Ana García is 34 and lives in Valencia."}],
+    "tools": [{
+      "type": "function",
+      "function": {
+        "name": "save_person",
+        "description": "Save the person mentioned in the text.",
+        "strict": true,
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "age": {"type": "integer"},
+            "city": {"type": "string"}
+          },
+          "required": ["name", "age", "city"],
+          "additionalProperties": false
+        }
+      }
+    }],
+    "tool_choice": {"type": "function", "function": {"name": "save_person"}}
+  }'
+# → choices[0].message.tool_calls[0].function.arguments:
+#   {"name": "Ana García", "age": 34, "city": "Valencia"}
+```
+
+```python
+import json
+from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-your-key-here",
+  base_url="https://api.nan.builders/v1"
+)
+
+schema = {
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "age": {"type": "integer"},
+    "city": {"type": "string"}
+  },
+  "required": ["name", "age", "city"],
+  "additionalProperties": False
+}
+
+response = client.chat.completions.create(
+  model="deepseek-v4-flash",
+  messages=[{"role": "user", "content": "Ana García is 34 and lives in Valencia."}],
+  tools=[{
+    "type": "function",
+    "function": {
+      "name": "save_person",
+      "description": "Save the person mentioned in the text.",
+      "strict": True,
+      "parameters": schema
+    }
+  }],
+  tool_choice={"type": "function", "function": {"name": "save_person"}}
+)
+
+person = json.loads(response.choices[0].message.tool_calls[0].function.arguments)
+print(person)  # {'name': 'Ana García', 'age': 34, 'city': 'Valencia'}
+```
+
 ## model: qwen3-embedding
 
 embeddings vectoriales

@@ -653,8 +653,9 @@ describe('documented 400s: tool names and structured output', () => {
   it('says json_schema is rejected on deepseek-v4-flash and json_object works there', () => {
     const description: string = schemas.ResponseFormat.description;
     expect(description).toContain(
-      'On `deepseek-v4-flash` it is rejected with a `400` before the request reaches the model; `json_object` still works there, as long as the prompt contains the word JSON (otherwise `400`).',
+      'On `deepseek-v4-flash` it is rejected with a `400` before the request reaches the model; `json_object` still works there.',
     );
+    expect(description).toContain('On `deepseek-v4-flash` the prompt must also contain the word JSON, otherwise `400`.');
     const works = /`json_schema` works on (.+?)\.(?:\s|$)/.exec(description)!;
     expect(works[1]).not.toContain('deepseek-v4-flash');
   });
@@ -847,4 +848,76 @@ describe('documented 400s: tool parameters and context overflow', () => {
     expect(card('-es')).toContain('Un max_tokens por debajo de 16384 se sube a 16384');
     expect(card('-es')).toContain('se rechaza con un 400 aunque pidas un max_tokens pequeño (normalmente Context length exceeded, a veces un Invalid request genérico)');
   });
+});
+
+/**
+ * WHAT EACH STRUCTURED-OUTPUT MODE GUARANTEES, and the way to get a schema on
+ * deepseek-v4-flash, where `json_schema` is rejected. `json_object` promises
+ * valid JSON and nothing about its shape; a member who reads "structured
+ * output" as "my fields" gets surprised in production. The forced-tool recipe
+ * was verified live 2026-09-29: both snippets on /docs/examples, run as
+ * written, returned arguments matching the schema on deepseek-v4-flash.
+ */
+describe('documented structured output: guarantees and the deepseek-v4-flash recipe', () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const read = (p: string) => readFileSync(resolve(here, p), 'utf-8');
+  const rf = (spec.components.schemas as any).ResponseFormat.description as string;
+
+  it('ResponseFormat states what json_object and json_schema each guarantee', () => {
+    expect(rf).toContain('`json_object`: syntactically valid JSON only, NOT its shape. Describe the schema you want in the prompt.');
+    expect(rf).toContain('On `deepseek-v4-flash` the prompt must also contain the word JSON');
+    expect(rf).toContain('`json_schema` with `strict: true`: the output is constrained to the schema (fields, types and required keys).');
+    expect(rf).toMatch(/force it with `tool_choice: \{"type": "function", "function": \{"name": "\.\.\."\}\}`/);
+    expect(rf).toContain('`choices[0].message.tool_calls[0].function.arguments`');
+  });
+
+  it('Tool.function declares `strict`', () => {
+    const strict = (spec.components.schemas as any).Tool.properties.function.properties.strict;
+    expect(strict.type).toBe('boolean');
+    expect(strict.description).toMatch(/deepseek-v4-flash/);
+  });
+
+  it('the deepseek-v4-flash card says the same, in both locales', () => {
+    const card = (locale: string) => {
+      const page = read(`../content/docs${locale}/models.mdx`);
+      const start = page.indexOf('id="deepseek-v4-flash"');
+      return page.slice(start, page.indexOf('/>', start));
+    };
+    expect(card('')).toContain('json_object guarantees syntactically valid JSON only, not its shape: describe the schema in the prompt');
+    expect(card('')).toContain('json_schema with strict constrains fields, types and required keys');
+    expect(card('')).toContain('force one function tool whose parameters is your schema');
+    expect(card('-es')).toContain('json_object solo garantiza JSON sintácticamente válido, no su forma: describe el esquema en el prompt');
+    expect(card('-es')).toContain('json_schema con strict restringe campos, tipos y claves obligatorias');
+    expect(card('-es')).toContain('fuerza una única herramienta de tipo función cuyo parameters sea tu esquema');
+  });
+
+  for (const [locale, heading] of [
+    ['', '### structured output on deepseek-v4-flash'],
+    ['-es', '### salida estructurada en deepseek-v4-flash'],
+  ] as const) {
+    it(`examples.md carries the forced-tool recipe with curl and python (${locale || 'en'})`, () => {
+      const page = read(`../content/docs${locale}/examples.md`);
+      const start = page.indexOf(heading);
+      expect(start, 'no structured-output section').toBeGreaterThan(-1);
+      const section = page.slice(start, page.indexOf('\n## ', start));
+      const curl = /```bash\n([\s\S]*?)```/.exec(section)?.[1] ?? '';
+      const py = /```python\n([\s\S]*?)```/.exec(section)?.[1] ?? '';
+      for (const code of [curl, py]) {
+        expect(code).toMatch(/"?model"?[=:] ?"deepseek-v4-flash"/);
+        expect(code).toMatch(/"type": "object"/);
+        expect(code).toMatch(/"strict": (true|True)/);
+        expect(code).toMatch(/tool_choice"?[=:] ?\{"type": "function", "function": \{"name": "save_person"\}\}/);
+        expect(code).not.toContain('response_format');
+      }
+      expect(curl).toContain('https://api.nan.builders/v1/chat/completions');
+      // The curl body must be the JSON it claims to be.
+      const body = /-d '([\s\S]*?)'\n/.exec(curl)?.[1];
+      expect(body, 'no -d body').toBeDefined();
+      const parsed = JSON.parse(body!);
+      expect(parsed.tools).toHaveLength(1);
+      expect(parsed.tools[0].function.parameters.type).toBe('object');
+      expect(parsed.tool_choice.function.name).toBe(parsed.tools[0].function.name);
+      expect(py).toContain('response.choices[0].message.tool_calls[0].function.arguments');
+    });
+  }
 });
