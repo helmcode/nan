@@ -76,6 +76,80 @@ for await (const chunk of stream) {
 
 Install: `npm install openai`
 
+### structured output on deepseek-v4-flash
+
+`deepseek-v4-flash` rejects `response_format` `json_schema` with a `400`, and `json_object` only guarantees valid JSON, not its shape. To get output that follows a schema, define one function tool whose `parameters` is your JSON Schema (root `"type": "object"`, `"strict": true`) and force it with `tool_choice`. The model returns arguments that follow the schema in `choices[0].message.tool_calls[0].function.arguments`, as a JSON string. `strict` asks for an exact match; it is enforced where the model supports strict decoding, so validate the arguments if your code depends on them.
+
+```bash
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-your-key-here" \
+  -d '{
+    "model": "deepseek-v4-flash",
+    "messages": [{"role": "user", "content": "Ana García is 34 and lives in Valencia."}],
+    "tools": [{
+      "type": "function",
+      "function": {
+        "name": "save_person",
+        "description": "Save the person mentioned in the text.",
+        "strict": true,
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "age": {"type": "integer"},
+            "city": {"type": "string"}
+          },
+          "required": ["name", "age", "city"],
+          "additionalProperties": false
+        }
+      }
+    }],
+    "tool_choice": {"type": "function", "function": {"name": "save_person"}}
+  }'
+# → choices[0].message.tool_calls[0].function.arguments:
+#   {"name": "Ana García", "age": 34, "city": "Valencia"}
+```
+
+```python
+import json
+from openai import OpenAI
+
+client = OpenAI(
+  api_key="sk-your-key-here",
+  base_url="https://api.nan.builders/v1"
+)
+
+schema = {
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "age": {"type": "integer"},
+    "city": {"type": "string"}
+  },
+  "required": ["name", "age", "city"],
+  "additionalProperties": False
+}
+
+response = client.chat.completions.create(
+  model="deepseek-v4-flash",
+  messages=[{"role": "user", "content": "Ana García is 34 and lives in Valencia."}],
+  tools=[{
+    "type": "function",
+    "function": {
+      "name": "save_person",
+      "description": "Save the person mentioned in the text.",
+      "strict": True,
+      "parameters": schema
+    }
+  }],
+  tool_choice={"type": "function", "function": {"name": "save_person"}}
+)
+
+person = json.loads(response.choices[0].message.tool_calls[0].function.arguments)
+print(person)  # {'name': 'Ana García', 'age': 34, 'city': 'Valencia'}
+```
+
 ## model: qwen3-embedding
 
 vector embeddings

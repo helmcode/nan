@@ -32,7 +32,7 @@ Write this into `~/.config/opencode/opencode.json` to have it in every project, 
       "models": {
         "deepseek-v4-flash": {
           "name": "DeepSeek V4 Flash",
-          "limit": { "context": 1048575, "output": 32768 },
+          "limit": { "context": 1048576, "output": 32768 },
           "modalities": { "input": ["text", "image"], "output": ["text"] }
         },
         "glm5.3-flash": {
@@ -42,7 +42,7 @@ Write this into `~/.config/opencode/opencode.json` to have it in every project, 
         },
         "qwen3.8-flash": {
           "name": "Qwen 3.8 Flash",
-          "limit": { "context": 262144, "output": 32768 },
+          "limit": { "context": 1048576, "output": 32768 },
           "modalities": { "input": ["text", "image"], "output": ["text"] }
         },
         "mimo-v2.6-flash": {
@@ -108,12 +108,12 @@ Then paste your API key and press Enter.
 ## The context limits
 
 ```json
-"limit": { "context": 1048575, "output": 32768 }
+"limit": { "context": 1048576, "output": 32768 }
 ```
 
 `limit.context` and `limit.output` are the fields OpenCode reads. An older version of these docs published `contextWindow`, which is not part of [OpenCode's schema](https://opencode.ai/config.json): an unknown key raises nothing anyone sees, OpenCode simply falls back to its own assumption about the window, and the symptom is a session that compacts far too early on the long-context models.
 
-`limit.context` is the window the proxy accepts, which is not always the window the model was trained with: `qwen3.8-flash` is served at its native 262K, not at the YaRN-extended 1M. `limit.output` is a client-side budget rather than a server cap, so raise it if you need longer answers.
+`limit.context` is the window the proxy accepts: `qwen3.8-flash` is served with the full 1,048,576-token window, the same as the other 1M models. `limit.output` is a client-side budget rather than a server cap, so raise it if you need longer answers.
 
 ## The compaction block
 

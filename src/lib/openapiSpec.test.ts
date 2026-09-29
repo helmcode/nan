@@ -653,8 +653,9 @@ describe('documented 400s: tool names and structured output', () => {
   it('says json_schema is rejected on deepseek-v4-flash and json_object works there', () => {
     const description: string = schemas.ResponseFormat.description;
     expect(description).toContain(
-      'On `deepseek-v4-flash` it is rejected with a `400` before the request reaches the model; `json_object` still works there, as long as the prompt contains the word JSON (otherwise `400`).',
+      'On `deepseek-v4-flash` it is rejected with a `400` before the request reaches the model; `json_object` still works there.',
     );
+    expect(description).toContain('On `deepseek-v4-flash` the prompt must also contain the word JSON, otherwise `400`.');
     const works = /`json_schema` works on (.+?)\.(?:\s|$)/.exec(description)!;
     expect(works[1]).not.toContain('deepseek-v4-flash');
   });
@@ -678,4 +679,252 @@ describe('documented 400s: tool names and structured output', () => {
     expect(es).toContain('usa qwen3.6 o gemma4');
     expect(es).toContain('<code>json_schema</code> no soportado (400)');
   });
+});
+
+/**
+ * /responses ON deepseek-v4-flash, AND ITS STREAMING, MEASURED 2026-09-29
+ * with a real request against api.nan.builders: 200 with a `reasoning` item
+ * and a `message` item, non-streaming; with `stream: true` it emits the full
+ * event sequence incrementally (`response.created` first, deltas as they are
+ * generated, `response.completed` last). qwen3.6 and gemma4 answer 200 too,
+ * but hold the answer and send every delta in one burst at the end, so the
+ * old "a single terminal event" sentence was no longer true for any model.
+ */
+describe('documented /responses: models and streaming', () => {
+  const op = (spec.paths as any)['/responses'].post;
+  const body = op.requestBody.content['application/json'].schema.properties;
+
+  it('lists deepseek-v4-flash next to qwen3.6 and gemma4, in text and in the enum', () => {
+    expect(op.description).toContain('Models: `deepseek-v4-flash`, `qwen3.6`, `gemma4`.');
+    expect(body.model.enum).toEqual(['deepseek-v4-flash', 'qwen3.6', 'gemma4']);
+    for (const id of body.model.enum) expect(NAN_MODELS, id).toContain(id);
+  });
+
+  it('says which models stream incrementally and which send one burst', () => {
+    expect(op.description).toMatch(/`deepseek-v4-flash` streams incrementally/);
+    expect(op.description).toContain('`response.created`');
+    expect(op.description).toMatch(/On `qwen3\.6` and `gemma4` the answer is held until it is complete/);
+    expect(op.description).toContain('[Create chat completion](#tag/Chat)');
+    expect(body.stream.type).toBe('boolean');
+    expect(body.stream.default).toBe(false);
+  });
+
+  it('drops the stale single-terminal-event claim everywhere', () => {
+    expect(raw).not.toMatch(/single terminal event/);
+    expect(spec.info.description).toContain(
+      '`/responses` streams incrementally only on `deepseek-v4-flash`',
+    );
+  });
+
+  it('the Codex guide agrees, in both locales', () => {
+    const page = (locale: string) =>
+      readFileSync(
+        resolve(dirname(fileURLToPath(import.meta.url)), `../content/docs${locale}/codex.mdx`),
+        'utf-8',
+      );
+    expect(page('')).toContain('streams incrementally only on `deepseek-v4-flash`');
+    expect(page('')).not.toContain('It is not a hang: that endpoint does not stream yet.');
+    expect(page('-es')).toContain('solo va emitiendo la respuesta por partes con `deepseek-v4-flash`');
+  });
+});
+
+/**
+ * qwen3.8-flash IS SERVED AT 1,048,576 TOKENS, not 262,144. Re-measured
+ * 2026-09-29: `max_input_tokens` 1048576 on the community proxy's deployment
+ * and a 1_048_576 window in the rate-limit hook. The old "262K, the model's
+ * native window" copy sent clients to compact at a quarter of what the API
+ * accepts. Other models' figures are untouched and are pinned elsewhere.
+ */
+describe('documented context: qwen3.8-flash is 1M', () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const read = (p: string) => readFileSync(resolve(here, p), 'utf-8');
+
+  it('the API reference catalog says 1M', () => {
+    const row = spec.info.description.split('\n').find((l: string) => l.startsWith('| `qwen3.8-flash`'));
+    expect(row).toContain('1M-token context');
+    expect(row).not.toMatch(/262/);
+  });
+
+  for (const locale of ['', '-es']) {
+    it(`no page gives qwen3.8-flash a 262K window (${locale || 'en'})`, () => {
+      const card = (() => {
+        const page = read(`../content/docs${locale}/models.mdx`);
+        const start = page.indexOf('id="qwen3-8-flash"');
+        expect(start).toBeGreaterThan(-1);
+        return page.slice(start, page.indexOf('/>', start));
+      })();
+      expect(card).not.toMatch(/262|native|nativa/);
+      expect(card).toMatch(/1M tokens/);
+      expect(card).toMatch(/1[.,]048[.,]576/);
+
+      expect(read(`../content/docs${locale}/choose-a-model.md`)).toMatch(/^\| `qwen3\.8-flash` \|[^|]+\| 1M \|/m);
+      expect(read(`../content/docs${locale}/cline.mdx`)).toMatch(/^\| `qwen3\.8-flash` \| 1000000 \|/m);
+      expect(read(`../content/docs${locale}/opencode.mdx`)).toMatch(
+        /"name": "Qwen 3\.8 Flash",\s*"limit": \{ "context": 1048576, "output": 32768 \}/,
+      );
+      // VS Code adds input and output, so the input is the window minus 32768.
+      expect(read(`../content/docs${locale}/vscode.mdx`)).toMatch(
+        /"id": "qwen3\.8-flash",[^}]*"maxInputTokens": 1015808,\s*"maxOutputTokens": 32768/,
+      );
+      expect(read(`../content/docs${locale}/pi.mdx`)).toMatch(
+        /"id": "qwen3\.8-flash",[^}]*"contextWindow": 1048576,/,
+      );
+    });
+  }
+
+  it('the home table says 1M', () => {
+    const row = JSON.stringify(modelos).match(/"id":"qwen3\.8-flash"[^}]*"specs":"([^"]+)"/);
+    expect(row, 'no qwen3.8-flash row in modelos.json').not.toBeNull();
+    expect(row![1]).toContain('1M context');
+  });
+});
+
+/**
+ * TWO MORE 400s FROM 2026-09-29. A tool whose `parameters` root is not
+ * `"type": "object"` is rejected before routing, on every model. A request
+ * that overflows the model's window answers 400 and is not retried
+ * automatically. The exact "Context length exceeded for model '...'" text was
+ * measured on the hosted models (gemma4); on deepseek-v4-flash an overflow
+ * measured 2026-09-29 came back as the GENERIC "Invalid request. Check your
+ * request parameters.", so the docs promise the text only where measured. On
+ * deepseek-v4-flash a small `max_tokens` is raised to 16384 so the reasoning
+ * fits, which is why a prompt close to the window overflows with a small one.
+ */
+describe('documented 400s: tool parameters and context overflow', () => {
+  const schemas = spec.components.schemas as any;
+  const params = schemas.Tool.properties.function.properties.parameters;
+
+  it('pins the object root of tool parameters, machine-readably and in prose', () => {
+    expect(params.type).toBe('object');
+    expect(params.required).toEqual(['type']);
+    expect(params.properties.type.enum).toEqual(['object']);
+    // Declaring properties.type must not read as "type is the only field".
+    expect(params.additionalProperties).toBe(true);
+    expect(params.description).toContain('its root must be `"type": "object"`');
+    expect(params.description).toMatch(/rejected with a `400`/);
+    expect(params.description).toMatch(/every model/);
+    // `parameters` stays optional: a no-argument tool may omit it.
+    expect(schemas.Tool.properties.function.required).toEqual(['name']);
+  });
+
+  it('documents the context-overflow 400 in the errors table and the shared 400', () => {
+    const row = spec.info.description.split('\n').find((l: string) => l.startsWith('| `400` |'));
+    expect(row).toContain("Context length exceeded for model '...'");
+    expect(row).toMatch(/model's limit/);
+    // The exact text is promised only for the hosted models, where it was measured.
+    expect(row).toMatch(/hosted on the cluster \(`qwen3\.6`, `gemma4`\) the overflow message is "Context length exceeded/);
+    expect(row).toContain('Invalid request. Check your request parameters.');
+    expect(row).toMatch(/`max_tokens` above what the model can generate/);
+    // The API returns invalid_request_error in `type`; `code` is "400".
+    expect(row).toContain('`"400"` (with `type: invalid_request_error`)');
+    expect(spec.info.description).not.toMatch(/not retried on another deployment/);
+    expect(spec.info.description).toContain('not retried automatically either: shorten the input or pick a model with a larger window');
+    const bad = (spec.components.responses as any).BadRequest.description;
+    expect(bad).toContain("Context length exceeded for model '...'");
+    expect(bad).toMatch(/not retried automatically: shorten the input or pick a model with a larger window/);
+    expect(bad).toMatch(/On `qwen3\.6` and `gemma4` the message is "Context length exceeded/);
+    expect(bad).toContain('Invalid request. Check your request parameters.');
+  });
+
+  it('explains the deepseek-v4-flash 16384 floor on max_tokens, in the spec and on both cards', () => {
+    const maxTokens = (spec.paths as any)['/chat/completions'].post.requestBody.content['application/json']
+      .schema.properties.max_tokens.description;
+    expect(maxTokens).toContain('On `deepseek-v4-flash` a smaller value is raised to 16384');
+    expect(maxTokens).toContain('1,048,576-token window');
+    // Not promised as the exact text on deepseek-v4-flash: measured generic there.
+    expect(maxTokens).not.toMatch(/deepseek-v4-flash[^.]*Context length exceeded/);
+    expect(maxTokens).toMatch(/above what the model can generate is rejected with a generic `400`/);
+
+    const card = (locale: string) => {
+      const page = readFileSync(
+        resolve(dirname(fileURLToPath(import.meta.url)), `../content/docs${locale}/models.mdx`),
+        'utf-8',
+      );
+      const start = page.indexOf('id="deepseek-v4-flash"');
+      return page.slice(start, page.indexOf('/>', start));
+    };
+    expect(card('')).toContain('A max_tokens below 16384 is raised to 16384 so the reasoning fits');
+    expect(card('')).toContain('rejected with a 400 even with a small max_tokens (usually Context length exceeded, sometimes a generic Invalid request)');
+    expect(card('-es')).toContain('Un max_tokens por debajo de 16384 se sube a 16384');
+    expect(card('-es')).toContain('se rechaza con un 400 aunque pidas un max_tokens pequeño (normalmente Context length exceeded, a veces un Invalid request genérico)');
+  });
+});
+
+/**
+ * WHAT EACH STRUCTURED-OUTPUT MODE GUARANTEES, and the way to get a schema on
+ * deepseek-v4-flash, where `json_schema` is rejected. `json_object` promises
+ * valid JSON and nothing about its shape; a member who reads "structured
+ * output" as "my fields" gets surprised in production. The forced-tool recipe
+ * was verified live 2026-09-29: both snippets on /docs/examples, run as
+ * written, returned arguments matching the schema on deepseek-v4-flash.
+ */
+describe('documented structured output: guarantees and the deepseek-v4-flash recipe', () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const read = (p: string) => readFileSync(resolve(here, p), 'utf-8');
+  const rf = (spec.components.schemas as any).ResponseFormat.description as string;
+
+  it('ResponseFormat states what json_object and json_schema each guarantee', () => {
+    expect(rf).toContain('`json_object`: syntactically valid JSON only, NOT its shape. Describe the schema you want in the prompt.');
+    expect(rf).toContain('On `deepseek-v4-flash` the prompt must also contain the word JSON');
+    expect(rf).toContain('`json_schema` with `strict: true`: the output is constrained to the schema (fields, types and required keys).');
+    expect(rf).toMatch(/force it with `tool_choice: \{"type": "function", "function": \{"name": "\.\.\."\}\}`/);
+    expect(rf).toContain('`choices[0].message.tool_calls[0].function.arguments`');
+  });
+
+  it('Tool.function declares `strict`', () => {
+    const strict = (spec.components.schemas as any).Tool.properties.function.properties.strict;
+    expect(strict.type).toBe('boolean');
+    expect(strict.description).toMatch(/deepseek-v4-flash/);
+    // Not a guarantee on every model: decode-time enforcement is per model.
+    expect(strict.description).toContain('Request that the generated arguments follow `parameters` exactly');
+    expect(strict.description).toContain('enforced where the model supports strict decoding');
+    expect(strict.description).not.toMatch(/^Constrain/);
+  });
+
+  it('the deepseek-v4-flash card says the same, in both locales', () => {
+    const card = (locale: string) => {
+      const page = read(`../content/docs${locale}/models.mdx`);
+      const start = page.indexOf('id="deepseek-v4-flash"');
+      return page.slice(start, page.indexOf('/>', start));
+    };
+    expect(card('')).toContain('json_object guarantees syntactically valid JSON only, not its shape: describe the schema in the prompt');
+    expect(card('')).toContain('json_schema with strict constrains fields, types and required keys');
+    expect(card('')).toContain('force one function tool whose parameters is your schema');
+    expect(card('-es')).toContain('json_object solo garantiza JSON sintácticamente válido, no su forma: describe el esquema en el prompt');
+    expect(card('-es')).toContain('json_schema con strict restringe campos, tipos y claves obligatorias');
+    expect(card('-es')).toContain('fuerza una única herramienta de tipo función cuyo parameters sea tu esquema');
+  });
+
+  for (const [locale, heading] of [
+    ['', '### structured output on deepseek-v4-flash'],
+    ['-es', '### salida estructurada en deepseek-v4-flash'],
+  ] as const) {
+    it(`examples.md carries the forced-tool recipe with curl and python (${locale || 'en'})`, () => {
+      const page = read(`../content/docs${locale}/examples.md`);
+      const start = page.indexOf(heading);
+      expect(start, 'no structured-output section').toBeGreaterThan(-1);
+      const section = page.slice(start, page.indexOf('\n## ', start));
+      const curl = /```bash\n([\s\S]*?)```/.exec(section)?.[1] ?? '';
+      const py = /```python\n([\s\S]*?)```/.exec(section)?.[1] ?? '';
+      for (const code of [curl, py]) {
+        expect(code).toMatch(/"?model"?[=:] ?"deepseek-v4-flash"/);
+        expect(code).toMatch(/"type": "object"/);
+        expect(code).toMatch(/"strict": (true|True)/);
+        expect(code).toMatch(/tool_choice"?[=:] ?\{"type": "function", "function": \{"name": "save_person"\}\}/);
+        expect(code).not.toContain('response_format');
+      }
+      expect(curl).toContain('https://api.nan.builders/v1/chat/completions');
+      // The curl body must be the JSON it claims to be.
+      const body = /-d '([\s\S]*?)'\n/.exec(curl)?.[1];
+      expect(body, 'no -d body').toBeDefined();
+      const parsed = JSON.parse(body!);
+      expect(parsed.tools).toHaveLength(1);
+      expect(parsed.tools[0].function.parameters.type).toBe('object');
+      expect(parsed.tool_choice.function.name).toBe(parsed.tools[0].function.name);
+      expect(py).toContain('response.choices[0].message.tool_calls[0].function.arguments');
+      expect(section).toMatch(locale ? /devuelve argumentos que siguen el esquema/ : /returns arguments that follow the schema/);
+      expect(section).toMatch(locale ? /donde el modelo admite decodificación estricta/ : /where the model supports strict decoding/);
+      expect(section).not.toMatch(/guaranteed|garantizad/);
+    });
+  }
 });
