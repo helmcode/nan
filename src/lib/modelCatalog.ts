@@ -22,7 +22,7 @@
 
 export type ModelKind = 'chat' | 'embedding' | 'rerank' | 'tts' | 'stt' | 'image';
 
-export type Modality = 'text' | 'image' | 'audio';
+export type Modality = 'text' | 'image' | 'audio' | 'video';
 
 /**
  * How a model counts against what you pay for.
@@ -79,7 +79,7 @@ export const MODELS: ModelSpec[] = [
     by: 'Z.ai',
     kind: 'chat',
     contextTokens: 1_000_000,
-    inputs: ['text'],
+    inputs: ['text', 'image', 'audio', 'video'],
     quota: {
       kind: 'billingPeriod',
       label: { en: '3B tokens / billing period', es: '3B tokens/periodo de facturación' },
@@ -261,8 +261,8 @@ export function quotaLabel(m: ModelSpec, lang: 'en' | 'es'): string {
 /** The input modalities as a short list: "text · image". */
 export function inputsLabel(m: ModelSpec, lang: 'en' | 'es'): string {
   const T = {
-    en: { text: 'text', image: 'image', audio: 'audio' },
-    es: { text: 'texto', image: 'imagen', audio: 'audio' },
+    en: { text: 'text', image: 'image', audio: 'audio', video: 'video' },
+    es: { text: 'texto', image: 'imagen', audio: 'audio', video: 'vídeo' },
   }[lang];
   return (m.inputs ?? ['text']).map((i) => T[i]).join(' · ');
 }

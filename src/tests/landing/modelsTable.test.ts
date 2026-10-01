@@ -32,13 +32,15 @@ describe('tabla de modelos — la fila premium', () => {
     expect(premium.map((m) => m.id)).toEqual(['glm5.3']);
   });
 
-  test('publica el contexto que sirve el cluster y no le atribuye visión', () => {
+  test('publica el contexto que sirve el cluster, NVFP4 y multimodal', () => {
     const { specs } = premium[0];
     const glm = DEFAULT_RATE_LIMITS.windowedModels.find((m) => m.model === 'glm5.3')!;
     expect(specs).toContain(`${formatTokens(glm.contextTokens)} context`);
-    // El premium entra solo texto. La visión la dan glm5.3-flash y compañía,
-    // y durante un tiempo la tabla se la atribuyó también al 5.3.
-    expect(specs).not.toMatch(/multimodal|vision|visión/i);
+    // Since the NVFP4 build the premium reads images. Before that it was text
+    // only and this row had to say so; both facts changed together.
+    expect(specs).toContain('NVFP4');
+    expect(specs).not.toContain('FP8');
+    expect(specs).toMatch(/multimodal/i);
   });
 
   test('la cuota va por periodo de facturación, no por mes', () => {
