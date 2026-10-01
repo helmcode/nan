@@ -83,9 +83,18 @@ const submittedBody = closeAt ? fill(phase.submitted, { date: closeAt }) : phase
 switch (ev.phase) {
   case 'published':
     // Informativo anunciado (B-26): no hay inscripción; el CTA es el enlace del evento si lo tiene.
-    panel = ev.url
-      ? { title: phase.publishedTitle, body: phase.published, href: ev.url, cta: phase.publishedCta, tone: 'accent' }
-      : { title: phase.publishedTitle, body: phase.published, tone: 'accent' };
+    // El título y el texto dependen de `access` (B-28): "members" es solo para la comunidad,
+    // "open" es abierto a todos y vacío es neutro, para no anunciar como abierto lo que no lo es.
+    {
+      const copy = ev.access === 'members'
+        ? { title: phase.publishedMembersTitle, body: phase.publishedMembers }
+        : ev.access === 'open'
+          ? { title: phase.publishedOpenTitle, body: phase.publishedOpen }
+          : { title: phase.publishedTitle, body: phase.published };
+      panel = ev.url
+        ? { ...copy, href: ev.url, cta: phase.publishedCta, tone: 'accent' }
+        : { ...copy, tone: 'accent' };
+    }
     break;
   case 'draft':
   case 'registration':
