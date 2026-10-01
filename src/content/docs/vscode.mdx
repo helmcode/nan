@@ -108,7 +108,7 @@ A `chatLanguageModels.json` file opens. Leave it like this:
         "name": "GLM 5.3 (premium)",
         "url": "https://api.nan.builders/v1/chat/completions",
         "toolCalling": true,
-        "vision": false,
+        "vision": true,
         "maxInputTokens": 1015808,
         "maxOutputTokens": 32768
       }
@@ -137,7 +137,7 @@ Open the chat, drop down the model picker and choose one of the ones you just ad
 
 `glm5.3-flash` for agent mode, which is where long context matters. `deepseek-v4-flash` for chat questions. `qwen3.8-flash` if you prefer fast answers.
 
-`glm5.3` only answers if you have the premium tier. It is in the block with `"vision": false`, which is not a preference: it is the one model that does not accept images.
+`glm5.3` only answers if you have the premium tier.
 
 <Details summary="Known issues">
 

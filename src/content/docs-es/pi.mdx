@@ -88,7 +88,7 @@ En `~/.pi/agent/models.json`:
           "id": "glm5.3",
           "name": "GLM 5.3 (premium)",
           "reasoning": true,
-          "input": ["text"],
+          "input": ["text", "image"],
           "contextWindow": 1048576,
           "maxTokens": 32768
         }
@@ -136,7 +136,7 @@ Pídele algo corto. Si contesta, está saliendo por el clúster. Puedes cambiar 
 - **La clave va escrita en el fichero.** `models.json` vive en tu carpeta personal, así que no suele acabar en un repositorio, pero tenlo en cuenta si sincronizas tu configuración entre máquinas.
 - **`maxTokens` no es el contexto.** Es el techo de cada respuesta. El razonamiento sale de ese mismo presupuesto, así que si pides respuestas largas y razonadas, súbelo.
 - **Los modelos que declares son los que verás.** Pi no le pregunta al clúster qué hay disponible: muestra lo que haya en la lista.
-- **`mimo-v2.6-flash` entra sin su audio.** El esquema de Pi acepta `"text"` e `"image"` en `input` y nada más, y un tercer valor no tumba solo a ese modelo: Pi rechaza el fichero entero, con todos los demás proveedores que haya dentro. El modelo sigue oyendo audio por la API, pero no desde Pi.
+- **`mimo-v2.6-flash` entra sin su audio, y `glm5.3` sin su audio ni su vídeo.** El esquema de Pi acepta `"text"` e `"image"` en `input` y nada más, y un tercer valor no tumba solo a ese modelo: Pi rechaza el fichero entero, con todos los demás proveedores que haya dentro. Los dos los siguen aceptando por la API, pero no desde Pi.
 - **`glm5.3` necesita una clave del tier premium.** Está en la lista para que quien lo tenga lo vea. Sin ese tier la respuesta es un `401`, explicado en [Elige tu modelo](/es/docs/choose-a-model).
 
 </Details>

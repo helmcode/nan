@@ -29,7 +29,8 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 | Lo mismo, pero sin el tier premium | `glm5.3-flash` | Mismo contexto de 1M y cuota generosa |
 | Que conteste rápido | `qwen3.8-flash` | Menos profundidad, mucha menos espera |
 | Pasarle un audio al modelo directamente | `mimo-v2.6-flash` | Oye audio de forma nativa |
-| Describir o analizar una imagen | `deepseek-v4-flash` | Cualquiera menos `glm5.3` sirve; este es el mejor |
+| Pasarle un vídeo al modelo | `glm5.3` | Es el único que ve vídeo. Necesita el tier premium |
+| Describir o analizar una imagen | `deepseek-v4-flash` | Cualquier modelo de chat sirve; este es el mejor |
 | Probar cosas sin gastar cuota | `gemma4` | No tiene contador de tokens |
 | Montar un buscador o un RAG | `qwen3-embedding` y después `rerank` | Primero recuperas por similitud, luego reordenas por relevancia |
 | Convertir texto en audio | `kokoro` | 67 voces, dos de ellas en español |
@@ -42,7 +43,7 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 | id | Para qué | Contexto | Acepta | Cuota |
 |---|---|---|---|---|
 | `deepseek-v4-flash` | Chat y razonamiento general | 1M | texto · imagen | 3B tokens/mes |
-| `glm5.3` | Agentes de código y tareas largas | 1M | texto | 3B tokens/periodo de facturación |
+| `glm5.3` | Agentes de código y tareas largas | 1M | texto · imagen · audio · vídeo | 3B tokens/periodo de facturación |
 | `glm5.3-flash` | Agentes de código, sin premium | 1M | texto · imagen | 2B tokens/mes |
 | `qwen3.8-flash` | Respuestas rápidas | 1M | texto · imagen | 500M tokens/mes |
 | `mimo-v2.6-flash` | El MiMo más nuevo, omnimodal | 1M | texto · imagen · audio | 1.0B tokens/mes |

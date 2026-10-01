@@ -88,7 +88,7 @@ In `~/.pi/agent/models.json`:
           "id": "glm5.3",
           "name": "GLM 5.3 (premium)",
           "reasoning": true,
-          "input": ["text"],
+          "input": ["text", "image"],
           "contextWindow": 1048576,
           "maxTokens": 32768
         }
@@ -136,7 +136,7 @@ Ask it for something short. If it answers, it is going out through the cluster. 
 - **The key is written in the file.** `models.json` lives in your home directory, so it does not usually end up in a repository, but keep it in mind if you sync your configuration between machines.
 - **`maxTokens` is not the context.** It is the ceiling for each answer. Reasoning comes out of that same budget, so if you ask for long reasoned answers, raise it.
 - **The models you declare are the ones you get.** Pi does not ask the cluster what is available: it shows whatever is on the list.
-- **`mimo-v2.6-flash` goes in without its audio.** Pi's schema accepts `"text"` and `"image"` for `input` and nothing else, and a third value does not fail that one model: Pi refuses the whole file, every other provider in it included. The model still hears audio through the API, just not from inside Pi.
+- **`mimo-v2.6-flash` goes in without its audio, and `glm5.3` without its audio and video.** Pi's schema accepts `"text"` and `"image"` for `input` and nothing else, and a third value does not fail that one model: Pi refuses the whole file, every other provider in it included. Both models still take them through the API, just not from inside Pi.
 - **`glm5.3` needs a key on the premium tier.** It is on the list so that a member who has it can see it. Without that tier the answer is a `401`, which is explained in [Choose your model](/docs/choose-a-model).
 
 </Details>

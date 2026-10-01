@@ -67,14 +67,17 @@ describe('docs/models — the glm5.3 card', () => {
   });
 
   /**
-   * 5.3 is text in, text out. The card claimed image input for weeks, copied
-   * over from the 5.3 announcement; the multimodal one is `glm5.3-flash`.
+   * 5.3 was text only until it moved to an NVFP4 build that reads images, and
+   * the card said "it does not take images" for a month after #39 removed the
+   * vision it had copied from the announcement. Both halves are asserted so a
+   * revert of either one shows up here.
    */
-  test('does not claim image input', () => {
+  test('publishes image, audio and video input and the NVFP4 quantization', () => {
     const section = glmSection(models);
-    expect(section).toContain('Input modalities: text');
-    expect(section).not.toContain('Input modalities: text · image');
-    expect(section).not.toMatch(/vision|image input/i);
+    expect(section).toContain('Input modalities: text · image · audio · video');
+    expect(section).toContain('Quantization: NVFP4');
+    expect(section).not.toContain('FP8');
+    expect(section).not.toMatch(/does not take images|text in, text out/i);
   });
 
   /**
@@ -121,8 +124,8 @@ describe('docs/api — glm5.3 is callable', () => {
     expect(row).toContain('1M-token context');
     expect(row).toMatch(/premium tier/i);
     expect(row).not.toContain('256K');
-    // The catalog row listed vision too. It is the one chat model with none.
-    expect(row).not.toMatch(/vision/i);
+    expect(row).toMatch(/image, audio and video input/);
+    expect(row).not.toMatch(/text-only/i);
   });
 
   test('the 4h window is spelled out, not left as small print', () => {
