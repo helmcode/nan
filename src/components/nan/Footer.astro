@@ -81,12 +81,22 @@ const year = new Date().getFullYear();
     margin-top: clamp(64px, 10vw, 140px);
     padding-right: var(--container-pad);
   }
-  /* logotipo flush a la esquina inferior izquierda de la ventana (fuera del container) */
-  .footer__brand { flex: 0 0 auto; display: block; line-height: 0; }
+  /* logotipo flush a la esquina inferior izquierda de la ventana (fuera del container).
+     Takes whatever room the legal column leaves instead of a fixed 82vw: that width
+     only caps out above ~1512px, so below it the column on the right was left with
+     175px and collapsed onto three lines on a 13" laptop. */
+  .footer__brand {
+    flex: 1 1 auto; min-width: 0;
+    /* the wordmark's width at its tallest, so the hover area does not spill into
+       the empty space to its right on very wide screens */
+    max-width: calc(178px * 220 / 33);
+    display: block; line-height: 0;
+  }
   .footer__wm {
     display: block;
-    width: clamp(320px, 82vw, 1240px);
-    height: clamp(48px, 12vw, 178px);
+    width: 100%;
+    aspect-ratio: 220 / 33; /* the wordmark's viewBox */
+    max-height: 178px;
     background: var(--color-text);
     transition: background var(--dur-ui) var(--ease);
     -webkit-mask: url('/brand/nan-wordmark-white.svg') left bottom / contain no-repeat;
@@ -94,7 +104,12 @@ const year = new Date().getFullYear();
   }
   .footer__brand:hover .footer__wm { background: var(--color-violet-2); }
 
-  .footer__fine { flex: 0 1 auto; text-align: right; padding-bottom: clamp(6px, 1.2vw, 16px); }
+  /* 536px is what this column got at the 1920px design width; below that it scales
+     with the window but never past the width of the three legal links. */
+  .footer__fine {
+    flex: 0 0 clamp(300px, 34vw, 536px);
+    text-align: right; padding-bottom: clamp(6px, 1.2vw, 16px);
+  }
   /* enlaces legales = misma tipografía, tamaño y espaciado que el menú (nav) */
   .footer__legal { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 30px; }
   .footer__legal a {
@@ -111,9 +126,13 @@ const year = new Date().getFullYear();
   .footer__copy a { color: var(--color-text); border-bottom: 1px solid var(--color-link-line); }
   .footer__copy a:hover { color: var(--color-link); }
 
+  /* stacked: the main axis turns vertical, so the flex bases above (which would size
+     height here) go back to auto and the wordmark gets its full-bleed width again. */
   @media (max-width: 860px) {
     .footer__base { flex-direction: column; align-items: flex-start; gap: var(--space-8); }
-    .footer__fine { order: -1; text-align: left; padding-left: var(--container-pad); }
+    .footer__brand { flex: 0 0 auto; }
+    .footer__wm { width: clamp(320px, 82vw, 1240px); max-height: none; }
+    .footer__fine { flex: 0 0 auto; order: -1; text-align: left; padding-left: var(--container-pad); }
     .footer__legal { justify-content: flex-start; }
   }
 </style>
