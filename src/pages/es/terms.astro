@@ -34,7 +34,9 @@ import Legal from '../../layouts/NanLegal.astro';
     workspace una vez al día y se conserva durante 7 días. Las instantáneas son consistentes ante caídas
     (crash-consistent): restaurar una equivale a que la máquina se quede sin corriente en el momento en que se
     tomó, así que los datos que el workspace aún no había escrito en disco no se incluyen y las bases de datos en
-    ejecución se recuperan como tras un corte de luz. Activar el complemento cobra el primer pago en el momento
+    ejecución se recuperan como tras un corte de luz. Restaurar una instantánea recupera todo lo que había en el
+    disco en ese momento, incluido cualquier acceso que hayas configurado tú (por ejemplo claves SSH o ajustes del
+    servidor SSH que añadieras); la plataforma solo vuelve a aplicar tu clave SSH actual de NaN. Activar el complemento cobra el primer pago en el momento
     (prorrateado hasta la fecha de renovación cuando se añade a la suscripción de un slot); desactivarlo lo
     elimina de inmediato sin reembolso del mes en curso. Desactivar el complemento o eliminar el workspace borra
     todas sus instantáneas de forma permanente. Si el slot del workspace termina, o un workspace gratuito pierde

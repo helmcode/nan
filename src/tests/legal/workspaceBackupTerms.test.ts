@@ -41,6 +41,8 @@ describe('terms: workspace backups (EN)', () => {
     expect(p).toContain('no refund for the current month');
     expect(p).toContain('Turning the add-on off or deleting the workspace deletes all its snapshots permanently');
     expect(p).toContain('kept until the workspace itself is deleted at the end of its grace period');
+    expect(p).toContain('including any access you configured yourself');
+    expect(p).toContain('only your current NaN SSH key is re-applied');
   });
 
   test('never promises deletion at slot end (owner rule 2026-10-02)', () => {
@@ -71,5 +73,7 @@ describe('terms: workspace backups (ES)', () => {
     expect(p).toContain('sin reembolso del mes en curso');
     expect(p).toContain('Desactivar el complemento o eliminar el workspace borra todas sus instantáneas de forma permanente');
     expect(p).toContain('se conservan hasta que el propio workspace se elimine al final de su periodo de gracia');
+    expect(p).toContain('incluido cualquier acceso que hayas configurado tú');
+    expect(p).toContain('solo vuelve a aplicar tu clave SSH actual de NaN');
   });
 });

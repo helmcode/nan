@@ -33,7 +33,9 @@ import Legal from '../layouts/NanLegal.astro';
     active</strong>. With the add-on, a snapshot of the workspace disk is taken once a day and kept for 7 days.
     Snapshots are crash-consistent: restoring one is equivalent to the machine losing power at the moment the
     snapshot was taken, so data the workspace had not yet written to disk is not included and running databases
-    recover as after a power cut. Enabling the add-on charges the first payment right away (prorated to the
+    recover as after a power cut. Restoring a snapshot brings back everything that was on the disk at that time,
+    including any access you configured yourself (for example SSH keys or SSH server settings you added); only
+    your current NaN SSH key is re-applied by the platform. Enabling the add-on charges the first payment right away (prorated to the
     renewal date when it is added to a slot subscription); turning it off removes it immediately with no refund
     for the current month. Turning the add-on off or deleting the workspace deletes all its snapshots
     permanently. If the workspace's slot ends, or a free workspace loses the membership benefit, the add-on stops
