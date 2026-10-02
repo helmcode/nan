@@ -57,8 +57,6 @@ export const POST: APIRoute = async ({ request }) => {
     if (honeypot) {
       return json({
         ok: true,
-        position: 0,
-        total: 0,
         status: 'registered',
         region,
       });

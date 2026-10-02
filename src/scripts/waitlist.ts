@@ -23,8 +23,6 @@ import {
 interface Msgs {
   sending: string;
   okRegistered: string;
-  okInterest: string;
-  okPosition: string;
   okText: string;
   errEmail: string;
   errRegion: string;
@@ -36,8 +34,6 @@ interface Msgs {
 const FALLBACK: Msgs = {
   sending: 'Sending…',
   okRegistered: "You're on the waitlist.",
-  okInterest: 'Noted. We are not open in your region yet.',
-  okPosition: 'position',
   okText: "We'll approve your spot in the next few days.",
   errEmail: 'That email does not look valid.',
   errRegion: 'Pick a region.',
@@ -125,7 +121,7 @@ function wire(form: HTMLFormElement): void {
 
     form.querySelectorAll('input, select, button').forEach((el) => ((el as HTMLInputElement).disabled = true));
 
-    status.textContent = waitlistSuccessText(result, t);
+    status.textContent = waitlistSuccessText(t);
   });
 }
 

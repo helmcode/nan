@@ -144,9 +144,8 @@ describe('registerViaBackend', () => {
       { email: 'alice@acme.co', region: 'EU' },
     );
 
-    expect(result).toMatchObject({
+    expect(result).toEqual({
       ok: true,
-      position: 42,
       status: 'registered',
       region: 'EU',
     });
@@ -165,21 +164,37 @@ describe('registerViaBackend', () => {
     );
   });
 
-  it('returns interest status for non-EU region', async () => {
+  it.each(['LATAM', 'USA'] as const)('treats a %s signup as registered, like EU', async (region) => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: () => Promise.resolve({ email: 'bob@acme.co', region: 'LATAM', position: 0 }),
+      json: () => Promise.resolve({ email: 'bob@acme.co', region, position: 7 }),
     });
 
     const result = await registerViaBackend(
       'https://cloud-api.nan.builders',
       'test-key',
-      { email: 'bob@acme.co', region: 'LATAM' },
+      { email: 'bob@acme.co', region },
     );
 
-    expect(result.status).toBe('interest');
-    expect(result.position).toBe(0);
+    expect(result).toEqual({ ok: true, status: 'registered', region });
+  });
+
+  it('does not forward the backend arrival counter (no position, no total)', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: () => Promise.resolve({ email: 'alice@acme.co', region: 'EU', position: 424242 }),
+    });
+
+    const result = await registerViaBackend(
+      'https://cloud-api.nan.builders',
+      'test-key',
+      { email: 'alice@acme.co', region: 'EU' },
+    );
+
+    expect(result).not.toHaveProperty('position');
+    expect(result).not.toHaveProperty('total');
   });
 
   it('handles 409 duplicate as success', async () => {
@@ -197,6 +212,22 @@ describe('registerViaBackend', () => {
 
     expect(result.ok).toBe(true);
     expect(result.status).toBe('registered');
+  });
+
+  it.each(['LATAM', 'USA'] as const)('handles a %s 409 as registered', async (region) => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 409,
+      text: () => Promise.resolve('{"error":"email already registered"}'),
+    });
+
+    const result = await registerViaBackend(
+      'https://cloud-api.nan.builders',
+      'test-key',
+      { email: 'bob@acme.co', region },
+    );
+
+    expect(result).toEqual({ ok: true, status: 'registered', region });
   });
 
   it('throws on server error', async () => {

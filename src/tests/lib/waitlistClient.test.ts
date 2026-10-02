@@ -7,6 +7,7 @@ import {
   waitlistErrorText,
   waitlistSuccessText,
 } from '../../lib/waitlistClient';
+import { useT } from '../../lib/i18n';
 
 describe('normalizeEmail', () => {
   it('trims and lowercases', () => {
@@ -67,44 +68,25 @@ describe('isWaitlistRegion', () => {
 });
 
 describe('parseWaitlistResponse', () => {
-  it('parses a successful EU registration', () => {
-    const result = parseWaitlistResponse(200, {
-      ok: true,
-      position: 3,
-      total: 3,
-      status: 'registered',
-      region: 'EU',
-    });
-    expect(result).toEqual({
-      ok: true,
-      position: 3,
-      total: 3,
-      status: 'registered',
-      region: 'EU',
-    });
+  it.each(['EU', 'LATAM', 'USA'])('parses a %s registration the same way', (region) => {
+    const result = parseWaitlistResponse(200, { ok: true, status: 'registered', region });
+    expect(result).toEqual({ ok: true, region });
   });
 
-  it('parses a non-EU interest registration', () => {
+  it("drops legacy position, total and status: 'interest' from the parsed result", () => {
     const result = parseWaitlistResponse(200, {
       ok: true,
-      position: 0,
-      total: 4,
+      position: 19,
+      total: 19,
       status: 'interest',
-      region: 'LATAM',
+      region: 'USA',
     });
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.status).toBe('interest');
-      expect(result.region).toBe('LATAM');
-      expect(result.position).toBe(0);
-    }
+    expect(result).toEqual({ ok: true, region: 'USA' });
   });
 
   it('defaults an unknown region on the wire to EU', () => {
     const result = parseWaitlistResponse(200, {
       ok: true,
-      position: 1,
-      total: 1,
       status: 'registered',
       region: 'MARS',
     });
@@ -153,7 +135,7 @@ describe('parseWaitlistResponse', () => {
 
 describe('waitlistErrorText', () => {
   const m = {
-    okRegistered: 'ok', okInterest: 'interes', okPosition: 'puesto', okText: 'texto',
+    okRegistered: 'ok', okText: 'texto',
     errEmail: 'email mal', errRegion: 'elige region', errRateLimited: 'espera un minuto',
     errNetwork: 'sin conexion', errGeneric: 'algo se rompio',
   };
@@ -184,33 +166,27 @@ describe('waitlistErrorText', () => {
 });
 
 describe('waitlistSuccessText', () => {
-  const m = {
-    okRegistered: 'Estás dentro.', okInterest: 'Aún no abrimos ahí.', okPosition: 'puesto',
-    okText: 'Te aprobamos en unos días.', errEmail: '', errRegion: '', errRateLimited: '',
-    errNetwork: '', errGeneric: '',
+  // Copia real del diccionario: si alguien vuelve a meter la posición o el
+  // texto de "región sin abrir" en el i18n o en el mensaje, esto lo ve.
+  const msgs = { en: useT('en').hero, es: useT('es').hero };
+  const expected = {
+    en: `You're on the waitlist. ${msgs.en.okText}`,
+    es: `Ya estás en la waitlist. ${msgs.es.okText}`,
   };
 
-  it('una región sin apertura no enseña puesto: no hay puesto que enseñar', () => {
-    const text = waitlistSuccessText(
-      { ok: true, position: 0, total: 0, status: 'interest', region: 'LATAM' }, m,
-    );
-    expect(text).toBe('Aún no abrimos ahí.');
-    expect(text).not.toContain('puesto');
+  // El texto no depende de la respuesta (región, posición o 409): el parseo que
+  // descarta position/total/status antiguos se prueba en parseWaitlistResponse.
+  it.each(['en', 'es'] as const)('%s: siempre la copia de alta exacta, sin posición', (lang) => {
+    const text = waitlistSuccessText(msgs[lang]);
+    expect(text).toBe(expected[lang]);
+    expect(text).not.toMatch(/#|\d{3}|position|posición|\//i);
+    expect(text).not.toMatch(/not open|no estamos abiertos/i);
   });
 
-  it('un alta en EU enseña la posición, rellenada a tres cifras', () => {
-    const text = waitlistSuccessText(
-      { ok: true, position: 7, total: 450, status: 'registered', region: 'EU' }, m,
-    );
-    expect(text).toContain('puesto 007 / 450');
-    expect(text).toContain('Estás dentro.');
-  });
-
-  it('sin cifras válidas no inventa un puesto', () => {
-    const text = waitlistSuccessText(
-      { ok: true, position: 0, total: 0, status: 'registered', region: 'EU' }, m,
-    );
-    expect(text).not.toContain('puesto');
-    expect(text).toContain('Estás dentro.');
+  it('el diccionario ya no tiene claves de posición ni de "región sin abrir"', () => {
+    for (const lang of ['en', 'es'] as const) {
+      expect(msgs[lang]).not.toHaveProperty('okPosition');
+      expect(msgs[lang]).not.toHaveProperty('okInterest');
+    }
   });
 });

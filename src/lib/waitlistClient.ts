@@ -60,13 +60,8 @@ export function isWaitlistRegion(value: string): value is WaitlistRegion {
   return (REGIONS as readonly string[]).includes(value);
 }
 
-export type WaitlistStatus = 'registered' | 'interest';
-
 export type WaitlistSuccess = {
   ok: true;
-  position: number;
-  total: number;
-  status: WaitlistStatus;
   region: WaitlistRegion;
 };
 
@@ -94,16 +89,10 @@ export function parseWaitlistResponse(
   const data = body as Record<string, unknown>;
 
   if (status === 200 && data.ok === true) {
-    const rawStatus = data.status;
-    const parsedStatus: WaitlistStatus =
-      rawStatus === 'interest' ? 'interest' : 'registered';
     const rawRegion = typeof data.region === 'string' ? data.region : 'EU';
     const region: WaitlistRegion = isWaitlistRegion(rawRegion) ? rawRegion : 'EU';
     return {
       ok: true,
-      position: typeof data.position === 'number' ? data.position : 0,
-      total: typeof data.total === 'number' ? data.total : 0,
-      status: parsedStatus,
       region,
     };
   }
@@ -127,8 +116,8 @@ export function parseWaitlistResponse(
 // Los TEXTOS los pone el componente en `data-msgs` (serializados del
 // diccionario, para no arrastrar todo el i18n al bundle de cliente). Lo que vive
 // aquí es la DECISIÓN de qué texto toca y con qué forma, que es lo que tiene
-// reglas: el rate limit no es un error genérico, y una región sin apertura no
-// tiene puesto que enseñar.
+// reglas: el rate limit no es un error genérico, y un alta correcta es la
+// misma en todas las regiones.
 //
 // Antes esto estaba dentro del manejador de `submit`, o sea intestable sin DOM.
 // ---------------------------------------------------------------------------
@@ -136,8 +125,6 @@ export function parseWaitlistResponse(
 /** Los textos que el componente serializa en data-msgs. */
 export interface WaitlistMessages {
   okRegistered: string;
-  okInterest: string;
-  okPosition: string;
   okText: string;
   errEmail: string;
   errRegion: string;
@@ -173,15 +160,10 @@ export function waitlistErrorText(
 /**
  * Texto para un alta correcta.
  *
- * EU recibe una posición de llegada. LATAM y USA se guardan como interés con
- * posición 0: ahí no hay puesto que enseñar, así que no se inventa uno.
+ * Las tres regiones están abiertas y reciben el mismo mensaje, siempre. No se
+ * enseña posición: el número del backend es un contador acumulado de llegadas,
+ * no un puesto en la cola, y enseñarlo confunde.
  */
-export function waitlistSuccessText(result: WaitlistSuccess, m: WaitlistMessages): string {
-  if (result.status === 'interest') return m.okInterest;
-
-  const pos =
-    result.position && result.total
-      ? ` ${m.okPosition} ${String(result.position).padStart(3, '0')} / ${result.total} ·`
-      : '';
-  return `${m.okRegistered}${pos} ${m.okText}`;
+export function waitlistSuccessText(m: WaitlistMessages): string {
+  return `${m.okRegistered} ${m.okText}`;
 }

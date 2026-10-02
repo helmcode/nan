@@ -325,13 +325,11 @@
       "submit": "Join waitlist",
       "sending": "Sending…",
       "okRegistered": "You're on the waitlist.",
-      "okPosition": "position",
       "okText": "We'll approve your spot in the next few days. Keep an eye on your inbox ^__^",
       "errEmail": "That email does not look valid.",
       "errRegion": "Pick a region.",
       "errNetwork": "The network failed, not you. Try again.",
       "errGeneric": "Something broke on our side. Try again in a bit.",
-      "okInterest": "Noted. We are not open in your region yet, but we will write as soon as we are.",
       "errRateLimited": "Too many attempts. Wait a minute."
     },
     "why": {
