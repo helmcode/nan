@@ -4,8 +4,10 @@
  * signups to the backend.
  *
  * Region model:
- *   EU signups take an arrival position (1, 2, 3…) assigned by the backend.
- *   LATAM and USA signups are stored as interest signals with position 0.
+ *   EU, LATAM and USA are all open: every signup is a regular waitlist entry
+ *   and gets the same "you're on the waitlist" answer. The backend keeps its
+ *   own arrival counter, but it is not a queue rank, so the site neither
+ *   forwards nor shows it.
  */
 
 const RATE_LIMIT_TTL_MS = 60_000;
@@ -50,8 +52,6 @@ function isBlockedEmailDomain(email: string): boolean {
 export const REGIONS = ['EU', 'LATAM', 'USA'] as const;
 export type WaitlistRegion = (typeof REGIONS)[number];
 
-export type WaitlistStatus = 'registered' | 'interest';
-
 export type WaitlistErrorCode =
   | 'invalid_email'
   | 'invalid_region'
@@ -78,9 +78,8 @@ export type MemberState = (typeof MEMBER_STATES)[number];
 
 export interface JoinResult {
   ok: true;
-  position: number;
-  total: number;
-  status: WaitlistStatus;
+  /** Always 'registered': kept on the wire for clients that still read it. */
+  status: 'registered';
   region: WaitlistRegion;
 }
 
@@ -183,9 +182,7 @@ export async function registerViaBackend(
     // shows the same "you're in" message rather than an error.
     return {
       ok: true,
-      position: 0,
-      total: 0,
-      status: input.region === 'EU' ? 'registered' : 'interest',
+      status: 'registered',
       region: input.region,
     };
   }
@@ -195,12 +192,10 @@ export async function registerViaBackend(
     throw new Error(`cloud-api register failed: ${response.status} ${body}`);
   }
 
-  const data = (await response.json()) as { email: string; region: string; position: number };
+  const data = (await response.json()) as { email: string; region: string };
   return {
     ok: true,
-    position: data.position,
-    total: data.position,
-    status: data.region === 'EU' ? 'registered' : 'interest',
+    status: 'registered',
     region: data.region as WaitlistRegion,
   };
 }

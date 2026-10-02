@@ -141,10 +141,10 @@ Accepts waitlist signups.
 - **Honeypot:** `_hp` field filled → 200 OK without persisting (bot protection)
 - **Rate limit:** 60s per IP via in-memory map (best-effort, resets on isolate eviction)
 - **Flow:** `validateWaitlistInput()` → rate limit check → `registerViaBackend()` → cloud-api POST → send confirmation email via Resend (best-effort)
-- **EU entries:** take an arrival position assigned by the backend (PostgreSQL sequence)
-- **Non-EU entries:** stored as interest signals with position 0
+- **Regions:** EU, LATAM and USA are all open; every valid signup is a regular waitlist entry and gets the same "you're on the waitlist" message (a duplicate email answers the same way)
+- **Position:** the backend's arrival counter is not a queue rank, so it is neither forwarded in the response nor shown on the site
 - **Responses:**
-  - `200`: `{ ok: true, position, total, status, region }`
+  - `200`: `{ ok: true, status: 'registered', region }`
   - `400`: `{ ok: false, error: 'invalid_email' | 'invalid_region' }`
   - `429`: `{ ok: false, error: 'rate_limited' }`
   - `500`: `{ ok: false, error: 'server_error' }`

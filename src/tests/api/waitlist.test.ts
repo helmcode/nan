@@ -114,24 +114,30 @@ describe('POST /api/waitlist', () => {
     expect(status).toBe(200);
     expect(payload).toMatchObject({
       ok: true,
-      position: 42,
       status: 'registered',
       region: 'EU',
     });
   });
 
-  it('accepts a LATAM signup as interest', async () => {
-    const { status, payload } = await callPost({
-      email: 'luis@acme.co',
-      region: 'LATAM',
-    });
+  it.each([
+    ['LATAM', 'luis@acme.co'],
+    ['USA', 'sam@acme.co'],
+  ])('accepts a %s signup as registered, like EU', async (region, email) => {
+    const { status, payload } = await callPost({ email, region });
     expect(status).toBe(200);
-    expect(payload).toMatchObject({
+    expect(payload).toEqual({
       ok: true,
-      position: 0,
-      status: 'interest',
-      region: 'LATAM',
+      status: 'registered',
+      region,
     });
+  });
+
+  it('does not expose the backend arrival counter in the response', async () => {
+    globalThis.fetch = mockBackendFetch({
+      registerBody: { email: 'sam@acme.co', region: 'USA', position: 424242 },
+    });
+    const { payload } = await callPost({ email: 'sam@acme.co', region: 'USA' });
+    expect(payload).toEqual({ ok: true, status: 'registered', region: 'USA' });
   });
 
   it('returns invalid_email for a malformed address', async () => {
@@ -194,8 +200,7 @@ describe('POST /api/waitlist', () => {
       region: 'EU',
     });
     expect(status).toBe(200);
-    expect(payload.ok).toBe(true);
-    expect(payload.status).toBe('registered');
+    expect(payload).toEqual({ ok: true, status: 'registered', region: 'EU' });
   });
 
   it('rate-limits repeat attempts from the same IP', async () => {
@@ -222,7 +227,7 @@ describe('POST /api/waitlist', () => {
     });
     expect(status).toBe(200);
     expect(payload.ok).toBe(true);
-    expect(payload.position).toBe(0);
+    expect(payload).toEqual({ ok: true, status: 'registered', region: 'EU' });
 
     // Backend register should not have been called (only Resend could be called)
     const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
