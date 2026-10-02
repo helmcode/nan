@@ -2,7 +2,7 @@
 import Legal from '../../layouts/NanLegal.astro';
 ---
 
-<Legal title="Términos del servicio" updated="July 23, 2026">
+<Legal title="Términos del servicio" updated="October 2, 2026">
   <p>
     NaN está operada por <strong>Helmcode S.L.</strong> (NIF B44788511), Avenida Quinto Centenario 27,
     Santiago del Teide, España. Contacto: <a href="mailto:info@helmcode.com">info@helmcode.com</a>.
@@ -27,6 +27,27 @@ import Legal from '../../layouts/NanLegal.astro';
   <p>
     La membresía es una suscripción mensual con impuestos incluidos, mes a mes, sin compromiso. Puedes
     cancelar cuando quieras; el acceso se mantiene hasta el final del periodo pagado.
+  </p>
+  <p id="workspace-backups">
+    <strong>Copias de seguridad de workspaces.</strong> Los workspaces <strong>no tienen copias de seguridad salvo
+    que el complemento de backups esté activo</strong>. Con el complemento, se toma una instantánea del disco del
+    workspace una vez al día y se conserva durante 7 días. Las instantáneas son consistentes ante caídas
+    (crash-consistent): restaurar una equivale a que la máquina se quede sin corriente en el momento en que se
+    tomó, así que los datos que el workspace aún no había escrito en disco no se incluyen y las bases de datos en
+    ejecución se recuperan como tras un corte de luz. Restaurar una instantánea recupera todo lo que había en el
+    disco en ese momento, incluido cualquier acceso que hayas configurado tú (por ejemplo claves SSH o ajustes del
+    servidor SSH que añadieras); la plataforma solo vuelve a aplicar tu clave SSH actual de NaN. Puedes restaurar
+    hasta 3 veces por workspace en cualquier periodo de 24 horas; no hay copias bajo demanda. Las instantáneas
+    solo se pueden restaurar mientras el complemento esté activo: durante un periodo de gracia tienes que asociar
+    el workspace a un slot activo (o renovar la membresía, si es un workspace gratuito) y volver a activar el
+    complemento, que se cobra de nuevo. Activar el complemento cobra el primer pago en el momento (prorrateado
+    hasta la fecha de renovación cuando se añade a la suscripción de un slot); desactivarlo lo elimina de
+    inmediato sin reembolso del mes en curso. Desactivar el complemento o eliminar el workspace borra todas sus
+    instantáneas de forma permanente. Si el slot del workspace termina, o un workspace gratuito pierde el
+    beneficio de la membresía, el complemento deja de cobrarse. Cuando termina la facturación, no se toman nuevas
+    instantáneas y las existentes se conservan hasta que se elimine el workspace al final de su periodo de
+    gracia. Si el workspace vuelve a estar al día pero el complemento no se reactiva en un plazo de 14 días, el
+    complemento termina y sus instantáneas se borran. Las instantáneas borradas no se pueden recuperar.
   </p>
 
   <h2>Propiedad intelectual</h2>
