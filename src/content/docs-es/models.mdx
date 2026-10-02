@@ -365,11 +365,15 @@ curl https://api.nan.builders/v1/chat/completions \
 
 Los prompts que exigen mucho razonamiento pueden dejar al modelo pensando
 mucho tiempo antes de escribir nada. Cuando un turno en streaming produjo
-solo razonamiento — sin `content` ni tool calls — durante **60.000 caracteres
-de razonamiento** (unos 15.000 tokens) o **420 segundos**, la plataforma
-cierra el turno en lugar de dejarlo correr hacia un callejón sin salida:
-recibís `finish_reason: "length"` sobre un delta vacío, seguido de un chunk
-de usage.
+solo razonamiento — sin `content` ni tool calls — durante **420 segundos**,
+la plataforma cierra el turno en lugar de dejarlo correr hacia un callejón
+sin salida. Un turno que demuestra que está pensando — ya produjo más de
+45.000 caracteres de razonamiento — tiene hasta **600 segundos**. El
+presupuesto de caracteres de razonamiento también escala con el tamaño de
+tu prompt: unos 150.000 caracteres de margen más la mitad del tamaño del
+prompt en caracteres, con un tope de 300.000. Cuando la plataforma cierra
+el turno recibís `finish_reason: "length"` sobre un delta vacío, seguido de
+un chunk de usage.
 
 Ese chunk de usage es una estimación de lo que consumió el intento hasta el
 corte (tokens de prompt y de razonamiento), marcada con
@@ -389,8 +393,9 @@ Dos cosas que conviene saber:
 
 El límite existe para acotar un modo de fallo conocido de los modelos con
 thinking: a veces planifican sin converger durante 10–25 minutos y queman
-todo su presupuesto de output sin output visible. Está por encima del
-razonamiento legítimo más grande que medimos (~44.000 caracteres) y por
-debajo de toda corrida estancada.
+todo su presupuesto de output sin output visible. Los topes están por
+encima de las trazas de razonamiento de los turnos sanos que convergen en
+nuestro tráfico de producción, y solo se endurecen cuando un stream está
+atascado.
 
 <RateLimits />
