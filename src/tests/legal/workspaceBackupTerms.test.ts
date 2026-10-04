@@ -54,6 +54,11 @@ describe('terms: workspace backups (EN)', () => {
     expect(p).toContain('within 14 days');
   });
 
+  test('turning the add-on on again resumes retention (cloud-api #295)', () => {
+    expect(p).toContain('Kept snapshots are not pruned while the add-on is off');
+    expect(p).toContain('turning it on again resumes the 7-day retention: the next daily snapshot removes every snapshot older than 7 days, so restore the one you need first');
+  });
+
   test('never promises deletion at slot end (owner rule 2026-10-02)', () => {
     const clause = p.slice(p.indexOf('When billing ends')).split('.')[0];
     expect(clause).toContain('no new snapshots are taken');
@@ -93,5 +98,10 @@ describe('terms: workspace backups (ES)', () => {
     expect(p).toContain('volver a activar el complemento, que se cobra de nuevo');
     expect(p).toContain('Cuando termina la facturación, no se toman nuevas instantáneas y las existentes se conservan hasta que se elimine el workspace');
     expect(p).toContain('en un plazo de 14 días');
+  });
+
+  test('reactivar el complemento reanuda la retención', () => {
+    expect(p).toContain('Las instantáneas conservadas no se eliminan mientras el complemento esté desactivado');
+    expect(p).toContain('al volver a activarlo se reanuda la retención de 7 días: la siguiente instantánea diaria elimina todas las instantáneas con más de 7 días, así que restaura antes la que necesites');
   });
 });
