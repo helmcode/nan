@@ -48,8 +48,9 @@ import Legal from '../../layouts/NanLegal.astro';
     instantáneas y las existentes se conservan hasta que se elimine el workspace al final de su periodo de
     gracia. Si el workspace vuelve a estar al día pero el complemento no se reactiva en un plazo de 14 días, el
     complemento termina y sus instantáneas se borran. Las instantáneas conservadas no se eliminan mientras
-    el complemento esté desactivado, pero al volver a activarlo se reanuda la retención de 7 días: la siguiente
-    instantánea diaria elimina todas las instantáneas con más de 7 días, así que restaura antes la que necesites.
+    el complemento esté desactivado. Cuando el complemento se vuelve a activar, solo se pueden restaurar las
+    instantáneas de los últimos 7 días; las instantáneas conservadas más antiguas se eliminan con la siguiente
+    copia diaria.
     Las instantáneas borradas no se pueden recuperar.
   </p>
 

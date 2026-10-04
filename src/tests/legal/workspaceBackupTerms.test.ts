@@ -54,9 +54,11 @@ describe('terms: workspace backups (EN)', () => {
     expect(p).toContain('within 14 days');
   });
 
-  test('turning the add-on on again resumes retention (cloud-api #295)', () => {
-    expect(p).toContain('Kept snapshots are not pruned while the add-on is off');
-    expect(p).toContain('turning it on again resumes the 7-day retention: the next daily snapshot removes every snapshot older than 7 days, so restore the one you need first');
+  test('after turning the add-on on again only the last 7 days are restorable (cloud-api #295)', () => {
+    expect(p).toContain('Kept snapshots are not pruned while the add-on is off.');
+    expect(p).toContain('After the add-on is turned on again, only snapshots from the last 7 days can be restored; older kept snapshots are deleted with the next daily backup.');
+    // Never promises that an older kept snapshot can be restored.
+    expect(p).not.toContain('restore the one you need first');
   });
 
   test('never promises deletion at slot end (owner rule 2026-10-02)', () => {
@@ -100,8 +102,9 @@ describe('terms: workspace backups (ES)', () => {
     expect(p).toContain('en un plazo de 14 días');
   });
 
-  test('reactivar el complemento reanuda la retención', () => {
-    expect(p).toContain('Las instantáneas conservadas no se eliminan mientras el complemento esté desactivado');
-    expect(p).toContain('al volver a activarlo se reanuda la retención de 7 días: la siguiente instantánea diaria elimina todas las instantáneas con más de 7 días, así que restaura antes la que necesites');
+  test('al reactivar el complemento solo se restauran los últimos 7 días', () => {
+    expect(p).toContain('Las instantáneas conservadas no se eliminan mientras el complemento esté desactivado.');
+    expect(p).toContain('Cuando el complemento se vuelve a activar, solo se pueden restaurar las instantáneas de los últimos 7 días; las instantáneas conservadas más antiguas se eliminan con la siguiente copia diaria.');
+    expect(p).not.toContain('restaura antes la que necesites');
   });
 });
