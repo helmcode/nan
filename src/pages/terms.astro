@@ -2,7 +2,7 @@
 import Legal from '../layouts/NanLegal.astro';
 ---
 
-<Legal title="Terms of Service" updated="July 23, 2026">
+<Legal title="Terms of Service" updated="October 4, 2026">
   <p>
     NaN is operated by <strong>Helmcode S.L.</strong> (NIF B44788511), Avenida Quinto Centenario 27,
     Santiago del Teide, Spain. Contact: <a href="mailto:info@helmcode.com">info@helmcode.com</a>.
@@ -27,6 +27,26 @@ import Legal from '../layouts/NanLegal.astro';
   <p>
     Membership is a monthly subscription with taxes included, month to month, with no commitment. You can
     cancel anytime; access runs until the end of the paid period.
+  </p>
+  <p id="workspace-backups">
+    <strong>Workspace backups.</strong> Workspaces have <strong>no backups unless the workspace backup add-on is
+    active</strong>. With the add-on, a snapshot of the workspace disk is taken once a day and kept for 7 days.
+    Snapshots are crash-consistent: restoring one is equivalent to the machine losing power at the moment the
+    snapshot was taken, so data the workspace had not yet written to disk is not included and running databases
+    recover as after a power cut. Restoring a snapshot brings back everything that was on the disk at that time,
+    including any access you configured yourself (for example SSH keys or SSH server settings you added); only
+    your current NaN SSH key is re-applied by the platform. You can restore up to 3 times per workspace in any
+    24 hours; there are no on-demand backups. Snapshots can only be restored while the add-on is active: during a
+    grace period you must attach the workspace to an active slot (or renew the membership, for a free workspace)
+    and turn the add-on on again, which is billed again. Enabling the add-on charges the first payment right away
+    (prorated to the renewal date when it is added to a slot subscription); turning it off removes it immediately
+    with no refund for the current month. Turning the add-on off or deleting the workspace deletes all its
+    snapshots permanently. If the workspace's slot ends, or a free workspace loses the membership benefit, the
+    add-on stops being billed. When billing ends, no new snapshots are taken and existing snapshots are kept until
+    the workspace is deleted at the end of its grace period. If the workspace is back in good standing but the
+    add-on is not turned on again within 14 days, the add-on ends and its snapshots are deleted. Kept snapshots are not pruned while
+    the add-on is off. After the add-on is turned on again, only snapshots from the last 7 days can be restored;
+    older kept snapshots are deleted with the next daily backup. Deleted snapshots cannot be recovered.
   </p>
 
   <h2>Intellectual property</h2>
