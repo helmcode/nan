@@ -1,19 +1,19 @@
 ---
 title: Agents
-description: "Deploy AI agents in an isolated microVM with QEMU: Hermes, web terminal, file uploads, and observability."
+description: "Deploy AI agents in an isolated private cloud machine: Hermes, web terminal, file uploads, and observability."
 order: 19
 group: Guides
 ---
 
 # Agents.
 
-NaN Cloud lets you deploy AI agents in your own **microVM**: a lightweight virtual machine with QEMU + KVM, its own kernel, its own filesystem, and full root access. Isolated from the host and from other members. The first available agent type is **Hermes**.
+NaN Cloud lets you deploy AI agents in your own **private cloud machine**: a lightweight virtual machine with its own kernel, its own filesystem, and full root access. Isolated from the host and from other members. The first available agent type is **Hermes**.
 
 ## Architecture
 
-Each agent runs inside its own QEMU microVM. Instead of sharing the host kernel (like a regular container), it starts with its own Linux kernel. The VM mounts a 20 GiB ext4 disk on a block-mode persistent volume. Everything you do inside — `apt install`, `pip install`, edits to `/etc`, files you upload — lives on that disk and survives restarts.
+Each agent runs inside its own isolated machine. Instead of sharing the host kernel (like a regular container), it starts with its own Linux kernel. The machine has its own 20 GiB persistent disk. Everything you do inside — `apt install`, `pip install`, edits to `/etc`, files you upload — lives on that disk and survives restarts.
 
-Shutdown is *graceful*: when you restart or delete the agent, the system forces a `sync` and waits for the ext4 journal to finish flushing before killing the VM. No corruption.
+Shutdown is *graceful*: when you restart or delete the agent, the system forces a `sync` and waits for the disk to finish flushing before stopping the machine. No corruption.
 
 ## Hermes
 
@@ -31,7 +31,7 @@ Go to [cloud.nan.builders/agents/new](https://cloud.nan.builders/agents/new) and
 
 ### 3. Wait for it to be Running
 
-After creating the agent, wait ~30 seconds for the microVM to start, format the disk for the first time (`mkfs.ext4`), and seed the filesystem. The status changes to `Running` and Hermes to `Ready`.
+After creating the agent, wait ~30 seconds for the machine to start, prepare its disk for the first time, and seed the filesystem. The status changes to `Running` and Hermes to `Ready`.
 
 ### 4. Chat with your agent
 
@@ -44,7 +44,7 @@ Find your bot on Telegram and send it a message. Hermes will respond using the m
 
 ## Console — web terminal
 
-The **Console** tab opens an interactive terminal (`bash --login`) inside your microVM, without needing to configure SSH. The stream runs over WebSocket with xterm.js: auto-resize when you adjust the panel, status pill in the top right, and a reconnect button if the session drops.
+The **Console** tab opens an interactive terminal (`bash --login`) inside your agent's machine, without needing to configure SSH. The stream runs over WebSocket with xterm.js: auto-resize when you adjust the panel, status pill in the top right, and a reconnect button if the session drops.
 
 Typical use cases:
 
@@ -58,7 +58,7 @@ Typical use cases:
 
 ## Files — file uploads
 
-The **Files** tab allows uploading files to the microVM with drag-and-drop or file picker. Multi-file, sequential queue, live progress bar with MiB/s. Files land in `/persist/uploads/` and from there you can move them with the Console.
+The **Files** tab allows uploading files to the agent's machine with drag-and-drop or file picker. Multi-file, sequential queue, live progress bar with MiB/s. Files land in `/persist/uploads/` and from there you can move them with the Console.
 
 - Max size: **200 MiB** per file.
 - Transport: WebSocket with 256 KiB chunks and end-to-end backpressure.
@@ -70,8 +70,8 @@ The **Files** tab allows uploading files to the microVM with drag-and-drop or fi
 The **Observability** tab groups three sub-tabs:
 
 - **Logs** — live stream of the agent's stdout/stderr via WebSocket. Buffer of the last 500 lines on the client.
-- **Events** — Kubernetes Pod events (BackOff, Scheduled, Pulled, Killing...) with type, reason, message, age, and count. Auto-refresh every 15s.
-- **Metrics** — actual CPU, RAM, and disk usage against configured limits. CPU/RAM via Prometheus (kubelet-cadvisor), disk via `df` inside the microVM (the filesystem is block-mode, kubelet can't see it). Refreshes every 10s.
+- **Events** — lifecycle events for the agent (scheduling, image pulls, restarts, back-offs...) with type, reason, message, age, and count. Auto-refresh every 15s.
+- **Metrics** — actual CPU, RAM, and disk usage against configured limits. CPU and RAM are measured from outside the machine, disk usage from inside it. Refreshes every 10s.
 
 ## Web — public exposure
 
@@ -93,21 +93,21 @@ Hermes includes a lightweight web UI ([nesquena/hermes-webui](https://github.com
 
 ## Environment variables
 
-The **Env** tab lets you add, edit, and delete agent environment variables without touching the Deployment. Useful for injecting third-party API keys, configuring Hermes behavior, etc.
+The **Env** tab lets you add, edit, and delete agent environment variables without redeploying the agent yourself. Useful for injecting third-party API keys, configuring Hermes behavior, etc.
 
 Two variables are **protected** (edit-only, no delete): `OPENAI_API_KEY` (your cluster key, managed by the platform) and `TELEGRAM_BOT_TOKEN`. The rest are free to create, edit, or delete.
 
 ## Resources and limits
 
-Each microVM is provisioned with:
+Each agent's machine is provisioned with:
 
 | Resource | Request | Limit |
 |---|---|---|
-| CPU | 200m | 1 vCPU |
-| RAM | 512 Mi | 2 GiB |
-| Disk | — | 20 GiB (block-mode PVC) |
+| CPU | 0.2 vCPU | 1 vCPU |
+| RAM | 512 MiB | 2 GiB |
+| Disk | — | 20 GiB (persistent) |
 
-CPU and RAM are the microVM's maximum limits; actual usage is usually well below. Disk is persistent — everything you install or modify (packages, files, configurations) is preserved across restarts. If the disk fills up (90%+), free it from the Console (`du -sh /persist/*`).
+CPU and RAM are the machine's maximum limits; actual usage is usually well below. Disk is persistent — everything you install or modify (packages, files, configurations) is preserved across restarts. If the disk fills up (90%+), free it from the Console (`du -sh /persist/*`).
 
 > **Current limit**
-> Currently each member can deploy **1 microVM agent**. This limit will be expanded in future versions.
+> Currently each member can deploy **1 agent**. This limit will be expanded in future versions.
