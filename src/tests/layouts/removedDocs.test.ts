@@ -58,4 +58,10 @@ describe('retired docs pages', () => {
     const hits = copyFiles.filter((f) => /cloud\.nan\.builders\/agents\b/.test(readFileSync(f, 'utf8')));
     expect(hits.map((f) => f.slice(root.length + 1))).toEqual([]);
   });
+
+  test('no copy promises an agent deployed on NaN Cloud (the v1 path)', () => {
+    const v1Promise = /(deployed|desplegado) (on|en) NaN Cloud/i;
+    const hits = copyFiles.filter((f) => v1Promise.test(readFileSync(f, 'utf8')));
+    expect(hits.map((f) => f.slice(root.length + 1))).toEqual([]);
+  });
 });
