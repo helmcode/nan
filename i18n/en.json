@@ -10,7 +10,7 @@
     "notIncludedLabel": "Not included",
     "notIncluded": {
       "0": "Inference service access (GPUs)",
-      "1": "Agents and apps deployment",
+      "1": "Workspaces and app deployment",
       "2": "API key for model calls"
     },
     "faqUpgradeQ": "How do I move to the inference plan later?",

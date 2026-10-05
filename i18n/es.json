@@ -10,7 +10,7 @@
     "notIncludedLabel": "Qué NO incluye",
     "notIncluded": {
       "0": "Acceso al servicio de inferencia (GPUs)",
-      "1": "Despliegue de agentes y apps",
+      "1": "Workspaces y despliegue de apps",
       "2": "API key para llamadas a modelos"
     },
     "faqUpgradeQ": "¿Cómo paso al plan de inferencia más adelante?",

@@ -45,11 +45,4 @@ describe('member-facing copy does not disclose infrastructure internals', () => 
     const hit = text.match(FORBIDDEN);
     expect(hit?.[0] ?? null).toBeNull();
   });
-
-  test('the agents guide describes the machine in product terms', () => {
-    const en = readFileSync(join(src, 'content/docs/agents.md'), 'utf8');
-    const es = readFileSync(join(src, 'content/docs-es/agents.md'), 'utf8');
-    expect(en).toContain('your own **private cloud machine**');
-    expect(es).toContain('tu propia **máquina privada en la nube**');
-  });
 });

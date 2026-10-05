@@ -1,6 +1,6 @@
 ---
 title: Hermes
-description: The Nous Research agent, with NaN models. On your own machine or deployed on NaN Cloud.
+description: The Nous Research agent, with NaN models, through its OpenAI-compatible provider.
 order: 14
 group: Set up your agent
 ---
@@ -13,21 +13,9 @@ import Callout from '../../components/docs/Callout.astro';
 
 [Hermes](https://hermes-agent.nousresearch.com/) is the Nous Research agent, open source and MIT licensed. It is not a coding agent like the rest of this section: it lives in your messaging channels (Telegram, Discord, Slack, WhatsApp, Signal, email) as well as in the terminal, it remembers what you talked about, it schedules tasks for itself and it delegates to subagents.
 
-There are two ways to have it, and the first one requires configuring nothing.
+## Connect it to NaN
 
-## Path 1: deployed on NaN Cloud
-
-NaN Cloud deploys Hermes for you in **its own private cloud machine**, and it comes connected to the cluster out of the box: the platform injects your key and you do not have to touch any provider configuration.
-
-<Callout title="This is the short way">
-You create the agent from the panel, pick a model, give it your Telegram bot token, and it is already talking. It is explained step by step in [Agents](/docs/agents), with screenshots.
-</Callout>
-
-You also get a web terminal, file uploads, logs and metrics, and you can expose it on a public URL. All of that only exists on this path.
-
-## Path 2: on your own machine
-
-If you would rather run it yourself, Hermes ships a provider called **`custom`**, meant for any OpenAI-compatible endpoint. That is the one NaN uses.
+Hermes ships a provider called **`custom`**, meant for any OpenAI-compatible endpoint. That is the one NaN uses.
 
 <Callout title="Or let the CLI do it">
 The [NaN CLI](/docs/nan-cli) configures this for you: it finds your Hermes,
@@ -94,7 +82,6 @@ If you are going to send it photos over Telegram, any of them will do: every cha
 
 <Details summary="Known issues">
 
-- **The two paths do not mix.** The NaN Cloud Hermes is configured from the panel and yours from `hermes setup`. If you have both, they are two different agents with two different memories.
 - **The `custom` provider does not discover models.** Since there is no fixed list behind it, write the id exactly as it appears in [Choose your model](/docs/choose-a-model).
 - **An agent that lives in your messages spends at its own pace.** It is not a session you open and close: if you give it scheduled tasks, it spends quota while you are not looking. Check it at [cloud.nan.builders](https://cloud.nan.builders/).
 
