@@ -126,6 +126,39 @@ describe('middleware — páginas de docs retiradas', () => {
     expect(r.location).toBeNull();
     expect(r.passedThrough).toBe(true);
   });
+
+  test('/docs/agents (agentes v1, retirados) lleva a /docs con 301', async () => {
+    const r = await run('https://nan.builders/docs/agents');
+    expect(r.status).toBe(301);
+    expect(r.location).toBe('/docs');
+    expect(r.passedThrough).toBe(false);
+  });
+
+  test('/docs/agents con barra final y en español', async () => {
+    expect((await run('https://nan.builders/docs/agents/')).location).toBe('/docs');
+    expect((await run('https://nan.builders/es/docs/agents')).location).toBe('/es/docs');
+  });
+
+  test('las subrutas de /docs/agents (capturas enlazadas) van al mismo destino', async () => {
+    const r = await run('https://nan.builders/docs/agents/create-agent-form.png');
+    expect(r.status).toBe(301);
+    expect(r.location).toBe('/docs');
+    expect((await run('https://nan.builders/es/docs/agents/x/y')).location).toBe('/es/docs');
+  });
+
+  test('no confunde páginas cuyo slug empieza por "agent"', async () => {
+    for (const href of ['https://nan.builders/docs/agent-setup', 'https://nan.builders/docs/agentsx']) {
+      const r = await run(href);
+      expect(r.location).toBeNull();
+      expect(r.passedThrough).toBe(true);
+    }
+  });
+
+  test('una clave heredada de Object no se trata como página retirada', async () => {
+    const r = await run('https://nan.builders/docs/constructor');
+    expect(r.location).toBeNull();
+    expect(r.passedThrough).toBe(true);
+  });
 });
 
 describe('middleware — cabeceras de seguridad', () => {

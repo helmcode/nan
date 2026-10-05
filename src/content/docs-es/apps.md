@@ -1,7 +1,7 @@
 ---
 title: Apps
 description: Despliega tus apps desde GitHub a NaN Cloud en minutos.
-order: 20
+order: 19
 group: Guías
 ---
 

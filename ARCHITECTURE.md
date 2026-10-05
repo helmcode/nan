@@ -111,7 +111,6 @@ Static sections, SSR-rendered:
 | Server specs | `Server.astro` | None |
 | Privacy | `Privacy.astro` | None |
 | Model voting | `ModelVoting.astro` | None |
-| Agents platform | `Agents.astro` | None |
 | Founder | `Founder.astro` | None |
 | Pricing | `Pricing.astro` | None |
 | CTA + waitlist form | `Cta.astro` + `WaitlistForm.tsx` | `client:load` |
@@ -128,7 +127,6 @@ The community-tier signup page (`/community`) reuses `LanguageSwitcher.astro` an
 | `/docs/models` | Available model specs |
 | `/docs/examples` | Code snippets (Python, Node.js, curl) |
 | `/docs/api` | OpenAI-compatible API reference (endpoints, auth, rate limits) |
-| `/docs/agents` | Agents platform reference (microVM specs, Hermes, lifecycle) |
 
 ### API Endpoints
 
@@ -199,7 +197,6 @@ website/
 │   │       ├── models.astro               # Model specs
 │   │       ├── examples.astro             # Code snippets
 │   │       ├── api.astro                  # OpenAI-compatible API reference
-│   │       └── agents.astro               # Agents platform reference
 │   ├── components/
 │   │   ├── ui/
 │   │   │   └── Button.astro               # Primary/secondary button variants
@@ -212,7 +209,6 @@ website/
 │   │   │   ├── Server.astro               # Hardware specs
 │   │   │   ├── Privacy.astro              # Privacy guarantees section
 │   │   │   ├── ModelVoting.astro          # Community model voting
-│   │   │   ├── Agents.astro               # Agents platform section (microVM, Hermes)
 │   │   │   ├── Founder.astro              # Founder profile
 │   │   │   ├── Pricing.astro              # Regional pricing cards
 │   │   │   ├── Cta.astro                  # CTA section (embeds WaitlistForm)
