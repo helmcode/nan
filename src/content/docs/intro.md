@@ -30,5 +30,6 @@ Limits are per API key — a cap on requests per minute and a maximum number of 
 - [NaN CLI](/docs/nan-cli): the official terminal tool, which also configures several of them for you.
 - [API reference](/docs/api): every endpoint, field by field.
 - [Models](/docs/models): the spec sheets and the limits.
+- [Workspaces](/docs/workspaces): your own cloud machine, over SSH and in the browser, with coding agents ready to use.
 - [Examples](/docs/examples): snippets in Python, Node.js and curl.
 - Support: report issues in `#support` on Discord.

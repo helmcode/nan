@@ -95,8 +95,7 @@ function hackatonRedirect(context: Parameters<MiddlewareHandler>[0]): Response |
  * `/docs/mcp` documentaba el servidor MCP de NaN, cuya única herramienta era la
  * búsqueda web; se retiraron los dos (el endpoint `/mcp` y `POST /v1/search`).
  * `/docs/agents` documentaba los agentes v1 que se gestionaban desde el panel;
- * se retiraron y los sustituyen los Workspaces, que no tienen página de docs, así
- * que se manda a la raíz de las docs (destino `''`).
+ * se retiraron y los sustituyen los Workspaces, así que se manda a su página.
  *
  * Los enlaces siguen circulando, así que se mandan con 301 en vez de dejar un
  * 404. Se conserva el prefijo `/es`, y cualquier subruta (las capturas de
@@ -104,7 +103,7 @@ function hackatonRedirect(context: Parameters<MiddlewareHandler>[0]): Response |
  */
 export const REMOVED_DOCS: Readonly<Record<string, string>> = {
   mcp: 'agent-setup',
-  agents: '',
+  agents: 'workspaces',
 };
 
 function removedDocsRedirect(context: Parameters<MiddlewareHandler>[0]): Response | null {
@@ -113,9 +112,7 @@ function removedDocsRedirect(context: Parameters<MiddlewareHandler>[0]): Respons
   if (!m) return null;
   const [, prefix = '', slug] = m;
   if (!Object.hasOwn(REMOVED_DOCS, slug)) return null;
-  const target = REMOVED_DOCS[slug];
-  const path = target ? `${prefix}/docs/${target}` : `${prefix}/docs`;
-  return context.redirect(`${path}${url.search}`, 301);
+  return context.redirect(`${prefix}/docs/${REMOVED_DOCS[slug]}${url.search}`, 301);
 }
 
 /**

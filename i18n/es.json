@@ -10,7 +10,7 @@
     "notIncludedLabel": "Qué NO incluye",
     "notIncluded": {
       "0": "Acceso al servicio de inferencia (GPUs)",
-      "1": "Workspaces y despliegue de apps",
+      "1": "Un workspace incluido (los slots de workspace se venden aparte)",
       "2": "API key para llamadas a modelos"
     },
     "faqUpgradeQ": "¿Cómo paso al plan de inferencia más adelante?",
@@ -410,12 +410,30 @@
         "Asignación de 3.000M de tokens por periodo de facturación",
         "400M de tokens por ventana deslizante de 4h: el límite que un agente de código alcanza primero",
         "Contexto de 1M · 10 peticiones en paralelo",
+        "Un workspace Micro gratis (1 vCPU · 2 GiB de RAM · 10 GiB de disco)",
         "Todo lo incluido en nan_member",
         "El acceso se activa pocos minutos después del pago"
       ],
       "premiumCond": "GLM 5.3 premium (200€/mes) se ofrece a miembros según haya plazas. Únete a la waitlist y te marcaremos para este tier.",
       "premiumCta": "Únete a la waitlist",
-      "premiumBadge": "glm 5.3 · premium"
+      "premiumBadge": "glm 5.3 · premium",
+      "workspaces": {
+        "label": "workspaces · complemento",
+        "title": "Tu propia máquina en la nube.",
+        "sub": "Una máquina de desarrollo dedicada y aislada, accesible por SSH y desde el navegador, con Pi, Hermes, gentle-shell y Herdr listos para usar. Cualquier miembro de pago puede comprar slots; cada slot mantiene un workspace en marcha.",
+        "per": "/mes",
+        "headSize": "tamaño",
+        "headSpecs": "vCPU · RAM · disco",
+        "headSlot": "slot",
+        "headBackups": "backups diarios",
+        "notes": [
+          "Premium (200€) incluye un workspace Micro gratis.",
+          "Los slots pagan solo la máquina. Los agentes usan la inferencia de NaN solo con un plan de inferencia (70€ o 200€).",
+          "Los backups son opcionales: una instantánea al día, guardada 7 días, y la restauras tú.",
+          "Mensual, se factura en euros. Cancela un slot cuando quieras."
+        ],
+        "cta": "Lee la guía de workspaces"
+      }
     },
     "who": {
       "label": "quién está detrás",
@@ -470,6 +488,10 @@
         {
           "q": "¿Puedo entrenar modelos?",
           "a": "No. NaN es inferencia, no entrenamiento. Las GPUs están optimizadas para correr modelos existentes a alta velocidad, no para fine-tuning."
+        },
+        {
+          "q": "¿Qué es un workspace?",
+          "a": "Tu propia máquina en la nube para desarrollar: una máquina dedicada y aislada a la que entras por SSH o desde el navegador, con agentes de código como Pi y Hermes listos para usar. Cualquier miembro de pago puede comprar slots de workspace desde 4,99€ al mes, y el plan premium incluye un workspace Micro gratis. Un slot no incluye inferencia: los agentes usan los modelos de NaN solo con un plan de inferencia. La guía de workspaces de la documentación tiene los tamaños, los precios, las reglas de red y cómo funcionan los backups."
         },
         {
           "q": "¿Qué métodos de pago aceptáis?",

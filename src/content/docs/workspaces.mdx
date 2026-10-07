@@ -1,0 +1,198 @@
+---
+title: Workspaces
+description: Your own cloud machine for development, reachable over SSH and from the browser, with coding agents ready to use.
+order: 18
+group: Guides
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Workspaces.
+
+A **workspace** is your own machine in the cloud: a dedicated, isolated Linux box with its own CPU, memory and disk, that stays on when you close your laptop. You reach it over SSH from your terminal or from the browser, and it comes with the coding agents you choose already installed: [Pi](/docs/pi), [Hermes](/docs/hermes), gentle-shell and Herdr.
+
+Everything is managed from [cloud.nan.builders/workspaces](https://cloud.nan.builders/workspaces): create, start, stop, connect, install software, turn on backups and delete.
+
+## Who can get one
+
+Any **paying member** of NaN can buy workspace slots: community (14,99€), inference (70€) and premium (200€).
+
+| Your plan | Free workspace | Can buy slots | Agents use NaN inference |
+|---|---|---|---|
+| Community, 14,99€ | No | Yes | No |
+| Inference, 70€ | No | Yes | Yes |
+| Premium, 200€ | **One, included** | Yes | Yes |
+
+A slot pays for the **machine only**. It does not include inference: the agents in your workspace call NaN models only if your membership is an inference plan (70€ or 200€). On the community plan you can still use the workspace as a dev box, and point the agents at any provider you already have.
+
+## Sizes and prices
+
+Each slot keeps **one** workspace of its size running. Buy as many slots as you want, in any mix of sizes. Prices are monthly and billed in euros.
+
+| Size | vCPU | RAM | Disk | Slot | Backups (optional) |
+|---|---|---|---|---|---|
+| Micro | 1 | 2 GiB | 10 GiB | 4,99€ / month | 0,99€ / month |
+| Nano | 2 | 4 GiB | 20 GiB | 8,99€ / month | 1,49€ / month |
+| Basic | 4 | 8 GiB | 40 GiB | 16,99€ / month | 2,49€ / month |
+| Medium | 8 | 16 GiB | 80 GiB | 32,99€ / month | 3,99€ / month |
+| Large | 8 | 32 GiB | 160 GiB | 60,99€ / month | 6,99€ / month |
+
+The free workspace that comes with the premium plan is the **Micro** size (1 vCPU, 2 GiB RAM, 10 GiB disk). Its backups cost the Micro price, 0,99€ / month.
+
+Slots are reusable: deleting a workspace frees its slot, and you can create a new workspace on it right away.
+
+## Create a workspace
+
+<Steps>
+
+### Buy a slot (or use your free workspace)
+
+Go to [Workspaces](https://cloud.nan.builders/workspaces). If you are on the premium plan and have not used your free workspace yet, you can create it straight away. Otherwise open **Workspace slots**, pick a size and pay with Stripe. When you come back, the slot is ready.
+
+### Name it and add your SSH key
+
+Choose a name (1 to 20 characters: lowercase letters, numbers and hyphens) and paste your SSH **public** key, the one that ends in `.pub`. If you do not have one yet:
+
+```bash
+ssh-keygen -t ed25519
+cat ~/.ssh/id_ed25519.pub
+```
+
+### Choose your agents
+
+Pick the agents and tools to install: Pi (coding agent, with the optional gentle-shell add-on), Hermes (AI agent you can talk to from Telegram) and Herdr (a terminal manager to run and watch your agents side by side). On an inference plan you also choose the NaN model each agent uses. You can change all of this later from the Software panel.
+
+### Create
+
+The workspace starts in a few seconds. If the platform is full at that moment, it waits for capacity and starts by itself: you do not need to do anything.
+
+</Steps>
+
+## Connect
+
+### SSH from your terminal
+
+The **Overview** tab shows the exact SSH command for your workspace, with a copy button. It looks like this:
+
+```bash
+ssh <workspace-id>@ssh.nan.builders
+```
+
+Copy it from the dashboard rather than typing it. The connection goes through the NaN SSH gateway, which is the only way in from outside.
+
+### SSH keys
+
+The **SSH keys** tab holds the public keys allowed to log in to that workspace (up to 10). Add one per device you connect from, and remove the ones you no longer use. Removing a key blocks new connections with it; sessions already open stay open until they end.
+
+<Callout title="Keys are managed in the dashboard" variant="warning">
+The gateway checks your key against the list in the SSH keys tab. Editing `~/.ssh/authorized_keys` inside the workspace has **no effect** on SSH logins. Never paste a private key: only the `.pub` file.
+</Callout>
+
+### Web terminal
+
+The **Console** tab opens a terminal in the browser. It works without any SSH key, so it is also the way back in if you removed all your keys or are on a machine without your key.
+
+## Agents and the Software panel
+
+The **Software** panel on the workspace's Overview tab lists the agents and tools installed and their versions. From there you can:
+
+- **Install** an agent you did not pick when creating the workspace.
+- **Update** one, or everything at once, when a new version is out. Updates keep your files, sessions and settings.
+- **Remove** one you no longer use.
+
+gentle-shell is an add-on for Pi (memory between sessions with Engram), so it needs Pi installed. If your Pi is too old for it, the panel offers to update Pi first.
+
+On an inference plan, the agents come set up to use NaN models with your membership. The setup guides for [Pi](/docs/pi) and [Hermes](/docs/hermes) explain how to change the model or the provider by hand.
+
+## Backups
+
+Workspaces have **no backups** unless you turn on the **backup add-on** for that workspace, from its **Backups** tab.
+
+- A snapshot of the workspace disk is taken **once a day** and kept for **7 days**.
+- You can **restore** any of those snapshots yourself from the Backups tab, up to **3 times per workspace in any 24 hours**. There are no on-demand backups.
+- Restoring brings back everything that was on the disk at that time, including any access you configured yourself. Snapshots are crash-consistent: restoring one is like the machine losing power at that moment.
+- Turning the add-on on charges the first payment right away (prorated to your slot's renewal date when it is added to a slot). Turning it off removes it at once, with **no refund** for the current month, and **deletes all its snapshots**.
+- If the workspace enters a grace period, no new snapshots are taken and the existing ones are kept until the workspace is deleted. Once the workspace is back in good standing, turn the add-on on again within **14 days** or its snapshots are deleted.
+
+The full rules are in the [terms of service](/terms#workspace-backups).
+
+## Network rules
+
+Your workspace can reach the internet for normal development work:
+
+- **Allowed outbound:** HTTP and HTTPS (ports 80 and 443) and SSH (port 22). That covers `git`, `npm`, `pip`, `cargo`, system package managers and calls to any API.
+- **Blocked:** everything else, including **outgoing email (SMTP)**. A workspace cannot send mail directly; use an email API over HTTPS instead.
+- **Rate limits:** new outbound connections are limited per workspace, with a lower limit for outbound SSH. Normal use never hits them; scanning does.
+- **Inbound:** the only way in is the NaN SSH gateway and the Console tab. Workspaces have no ports open to the internet.
+- **Reverse tunnels** (for example Tailscale, cloudflared or ngrok) are allowed for your own access and development, within the [acceptable use policy](/terms#workspace-acceptable-use).
+
+<Callout title="Acceptable use">
+No crypto mining, no scanning or attacking anyone, no spam, phishing or malware, no open proxies, VPN or Tor exits, and no reselling the machine. Abuse means suspension or deletion without notice and without refund. Read the [acceptable use policy](/terms#workspace-acceptable-use) before you start.
+</Callout>
+
+## Lifecycle: grace and deletion
+
+A workspace is never deleted the moment a payment stops. It is **stopped** first, and a **7-day grace period** starts. The workspace page shows the exact date its data will be deleted.
+
+| What happens | What it means for the workspace | How to keep it |
+|---|---|---|
+| You cancel a slot | It keeps running until the end of the paid month. Then it is stopped and deleted 7 days later. | Buy a new slot **of the same size** before the date shown. A slot of another size starts empty. |
+| A slot payment fails | It is stopped and the 7-day grace starts. | Update your payment method in the billing portal before the date shown. |
+| Your premium plan ends (you cancel or move to another plan) | Your free workspace is stopped and deleted 7 days later. | Go back to premium, or buy a **Micro** slot: your free workspace moves onto it with its data. |
+| The workspace is suspended for abuse | It is stopped at once. | See the [acceptable use policy](/terms#workspace-acceptable-use). |
+
+During a grace period you can start a **rescue session**: the workspace runs for up to 2 hours (up to 3 times a day, never past the deletion date) so you can copy your data out over SSH or the Console tab.
+
+When the grace period ends, the workspace, its disk and its backups are **deleted permanently**. We cannot recover them.
+
+## FAQ
+
+<Details summary="Is a workspace shared with other members?">
+
+No. Each workspace is a dedicated, isolated machine with its own CPU, memory and disk. Other members cannot see or reach it.
+
+</Details>
+
+<Details summary="Does a slot include inference?">
+
+No. A slot pays for the machine. The agents use NaN models only if your membership is an inference plan (70€ or 200€). On the community plan you can still install the agents and connect them to another provider.
+
+</Details>
+
+<Details summary="Can I have more than one workspace?">
+
+Yes. Buy one slot per workspace, in any mix of sizes. Premium members also get one free Micro workspace on top of their slots.
+
+</Details>
+
+<Details summary="Can I change the size of a workspace?">
+
+Not in place. Buy a slot of the new size, create a workspace on it, copy your data over and delete the old one. Canceling the old slot ends its billing at the end of the month.
+
+</Details>
+
+<Details summary="My community plan was opened in dollars. Can I buy a slot?">
+
+Yes. Workspace slots are billed in euros, so the portal first moves your community plan to euros (14,99€ / month) and then lets you buy. It tells you before charging anything.
+
+</Details>
+
+<Details summary="Can I send email from my workspace?">
+
+Not over SMTP: outgoing mail ports are blocked. Use the HTTPS API of an email provider.
+
+</Details>
+
+<Details summary="Can I expose a web app from my workspace?">
+
+Workspaces have no public ports. For your own access and testing you can use a reverse tunnel. To publish an app for other people, use [Apps](/docs/apps).
+
+</Details>
+
+<Details summary="Where do I get help?">
+
+Write in `#support` on Discord.
+
+</Details>

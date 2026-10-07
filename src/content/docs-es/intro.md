@@ -30,5 +30,6 @@ Los límites van por API key — un tope de peticiones por minuto y un máximo d
 - [CLI de NaN](/es/docs/nan-cli): la herramienta oficial de terminal, que además configura varias de ellas por ti.
 - [Referencia de la API](/es/docs/api): todos los endpoints, campo a campo.
 - [Modelos](/es/docs/models): las fichas técnicas y los límites.
+- [Workspaces](/es/docs/workspaces): tu propia máquina en la nube, por SSH y en el navegador, con agentes de código listos para usar.
 - [Ejemplos](/es/docs/examples): fragmentos en Python, Node.js y curl.
 - Soporte: reporta incidencias en `#support` de Discord.

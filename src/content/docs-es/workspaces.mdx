@@ -1,0 +1,198 @@
+---
+title: Workspaces
+description: Tu propia máquina en la nube para desarrollar, accesible por SSH y desde el navegador, con agentes de código listos para usar.
+order: 18
+group: Guías
+---
+
+import Steps from '../../components/docs/Steps.astro';
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Workspaces.
+
+Un **workspace** es tu propia máquina en la nube: un Linux dedicado y aislado, con su CPU, su memoria y su disco, que sigue encendido cuando cierras el portátil. Entras por SSH desde tu terminal o desde el navegador, y viene con los agentes de código que elijas ya instalados: [Pi](/es/docs/pi), [Hermes](/es/docs/hermes), gentle-shell y Herdr.
+
+Todo se gestiona desde [cloud.nan.builders/workspaces](https://cloud.nan.builders/workspaces): crear, arrancar, parar, conectarte, instalar software, activar backups y borrar.
+
+## Quién puede tener uno
+
+Cualquier **miembro de pago** de NaN puede comprar slots de workspace: comunidad (14,99€), inferencia (70€) y premium (200€).
+
+| Tu plan | Workspace gratis | Puede comprar slots | Los agentes usan la inferencia de NaN |
+|---|---|---|---|
+| Comunidad, 14,99€ | No | Sí | No |
+| Inferencia, 70€ | No | Sí | Sí |
+| Premium, 200€ | **Uno, incluido** | Sí | Sí |
+
+Un slot paga **solo la máquina**. No incluye inferencia: los agentes de tu workspace llaman a los modelos de NaN solo si tu membresía es un plan de inferencia (70€ o 200€). Con el plan de comunidad puedes usar el workspace igualmente como máquina de desarrollo y apuntar los agentes a cualquier proveedor que ya tengas.
+
+## Tamaños y precios
+
+Cada slot mantiene **un** workspace de su tamaño en marcha. Compra los slots que quieras, mezclando tamaños. Los precios son mensuales y se facturan en euros.
+
+| Tamaño | vCPU | RAM | Disco | Slot | Backups (opcional) |
+|---|---|---|---|---|---|
+| Micro | 1 | 2 GiB | 10 GiB | 4,99€ / mes | 0,99€ / mes |
+| Nano | 2 | 4 GiB | 20 GiB | 8,99€ / mes | 1,49€ / mes |
+| Basic | 4 | 8 GiB | 40 GiB | 16,99€ / mes | 2,49€ / mes |
+| Medium | 8 | 16 GiB | 80 GiB | 32,99€ / mes | 3,99€ / mes |
+| Large | 8 | 32 GiB | 160 GiB | 60,99€ / mes | 6,99€ / mes |
+
+El workspace gratis del plan premium es del tamaño **Micro** (1 vCPU, 2 GiB de RAM, 10 GiB de disco). Sus backups cuestan lo mismo que los de Micro, 0,99€ / mes.
+
+Los slots se reutilizan: al borrar un workspace su slot queda libre y puedes crear otro workspace en él al momento.
+
+## Crear un workspace
+
+<Steps>
+
+### Compra un slot (o usa tu workspace gratis)
+
+Entra en [Workspaces](https://cloud.nan.builders/workspaces). Si tienes el plan premium y aún no has usado tu workspace gratis, puedes crearlo directamente. Si no, abre **Workspace slots**, elige un tamaño y paga con Stripe. Al volver, el slot está listo.
+
+### Ponle nombre y añade tu clave SSH
+
+Elige un nombre (de 1 a 20 caracteres: minúsculas, números y guiones) y pega tu clave SSH **pública**, la que termina en `.pub`. Si aún no tienes una:
+
+```bash
+ssh-keygen -t ed25519
+cat ~/.ssh/id_ed25519.pub
+```
+
+### Elige tus agentes
+
+Marca los agentes y herramientas que quieres instalar: Pi (agente de código, con el complemento opcional gentle-shell), Hermes (agente de IA con el que puedes hablar desde Telegram) y Herdr (un gestor de terminales para lanzar y vigilar tus agentes en paralelo). Con un plan de inferencia eliges también el modelo de NaN que usa cada agente. Todo esto lo puedes cambiar después desde el panel de Software.
+
+### Crea
+
+El workspace arranca en unos segundos. Si en ese momento la plataforma está llena, espera a que haya capacidad y arranca solo: no tienes que hacer nada.
+
+</Steps>
+
+## Conectarte
+
+### SSH desde tu terminal
+
+La pestaña **Overview** muestra el comando SSH exacto de tu workspace, con un botón para copiarlo. Tiene esta forma:
+
+```bash
+ssh <workspace-id>@ssh.nan.builders
+```
+
+Cópialo del panel en vez de escribirlo a mano. La conexión pasa por la pasarela SSH de NaN, que es la única entrada desde fuera.
+
+### Claves SSH
+
+La pestaña **SSH keys** guarda las claves públicas que pueden entrar en ese workspace (hasta 10). Añade una por cada dispositivo desde el que te conectes y quita las que ya no uses. Quitar una clave bloquea las conexiones nuevas con ella; las sesiones ya abiertas siguen hasta que terminan.
+
+<Callout title="Las claves se gestionan en el panel" variant="warning">
+La pasarela comprueba tu clave contra la lista de la pestaña SSH keys. Editar `~/.ssh/authorized_keys` dentro del workspace **no tiene ningún efecto** en el acceso por SSH. Nunca pegues una clave privada: solo el archivo `.pub`.
+</Callout>
+
+### Terminal web
+
+La pestaña **Console** abre una terminal en el navegador. Funciona sin clave SSH, así que también es la forma de volver a entrar si quitaste todas tus claves o estás en un equipo sin tu clave.
+
+## Agentes y el panel de Software
+
+El panel **Software**, en la pestaña Overview del workspace, lista los agentes y herramientas instalados y sus versiones. Desde ahí puedes:
+
+- **Instalar** un agente que no elegiste al crear el workspace.
+- **Actualizar** uno, o todos a la vez, cuando sale una versión nueva. Las actualizaciones conservan tus archivos, sesiones y ajustes.
+- **Quitar** uno que ya no uses.
+
+gentle-shell es un complemento de Pi (memoria entre sesiones con Engram), así que necesita Pi instalado. Si tu Pi es demasiado antiguo, el panel te ofrece actualizarlo primero.
+
+Con un plan de inferencia, los agentes vienen configurados para usar los modelos de NaN con tu membresía. Las guías de [Pi](/es/docs/pi) y [Hermes](/es/docs/hermes) explican cómo cambiar el modelo o el proveedor a mano.
+
+## Copias de seguridad
+
+Los workspaces **no tienen copias de seguridad** salvo que actives el **complemento de backups** de ese workspace, desde su pestaña **Backups**.
+
+- Se toma una instantánea del disco del workspace **una vez al día** y se conserva **7 días**.
+- Puedes **restaurar** cualquiera de esas instantáneas tú mismo desde la pestaña Backups, hasta **3 veces por workspace en cualquier periodo de 24 horas**. No hay copias bajo demanda.
+- Restaurar devuelve todo lo que había en el disco en ese momento, incluido cualquier acceso que hayas configurado tú. Las instantáneas son consistentes ante caídas: restaurar una equivale a que la máquina se quede sin corriente en ese momento.
+- Activar el complemento cobra el primer pago al momento (prorrateado hasta la renovación de tu slot cuando se añade a un slot). Desactivarlo lo quita al instante, **sin reembolso** del mes en curso, y **borra todas sus instantáneas**.
+- Si el workspace entra en un periodo de gracia, no se toman nuevas instantáneas y las existentes se conservan hasta que se elimine el workspace. Cuando el workspace vuelve a estar al día, vuelve a activar el complemento en un plazo de **14 días** o sus instantáneas se borran.
+
+Las reglas completas están en los [términos del servicio](/es/terms#workspace-backups).
+
+## Reglas de red
+
+Tu workspace puede salir a internet para el trabajo de desarrollo normal:
+
+- **Salida permitida:** HTTP y HTTPS (puertos 80 y 443) y SSH (puerto 22). Eso cubre `git`, `npm`, `pip`, `cargo`, los gestores de paquetes del sistema y las llamadas a cualquier API.
+- **Bloqueado:** todo lo demás, incluido el **correo saliente (SMTP)**. Un workspace no puede enviar correo directamente; usa la API de un proveedor de email por HTTPS.
+- **Límites de ritmo:** las conexiones salientes nuevas tienen un límite por workspace, más bajo para el SSH saliente. El uso normal nunca llega a ellos; un escaneo sí.
+- **Entrada:** solo se entra por la pasarela SSH de NaN y por la pestaña Console. Los workspaces no tienen puertos abiertos a internet.
+- **Túneles inversos** (por ejemplo Tailscale, cloudflared o ngrok) están permitidos para tu propio acceso y desarrollo, dentro de la [política de uso aceptable](/es/terms#workspace-acceptable-use).
+
+<Callout title="Uso aceptable">
+Nada de minar criptomonedas, escanear ni atacar a nadie, spam, phishing ni malware, proxies abiertos, VPN ni nodos de salida de Tor, ni revender la máquina. El abuso supone la suspensión o el borrado sin aviso y sin reembolso. Lee la [política de uso aceptable](/es/terms#workspace-acceptable-use) antes de empezar.
+</Callout>
+
+## Ciclo de vida: gracia y borrado
+
+Un workspace nunca se borra en el momento en que se deja de pagar. Primero se **para** y empieza un **periodo de gracia de 7 días**. La página del workspace muestra la fecha exacta en que se borrarán sus datos.
+
+| Qué pasa | Qué supone para el workspace | Cómo conservarlo |
+|---|---|---|
+| Cancelas un slot | Sigue en marcha hasta el final del mes pagado. Después se para y se borra 7 días más tarde. | Compra un slot nuevo **del mismo tamaño** antes de la fecha indicada. Un slot de otro tamaño empieza vacío. |
+| Falla el pago de un slot | Se para y empiezan los 7 días de gracia. | Actualiza tu método de pago en el portal de facturación antes de la fecha indicada. |
+| Tu plan premium termina (lo cancelas o cambias de plan) | Tu workspace gratis se para y se borra 7 días más tarde. | Vuelve a premium o compra un slot **Micro**: tu workspace gratis pasa a ese slot con sus datos. |
+| El workspace se suspende por abuso | Se para al momento. | Consulta la [política de uso aceptable](/es/terms#workspace-acceptable-use). |
+
+Durante el periodo de gracia puedes iniciar una **sesión de rescate**: el workspace arranca durante un máximo de 2 horas (hasta 3 veces al día, nunca más allá de la fecha de borrado) para que copies tus datos por SSH o desde la pestaña Console.
+
+Cuando termina el periodo de gracia, el workspace, su disco y sus copias de seguridad se **borran de forma permanente**. No podemos recuperarlos.
+
+## Preguntas frecuentes
+
+<Details summary="¿Un workspace se comparte con otros miembros?">
+
+No. Cada workspace es una máquina dedicada y aislada, con su CPU, su memoria y su disco. Los demás miembros no pueden verlo ni llegar a él.
+
+</Details>
+
+<Details summary="¿Un slot incluye inferencia?">
+
+No. Un slot paga la máquina. Los agentes usan los modelos de NaN solo si tu membresía es un plan de inferencia (70€ o 200€). Con el plan de comunidad puedes instalar los agentes igualmente y conectarlos a otro proveedor.
+
+</Details>
+
+<Details summary="¿Puedo tener más de un workspace?">
+
+Sí. Compra un slot por workspace, mezclando tamaños. Los miembros premium tienen además un workspace Micro gratis aparte de sus slots.
+
+</Details>
+
+<Details summary="¿Puedo cambiar el tamaño de un workspace?">
+
+No sobre la marcha. Compra un slot del tamaño nuevo, crea un workspace en él, copia tus datos y borra el antiguo. Al cancelar el slot antiguo, su facturación termina al final del mes.
+
+</Details>
+
+<Details summary="Mi plan de comunidad se abrió en dólares. ¿Puedo comprar un slot?">
+
+Sí. Los slots de workspace se facturan en euros, así que el portal pasa primero tu plan de comunidad a euros (14,99€ / mes) y luego te deja comprar. Te lo avisa antes de cobrar nada.
+
+</Details>
+
+<Details summary="¿Puedo enviar correo desde mi workspace?">
+
+Por SMTP no: los puertos de correo saliente están bloqueados. Usa la API por HTTPS de un proveedor de email.
+
+</Details>
+
+<Details summary="¿Puedo publicar una web desde mi workspace?">
+
+Los workspaces no tienen puertos públicos. Para tu propio acceso y tus pruebas puedes usar un túnel inverso. Para publicar una app para otras personas, usa [Apps](/es/docs/apps).
+
+</Details>
+
+<Details summary="¿Dónde pido ayuda?">
+
+Escribe en `#support` en Discord.
+
+</Details>

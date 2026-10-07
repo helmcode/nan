@@ -56,6 +56,21 @@ const tiers = [
     primary: false,
   },
 ];
+
+// Workspace slots, sold to any paying member (helmcode/nan workspaces launch).
+// Sizes mirror cloud-api's tier catalogue (internal/workspace/tiers.go); the
+// prices are the live EUR Stripe prices of the slot and of the backup add-on
+// (cmd/stripe-bootstrap/workspace_backups.go). The premium plan's free
+// workspace is the Micro size.
+const workspaceSlots = [
+  { size: 'micro', vcpu: 1, ram: 2, disk: 10, slot: '4,99€', backups: '0,99€' },
+  { size: 'nano', vcpu: 2, ram: 4, disk: 20, slot: '8,99€', backups: '1,49€' },
+  { size: 'basic', vcpu: 4, ram: 8, disk: 40, slot: '16,99€', backups: '2,49€' },
+  { size: 'medium', vcpu: 8, ram: 16, disk: 80, slot: '32,99€', backups: '3,99€' },
+  { size: 'large', vcpu: 8, ram: 32, disk: 160, slot: '60,99€', backups: '6,99€' },
+];
+const ws = tt.workspaces;
+const wsDocs = lang === 'es' ? '/es/docs/workspaces' : '/docs/workspaces';
 ---
 
 <section class="pricing" id="pricing">
@@ -97,6 +112,43 @@ const tiers = [
           <p class="ptier__cond">{tier.cond}</p>
         </article>
       ))}
+    </div>
+
+    <div class="pws" id="workspaces" data-reveal>
+      <div class="pws__head">
+        <span class="pws__label">{ws.label}</span>
+        <h3 class="pws__title">{ws.title}</h3>
+        <p class="pws__sub">{ws.sub}</p>
+      </div>
+
+      <div class="pws__tablewrap">
+        <table class="pws__table">
+          <thead>
+            <tr>
+              <th scope="col">{ws.headSize}</th>
+              <th scope="col">{ws.headSpecs}</th>
+              <th scope="col">{ws.headSlot}</th>
+              <th scope="col">{ws.headBackups}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {workspaceSlots.map((row) => (
+              <tr>
+                <th scope="row">{row.size}</th>
+                <td>{row.vcpu} · {row.ram} GiB · {row.disk} GiB</td>
+                <td><strong>{row.slot}</strong><span class="pws__per">{ws.per}</span></td>
+                <td>+{row.backups}<span class="pws__per">{ws.per}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <ul class="pws__notes">
+        {ws.notes.map((note) => <li>{note}</li>)}
+      </ul>
+
+      <a class="btn btn-ghost pws__cta" href={wsDocs}>{ws.cta}</a>
     </div>
   </div>
 </section>
@@ -217,10 +269,84 @@ const tiers = [
     min-height: 3em; /* reserva 2 líneas -> condición de altura igual en los 3 tiers */
   }
 
+  /* Workspace slots: an add-on to the tiers above, so a table, not a fourth card. */
+  .pws {
+    max-width: 1080px;
+    margin: var(--space-16) auto 0;
+    padding: var(--space-8) var(--space-6);
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+  }
+  .pws__label { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-dim); }
+  .pws__title {
+    margin-top: var(--space-3);
+    font-family: var(--font-serif);
+    font-weight: 400;
+    color: var(--color-text);
+    font-size: clamp(28px, 3vw, 44px);
+    line-height: 1.05;
+  }
+  .pws__sub {
+    margin-top: var(--space-4);
+    max-width: 64ch;
+    color: var(--color-text);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  /* Only the table scrolls on a narrow phone, never the page. */
+  .pws__tablewrap { margin-top: var(--space-8); overflow-x: auto; }
+  .pws__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-text);
+  }
+  .pws__table th,
+  .pws__table td {
+    text-align: left;
+    padding: var(--space-3) var(--space-4) var(--space-3) 0;
+    border-bottom: 1px solid var(--color-line);
+    white-space: nowrap;
+  }
+  .pws__table thead th { font-weight: 400; color: var(--color-muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .pws__table tbody th { font-weight: 600; }
+  .pws__table strong { font-weight: 700; }
+  .pws__per { color: var(--color-text-dim); margin-left: 2px; }
+  .pws__notes {
+    list-style: none;
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .pws__notes li {
+    position: relative;
+    padding-left: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-text);
+  }
+  .pws__notes li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-violet);
+  }
+  .pws__cta { margin-top: var(--space-6); }
+
   @media (max-width: 900px) {
     .pricing { padding-block: var(--space-16); }
   }
   @media (max-width: 640px) {
     .ptier { min-height: 0; }
+    .pws { padding: var(--space-6) var(--space-4); }
+    .pws__table { font-size: 12px; }
+    .pws__table th,
+    .pws__table td { padding-right: var(--space-3); }
   }
 </style>
