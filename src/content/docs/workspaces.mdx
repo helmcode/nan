@@ -112,7 +112,7 @@ Workspaces have **no backups** unless you turn on the **backup add-on** for that
 
 - A snapshot of the workspace disk is taken **once a day** and kept for **7 days**.
 - You can **restore** any of those snapshots yourself from the Backups tab, up to **3 times per workspace in any 24 hours**. There are no on-demand backups.
-- Restoring brings back everything that was on the disk at that time, including any access you configured yourself. Snapshots are crash-consistent: restoring one is like the machine losing power at that moment.
+- Restoring brings back everything that was on the disk at that time, including any access you configured yourself inside the machine. The keys in the **SSH keys** tab are not on the disk, so a restore does not change them. Snapshots are crash-consistent: restoring one is like the machine losing power at that moment.
 - Turning the add-on on charges the first payment right away (prorated to your slot's renewal date when it is added to a slot). Turning it off removes it at once, with **no refund** for the current month, and **deletes all its snapshots**.
 - If the workspace enters a grace period, no new snapshots are taken and the existing ones are kept until the workspace is deleted. Once the workspace is back in good standing, turn the add-on on again within **14 days** or its snapshots are deleted.
 

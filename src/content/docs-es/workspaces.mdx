@@ -112,7 +112,7 @@ Los workspaces **no tienen copias de seguridad** salvo que actives el **compleme
 
 - Se toma una instantánea del disco del workspace **una vez al día** y se conserva **7 días**.
 - Puedes **restaurar** cualquiera de esas instantáneas tú mismo desde la pestaña Backups, hasta **3 veces por workspace en cualquier periodo de 24 horas**. No hay copias bajo demanda.
-- Restaurar devuelve todo lo que había en el disco en ese momento, incluido cualquier acceso que hayas configurado tú. Las instantáneas son consistentes ante caídas: restaurar una equivale a que la máquina se quede sin corriente en ese momento.
+- Restaurar devuelve todo lo que había en el disco en ese momento, incluido cualquier acceso que hayas configurado tú dentro de la máquina. Las claves de la pestaña **SSH keys** no están en el disco, así que restaurar no las cambia. Las instantáneas son consistentes ante caídas: restaurar una equivale a que la máquina se quede sin corriente en ese momento.
 - Activar el complemento cobra el primer pago al momento (prorrateado hasta la renovación de tu slot cuando se añade a un slot). Desactivarlo lo quita al instante, **sin reembolso** del mes en curso, y **borra todas sus instantáneas**.
 - Si el workspace entra en un periodo de gracia, no se toman nuevas instantáneas y las existentes se conservan hasta que se elimine el workspace. Cuando el workspace vuelve a estar al día, vuelve a activar el complemento en un plazo de **14 días** o sus instantáneas se borran.
 

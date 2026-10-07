@@ -34,8 +34,10 @@ import Legal from '../layouts/NanLegal.astro';
     Snapshots are crash-consistent: restoring one is equivalent to the machine losing power at the moment the
     snapshot was taken, so data the workspace had not yet written to disk is not included and running databases
     recover as after a power cut. Restoring a snapshot brings back everything that was on the disk at that time,
-    including any access you configured yourself (for example SSH keys or SSH server settings you added); only
-    your current NaN SSH key is re-applied by the platform. You can restore up to 3 times per workspace in any
+    including any access you configured yourself inside the machine (for example keys in ~/.ssh/authorized_keys or
+    SSH server settings you added). A restore does not change the SSH keys you manage for the workspace in the member
+    platform: they are not stored on the workspace disk, so after a restore the keys that can log in are the ones in
+    that list at that moment. Keys added inside the machine have no effect on logins through the NaN SSH gateway. You can restore up to 3 times per workspace in any
     24 hours; there are no on-demand backups. Snapshots can only be restored while the add-on is active: during a
     grace period you must attach the workspace to an active slot (or renew the membership, for a free workspace)
     and turn the add-on on again, which is billed again. Enabling the add-on charges the first payment right away

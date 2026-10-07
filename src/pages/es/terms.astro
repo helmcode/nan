@@ -35,8 +35,11 @@ import Legal from '../../layouts/NanLegal.astro';
     (crash-consistent): restaurar una equivale a que la máquina se quede sin corriente en el momento en que se
     tomó, así que los datos que el workspace aún no había escrito en disco no se incluyen y las bases de datos en
     ejecución se recuperan como tras un corte de luz. Restaurar una instantánea recupera todo lo que había en el
-    disco en ese momento, incluido cualquier acceso que hayas configurado tú (por ejemplo claves SSH o ajustes del
-    servidor SSH que añadieras); la plataforma solo vuelve a aplicar tu clave SSH actual de NaN. Puedes restaurar
+    disco en ese momento, incluido cualquier acceso que hayas configurado tú dentro de la máquina (por ejemplo claves en
+    ~/.ssh/authorized_keys o ajustes del servidor SSH que añadieras). Restaurar no cambia las claves SSH que
+    gestionas para el workspace en la plataforma de miembros: no se guardan en el disco del workspace, así que tras
+    una restauración pueden entrar las claves que haya en esa lista en ese momento. Las claves añadidas dentro de la
+    máquina no tienen efecto en el acceso a través de la pasarela SSH de NaN. Puedes restaurar
     hasta 3 veces por workspace en cualquier periodo de 24 horas; no hay copias bajo demanda. Las instantáneas
     solo se pueden restaurar mientras el complemento esté activo: durante un periodo de gracia tienes que asociar
     el workspace a un slot activo (o renovar la membresía, si es un workspace gratuito) y volver a activar el

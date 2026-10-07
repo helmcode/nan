@@ -105,6 +105,14 @@ describe.each(Object.entries(pages))('workspaces guide (%s)', (locale, page) => 
     expect(flat).toMatch(/\*\*14 (days|días)\*\*/);
   });
 
+  test('says a restore does not change the SSH keys managed in the panel', () => {
+    expect(flat).toContain(
+      locale === 'en'
+        ? 'The keys in the **SSH keys** tab are not on the disk, so a restore does not change them.'
+        : 'Las claves de la pestaña **SSH keys** no están en el disco, así que restaurar no las cambia.',
+    );
+  });
+
   test('documents the 7-day grace, the rescue session and permanent deletion', () => {
     expect(flat).toMatch(/\*\*(7-day grace period|periodo de gracia de 7 días)\*\*/);
     expect(flat).toMatch(/(rescue session|sesión de rescate)/);
