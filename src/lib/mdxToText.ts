@@ -24,6 +24,7 @@ const KNOWN_COMPONENTS = new Set([
   'Steps',
   'Details',
   'BrandIntro',
+  'Screenshot',
 ]);
 
 const AUTHOR_HTML_BLOCK_TAGS = new Set(['h1', 'h2', 'h3', 'h4']);
@@ -268,6 +269,8 @@ function componentToBlockMd(node: MdxNode, rateLimits: RateLimitsConfig): string
       return detailsToMd(node);
     case 'BrandIntro':
       return brandIntroToMd(node);
+    case 'Screenshot':
+      return screenshotToMd(node);
     default:
       throw new Error(`Unknown MDX block component: <${name || '?'}>`);
   }
@@ -416,6 +419,13 @@ function brandIntroToMd(node: MdxNode): string {
   const alt = String(getAttr(node, 'alt') ?? '');
   const inner = stringifyBlockChildren(node.children || []).trim();
   return `![${alt}](${src})` + String.fromCharCode(10, 10) + inner + String.fromCharCode(10);
+}
+
+function screenshotToMd(node: MdxNode): string {
+  const src = String(getAttr(node, 'src') ?? '');
+  const alt = String(getAttr(node, 'alt') ?? '');
+  const caption = stripInlineHtml(String(getAttr(node, 'caption') ?? '')).trim();
+  return caption ? `![${alt}](${src})\n\n*${caption}*\n` : `![${alt}](${src})\n`;
 }
 
 function rateLimitsToMd(config: RateLimitsConfig): string {

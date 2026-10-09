@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { parseFrontmatter } from '@astrojs/markdown-remark';
@@ -46,6 +46,41 @@ function tableRows(body: string): string[] {
         .join('|')
         .toLowerCase(),
     );
+}
+
+const pub = resolve(src, '../public');
+const SHOTS = ['create-1-name-ssh', 'create-2-agents', 'create-3-config'];
+const INTERNAL = /firecracker|micro-?vms?\b|\bvm\b|\bkvm\b|kubernetes|\bk8s\b|\br2\b|nan-vmd/i;
+
+interface Shot {
+  src: string;
+  alt: string;
+  caption: string;
+  width: number;
+  height: number;
+}
+
+/** Every <Screenshot .../> of a page, in order. */
+function screenshots(body: string): Shot[] {
+  return [...body.matchAll(/<Screenshot\s([^>]*?)\/>/g)].map((m) => {
+    const attr = (name: string) => new RegExp(`${name}="([^"]*)"`).exec(m[1])?.[1] ?? '';
+    const num = (name: string) => Number(new RegExp(`${name}=\\{(\\d+)\\}`).exec(m[1])?.[1]);
+    return { src: attr('src'), alt: attr('alt'), caption: attr('caption'), width: num('width'), height: num('height') };
+  });
+}
+
+/** Pixel size of a WebP (lossy VP8, lossless VP8L or extended VP8X). */
+function webpSize(file: string): { width: number; height: number } {
+  const b = readFileSync(file);
+  expect(b.toString('ascii', 0, 4)).toBe('RIFF');
+  expect(b.toString('ascii', 8, 12)).toBe('WEBP');
+  const chunk = b.toString('ascii', 12, 16);
+  if (chunk === 'VP8 ') return { width: b.readUInt16LE(26) & 0x3fff, height: b.readUInt16LE(28) & 0x3fff };
+  if (chunk === 'VP8L') {
+    const bits = b.readUInt32LE(21);
+    return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
+  }
+  return { width: b.readUIntLE(24, 3) + 1, height: b.readUIntLE(27, 3) + 1 };
 }
 
 const expectedRows = CATALOGUE.map((t) => [t.size, t.vcpu, t.ram, t.disk, t.slot, t.backups].join('|'));
@@ -103,6 +138,37 @@ describe.each(Object.entries(pages))('workspaces guide (%s)', (locale, page) => 
     expect(flat).toMatch(/\*\*7 (days|días)\*\*/);
     expect(flat).toMatch(/\*\*3 (times per workspace in any 24 hours|veces por workspace en cualquier periodo de 24 horas)\*\*/);
     expect(flat).toMatch(/\*\*14 (days|días)\*\*/);
+  });
+
+  test('walks through the create wizard with the three screenshots, in order', () => {
+    const shots = screenshots(body);
+    expect(shots.map((s) => s.src)).toEqual(SHOTS.map((n) => `/docs/workspaces/${n}.webp`));
+  });
+
+  test.each(SHOTS)('screenshot %s: file exists, size matches, alt and caption present', (name) => {
+    const shot = screenshots(body).find((s) => s.src === `/docs/workspaces/${name}.webp`)!;
+    const file = resolve(pub, `docs/workspaces/${name}.webp`);
+    expect(existsSync(file)).toBe(true);
+    expect(webpSize(file)).toEqual({ width: shot.width, height: shot.height });
+    expect(shot.alt.length).toBeGreaterThan(30);
+    expect(shot.caption.length).toBeGreaterThan(5);
+    // Member-facing: no infrastructure words in what a reader or a screen reader gets.
+    expect(`${shot.alt} ${shot.caption}`).not.toMatch(INTERNAL);
+  });
+
+  test('explains each step of the wizard', () => {
+    expect(flat).toMatch(locale === 'en' ? /## Create your workspace/ : /## Crea tu workspace/);
+    expect(flat).toMatch(
+      locale === 'en'
+        ? /lowercase letters, numbers and hyphens, 20 characters at most/
+        : /minúsculas, números y guiones, 20 caracteres como máximo/,
+    );
+    expect(body).toContain('cat ~/.ssh/id_ed25519.pub');
+    expect(body).toContain('ssh-keygen -t ed25519');
+    expect(flat).toContain('Need a bigger workspace? Buy a slot');
+    expect(flat).toContain('@BotFather');
+    expect(flat).toContain('Install gentle-shell');
+    expect(flat).toContain('**Create Workspace**');
   });
 
   test('says a restore does not change the SSH keys managed in the panel', () => {
@@ -172,5 +238,17 @@ describe('retired v1 agents docs now point at the workspaces guide', () => {
       const live = ['md', 'mdx'].some((ext) => existsSync(resolve(src, dir, `${target}.${ext}`)));
       expect(live, `${dir}/${target}`).toBe(true);
     }
+  });
+});
+
+describe('workspaces screenshots', () => {
+  test('the two locales show the same pictures with different, translated alt text', () => {
+    const [en, es] = (['en', 'es'] as const).map((l) => screenshots(read(pages[l].file)));
+    expect(es.map((s) => s.src)).toEqual(en.map((s) => s.src));
+    en.forEach((shot, i) => expect(es[i].alt).not.toBe(shot.alt));
+  });
+
+  test('only the published screenshots live in the folder (no raw captures)', () => {
+    expect(readdirSync(resolve(pub, 'docs/workspaces')).sort()).toEqual(SHOTS.map((n) => `${n}.webp`).sort());
   });
 });

@@ -1,0 +1,48 @@
+---
+/**
+ * A product screenshot with a caption.
+ *
+ * A component rather than raw `<figure>`/`<img>` in the MDX: the text extractor
+ * (src/lib/mdxToText.ts) only understands headings and a handful of inline
+ * tags, so raw block HTML would throw and take /api/docs down for the page.
+ * Here the extractor serves it as a markdown image plus an italic caption.
+ *
+ * Lazy and async like every other docs image, with its intrinsic size so the
+ * page does not reflow while it loads.
+ */
+interface Props {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  caption?: string;
+}
+
+const { src, alt, width, height, caption } = Astro.props;
+---
+
+<figure class="docs-shot not-prose">
+  <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .docs-shot {
+    margin: 1.5rem 0 2.5rem;
+  }
+  .docs-shot img {
+    display: block;
+    width: 100%;
+    max-width: 640px;
+    height: auto;
+    border: 1px solid rgb(38 38 38 / 0.8);
+    border-radius: 0.75rem;
+  }
+  .docs-shot figcaption {
+    margin-top: 0.75rem;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgb(163 163 163);
+  }
+</style>

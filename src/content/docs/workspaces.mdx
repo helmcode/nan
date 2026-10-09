@@ -8,6 +8,7 @@ group: Guides
 import Steps from '../../components/docs/Steps.astro';
 import Details from '../../components/docs/Details.astro';
 import Callout from '../../components/docs/Callout.astro';
+import Screenshot from '../../components/docs/Screenshot.astro';
 
 # Workspaces.
 
@@ -43,30 +44,60 @@ The free workspace that comes with the premium plan is the **Micro** size (1 vCP
 
 Slots are reusable: deleting a workspace frees its slot, and you can create a new workspace on it right away.
 
-## Create a workspace
+## Create your workspace
+
+The create wizard has four steps: **Name & SSH Key**, **Agent Selection**, **Agent Config** and **Review & Create**.
 
 <Steps>
 
-### Buy a slot (or use your free workspace)
+### Get a slot, or use your free workspace
 
-Go to [Workspaces](https://cloud.nan.builders/workspaces). If you are on the premium plan and have not used your free workspace yet, you can create it straight away. Otherwise open **Workspace slots**, pick a size and pay with Stripe. When you come back, the slot is ready.
+Open [Workspaces](https://cloud.nan.builders/workspaces) and start a new workspace. On the premium plan, the wizard tells you at the top that this one is **your included free workspace** (Micro: 1 vCPU, 2 GiB RAM, 10 GiB disk). If you want more room, or you are not on premium, follow **Need a bigger workspace? Buy a slot**: pick a size, pay with Stripe, and you come back to the wizard with the slot ready.
 
-### Name it and add your SSH key
+### Name and SSH key
 
-Choose a name (1 to 20 characters: lowercase letters, numbers and hyphens) and paste your SSH **public** key, the one that ends in `.pub`. If you do not have one yet:
+Give the workspace a name: **lowercase letters, numbers and hyphens, 20 characters at most**. Then paste your SSH **public** key, the line that starts with `ssh-ed25519` and ends in something like `you@laptop`.
+
+To see the one you already have:
 
 ```bash
-ssh-keygen -t ed25519
 cat ~/.ssh/id_ed25519.pub
 ```
 
+If that file does not exist, create a key first (press Enter to accept the defaults) and run the `cat` again:
+
+```bash
+ssh-keygen -t ed25519
+```
+
+Never paste the file without `.pub`: that is your private key. You can add more keys later, one per device, from the **SSH keys** tab.
+
+<Screenshot src="/docs/workspaces/create-1-name-ssh.webp" alt="Step 1 of the create wizard: the included free workspace line, the link to buy a bigger slot, the workspace name field and the SSH public key field" width={1354} height={1348} caption="Step 1, Name & SSH Key. The key in the picture is an example." />
+
 ### Choose your agents
 
-Pick the agents and tools to install: Pi (coding agent, with the optional gentle-shell add-on), Hermes (AI agent you can talk to from Telegram) and Herdr (a terminal manager to run and watch your agents side by side). On an inference plan you also choose the NaN model each agent uses. You can change all of this later from the Software panel.
+Tick the agents and tools you want, each with the version that will be installed:
 
-### Create
+- **Hermes**: an always-on agent with memory, skills and Telegram.
+- **Pi**: a coding agent for the terminal.
+- **Herdr**: runs and watches several agent sessions side by side.
 
-The workspace starts in a few seconds. If the platform is full at that moment, it waits for capacity and starts by itself: you do not need to do anything.
+Nothing here is final: you can install, update or remove any of them later from the **Software** panel.
+
+<Screenshot src="/docs/workspaces/create-2-agents.webp" alt="Step 2 of the create wizard: Hermes, Pi and Herdr selected, each with its version" width={1326} height={1342} caption="Step 2, Agent Selection." />
+
+### Configure them
+
+Each agent you picked gets its own block:
+
+- **Hermes**: the **model** it uses (on an inference plan), a **Telegram bot token** if you want to talk to it from Telegram (optional; create a bot with [@BotFather](https://t.me/BotFather) and paste the token it gives you), and its **soul**, the system prompt that sets its personality and instructions (optional).
+- **Pi**: a **name** (it defaults to the workspace name), the **model**, and **Install gentle-shell**, which adds a separate `gentle-shell` command with subagents, guardrails and persistent memory that stays inside your workspace. `pi` itself stays unchanged.
+
+<Screenshot src="/docs/workspaces/create-3-config.webp" alt="Step 3 of the create wizard: Hermes model, Telegram bot token and soul fields, and Pi name, model and the Install gentle-shell option" width={1294} height={1632} caption="Step 3, Agent Config." />
+
+### Review and create
+
+The last step sums it all up: the SSH key, the agents, the resources and the models. Check it and press **Create Workspace**. The workspace starts in a few seconds. If the platform is full at that moment, it waits for capacity and starts by itself: you do not need to do anything.
 
 </Steps>
 
