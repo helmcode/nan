@@ -2,7 +2,7 @@
 import Legal from '../../layouts/NanLegal.astro';
 ---
 
-<Legal title="Términos del servicio" updated="October 4, 2026">
+<Legal title="Términos del servicio" updated="October 6, 2026">
   <p>
     NaN está operada por <strong>Helmcode S.L.</strong> (NIF B44788511), Avenida Quinto Centenario 27,
     Santiago del Teide, España. Contacto: <a href="mailto:info@helmcode.com">info@helmcode.com</a>.
@@ -35,8 +35,11 @@ import Legal from '../../layouts/NanLegal.astro';
     (crash-consistent): restaurar una equivale a que la máquina se quede sin corriente en el momento en que se
     tomó, así que los datos que el workspace aún no había escrito en disco no se incluyen y las bases de datos en
     ejecución se recuperan como tras un corte de luz. Restaurar una instantánea recupera todo lo que había en el
-    disco en ese momento, incluido cualquier acceso que hayas configurado tú (por ejemplo claves SSH o ajustes del
-    servidor SSH que añadieras); la plataforma solo vuelve a aplicar tu clave SSH actual de NaN. Puedes restaurar
+    disco en ese momento, incluido cualquier acceso que hayas configurado tú dentro de la máquina (por ejemplo claves en
+    ~/.ssh/authorized_keys o ajustes del servidor SSH que añadieras). Restaurar no cambia las claves SSH que
+    gestionas para el workspace en la plataforma de miembros: no se guardan en el disco del workspace, así que tras
+    una restauración pueden entrar las claves que haya en esa lista en ese momento. Las claves añadidas dentro de la
+    máquina no tienen efecto en el acceso a través de la pasarela SSH de NaN. Puedes restaurar
     hasta 3 veces por workspace en cualquier periodo de 24 horas; no hay copias bajo demanda. Las instantáneas
     solo se pueden restaurar mientras el complemento esté activo: durante un periodo de gracia tienes que asociar
     el workspace a un slot activo (o renovar la membresía, si es un workspace gratuito) y volver a activar el
@@ -52,6 +55,39 @@ import Legal from '../../layouts/NanLegal.astro';
     instantáneas de los últimos 7 días; las instantáneas conservadas más antiguas se eliminan con la siguiente
     copia diaria.
     Las instantáneas borradas no se pueden recuperar.
+  </p>
+
+  <h2 id="workspace-acceptable-use">Uso aceptable de los workspaces</h2>
+  <p>
+    Este apartado se aplica desde el 6 de octubre de 2026. Los workspaces son máquinas personales para tu propio
+    trabajo de desarrollo. Eres responsable de todo lo que se ejecuta en tu workspace y de todo el tráfico que envía,
+    incluido lo que los agentes ejecuten en tu nombre. No puedes usar un workspace para:
+  </p>
+  <ul>
+    <li>minar criptomonedas;</li>
+    <li>escanear, sondear o atacar sistemas de terceros, workspaces de otros miembros o nuestra propia infraestructura, ni intentar acceder a ellos sin autorización;</li>
+    <li>lanzar ataques de denegación de servicio (DDoS) o participar en ellos;</li>
+    <li>enviar spam, hacer phishing, ni alojar o distribuir malware;</li>
+    <li>ofrecer proxies abiertos o servicios de VPN a terceros, ni ejecutar nodos de salida o relés de Tor;</li>
+    <li>hacer credential stuffing, ataques de fuerza bruta a inicios de sesión u otros ataques automatizados contra cuentas;</li>
+    <li>alojar, almacenar o distribuir contenido ilegal;</li>
+    <li>revender, subarrendar o compartir con terceros la capacidad de cómputo o el acceso a la red del workspace.</li>
+  </ul>
+  <p id="workspace-tunnels">
+    Los túneles inversos solo están permitidos para darte acceso a tu propio workspace y para tu propio uso de
+    desarrollo, y nunca para exponer ninguno de los servicios o actividades anteriores. El correo saliente (SMTP) está
+    bloqueado y todos los workspaces tienen límites de red; intentar saltárselos es un incumplimiento de esta política.
+  </p>
+  <p id="workspace-abuse">
+    Si detectamos un abuso o recibimos un aviso de él, podemos suspender o eliminar el workspace, sus copias de
+    seguridad y los slots implicados sin aviso previo, y suspender tu membresía. La suspensión o eliminación por abuso
+    no da derecho a reembolso. Colaboramos con los avisos de abuso de terceros y con las autoridades competentes, y
+    facilitamos la información que exige la ley.
+  </p>
+  <p id="workspace-deletion">
+    Cuando se elimina un workspace, ya sea por ti, al final de su periodo de gracia o por nosotros, su disco y todas
+    sus copias de seguridad se borran de forma permanente y no se pueden recuperar. Guarda tu propia copia de todo lo
+    que no puedas permitirte perder.
   </p>
 
   <h2>Propiedad intelectual</h2>

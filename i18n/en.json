@@ -10,7 +10,7 @@
     "notIncludedLabel": "Not included",
     "notIncluded": {
       "0": "Inference service access (GPUs)",
-      "1": "Workspaces and app deployment",
+      "1": "An included workspace (workspace slots are sold separately)",
       "2": "API key for model calls"
     },
     "faqUpgradeQ": "How do I move to the inference plan later?",
@@ -410,12 +410,30 @@
         "3,000M token allowance per billing period",
         "400M tokens per rolling 4h window: the limit a coding agent reaches first",
         "1M context · 10 concurrent requests",
+        "One free Micro workspace (1 vCPU · 2 GiB RAM · 10 GiB disk)",
         "Everything in nan_member",
         "Access switches on a few minutes after payment"
       ],
       "premiumCond": "GLM 5.3 premium (200€/mo) is offered to members as seats open. Join the waitlist and we will flag you for this tier.",
       "premiumCta": "Join the waitlist",
-      "premiumBadge": "glm 5.3 · premium"
+      "premiumBadge": "glm 5.3 · premium",
+      "workspaces": {
+        "label": "workspaces · add-on",
+        "title": "Your own cloud machine.",
+        "sub": "A dedicated, isolated dev box reachable over SSH and from the browser, with Pi, Hermes, gentle-shell and Herdr ready to use. Any paying member can buy slots; each slot keeps one workspace running.",
+        "per": "/mo",
+        "headSize": "size",
+        "headSpecs": "vCPU · RAM · disk",
+        "headSlot": "slot",
+        "headBackups": "daily backups",
+        "notes": [
+          "Premium (200€) includes one free Micro workspace.",
+          "Slots pay for the machine only. Agents use NaN inference only on an inference plan (70€ or 200€).",
+          "Backups are optional: one snapshot a day, kept 7 days, restore it yourself.",
+          "Monthly, billed in euros. Cancel a slot anytime."
+        ],
+        "cta": "Read the workspaces guide"
+      }
     },
     "who": {
       "label": "who's behind",
@@ -470,6 +488,10 @@
         {
           "q": "Can I train models?",
           "a": "No. NaN is inference, not training. The GPUs are optimized to run existing models at high speed, not for fine-tuning."
+        },
+        {
+          "q": "What is a workspace?",
+          "a": "Your own cloud machine for development: a dedicated, isolated box you reach over SSH or from the browser, with coding agents such as Pi and Hermes ready to use. Any paying member can buy workspace slots from 4,99€ a month, and the premium plan includes one free Micro workspace. A slot does not include inference: agents use NaN models only on an inference plan. The workspaces guide in the docs has sizes, prices, network rules and how backups work."
         },
         {
           "q": "What payment methods do you accept?",

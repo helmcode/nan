@@ -19,6 +19,7 @@ const KNOWN_COMPONENTS = [
   'Steps',
   'Details',
   'BrandIntro',
+  'Screenshot',
 ];
 
 const FIXTURES = [
@@ -31,6 +32,7 @@ const FIXTURES = [
   'agentgrid',
   'steps',
   'details',
+  'screenshot',
   'raw-html-heading',
   'raw-html-inline',
   'composite',

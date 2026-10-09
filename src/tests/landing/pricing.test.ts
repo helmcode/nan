@@ -228,3 +228,45 @@ describe('Pricing copy — both locales stay parallel', () => {
     expect(en.length).toBe(es.length);
   });
 });
+
+/**
+ * Workspaces general launch: the pricing section sells workspace slots to any
+ * paying member and the premium tier lists its free workspace. The numbers
+ * themselves are pinned against the docs in workspacesDocs.test.ts.
+ */
+describe.each(locales)('Pricing copy — workspaces (%s)', (locale) => {
+  test('the premium tier lists the free Micro workspace', () => {
+    const copy = tArr('nan.pricing.premiumIncludes', locale).join(' ');
+    expect(copy).toMatch(/(One free Micro workspace|Un workspace Micro gratis)/);
+    expect(copy).toContain('10 GiB');
+  });
+
+  test('the member and community tiers do not promise a free workspace', () => {
+    for (const key of ['memberIncludes', 'communityIncludes']) {
+      expect(tArr(`nan.pricing.${key}`, locale).join(' '), key).not.toMatch(/workspace/i);
+    }
+  });
+
+  test('the workspaces block says slots do not include inference and premium has one free', () => {
+    const notes = tArr('nan.pricing.workspaces.notes', locale).join(' ');
+    expect(notes).toMatch(/Premium \(200€\)/);
+    expect(notes).toMatch(/(machine only|solo la máquina)/);
+    expect(notes).toMatch(/euros/);
+  });
+
+  test('the FAQ explains workspaces', () => {
+    expect(faqAnswers(locale)).toMatch(/4,99€/);
+  });
+
+  test('no em-dashes in the workspaces block', () => {
+    const ws = tObj<Record<string, unknown>>('nan.pricing.workspaces', locale);
+    expect(JSON.stringify(ws)).not.toContain('—');
+  });
+});
+
+describe('Pricing section — workspaces block', () => {
+  test('renders after the tiers, with an anchor and the docs link', () => {
+    expect(source).toContain('id="workspaces"');
+    expect(source.indexOf('id="workspaces"')).toBeGreaterThan(source.indexOf('tiers.map('));
+  });
+});

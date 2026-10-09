@@ -2,7 +2,7 @@
 import Legal from '../layouts/NanLegal.astro';
 ---
 
-<Legal title="Terms of Service" updated="October 4, 2026">
+<Legal title="Terms of Service" updated="October 6, 2026">
   <p>
     NaN is operated by <strong>Helmcode S.L.</strong> (NIF B44788511), Avenida Quinto Centenario 27,
     Santiago del Teide, Spain. Contact: <a href="mailto:info@helmcode.com">info@helmcode.com</a>.
@@ -34,8 +34,10 @@ import Legal from '../layouts/NanLegal.astro';
     Snapshots are crash-consistent: restoring one is equivalent to the machine losing power at the moment the
     snapshot was taken, so data the workspace had not yet written to disk is not included and running databases
     recover as after a power cut. Restoring a snapshot brings back everything that was on the disk at that time,
-    including any access you configured yourself (for example SSH keys or SSH server settings you added); only
-    your current NaN SSH key is re-applied by the platform. You can restore up to 3 times per workspace in any
+    including any access you configured yourself inside the machine (for example keys in ~/.ssh/authorized_keys or
+    SSH server settings you added). A restore does not change the SSH keys you manage for the workspace in the member
+    platform: they are not stored on the workspace disk, so after a restore the keys that can log in are the ones in
+    that list at that moment. Keys added inside the machine have no effect on logins through the NaN SSH gateway. You can restore up to 3 times per workspace in any
     24 hours; there are no on-demand backups. Snapshots can only be restored while the add-on is active: during a
     grace period you must attach the workspace to an active slot (or renew the membership, for a free workspace)
     and turn the add-on on again, which is billed again. Enabling the add-on charges the first payment right away
@@ -47,6 +49,38 @@ import Legal from '../layouts/NanLegal.astro';
     add-on is not turned on again within 14 days, the add-on ends and its snapshots are deleted. Kept snapshots are not pruned while
     the add-on is off. After the add-on is turned on again, only snapshots from the last 7 days can be restored;
     older kept snapshots are deleted with the next daily backup. Deleted snapshots cannot be recovered.
+  </p>
+
+  <h2 id="workspace-acceptable-use">Workspace acceptable use</h2>
+  <p>
+    This section applies from October 6, 2026. Workspaces are personal machines for your own development work. You
+    are responsible for everything that runs on your workspace and for all the traffic it sends, including what
+    agents run on your behalf. You may not use a workspace to:
+  </p>
+  <ul>
+    <li>mine cryptocurrency;</li>
+    <li>scan, probe or attack third-party systems, other members' workspaces or our own infrastructure, or try to gain unauthorized access to them;</li>
+    <li>launch or take part in denial-of-service (DDoS) attacks;</li>
+    <li>send spam, run phishing, or host or distribute malware;</li>
+    <li>run open proxies, offer VPN services to others, or run Tor exit or relay nodes;</li>
+    <li>carry out credential stuffing, brute-force logins or other automated attacks on accounts;</li>
+    <li>host, store or distribute illegal content;</li>
+    <li>resell, sublet or share the workspace's compute or network access with third parties.</li>
+  </ul>
+  <p id="workspace-tunnels">
+    Reverse tunnels are allowed only to give you access to your own workspace and for your own development use, and
+    never to expose any of the services or activities listed above. Outgoing email (SMTP) is blocked and network
+    limits apply to every workspace; trying to get around them is a breach of this policy.
+  </p>
+  <p id="workspace-abuse">
+    If we detect abuse or receive a report of it, we may suspend or delete the workspace, its backups and the slots
+    involved without prior notice, and suspend your membership. A suspension or deletion for abuse gives no right to a
+    refund. We cooperate with abuse reports from third parties and with the competent authorities, and we share the
+    information the law requires.
+  </p>
+  <p id="workspace-deletion">
+    When a workspace is deleted, whether by you, at the end of its grace period, or by us, its disk and all its
+    backups are deleted permanently and cannot be recovered. Keep your own copy of anything you cannot afford to lose.
   </p>
 
   <h2>Intellectual property</h2>

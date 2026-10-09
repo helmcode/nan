@@ -41,8 +41,7 @@ describe('terms: workspace backups (EN)', () => {
     expect(p).toContain('no refund for the current month');
     expect(p).toContain('Turning the add-on off or deleting the workspace deletes all its snapshots permanently');
     expect(p).toContain('the add-on stops being billed');
-    expect(p).toContain('including any access you configured yourself');
-    expect(p).toContain('only your current NaN SSH key is re-applied');
+    expect(p).toContain('including any access you configured yourself inside the machine');
   });
 
   test('restore limits and grace rules (product decision 2026-10-02)', () => {
@@ -89,8 +88,7 @@ describe('terms: workspace backups (ES)', () => {
     expect(p).toContain('sin reembolso del mes en curso');
     expect(p).toContain('Desactivar el complemento o eliminar el workspace borra todas sus instantáneas de forma permanente');
     expect(p).toContain('el complemento deja de cobrarse');
-    expect(p).toContain('incluido cualquier acceso que hayas configurado tú');
-    expect(p).toContain('solo vuelve a aplicar tu clave SSH actual de NaN');
+    expect(p).toContain('incluido cualquier acceso que hayas configurado tú dentro de la máquina');
   });
 
   test('límites de restauración y reglas de gracia', () => {
@@ -106,5 +104,38 @@ describe('terms: workspace backups (ES)', () => {
     expect(p).toContain('Las instantáneas conservadas no se eliminan mientras el complemento esté desactivado.');
     expect(p).toContain('Cuando el complemento se vuelve a activar, solo se pueden restaurar las instantáneas de los últimos 7 días; las instantáneas conservadas más antiguas se eliminan con la siguiente copia diaria.');
     expect(p).not.toContain('restaura antes la que necesites');
+  });
+});
+
+/**
+ * Since cloud-api migration 097 the member's SSH keys live in a per-workspace
+ * list managed in the portal (SSH keys tab), not on the workspace disk, and the
+ * SSH gateway authenticates against that list. A restore rewrites the disk only,
+ * so it cannot bring back or drop a managed key. The old sentence ("only your
+ * current NaN SSH key is re-applied") described the single create-time key.
+ */
+describe('terms: restore and managed SSH keys', () => {
+  const cases = [
+    {
+      file: 'terms.astro',
+      stale: 'only your current NaN SSH key is re-applied',
+      keeps: 'A restore does not change the SSH keys you manage for the workspace in the member platform',
+      notOnDisk: 'they are not stored on the workspace disk, so after a restore the keys that can log in are the ones in that list at that moment',
+      gateway: 'Keys added inside the machine have no effect on logins through the NaN SSH gateway',
+    },
+    {
+      file: 'es/terms.astro',
+      stale: 'solo vuelve a aplicar tu clave SSH actual de NaN',
+      keeps: 'Restaurar no cambia las claves SSH que gestionas para el workspace en la plataforma de miembros',
+      notOnDisk: 'no se guardan en el disco del workspace, así que tras una restauración pueden entrar las claves que haya en esa lista en ese momento',
+      gateway: 'Las claves añadidas dentro de la máquina no tienen efecto en el acceso a través de la pasarela SSH de NaN',
+    },
+  ];
+  test.each(cases)('$file', (c) => {
+    const p = section(flat(c.file));
+    expect(p).not.toContain(c.stale);
+    expect(p).toContain(c.keeps);
+    expect(p).toContain(c.notOnDisk);
+    expect(p).toContain(c.gateway);
   });
 });
