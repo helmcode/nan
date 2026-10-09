@@ -338,3 +338,13 @@ describe('workspaces screenshots', () => {
     expect(readdirSync(resolve(pub, 'docs/workspaces')).sort()).toEqual(SHOTS.map((n) => `${n}.webp`).sort());
   });
 });
+
+describe('gentle-shell link', () => {
+  test.each(['src/content/docs/workspaces.mdx', 'src/content/docs-es/workspaces.mdx'])(
+    '%s links gentle-shell to its official repo',
+    (rel) => {
+      const text = readFileSync(resolve(process.cwd(), rel), 'utf8');
+      expect(text).toContain('[gentle-shell](https://github.com/Gentleman-Programming/gentle-shell)');
+    },
+  );
+});
