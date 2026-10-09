@@ -16,12 +16,14 @@ interface Props {
   width: number;
   height: number;
   caption?: string;
+  /** A phone screen: shown narrower, the way it looks in the hand. */
+  variant?: 'default' | 'phone';
 }
 
-const { src, alt, width, height, caption } = Astro.props;
+const { src, alt, width, height, caption, variant = 'default' } = Astro.props;
 ---
 
-<figure class="docs-shot not-prose">
+<figure class:list={['docs-shot', 'not-prose', { 'docs-shot--phone': variant === 'phone' }]}>
   <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
@@ -37,6 +39,10 @@ const { src, alt, width, height, caption } = Astro.props;
     height: auto;
     border: 1px solid rgb(38 38 38 / 0.8);
     border-radius: 0.75rem;
+  }
+  .docs-shot--phone img {
+    max-width: min(300px, 100%);
+    border-radius: 1.25rem;
   }
   .docs-shot figcaption {
     margin-top: 0.75rem;

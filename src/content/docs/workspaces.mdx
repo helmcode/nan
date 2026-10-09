@@ -101,6 +101,88 @@ The last step sums it all up: the SSH key, the agents, the resources and the mod
 
 </Steps>
 
+## Connect from your phone and keep agents running 24/7 with Herdr
+
+Your workspace stays on when you close your laptop, so your agents can keep working while you are away. With an SSH app on your phone and Herdr you can check on them, answer them and pick up the very same session from any device.
+
+<Steps>
+
+### Install an SSH app on your phone
+
+Any SSH client works. We recommend [Termius](https://termius.com/download), available for Android and iOS.
+
+### Generate a key in Termius
+
+Go to **Vaults**, then **Keychain**, tap **+** and choose **Generate Key**.
+
+<Screenshot variant="phone" src="/docs/workspaces/phone-01-keychain-menu.webp" alt="Termius keychain with the + menu open and the Generate Key option" width={645} height={1334} caption="Keychain, + then Generate Key." />
+
+### Give it a name
+
+Fill in only the **Label** (for example, the name of your phone) and confirm. Leave the rest as it is: the type is ED25519.
+
+<Screenshot variant="phone" src="/docs/workspaces/phone-02-generate-key.webp" alt="Termius Generate Key form with the Label filled in and the type ED25519" width={645} height={1310} caption="Only the Label, then confirm." />
+
+### Add the public key to your workspace
+
+Select the key you just created. You can email it to yourself or copy the **public** key. Then open [cloud.nan.builders/workspaces](https://cloud.nan.builders/workspaces), go into your workspace and open the **SSH keys** tab. Paste the public key under **Add a key**, give it a name and click **+ Add key**.
+
+<Callout title="Only the public key" variant="warning">
+Share and paste only the **public** key. The private key never leaves your phone.
+</Callout>
+
+<Screenshot src="/docs/workspaces/phone-03-add-ssh-key.webp" alt="SSH keys tab of a workspace in the NaN dashboard, with the SSH command, the current key and the Add a key form" width={1436} height={821} caption="The SSH keys tab: the SSH command at the top, and Add a key below." />
+
+### Create a host in Termius
+
+Go to **Hosts** and add a new host.
+
+<Screenshot variant="phone" src="/docs/workspaces/phone-04-new-host-menu.webp" alt="Termius hosts list with the + menu open and the New Host option" width={645} height={1330} caption="Hosts, + then New Host." />
+
+### Fill in the connection details
+
+| Field | Value |
+|---|---|
+| Label | Anything you like |
+| IP or Hostname | Always `ssh.nan.builders` |
+| Port | `30222` |
+| Username | The part before the `@` in your workspace's SSH command, in the **SSH keys** tab (the dashboard may also show it as Username) |
+| Key (SSH ID, Key, Certificate, FIDO2) | The key you generated before |
+
+Leave everything else as it is: **Use SSH** on and **Use Mosh** off. The connection only works over SSH.
+
+<Screenshot variant="phone" src="/docs/workspaces/phone-05-host-address.webp" alt="Termius New Host form with the Label and the hostname ssh.nan.builders" width={645} height={760} caption="Label and hostname." />
+
+<Screenshot variant="phone" src="/docs/workspaces/phone-06-host-credentials.webp" alt="Termius New Host form with Use SSH on, Use Mosh off, port 30222, the username and the key selected" width={645} height={798} caption="Port 30222, your username and your key. The username in the picture is a placeholder." />
+
+### Connect
+
+In the hosts list, tap the host you created. You are now in your workspace.
+
+<Screenshot variant="phone" src="/docs/workspaces/phone-07-connected.webp" alt="Terminal on the phone connected to a workspace, showing the welcome screen and the prompt" width={645} height={1325} caption="Connected to the workspace." />
+
+### Run your agents inside Herdr
+
+Now you can talk to your agents. Start [Herdr](https://herdr.dev) first, and run Pi, gentle-shell or any agent of your own inside it:
+
+```bash
+herdr
+```
+
+The agents keep running inside Herdr 24/7, even when you close the app or lose signal. Reconnect from any device and run `herdr` again to reattach: you land in exactly the same session. For example, start gentle-shell from your computer and carry on with it from your phone.
+
+<Screenshot src="/docs/workspaces/phone-08-herdr-computer.webp" alt="Herdr on a computer running a gentle-shell session" width={1015} height={894} caption="A gentle-shell session in Herdr, from the computer." />
+
+<Screenshot variant="phone" src="/docs/workspaces/phone-09-herdr-phone.webp" alt="The same gentle-shell session in Herdr, opened from the phone" width={645} height={1310} caption="The same session, from the phone." />
+
+</Steps>
+
+A few tips:
+
+- The first `herdr` starts a session; every later `herdr` reattaches to it. Losing the connection does not stop your agents.
+- Use plain SSH, not Mosh: the connection to your workspace is SSH only.
+- Phone keys work too: ED25519, RSA and ECDSA (P-256) keys are accepted, so you can use the one the app generated.
+
 ## Connect
 
 ### SSH from your terminal
@@ -108,7 +190,7 @@ The last step sums it all up: the SSH key, the agents, the resources and the mod
 The **Overview** tab shows the exact SSH command for your workspace, with a copy button. It looks like this:
 
 ```bash
-ssh <workspace-id>@ssh.nan.builders
+ssh <workspace-id>@ssh.nan.builders -p 30222
 ```
 
 Copy it from the dashboard rather than typing it. The connection goes through the NaN SSH gateway, which is the only way in from outside.

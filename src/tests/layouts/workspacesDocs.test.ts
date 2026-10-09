@@ -49,7 +49,23 @@ function tableRows(body: string): string[] {
 }
 
 const pub = resolve(src, '../public');
-const SHOTS = ['create-1-name-ssh', 'create-2-agents', 'create-3-config'];
+const CREATE_SHOTS = ['create-1-name-ssh', 'create-2-agents', 'create-3-config'];
+const PHONE_SHOTS = [
+  'phone-01-keychain-menu',
+  'phone-02-generate-key',
+  'phone-03-add-ssh-key',
+  'phone-04-new-host-menu',
+  'phone-05-host-address',
+  'phone-06-host-credentials',
+  'phone-07-connected',
+  'phone-08-herdr-computer',
+  'phone-09-herdr-phone',
+];
+/** Screenshots of a computer screen; every other phone-* one is a phone screen. */
+const DESKTOP_SHOTS = new Set(['phone-03-add-ssh-key', 'phone-08-herdr-computer']);
+const SHOTS = [...CREATE_SHOTS, ...PHONE_SHOTS];
+/** Things that must never be published: workspace ids (UUIDs) and private addresses. */
+const PRIVATE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}|\b10\.\d{1,3}\.\d{1,3}\.\d{1,3}\b|\bws-[0-9a-f]{8}\b/i;
 const INTERNAL = /firecracker|micro-?vms?\b|\bvm\b|\bkvm\b|kubernetes|\bk8s\b|\br2\b|nan-vmd/i;
 
 interface Shot {
@@ -58,6 +74,7 @@ interface Shot {
   caption: string;
   width: number;
   height: number;
+  variant: string;
 }
 
 /** Every <Screenshot .../> of a page, in order. */
@@ -65,7 +82,14 @@ function screenshots(body: string): Shot[] {
   return [...body.matchAll(/<Screenshot\s([^>]*?)\/>/g)].map((m) => {
     const attr = (name: string) => new RegExp(`${name}="([^"]*)"`).exec(m[1])?.[1] ?? '';
     const num = (name: string) => Number(new RegExp(`${name}=\\{(\\d+)\\}`).exec(m[1])?.[1]);
-    return { src: attr('src'), alt: attr('alt'), caption: attr('caption'), width: num('width'), height: num('height') };
+    return {
+      src: attr('src'),
+      alt: attr('alt'),
+      caption: attr('caption'),
+      variant: attr('variant') || 'default',
+      width: num('width'),
+      height: num('height'),
+    };
   });
 }
 
@@ -116,7 +140,7 @@ describe.each(Object.entries(pages))('workspaces guide (%s)', (locale, page) => 
   });
 
   test('documents how to connect: SSH command, SSH keys tab, web terminal', () => {
-    expect(body).toContain('ssh <workspace-id>@ssh.nan.builders');
+    expect(body).toContain('ssh <workspace-id>@ssh.nan.builders -p 30222');
     expect(body).toContain('**SSH keys**');
     expect(body).toContain('**Console**');
     expect(flat).toContain('authorized_keys');
@@ -140,9 +164,51 @@ describe.each(Object.entries(pages))('workspaces guide (%s)', (locale, page) => 
     expect(flat).toMatch(/\*\*14 (days|días)\*\*/);
   });
 
-  test('walks through the create wizard with the three screenshots, in order', () => {
+  test('shows every screenshot once, in order: the create wizard, then the phone guide', () => {
     const shots = screenshots(body);
     expect(shots.map((s) => s.src)).toEqual(SHOTS.map((n) => `/docs/workspaces/${n}.webp`));
+  });
+
+  test('phone screens are shown as phone screenshots, computer screens are not', () => {
+    for (const shot of screenshots(body)) {
+      const name = shot.src.replace(/^.*\/|\.webp$/g, '');
+      const phone = name.startsWith('phone-') && !DESKTOP_SHOTS.has(name);
+      expect(shot.variant, name).toBe(phone ? 'phone' : 'default');
+    }
+  });
+
+  test('no workspace id or private address in any file name, alt text or caption', () => {
+    for (const shot of screenshots(body)) {
+      expect(`${shot.src} ${shot.alt} ${shot.caption}`).not.toMatch(PRIVATE);
+    }
+    expect(body).not.toMatch(PRIVATE);
+  });
+
+  test('the phone guide sits right after creating the workspace, before Connect', () => {
+    const create = flat.indexOf(locale === 'en' ? '## Create your workspace' : '## Crea tu workspace');
+    const phone = flat.indexOf(
+      locale === 'en'
+        ? '## Connect from your phone and keep agents running 24/7 with Herdr'
+        : '## Conéctate desde el móvil y mantén tus agentes 24/7 con Herdr',
+    );
+    expect(create).toBeGreaterThan(-1);
+    expect(phone).toBeGreaterThan(create);
+    const connect = body.search(locale === 'en' ? /^## Connect$/m : /^## Conectarte$/m);
+    expect(connect).toBeGreaterThan(body.indexOf('phone-09-herdr-phone'));
+  });
+
+  test('the phone guide gives the exact connection details and the Herdr basics', () => {
+    expect(flat).toContain('https://termius.com/download');
+    expect(flat).toContain('`ssh.nan.builders`');
+    expect(flat).toContain('`30222`');
+    expect(flat).toMatch(/Use Mosh\*\* (off|desactivado)/);
+    expect(body).toContain('```bash\nherdr\n```');
+    expect(flat).toContain('https://herdr.dev');
+    expect(flat).toMatch(locale === 'en' ? /Only the public key/ : /Solo la clave pública/);
+  });
+
+  test('the SSH command includes the gateway port', () => {
+    expect(body).toContain('ssh <workspace-id>@ssh.nan.builders -p 30222');
   });
 
   test.each(SHOTS)('screenshot %s: file exists, size matches, alt and caption present', (name) => {
