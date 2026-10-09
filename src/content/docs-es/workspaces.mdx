@@ -18,15 +18,9 @@ Todo se gestiona desde [cloud.nan.builders/workspaces](https://cloud.nan.builder
 
 ## Quién puede tener uno
 
-Cualquier **miembro de pago** de NaN puede comprar slots de workspace: comunidad (14,99€), inferencia (70€) y premium (200€).
+Cualquier **miembro de pago** de NaN puede comprar slots de workspace. El plan Premium incluye **un workspace gratis** (Micro: 1 vCPU, 2 GiB de RAM, 10 GiB de disco).
 
-| Tu plan | Workspace gratis | Puede comprar slots | Los agentes usan la inferencia de NaN |
-|---|---|---|---|
-| Comunidad, 14,99€ | No | Sí | No |
-| Inferencia, 70€ | No | Sí | Sí |
-| Premium, 200€ | **Uno, incluido** | Sí | Sí |
-
-Un slot paga **solo la máquina**. No incluye inferencia: los agentes de tu workspace llaman a los modelos de NaN solo si tu membresía es un plan de inferencia (70€ o 200€). Con el plan de comunidad puedes usar el workspace igualmente como máquina de desarrollo y apuntar los agentes a cualquier proveedor que ya tengas.
+Un slot paga **solo la máquina**. No incluye inferencia: los agentes de tu workspace llaman a los modelos de NaN solo si tu membresía incluye inferencia. Sin ella puedes usar el workspace igualmente como máquina de desarrollo y apuntar los agentes a cualquier proveedor que ya tengas.
 
 ## Tamaños y precios
 
@@ -131,7 +125,9 @@ Selecciona la clave que acabas de crear. Puedes enviártela por email o copiar l
 Comparte y pega solo la clave **pública**. La clave privada nunca sale de tu móvil.
 </Callout>
 
-<Screenshot src="/docs/workspaces/phone-03-add-ssh-key.webp" alt="Pestaña SSH keys de un workspace en el panel de NaN, con el comando SSH, la clave actual y el formulario Add a key" width={1436} height={821} caption="La pestaña SSH keys: arriba el comando SSH y debajo Add a key." />
+En esa misma pestaña tienes también, en campos separados que puedes copiar, los datos que necesita tu app de SSH: **Username**, **Hostname** y **Port**. Los usarás en los pasos siguientes.
+
+<Screenshot src="/docs/workspaces/phone-03-add-ssh-key.webp" alt="Pestaña SSH keys de un workspace en el panel de NaN, con el comando SSH, los campos Username, Hostname y Port, las claves guardadas y el formulario Add a key" width={1010} height={818} caption="La pestaña SSH keys: el comando SSH, los campos Username, Hostname y Port para el móvil, tus claves y Add a key. Los valores de la imagen son ejemplos." />
 
 ### Crea un host en Termius
 
@@ -146,7 +142,7 @@ Ve a **Hosts** y añade un host nuevo.
 | Label | Lo que quieras |
 | IP or Hostname | Siempre `ssh.nan.builders` |
 | Port | `30222` |
-| Username | Lo que va antes de la `@` en el comando SSH de tu workspace, en la pestaña **SSH keys** (el panel también puede mostrarlo como Username) |
+| Username | Cópialo del campo **Username** de la pestaña **SSH keys** |
 | Key (SSH ID, Key, Certificate, FIDO2) | La clave que generaste antes |
 
 Deja todo lo demás como está: **Use SSH** activado y **Use Mosh** desactivado. La conexión solo funciona por SSH.
@@ -270,7 +266,7 @@ No. Cada workspace es una máquina dedicada y aislada, con su CPU, su memoria y 
 
 <Details summary="¿Un slot incluye inferencia?">
 
-No. Un slot paga la máquina. Los agentes usan los modelos de NaN solo si tu membresía es un plan de inferencia (70€ o 200€). Con el plan de comunidad puedes instalar los agentes igualmente y conectarlos a otro proveedor.
+No. Un slot paga la máquina. Los agentes usan los modelos de NaN solo si tu membresía incluye inferencia. Sin ella puedes instalar los agentes igualmente y conectarlos a otro proveedor.
 
 </Details>
 
@@ -288,7 +284,7 @@ No sobre la marcha. Compra un slot del tamaño nuevo, crea un workspace en él, 
 
 <Details summary="Mi plan de comunidad se abrió en dólares. ¿Puedo comprar un slot?">
 
-Sí. Los slots de workspace se facturan en euros, así que el portal pasa primero tu plan de comunidad a euros (14,99€ / mes) y luego te deja comprar. Te lo avisa antes de cobrar nada.
+Sí. Los slots de workspace se facturan en euros, así que el portal pasa primero tu plan a euros y luego te deja comprar. Te lo avisa antes de cobrar nada.
 
 </Details>
 

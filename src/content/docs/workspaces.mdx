@@ -18,15 +18,9 @@ Everything is managed from [cloud.nan.builders/workspaces](https://cloud.nan.bui
 
 ## Who can get one
 
-Any **paying member** of NaN can buy workspace slots: community (14,99€), inference (70€) and premium (200€).
+Any **paying member** of NaN can buy workspace slots. The Premium plan includes **one free workspace** (Micro: 1 vCPU, 2 GiB RAM, 10 GiB disk).
 
-| Your plan | Free workspace | Can buy slots | Agents use NaN inference |
-|---|---|---|---|
-| Community, 14,99€ | No | Yes | No |
-| Inference, 70€ | No | Yes | Yes |
-| Premium, 200€ | **One, included** | Yes | Yes |
-
-A slot pays for the **machine only**. It does not include inference: the agents in your workspace call NaN models only if your membership is an inference plan (70€ or 200€). On the community plan you can still use the workspace as a dev box, and point the agents at any provider you already have.
+A slot pays for the **machine only**. It does not include inference: the agents in your workspace call NaN models only if your membership includes inference. Without it you can still use the workspace as a dev box, and point the agents at any provider you already have.
 
 ## Sizes and prices
 
@@ -131,7 +125,9 @@ Select the key you just created. You can email it to yourself or copy the **publ
 Share and paste only the **public** key. The private key never leaves your phone.
 </Callout>
 
-<Screenshot src="/docs/workspaces/phone-03-add-ssh-key.webp" alt="SSH keys tab of a workspace in the NaN dashboard, with the SSH command, the current key and the Add a key form" width={1436} height={821} caption="The SSH keys tab: the SSH command at the top, and Add a key below." />
+The same tab also shows the values your SSH app needs as separate fields you can copy: **Username**, **Hostname** and **Port**. You will use them in the next steps.
+
+<Screenshot src="/docs/workspaces/phone-03-add-ssh-key.webp" alt="SSH keys tab of a workspace in the NaN dashboard, with the SSH command, the Username, Hostname and Port fields, the saved keys and the Add a key form" width={1010} height={818} caption="The SSH keys tab: the SSH command, the Username, Hostname and Port fields for your phone, your keys, and Add a key. The values in the picture are placeholders." />
 
 ### Create a host in Termius
 
@@ -146,7 +142,7 @@ Go to **Hosts** and add a new host.
 | Label | Anything you like |
 | IP or Hostname | Always `ssh.nan.builders` |
 | Port | `30222` |
-| Username | The part before the `@` in your workspace's SSH command, in the **SSH keys** tab (the dashboard may also show it as Username) |
+| Username | Copy it from the **Username** field in the **SSH keys** tab |
 | Key (SSH ID, Key, Certificate, FIDO2) | The key you generated before |
 
 Leave everything else as it is: **Use SSH** on and **Use Mosh** off. The connection only works over SSH.
@@ -270,7 +266,7 @@ No. Each workspace is a dedicated, isolated machine with its own CPU, memory and
 
 <Details summary="Does a slot include inference?">
 
-No. A slot pays for the machine. The agents use NaN models only if your membership is an inference plan (70€ or 200€). On the community plan you can still install the agents and connect them to another provider.
+No. A slot pays for the machine. The agents use NaN models only if your membership includes inference. Without it you can still install the agents and connect them to another provider.
 
 </Details>
 
@@ -288,7 +284,7 @@ Not in place. Buy a slot of the new size, create a workspace on it, copy your da
 
 <Details summary="My community plan was opened in dollars. Can I buy a slot?">
 
-Yes. Workspace slots are billed in euros, so the portal first moves your community plan to euros (14,99€ / month) and then lets you buy. It tells you before charging anything.
+Yes. Workspace slots are billed in euros, so the portal first moves your plan to euros and then lets you buy. It tells you before charging anything.
 
 </Details>
 

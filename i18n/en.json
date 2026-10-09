@@ -427,8 +427,8 @@
         "headSlot": "slot",
         "headBackups": "daily backups",
         "notes": [
-          "Premium (200€) includes one free Micro workspace.",
-          "Slots pay for the machine only. Agents use NaN inference only on an inference plan (70€ or 200€).",
+          "The premium plan includes one free Micro workspace.",
+          "Slots pay for the machine only. Agents use NaN inference only if your plan includes it.",
           "Backups are optional: one snapshot a day, kept 7 days, restore it yourself.",
           "Monthly, billed in euros. Cancel a slot anytime."
         ],
