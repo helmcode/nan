@@ -128,10 +128,23 @@ describe.each(Object.entries(pages))('workspaces guide (%s)', (locale, page) => 
     expect(tableRows(body)).toEqual(expectedRows);
   });
 
+  test('says any paying member can buy slots, without listing the plans and their prices', () => {
+    expect(flat).toMatch(
+      locale === 'en'
+        ? /Any \*\*paying member\*\* of NaN can buy workspace slots\./
+        : /Cualquier \*\*miembro de pago\*\* de NaN puede comprar slots de workspace\./,
+    );
+    // Owner decision (2026-10-09): no plan enumeration with prices on this page.
+    expect(body).not.toMatch(/14,99€|\b70€|\b200€/);
+    expect(body).not.toMatch(/\| (Community|Comunidad|Inference|Inferencia)\b/);
+  });
+
   test('the free workspace is the premium benefit, Micro sized', () => {
-    expect(flat).toMatch(/\| (Premium), 200€ \| \*\*(One, included|Uno, incluido)\*\* \|/);
-    expect(flat).toMatch(/\| (Inference|Inferencia), 70€ \| No \|/);
-    expect(flat).toMatch(/\| (Community|Comunidad), 14,99€ \| No \|/);
+    expect(flat).toMatch(
+      locale === 'en'
+        ? /The Premium plan includes \*\*one free workspace\*\*/
+        : /El plan Premium incluye \*\*un workspace gratis\*\*/,
+    );
     expect(flat).toContain(locale === 'en' ? '1 vCPU, 2 GiB RAM, 10 GiB disk' : '1 vCPU, 2 GiB de RAM, 10 GiB de disco');
   });
 
@@ -201,6 +214,13 @@ describe.each(Object.entries(pages))('workspaces guide (%s)', (locale, page) => 
     expect(flat).toContain('https://termius.com/download');
     expect(flat).toContain('`ssh.nan.builders`');
     expect(flat).toContain('`30222`');
+    // The SSH keys tab shows Username / Hostname / Port as copyable fields now.
+    expect(flat).toMatch(
+      locale === 'en'
+        ? /Copy it from the \*\*Username\*\* field in the \*\*SSH keys\*\* tab/
+        : /Cópialo del campo \*\*Username\*\* de la pestaña \*\*SSH keys\*\*/,
+    );
+    expect(flat).not.toMatch(/may also show it as Username|también puede mostrarlo como Username/);
     expect(flat).toMatch(/Use Mosh\*\* (off|desactivado)/);
     expect(body).toContain('```bash\nherdr\n```');
     expect(flat).toContain('https://herdr.dev');

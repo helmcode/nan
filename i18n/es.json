@@ -427,8 +427,8 @@
         "headSlot": "slot",
         "headBackups": "backups diarios",
         "notes": [
-          "Premium (200€) incluye un workspace Micro gratis.",
-          "Los slots pagan solo la máquina. Los agentes usan la inferencia de NaN solo con un plan de inferencia (70€ o 200€).",
+          "El plan premium incluye un workspace Micro gratis.",
+          "Los slots pagan solo la máquina. Los agentes usan la inferencia de NaN solo si tu plan la incluye.",
           "Los backups son opcionales: una instantánea al día, guardada 7 días, y la restauras tú.",
           "Mensual, se factura en euros. Cancela un slot cuando quieras."
         ],

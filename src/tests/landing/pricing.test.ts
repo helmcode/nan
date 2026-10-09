@@ -249,7 +249,9 @@ describe.each(locales)('Pricing copy — workspaces (%s)', (locale) => {
 
   test('the workspaces block says slots do not include inference and premium has one free', () => {
     const notes = tArr('nan.pricing.workspaces.notes', locale).join(' ');
-    expect(notes).toMatch(/Premium \(200€\)/);
+    expect(notes).toMatch(/(premium plan includes one free Micro workspace|plan premium incluye un workspace Micro gratis)/i);
+    // No plan enumeration with prices in the workspaces notes (owner, 2026-10-09).
+    expect(notes).not.toMatch(/70€|200€/);
     expect(notes).toMatch(/(machine only|solo la máquina)/);
     expect(notes).toMatch(/euros/);
   });
