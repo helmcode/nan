@@ -107,8 +107,12 @@
       "resultsCta": "Ver clasificación",
       "closedEventTitle": "Evento cerrado",
       "closedEvent": "Este evento ha terminado. ¡Gracias a todos los que habéis participado!",
-      "publishedTitle": "Abierto a todos",
-      "published": "Este evento no necesita inscripción. Apúntalo en tu calendario y entra por el enlace el día del evento.",
+      "publishedTitle": "Evento anunciado",
+      "published": "Apúntalo en tu calendario y entra por el enlace el día del evento.",
+      "publishedOpenTitle": "Abierto a todos",
+      "publishedOpen": "Este evento no necesita inscripción en NaN. Apúntalo en tu calendario y entra por el enlace el día del evento.",
+      "publishedMembersTitle": "Solo para la comunidad de NaN",
+      "publishedMembers": "Este evento es solo para miembros de NaN. Si ya eres miembro, entra por el enlace, márcate como interesado y Discord te avisará el día del evento.",
       "publishedCta": "Ir al evento"
     },
     "alreadyRegistered": {

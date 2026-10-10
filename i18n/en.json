@@ -107,8 +107,12 @@
       "resultsCta": "View leaderboard",
       "closedEventTitle": "Event closed",
       "closedEvent": "This event has ended. Thanks to everyone who took part!",
-      "publishedTitle": "Open to everyone",
-      "published": "No registration needed. Add it to your calendar and join through the link on the day.",
+      "publishedTitle": "Event announced",
+      "published": "Add it to your calendar and join through the link on the day.",
+      "publishedOpenTitle": "Open to everyone",
+      "publishedOpen": "No NaN registration needed. Add it to your calendar and join through the link on the day.",
+      "publishedMembersTitle": "NaN members only",
+      "publishedMembers": "This event is for NaN members only. If you are one, open the link, mark yourself as interested and Discord will remind you on the day.",
       "publishedCta": "Join the event"
     },
     "alreadyRegistered": {
