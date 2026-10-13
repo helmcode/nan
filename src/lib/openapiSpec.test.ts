@@ -720,14 +720,30 @@ describe('documented /responses: models and streaming', () => {
   const op = (spec.paths as any)['/responses'].post;
   const body = op.requestBody.content['application/json'].schema.properties;
 
-  it('lists deepseek-v4-flash next to qwen3.6 and gemma4, in text and in the enum', () => {
-    expect(op.description).toContain('Models: `deepseek-v4-flash`, `qwen3.6`, `gemma4`.');
-    expect(body.model.enum).toEqual(['deepseek-v4-flash', 'qwen3.6', 'gemma4']);
+  // Re-measured 2026-10-13: every chat model answers on /responses, and five
+  // of them stream; qwen3.6 and gemma4 still hold the answer and send it in
+  // one burst (~59 deltas inside 0.1s, after 15-17s of nothing).
+  const RESPONSES_MODELS = [
+    'deepseek-v4-flash',
+    'glm5.3-flash',
+    'qwen3.8-flash',
+    'mimo-v2.6-flash',
+    'qwen3.6',
+    'gemma4',
+    'glm5.3',
+  ];
+
+  it('lists every chat model, in text and in the enum', () => {
+    expect(op.description).toContain(
+      'Models: ' + RESPONSES_MODELS.map((m) => '`' + m + '`').join(', ') + '.',
+    );
+    expect(body.model.enum).toEqual(RESPONSES_MODELS);
     for (const id of body.model.enum) expect(NAN_MODELS, id).toContain(id);
   });
 
   it('says which models stream incrementally and which send one burst', () => {
-    expect(op.description).toMatch(/`deepseek-v4-flash` streams incrementally/);
+    expect(op.description).toMatch(/`glm5\.3` stream incrementally/);
+    expect(op.description).toContain('`mimo-v2.6-flash`');
     expect(op.description).toContain('`response.created`');
     expect(op.description).toMatch(/On `qwen3\.6` and `gemma4` the answer is held until it is complete/);
     expect(op.description).toContain('[Create chat completion](#tag/Chat)');
@@ -737,8 +753,9 @@ describe('documented /responses: models and streaming', () => {
 
   it('drops the stale single-terminal-event claim everywhere', () => {
     expect(raw).not.toMatch(/single terminal event/);
-    expect(spec.info.description).toContain(
-      '`/responses` streams incrementally only on `deepseek-v4-flash`',
+    expect(spec.info.description).not.toContain('incrementally only on');
+    expect(spec.info.description).toMatch(
+      /`\/responses` streams incrementally on `deepseek-v4-flash`.*; on `qwen3\.6` and `gemma4` it holds/,
     );
   });
 
@@ -748,9 +765,11 @@ describe('documented /responses: models and streaming', () => {
         resolve(dirname(fileURLToPath(import.meta.url)), `../content/docs${locale}/codex.mdx`),
         'utf-8',
       );
-    expect(page('')).toContain('streams incrementally only on `deepseek-v4-flash`');
-    expect(page('')).not.toContain('It is not a hang: that endpoint does not stream yet.');
-    expect(page('-es')).toContain('solo va emitiendo la respuesta por partes con `deepseek-v4-flash`');
+    expect(page('')).toContain('`wire_api = "responses"`');
+    expect(page('')).not.toContain('wire_api = "chat"\n');
+    expect(page('')).toContain('On `qwen3.6` and `gemma4` the answer still arrives all at once');
+    expect(page('-es')).toContain('`wire_api = "responses"`');
+    expect(page('-es')).toContain('Con `qwen3.6` y `gemma4` la respuesta sigue llegando de golpe');
   });
 });
 

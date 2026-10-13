@@ -43,7 +43,7 @@ wire_api = "responses"
 
 Cuatro detalles que importan:
 
-- **`wire_api = "responses"`** es el único valor que Codex sigue aceptando. Desde la 0.154, `"chat"` no es que vaya peor: el fichero no carga y Codex no abre. Esta página recomendaba `"chat"` porque `/responses` contestaba de una sola vez; ahora el `/responses` del clúster emite la respuesta por partes con todos los modelos, así que esa razón ya no existe.
+- **`wire_api = "responses"`** es el único valor que Codex sigue aceptando. Desde la 0.154, `"chat"` no es que vaya peor: el fichero no carga y Codex no abre. Esta página recomendaba `"chat"` porque `/responses` contestaba de una sola vez; ahora emite la respuesta por partes, salvo con `qwen3.6` y `gemma4` (mira abajo).
 - **`model_context_window`** hace falta porque Codex no tiene metadatos de los modelos del clúster: sin él supone una ventana y compacta la conversación mucho antes de tiempo. Pon la del modelo que uses; están en [Modelos](/es/docs/models).
 - **El identificador del proveedor no puede ser `openai`, `ollama` ni `lmstudio`**, que están reservados. Por eso se llama `nan`.
 - **`base_url` termina en `/v1`** y nada más. No añadas la ruta del endpoint.
@@ -96,6 +96,7 @@ El resto del `config.toml` (tu proveedor, tus MCP, tus permisos) sigue aplicando
 - **`wire_api = "chat"` en un fichero antiguo.** Codex 0.154 lo retiró: si lo tienes, ni la CLI ni la app de escritorio abren. Cámbialo a `"responses"`, o pasa por el Setup del CLI de NaN, que lo corrige solo.
 - **`model_context_window` repetida.** Las versiones del CLI de NaN anteriores a la 0.1.20 la añadían al final del fichero en cada pasada del setup. Dos son una clave duplicada y Codex no carga el fichero: la CLI dice `duplicate key` y la app abre un diálogo de error y nada más. La 0.1.20 deja una sola y la pone donde se lee.
 - **`401 This API key does not have access to the requested model`.** Pese al mensaje, la clave suele estar bien: el modelo es uno que el clúster no sirve. O el `model_provider` apunta al clúster pero el `model` sigue siendo de OpenAI, o el modelo se ha retirado: `mimo-v2.5` ahora es `mimo-v2.6-flash`. Comprueba el id en [Modelos](/es/docs/models). El CLI de NaN 0.1.30 cambia el perfil `nan-mimo-v25` por `nan-mimo-v26-flash` la próxima vez que pases por su Setup.
+- **Con `qwen3.6` y `gemma4` la respuesta sigue llegando de golpe** al final del turno. No es un cuelgue: con esos dos el `/responses` del clúster retiene la respuesta hasta tenerla completa. El resto de modelos la va emitiendo según se escribe.
 - **`Model metadata for ... not found. Defaulting to fallback metadata`** en cada turno. Es ruido: Codex lo imprime antes de leer tu `model_context_window`, y la ventana que acaba usando es la tuya.
 
 </Details>

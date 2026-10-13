@@ -43,7 +43,7 @@ wire_api = "responses"
 
 Four details that matter:
 
-- **`wire_api = "responses"`** is the only value Codex still takes. Since 0.154, `"chat"` does not just work worse: the file does not load and Codex does not open. This page used to recommend `"chat"` because `/responses` answered in one go; the cluster's `/responses` streams the answer on every model now, so that reason is gone.
+- **`wire_api = "responses"`** is the only value Codex still takes. Since 0.154, `"chat"` does not just work worse: the file does not load and Codex does not open. This page used to recommend `"chat"` because `/responses` answered in one go; it streams the answer now, except on `qwen3.6` and `gemma4` (see below).
 - **`model_context_window`** is needed because Codex has no metadata for the cluster's models: without it, it guesses a window and compacts the conversation long before it has to. Use the one for the model you run; they are in [Models](/docs/models).
 - **The provider identifier cannot be `openai`, `ollama` or `lmstudio`**, which are reserved. That is why it is called `nan`.
 - **`base_url` ends at `/v1`** and nothing more. Do not add the endpoint path.
@@ -96,6 +96,7 @@ The rest of your `config.toml` - your provider, your MCP servers, your permissio
 - **`wire_api = "chat"` in an older file.** Codex 0.154 dropped it: if you have it, neither the CLI nor the desktop app opens. Change it to `"responses"`, or go through the NaN CLI's Setup, which repairs it for you.
 - **A repeated `model_context_window`.** NaN CLI versions before 0.1.20 appended one at the end of the file on every setup run. Two of them is a duplicate key and Codex will not load the file: the CLI says `duplicate key` and the desktop app opens an error dialog and nothing else. 0.1.20 leaves one and puts it where it is read from.
 - **`401 This API key does not have access to the requested model`.** Despite the wording, the key is usually fine: the model is one the cluster does not serve. Either `model_provider` points at the cluster but `model` is still an OpenAI one, or the model has been retired - `mimo-v2.5` is now `mimo-v2.6-flash`. Check the id against [Models](/docs/models). NaN CLI 0.1.30 swaps the `nan-mimo-v25` profile for `nan-mimo-v26-flash` the next time you run its Setup.
+- **On `qwen3.6` and `gemma4` the answer still arrives all at once** at the end of the turn. It is not a hang: on those two the cluster's `/responses` holds the answer until it is complete. Every other model streams it as it is written.
 - **`Model metadata for ... not found. Defaulting to fallback metadata`** on every turn. It is noise: Codex prints it before it reads your `model_context_window`, and the window it ends up using is yours.
 
 </Details>
