@@ -7,23 +7,22 @@
 
 NaN is a shared GPU infrastructure project for a paid community. The website covers:
 
-1. **Landing** — Presentation, server specs, pricing, and waitlist signup
+1. **Landing** — Presentation, models, pricing, and account signup (open signup)
 2. **Documentation** — Public API docs for connecting tools (Cursor, Cline, OpenCode, etc.)
 
 All community activity (chat, forums, events, model voting) lives in Discord.
-Payment processing, member onboarding, and API key management are handled by the [NaN Platform](https://cloud.nan.builders/).
+Account creation is open: anyone can create a free account from the home form, and every product (community, inference, premium, workspaces, spaces) unlocks with a purchase on the [NaN Platform](https://cloud.nan.builders/), which also handles payment, onboarding and API keys. Spec: `platform/cloud-api/docs/OPEN-SIGNUP.md`.
 
 ## Tech Stack
 
 | Layer | Technology | Why |
 |-------|-----------|-----|
 | Framework | Astro v6.0.8 (SSR mode, `output: 'server'`) | Static by default, SSR where needed |
-| Interactive islands | Preact v10.29.0 | Zero JS on static pages, hydration only where needed |
+| Interactive bits | Vanilla TS scripts (home, nav, signup form); Preact islands only where needed (events) | Zero framework JS on the marketing pages |
 | Styling | Tailwind CSS v4.2.2 (Vite plugin) | Dark theme, technical typography |
 | Code highlighting | rehype-pretty-code + shiki | Syntax highlighting in docs |
 | Deployment | Cloudflare Workers (static assets + SSR) | Assets from CDN, SSR/API from Workers edge |
-| Backend | NaN Platform cloud-api (Go + PostgreSQL) | Waitlist data, member lifecycle, billing |
-| Transactional email | Resend | Waitlist confirmation emails |
+| Backend | NaN Platform cloud-api (Go + PostgreSQL) | Accounts, member lifecycle, billing, sign-in emails (English magic link) |
 | Language | TypeScript (strict mode) | Type safety across the stack |
 
 **Node requirement:** `>=22.12.0`
@@ -41,9 +40,11 @@ nan.builders (Cloudflare Worker)
 │   └── Static assets (CSS, JS, fonts, images, favicon)
 │
 └── Worker (Edge Functions)
-    ├── /api/waitlist          POST — waitlist signup (forwards to cloud-api backend)
-    ├── /api/community-signup  POST — community-tier signup (forwards to cloud-api, returns Stripe URL)
-    └── SSR pages              /, /community, /docs/*
+    ├── /api/signup            POST — account signup (validates, proxies to cloud-api /api/auth/signup)
+    ├── /api/auth/login-request POST — magic-link login from the events pages (proxy)
+    ├── /api/events/*          events API proxy
+    ├── /api/docs/*            docs manifest + markdown for the Discord bot
+    └── SSR pages              /, /es, /community, /events, /projects, /docs/*
 ```
 
 - **Static requests** (assets, images, favicon): served directly from CDN.
@@ -55,20 +56,21 @@ nan.builders (Cloudflare Worker)
 
 | Route | Mode | Client JS |
 |-------|------|-----------|
-| `/` | SSR (not prerendered) | Minimal (Preact islands: WaitlistForm, FaqAccordion) |
-| `/community` | SSR (not prerendered) | Minimal (Preact island: CommunitySignupForm) |
+| `/`, `/es` | SSR (not prerendered) | Vanilla scripts: hero dither, signup form (`scripts/signup.ts`), reveal |
+| `/community`, `/es/community` | SSR (not prerendered) | None beyond the shared shell (CTA links to the platform signup) |
 | `/docs*` | SSR (not prerendered) | Minimal (sidebar mobile menu, TOC, copy-to-clipboard) |
-| `/api/waitlist` | Server endpoint | None |
-| `/api/community-signup` | Server endpoint | None |
+| `/api/signup` | Server endpoint | None |
 
 ## Pricing (Current)
 
-| Region | Price | Currency |
-|--------|-------|----------|
-| EU | 70 | €/mes (IVA incluido) |
-| USA / LATAM | 75 | $/mes (impuestos incluidos) |
+| Product | Price | Signup link |
+|---------|-------|-------------|
+| `nan_member · glm 5.3 premium` | 200€/mo | `https://cloud.nan.builders/signup?plan=premium` |
+| `nan_member` (inference) | 70€/mo | `https://cloud.nan.builders/signup?plan=inference` |
+| `nan_community` | 14,99€/mo | `https://cloud.nan.builders/signup?plan=community` |
+| Workspace slots | from 4,99€/mo | `https://cloud.nan.builders/signup?plan=workspace` |
 
-One tier per region. No early-bird pricing. No free trial. Monthly, no commitment.
+Billed in euros from every region, taxes included, month to month. Links are built with `signupUrl()` in `src/lib/signup.ts`.
 
 ## Server Hardware
 
@@ -87,36 +89,32 @@ One tier per region. No early-bird pricing. No free trial. Monthly, no commitmen
 
 | State | Description |
 |-------|-------------|
-| `waitlist` (default/absent) | Signed up, not invited yet |
-| `invited` | Onboarding email sent, waiting for subscription |
-| `subscribed` | Active member with subscription |
+| `free` | Account created (open signup), no product purchased yet |
+| `subscribed` | Active member with a community, inference or premium subscription |
 | `declined` | Manual: test/junk entries kept for audit |
 | `banned` | Manual: membership revoked |
 
-Note: State transitions beyond `waitlist` are managed by the [NaN Platform](https://cloud.nan.builders/), not by this website.
+The legacy `waitlist`/`invited` rows are migrated to `free` by cloud-api. All transitions are managed by the [NaN Platform](https://cloud.nan.builders/), not by this website.
 
 ## Routes
 
 ### Landing Page (`/`)
 
-Static sections, SSR-rendered:
+Static sections, SSR-rendered (`src/pages/_home.astro`, components in `src/components/nan/home/`):
 
-| Section | Component | Hydration |
+| Section | Component | Client JS |
 |---------|-----------|-----------|
-| Animated background | `AnimatedBackground.astro` | None (CSS-only) |
-| Language switcher | `LanguageSwitcher.astro` | None (link-based ES/EN toggle) |
-| Login button | `LoginButton.astro` | None (link to cloud.nan.builders) |
-| Hero | `Hero.astro` | None |
-| About | `About.astro` | None |
-| Server specs | `Server.astro` | None |
+| Nav (Login + Create account) | `nan/Nav.astro` | Small inline script (mobile menu) |
+| Hero + signup form (`#signup`) | `Hero.astro` | `scripts/signup.ts` (vanilla) + canvas dither |
+| What is NaN | `WhyNan.astro` | None |
+| Built with NaN | `BuiltWithNan.astro` | None |
+| Models | `Models.astro` | None |
 | Privacy | `Privacy.astro` | None |
-| Model voting | `ModelVoting.astro` | None |
-| Founder | `Founder.astro` | None |
-| Pricing | `Pricing.astro` | None |
-| CTA + waitlist form | `Cta.astro` + `WaitlistForm.tsx` | `client:load` |
-| FAQ | `Faq.astro` + `FaqAccordion.tsx` | `client:visible` |
+| Pricing + workspaces | `Pricing.astro` | None |
+| Who is behind | `WhoBehind.astro` | None |
+| FAQ | `Faq.astro` | None (`<details>`) |
 
-The community-tier signup page (`/community`) reuses `LanguageSwitcher.astro` and embeds `CommunitySignupForm.tsx` (Preact island, `client:load`) which posts to `/api/community-signup` and redirects to Stripe Checkout on success.
+`/community` (`src/pages/_community.astro`) has no form of its own: its CTAs link to `signup?plan=community`, and the platform runs the per-user Stripe Checkout.
 
 ### Documentation (`/docs*`)
 
@@ -132,52 +130,35 @@ Sidebar navigation comes from each guide's frontmatter (`src/content.config.ts`)
 
 ### API Endpoints
 
-#### `POST /api/waitlist`
+#### `POST /api/signup`
 
-Accepts waitlist signups.
+Creates a NaN account through cloud-api's public `POST /api/auth/signup` (`OPEN-SIGNUP.md` §2.3). The browser cannot call cloud-api directly because the CSP is `connect-src 'self'`.
 
-- **Input:** `{ email, region, _hp }` (JSON)
-- **Validation:** email format, blocked domains/TLDs, region enum
-- **Honeypot:** `_hp` field filled → 200 OK without persisting (bot protection)
-- **Rate limit:** 60s per IP via in-memory map (best-effort, resets on isolate eviction)
-- **Flow:** `validateWaitlistInput()` → rate limit check → `registerViaBackend()` → cloud-api POST → send confirmation email via Resend (best-effort)
-- **Regions:** EU, LATAM and USA are all open; every valid signup is a regular waitlist entry and gets the same "you're on the waitlist" message (a duplicate email answers the same way)
-- **Position:** the backend's arrival counter is not a queue rank, so it is neither forwarded in the response nor shown on the site
+- **Input (JSON):** `{ fullName, email, jobRole, jobRoleOther, xUrl, linkedinUrl, plan?, _hp }`
+- **Validation** (`validateSignup()` in `src/lib/signup.ts`, shared with the form):
+  - `fullName` 1-120 chars, `email` valid and not on the blocked-domain list, `jobRole` in `software_engineer | ai_engineer | data_scientist | devops_sre | founder | product | designer | researcher | student | other`; `jobRoleOther` 1-80 chars, required only when `jobRole` is `other`.
+  - `xUrl` optional, `https://x.com/...` or `https://twitter.com/...`; `linkedinUrl` optional, `https://(www.)linkedin.com/in/...`. Missing scheme, `http://`, `www.` and LinkedIn country subdomains are normalized before sending.
+  - `plan` optional (`community | inference | premium | workspace | space`); an unknown plan is dropped, never an error. The form reads it from `?plan=` (and the legacy `?premium=1`).
+- **Honeypot:** `_hp` filled → same `202` as a real signup, nothing forwarded.
+- **Rate limit:** 5 valid submissions per IP per 10 minutes, in memory per isolate (best effort; cloud-api limits per IP and per email behind it). Invalid submissions do not count.
+- **Upstream call:** `POST ${CLOUD_API_URL}/api/auth/signup` with `Origin: https://nan.builders` and the client IP in `x-forwarded-for` / `cf-connecting-ip`. No API key: the endpoint is public.
 - **Responses:**
-  - `200`: `{ ok: true, status: 'registered', region }`
-  - `400`: `{ ok: false, error: 'invalid_email' | 'invalid_region' }`
+  - `202`: `{ ok: true }` for every accepted signup, new or known email (no account enumeration). The form shows "Check your inbox to confirm and sign in"; cloud-api sends the English magic link.
+  - `400`: `{ ok: false, error: 'invalid_input', fields: { <field>: 'required' | 'invalid' | 'too_long' } }`
+  - `413` / `415`: oversized body / non-JSON content type
   - `429`: `{ ok: false, error: 'rate_limited' }`
-  - `500`: `{ ok: false, error: 'server_error' }`
-
-#### `POST /api/community-signup`
-
-Accepts community-tier signups ($14.99/mes, billed as 14,99€ for `region=EU`)
-and returns a Stripe Checkout URL. The currency split exists so an EU member's
-Stripe customer isn't locked to USD, which would block a later upgrade to the
-EUR-priced inference tier.
-
-- **Input:** `{ email, region, _hp }` (JSON)
-- **Validation:** email format, blocked domains/TLDs, region enum (`EU` | `LATAM` | `USA`)
-- **Honeypot:** `_hp` field filled → 200 OK with a benign URL, nothing persisted
-- **Rate limit:** 60s per IP via in-memory map (best-effort, resets on isolate eviction)
-- **Flow:** `validateCommunityInput()` → rate limit check → `signupViaBackend()` → cloud-api `POST /api/community/signup` (public, no API key) → backend creates a Stripe Checkout Session and returns its URL
-- **Responses:**
-  - `200`: `{ ok: true, url }` (Stripe Checkout URL — frontend redirects here)
-  - `400`: `{ ok: false, error: 'invalid_email' | 'invalid_region' }`
-  - `409`: `{ ok: false, error: 'already_subscribed' }`
-  - `429`: `{ ok: false, error: 'rate_limited' }`
-  - `500`: `{ ok: false, error: 'server_error' }`
+  - `502`: `{ ok: false, error: 'server_error' }` (upstream error or unreachable; details only in the Worker log)
 
 ## Internationalization
 
-The landing supports Spanish (default) and English. Catalogs live as JSON files in `i18n/es.json` and `i18n/en.json` and are imported as static modules by `src/lib/i18n.ts`, which exposes `t`, `tArr`, `tObj`, and `getLocale` helpers. Locale is resolved per request from the `?lang=` query parameter (`en` or `es`); anything else falls back to `es`. The `LanguageSwitcher.astro` component is a plain link that toggles the query parameter, so switching languages is a full SSR navigation with zero client JS.
+The site is bilingual: English at the root (`/`) and Spanish under `/es`. Catalogs live in `i18n/en.json` and `i18n/es.json` (same shape, enforced by `i18nParity.test.ts`) and are read through `src/lib/i18n.ts` (`useT`, `t`, `tArr`, `tObj`, `getLang`, `switchLocalePath`). Emails sent by the platform are English only.
 
 ## Security
 
 | Mechanism | Implementation |
 |-----------|---------------|
-| CSP | Strict policy in `Base.astro` — no external scripts, no frames, no objects |
-| Bot protection | Honeypot field (`_hp`) on waitlist form + in-memory rate limiting + backend API key + origin restriction |
+| CSP | Strict policy in `NanBase.astro` (`connect-src 'self'`, no external scripts, no frames, no objects) |
+| Bot protection | Honeypot field (`_hp`) on the signup form + per-IP rate limiting at the edge + cloud-api per-IP/per-email limits + Origin allowlist |
 | IP detection | `cf-connecting-ip` only (never `x-forwarded-for` on Cloudflare) |
 | Secrets | All in Cloudflare Pages dashboard via `wrangler secret put`, never in code |
 | Error handling | Intentionally opaque error responses (no internal details leaked) |
@@ -188,66 +169,32 @@ The landing supports Spanish (default) and English. Catalogs live as JSON files 
 website/
 ├── src/
 │   ├── pages/
-│   │   ├── index.astro                    # Landing page (SSR)
-│   │   ├── community.astro                # Community-tier signup page (SSR)
+│   │   ├── _home.astro, index.astro, es/index.astro   # Landing (EN root, ES under /es)
+│   │   ├── _community.astro, community.astro          # Community page (CTA to platform signup)
+│   │   ├── privacy.astro, terms.astro, cookies.astro  # Legal (+ es/ versions)
 │   │   ├── api/
-│   │   │   ├── waitlist.ts                # POST — waitlist signup
-│   │   │   └── community-signup.ts        # POST — community-tier signup (Stripe Checkout)
-│   │   └── docs/
-│   │       ├── index.astro                # Docs intro
-│   │       ├── getting-started.astro      # Getting started guide
-│   │       ├── models.astro               # Model specs
-│   │       ├── examples.astro             # Code snippets
-│   │       ├── api.astro                  # OpenAI-compatible API reference
+│   │   │   ├── signup.ts                  # POST — account signup proxy
+│   │   │   ├── auth/login-request.ts      # POST — magic-link login proxy (events)
+│   │   │   ├── events/[...path].ts        # Events API proxy
+│   │   │   └── docs/                      # Docs manifest + markdown
+│   │   ├── docs/, events/, projects.astro, gauntlet.astro, survey.astro
 │   ├── components/
-│   │   ├── ui/
-│   │   │   └── Button.astro               # Primary/secondary button variants
-│   │   ├── landing/
-│   │   │   ├── AnimatedBackground.astro   # CSS-only dot grid + orbs
-│   │   │   ├── LanguageSwitcher.astro     # Fixed-position ES/EN toggle link
-│   │   │   ├── LoginButton.astro          # Fixed-position link to cloud.nan.builders
-│   │   │   ├── Hero.astro                 # Title, tagline, CTA
-│   │   │   ├── About.astro                # What is NaN
-│   │   │   ├── Server.astro               # Hardware specs
-│   │   │   ├── Privacy.astro              # Privacy guarantees section
-│   │   │   ├── ModelVoting.astro          # Community model voting
-│   │   │   ├── Founder.astro              # Founder profile
-│   │   │   ├── Pricing.astro              # Regional pricing cards
-│   │   │   ├── Cta.astro                  # CTA section (embeds WaitlistForm)
-│   │   │   ├── Faq.astro                  # FAQ section (embeds FaqAccordion)
-│   │   │   ├── WaitlistForm.tsx           # Preact island — waitlist signup form
-│   │   │   ├── CommunitySignupForm.tsx    # Preact island — community-tier signup form
-│   │   │   ├── FaqAccordion.tsx           # Preact island — FAQ accordion
-│   │   │   ├── waitlistForm.helpers.ts    # Client-side validation + messages
-│   │   │   └── waitlistForm.helpers.test.ts  # Vitest tests for helpers
-│   │   └── docs/
-│   │       ├── CodeBlock.astro            # Code blocks with copy button
-│   │       └── RateLimits.astro           # Rate limit display component
+│   │   ├── nan/                           # Nav, Footer, CookieBanner, home/ sections
+│   │   ├── docs/                          # Docs shell components
+│   │   └── events/                        # Events islands (Preact)
+│   ├── scripts/                           # Vanilla client scripts (signup, reveal, dither, ...)
 │   ├── lib/
-│   │   ├── waitlist.ts                    # Waitlist validation + backend registration
-│   │   ├── communitySignup.ts             # Community-tier validation + Stripe Checkout backend call
-│   │   ├── i18n.ts                        # Translation helpers (`t`, `tArr`, `tObj`, `getLocale`)
-│   │   └── email.ts                       # Resend confirmation email
-│   ├── layouts/
-│   │   ├── Base.astro                     # Base layout (head, meta, CSP, landing sections)
-│   │   └── Docs.astro                     # Docs layout (sidebar, TOC, nav)
-│   ├── styles/
-│   │   └── global.css                     # Tailwind @theme, docs typography, utilities
+│   │   ├── signup.ts                      # Signup validation/normalization/parsing (client + server)
+│   │   ├── signupServer.ts                # Edge rate limit + cloud-api call (server only)
+│   │   ├── i18n.ts                        # Translation helpers
+│   │   └── ...                            # docs, events, rate limits, models
+│   ├── layouts/                           # NanBase (CSP, head), NanPage (shell), Docs, NanLegal
+│   ├── tests/                             # Vitest suites (api/, lib/, landing/, layouts/, legal/, pages/)
 │   └── env.d.ts                           # Cloudflare env type declarations
-├── i18n/
-│   ├── es.json                            # Spanish catalog (default)
-│   └── en.json                            # English catalog
-├── public/
-│   ├── _routes.json                       # Cloudflare routing rules
-│   ├── favicon.svg
-│   ├── favicon.ico
-│   └── founder.jpg
-├── astro.config.mjs                       # Astro config (SSR, Cloudflare adapter, Preact, Tailwind)
-├── wrangler.jsonc                         # Cloudflare Workers config
-├── package.json
-├── tsconfig.json
-├── vitest.config.ts
-└── .env.example                           # Template for local dev (.env is gitignored)
+├── i18n/                                  # en.json, es.json
+├── public/                                # Static assets, _routes.json
+├── astro.config.mjs, wrangler.jsonc, vitest.config.ts, tsconfig.json, package.json
+└── .env.example
 ```
 
 ## Environment Variables
@@ -256,10 +203,10 @@ website/
 
 | Variable | Type | Purpose |
 |----------|------|---------|
-| `RESEND_API_KEY` | `string` | Resend transactional email API key |
-| `RESEND_FROM_EMAIL` | `string` | Email sender address |
-| `CLOUD_API_URL` | `string` | Backend API base URL (e.g. `https://cloud-api.nan.builders`) |
-| `CLOUD_API_WAITLIST_KEY` | `string` | API key for waitlist registration endpoint |
+| `CLOUD_API_URL` | `string` | Backend API base URL (e.g. `https://cloud-api.nan.builders`), used by `/api/signup`, the events proxy and login |
+| `RATE_LIMIT_RPM` / `RATE_LIMIT_PARALLEL` | `string` (optional) | Per-key limits shown in the docs (defaults in `src/lib/rateLimits.ts`) |
+
+`RESEND_API_KEY`, `RESEND_FROM_EMAIL` and `CLOUD_API_WAITLIST_KEY` are no longer used by the site (the waitlist and its confirmation email are gone; cloud-api sends the sign-in email).
 
 All secrets are stored in Cloudflare via `wrangler secret put`. Never committed to the repository.
 
@@ -300,13 +247,12 @@ npm test        # Run all tests (Vitest)
 npm run test:watch  # Watch mode
 ```
 
-Tests are in `src/**/*.test.ts` files:
-- `src/tests/api/waitlist.test.ts` — waitlist API endpoint tests
-- `src/tests/api/community-signup.test.ts` — community signup API endpoint tests
-- `src/tests/lib/waitlist.test.ts` — waitlist core logic tests
-- `src/tests/lib/email.test.ts` — email helper tests
-- `src/lib/communitySignup.test.ts` — community signup core logic tests
-- `src/components/landing/waitlistForm.helpers.test.ts` — client-side form helpers tests
+Tests are in `src/**/*.test.ts` (Node) and `src/**/*.render.test.ts` (Astro Container API). Open-signup suites:
+- `src/tests/lib/signup.test.ts` — validation, normalization, plan, response parsing
+- `src/tests/api/signup.test.ts` — `/api/signup` proxy, validation, honeypot, rate limit, error mapping
+- `src/tests/landing/signupForm.test.ts` — hero form markup, script wiring, copy in both locales
+- `src/tests/landing/openSignup.test.ts` — CTA targets, no waitlist copy, legal pages
+- `src/tests/layouts/noWebSearch.test.ts` — web search stays removed
 
 ## Cost Estimate
 
@@ -314,7 +260,6 @@ Tests are in `src/**/*.test.ts` files:
 |----------|-----------|---------------|
 | Cloudflare Pages | Unlimited deploys, 500 builds/month | More than enough |
 | Workers | 100K requests/day | Negligible usage |
-| Resend | 3,000 emails/month | A few per month |
 | Domain | — | Already owned (nan.builders) |
 
 **Estimated infrastructure cost: $0/month**

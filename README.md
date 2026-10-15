@@ -1,23 +1,22 @@
 # NaN Website
 
-Marketing site and public documentation for [nan.builders](https://nan.builders). Built with Astro 6 (SSR mode) on Cloudflare Workers, Preact islands for interactive components, Tailwind CSS v4, and an ES/EN i18n catalog. The site backs into the `cloud-api` Go service for waitlist registration and community signup, and uses Resend for transactional email.
+Marketing site and public documentation for [nan.builders](https://nan.builders). Built with Astro 6 (SSR mode) on Cloudflare Workers, vanilla scripts (and a few Preact islands on the events pages), Tailwind CSS v4, and an EN/ES i18n catalog. Signup is open: the home form creates a free NaN account through the `cloud-api` Go service, which sends the sign-in email; every product unlocks with a plan on cloud.nan.builders.
 
 ## Tech stack
 
 - Astro 6 (`output: 'server'`, Cloudflare adapter)
-- Preact 10 for client-side islands
+- Preact 10 for the few client-side islands (events)
 - TypeScript (strict)
 - Tailwind CSS v4 (Vite plugin)
 - `rehype-pretty-code` + Shiki for code highlighting in docs
 - `astro-i18n` plus a local helper (`src/lib/i18n.ts`) for ES/EN strings
 - Vitest 4 for unit tests
 - Cloudflare Workers (assets binding + SSR entrypoint)
-- Resend for transactional email
 - Node.js `>=22.12.0`, npm (lockfile is `package-lock.json`)
 
 ## Architecture
 
-The site is a single Astro app deployed as a Cloudflare Worker. The landing (`/`), the community page (`/community`), and the docs (`/docs/*`) are SSR-rendered at the edge. Two API routes (`/api/waitlist`, `/api/community-signup`) validate input, forward to the `cloud-api` backend, and trigger Resend confirmation email. Interactive bits (waitlist form, community signup form, FAQ accordion) are Preact islands hydrated with `client:load` / `client:visible`. Static assets are served from the `ASSETS` binding configured in `wrangler.jsonc`.
+The site is a single Astro app deployed as a Cloudflare Worker. The landing (`/`, `/es`), the community page, events, projects and the docs (`/docs/*`) are SSR-rendered at the edge. The hero signup form is a vanilla script (`src/scripts/signup.ts`) that posts to the same-origin route `/api/signup`, which validates with the shared rules in `src/lib/signup.ts`, rate limits per IP, and proxies to cloud-api's public `POST /api/auth/signup`. Pricing and nav CTAs link to `https://cloud.nan.builders/signup?plan=<product>`. Static assets are served from the `ASSETS` binding configured in `wrangler.jsonc`.
 
 See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full breakdown of rendering modes, route inventory, security model, and member lifecycle.
 
@@ -26,23 +25,14 @@ See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full breakdown of rendering m
 ```
 website/
 ├── src/
-│   ├── pages/
-│   │   ├── index.astro              # Landing (SSR)
-│   │   ├── community.astro          # Community tier page (SSR)
-│   │   ├── api/
-│   │   │   ├── waitlist.ts          # POST — waitlist signup
-│   │   │   └── community-signup.ts  # POST — community tier signup
-│   │   └── docs/                    # SSR docs: index, getting-started, models,
-│   │                                #   examples, api, agents
-│   ├── components/
-│   │   ├── landing/                 # Hero, Pricing, WaitlistForm, FaqAccordion,
-│   │   │                            #   LanguageSwitcher, LoginButton, etc.
-│   │   ├── docs/                    # CodeBlock, RateLimits
-│   │   └── ui/                      # Button
-│   ├── layouts/                     # Base, Docs, Page
-│   ├── lib/                         # waitlist, communitySignup, email, i18n
-│   ├── styles/                      # Tailwind theme + global CSS
-│   ├── tests/                       # Vitest suites (api/, lib/)
+│   ├── pages/                       # Landing, community, legal, events, projects, docs (EN root, ES under /es)
+│   │   └── api/                     # signup, auth/login-request, events proxy, docs manifest
+│   ├── components/                  # nan/ (shell + home sections), docs/, events/
+│   ├── scripts/                     # Vanilla client scripts (signup form, reveal, dither, ...)
+│   ├── layouts/                     # NanBase, NanPage, Docs, NanLegal
+│   ├── lib/                         # signup, signupServer, i18n, docs, events, rate limits
+│   ├── styles/                      # Tokens, system CSS, Tailwind theme
+│   ├── tests/                       # Vitest suites
 │   └── env.d.ts                     # Cloudflare env typings
 ├── i18n/                            # en.json, es.json translation catalogs
 ├── public/                          # Static assets, favicons, _routes.json
@@ -60,7 +50,7 @@ website/
 
 - Node.js `>=22.12.0` (uses native `--env-file=` in scripts)
 - npm (the lockfile is `package-lock.json`; do not switch package managers)
-- Access to a `cloud-api` instance (default: `https://cloud-api.nan.builders`). Without `CLOUD_API_WAITLIST_KEY` the signup form will fail at the API call, but the site will still render fine for visual work.
+- Access to a `cloud-api` instance (default: `https://cloud-api.nan.builders`) for the signup route to work end to end. Without `CLOUD_API_URL` the form answers with a generic error, but the site renders fine for visual work.
 
 ### Setup
 
@@ -93,12 +83,10 @@ Runtime variables are declared in `src/env.d.ts` and consumed via `Astro.locals.
 
 | Name | Required | Where it's used | Description |
 |---|---|---|---|
-| `RESEND_API_KEY` | runtime | `src/lib/email.ts` | Resend API key for transactional email (waitlist + community signup confirmation). |
-| `RESEND_FROM_EMAIL` | runtime | `src/lib/email.ts` | `From` address used by Resend. |
-| `CLOUD_API_URL` | runtime | `src/lib/waitlist.ts`, `src/lib/communitySignup.ts` | Base URL of the `cloud-api` backend (e.g. `https://cloud-api.nan.builders`). |
-| `CLOUD_API_WAITLIST_KEY` | runtime | `src/lib/waitlist.ts`, `src/lib/communitySignup.ts` | API key for the `cloud-api` waitlist/community registration endpoints. |
+| `CLOUD_API_URL` | runtime | `src/lib/signupServer.ts`, `src/lib/events.ts` | Base URL of the `cloud-api` backend (e.g. `https://cloud-api.nan.builders`). |
+| `RATE_LIMIT_RPM` / `RATE_LIMIT_PARALLEL` | optional | `src/lib/rateLimits.ts` | Per-key limits shown in the docs; defaults apply when unset. |
 
-All four are listed (without values) in `.env.example`. You must fill them locally if you want the API routes to work end-to-end. None of these secrets should ever be committed.
+`RESEND_API_KEY`, `RESEND_FROM_EMAIL` and `CLOUD_API_WAITLIST_KEY` are no longer read by the site and can be removed from the Worker. None of these values should ever be committed.
 
 ## Testing
 
@@ -107,14 +95,7 @@ npm test         # run all Vitest suites
 npm run test:watch
 ```
 
-Vitest config: [`vitest.config.ts`](./vitest.config.ts). Tests are picked up from `src/**/*.test.ts`. Current suites:
-
-- `src/tests/api/waitlist.test.ts`
-- `src/tests/api/community-signup.test.ts`
-- `src/tests/lib/waitlist.test.ts`
-- `src/tests/lib/email.test.ts`
-- `src/lib/communitySignup.test.ts`
-- `src/components/landing/waitlistForm.helpers.test.ts`
+Vitest config: [`vitest.config.ts`](./vitest.config.ts) (a `unit` project for `src/**/*.test.ts` and a `render` project for `src/**/*.render.test.ts`). The open-signup suites are `src/tests/lib/signup.test.ts`, `src/tests/api/signup.test.ts`, `src/tests/landing/signupForm.test.ts` and `src/tests/landing/openSignup.test.ts`.
 
 ## Build and local preview
 
