@@ -55,8 +55,10 @@ describe('hero markup', () => {
     expect(hero).toContain('heroSignupHref(Astro.url.search)');
   });
 
-  test('the reassurance line sits under the buttons', () => {
-    expect(markup.indexOf('{tt.reassure}')).toBeGreaterThan(markup.indexOf('{tt.ctaSecondary}'));
+  test('only the two buttons after the copy: no reassurance line (owner decision)', () => {
+    expect(markup).not.toMatch(/reassure|spots__dot/);
+    const after = markup.slice(markup.indexOf('{tt.ctaSecondary}'));
+    expect(after).not.toMatch(/<p\b/);
   });
 
   test('ships no signup script', () => {
@@ -73,9 +75,8 @@ describe('hero copy', () => {
     expect(t('nan.hero.ctaSecondary', 'es')).toBe('Entrar');
   });
 
-  test('reassurance line, accurate to the product', () => {
-    expect(t('nan.hero.reassure', 'en')).toBe('Free account. Pay only for what you use: community, inference, workspaces or Spaces.');
-    expect(t('nan.hero.reassure', 'es')).toBe('Cuenta gratis. Pagas solo lo que uses: comunidad, inferencia, workspaces o Spaces.');
+  test.each(['en', 'es'] as const)('the hero dictionary in %s is headline + two buttons only', (locale) => {
+    expect(t('nan.hero.reassure', locale)).toBe('nan.hero.reassure');
   });
 
   test.each(['en', 'es'] as const)('the old form strings are gone from %s', (locale) => {

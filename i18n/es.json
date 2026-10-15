@@ -290,8 +290,7 @@
       "sub": "No te quedes sin tokens. Nunca.",
       "body": "NaN es la comunidad de builders que comparten GPUs para correr modelos de IA abiertos. Construye lo que necesites, sin pagar por token. You can just do things.",
       "ctaPrimary": "Crear cuenta",
-      "ctaSecondary": "Entrar",
-      "reassure": "Cuenta gratis. Pagas solo lo que uses: comunidad, inferencia, workspaces o Spaces."
+      "ctaSecondary": "Entrar"
     },
     "why": {
       "label": "qué es nan",

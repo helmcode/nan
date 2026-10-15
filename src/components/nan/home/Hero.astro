@@ -35,10 +35,6 @@ const glitchText = `'${`${tt.line1}\\A ${tt.line2}`.replace(/'/g, "\\'")}'`;
         <a class="btn btn-primary" href={signupHref} rel="noopener">{tt.ctaPrimary}</a>
         <a class="btn btn-secondary" href={LOGIN_URL} rel="noopener">{tt.ctaSecondary}</a>
       </div>
-
-      <p class="hero__reassure">
-        <span class="spots__dot" aria-hidden="true"></span>{tt.reassure}
-      </p>
     </div>
   </div>
 </header>
@@ -127,22 +123,6 @@ const glitchText = `'${`${tt.line1}\\A ${tt.line2}`.replace(/'/g, "\\'")}'`;
   }
 
   .hero__ctas { display: flex; flex-wrap: wrap; gap: 14px; }
-  .hero__reassure {
-    display: flex; align-items: flex-start; gap: 10px;
-    margin-top: 20px; max-width: 660px;
-    font-family: var(--font-mono); font-size: 13px; line-height: 1.5; letter-spacing: 0.02em;
-    color: var(--color-muted);
-  }
-  .spots__dot {
-    flex: 0 0 auto; margin-top: 0.45em;
-    width: 8px; height: 8px; background: var(--color-violet); border-radius: 50%;
-    box-shadow: 0 0 0 0 var(--pulse); animation: spots-pulse 2.2s infinite;
-  }
-  @keyframes spots-pulse {
-    0% { box-shadow: 0 0 0 0 var(--pulse); }
-    70% { box-shadow: 0 0 0 12px transparent; }
-    100% { box-shadow: 0 0 0 0 transparent; }
-  }
 
   @media (max-width: 860px) {
     .hero__fx { opacity: 0.5; }
