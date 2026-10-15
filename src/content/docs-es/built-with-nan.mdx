@@ -1,0 +1,47 @@
+---
+title: Built with NaN
+description: Añade el badge Built with NaN al README de tu proyecto.
+order: 27
+group: Guías
+---
+
+import Callout from '../../components/docs/Callout.astro';
+
+# Built with NaN.
+
+¿Has sacado algo que funciona con NaN? Pon el badge en tu README. Enlaza a [nan.builders](https://nan.builders) y es como encontramos los proyectos de la comunidad para destacarlos.
+
+![Built with NaN, versión oscura](/badge/built-with-nan-dark.svg) ![Built with NaN, versión clara](/badge/built-with-nan-light.svg) ![Built with NaN, versión compacta](/badge/built-with-nan-compact.svg)
+
+## Añádelo a tu README
+
+### Tarjeta
+
+Pega este HTML. GitHub muestra la tarjeta oscura a quien lee con tema oscuro y la clara a quien lee con tema claro.
+
+```html
+<a href="https://nan.builders/?ref=built-with-nan">
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="https://nan.builders/badge/built-with-nan-light.svg">
+    <img width="266" src="https://nan.builders/badge/built-with-nan-dark.svg" alt="Built with NaN">
+  </picture>
+</a>
+```
+
+### Compacto
+
+Para ponerlo en la fila con tus otros badges (build, licencia), usa el compacto. Funciona con los dos temas.
+
+```markdown
+[![Built with NaN](https://nan.builders/badge/built-with-nan-compact.svg)](https://nan.builders/?ref=built-with-nan)
+```
+
+<Callout title="Deja las URLs como están">
+Enlaza la imagen desde `nan.builders/badge/` en vez de descargarla a tu repo. Encontramos los proyectos que llevan el badge buscando esa dirección en GitHub, y una copia alojada en otro sitio no aparece. Además, te llegan los cambios de diseño sin tocar tu README.
+</Callout>
+
+## Cómo usar el badge
+
+- Úsalo en proyectos hechos con NaN o que llamen a sus modelos.
+- No cambies los colores, el logo ni las proporciones. Si necesitas otro tamaño, cambia `width`.
+- El badge dice que tu proyecto usa NaN. No significa que NaN lo revise, lo avale ni sea socio del proyecto.

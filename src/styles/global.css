@@ -339,3 +339,16 @@
   border: 1px solid rgb(38 38 38 / 0.6);
   border-radius: 0.75rem;
 }
+
+/* Los badges de /docs/built-with-nan se ven a su tamaño, como en un README,
+   no estirados al ancho ni enmarcados como una captura. Van como imágenes
+   markdown (no HTML) porque mdxToText no admite bloques HTML crudos. */
+.docs-content img[src^="/badge/"] {
+  display: inline-block;
+  vertical-align: middle;
+  width: auto;
+  max-width: 100%;
+  margin: 0.5rem 1.25rem 0.5rem 0;
+  border: 0;
+  border-radius: 0;
+}
