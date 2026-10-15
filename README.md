@@ -1,6 +1,6 @@
 # NaN Website
 
-Marketing site and public documentation for [nan.builders](https://nan.builders). Built with Astro 6 (SSR mode) on Cloudflare Workers, vanilla scripts (and a few Preact islands on the events pages), Tailwind CSS v4, and an EN/ES i18n catalog. Signup is open: the home form creates a free NaN account through the `cloud-api` Go service, which sends the sign-in email; every product unlocks with a plan on cloud.nan.builders.
+Marketing site and public documentation for [nan.builders](https://nan.builders). Built with Astro 6 (SSR mode) on Cloudflare Workers, vanilla scripts (and a few Preact islands on the events pages), Tailwind CSS v4, and an EN/ES i18n catalog. Signup is open and lives on cloud.nan.builders: the site links there (hero, nav, pricing, footer), and every product unlocks with a plan.
 
 ## Tech stack
 
@@ -16,7 +16,7 @@ Marketing site and public documentation for [nan.builders](https://nan.builders)
 
 ## Architecture
 
-The site is a single Astro app deployed as a Cloudflare Worker. The landing (`/`, `/es`), the community page, events, projects and the docs (`/docs/*`) are SSR-rendered at the edge. The hero signup form is a vanilla script (`src/scripts/signup.ts`) that posts to the same-origin route `/api/signup`, which validates with the shared rules in `src/lib/signup.ts`, rate limits per IP, and proxies to cloud-api's public `POST /api/auth/signup`. Pricing and nav CTAs link to `https://cloud.nan.builders/signup?plan=<product>`. Static assets are served from the `ASSETS` binding configured in `wrangler.jsonc`.
+The site is a single Astro app deployed as a Cloudflare Worker. The landing (`/`, `/es`), the community page, events, projects and the docs (`/docs/*`) are SSR-rendered at the edge. There is no signup form or route on the site: the hero's Create account button links to `https://cloud.nan.builders/signup` (carrying a valid `?plan=` from the landing URL; the legacy `?premium=1` maps to `plan=premium`), Log in links to `https://cloud.nan.builders/`, and pricing cards link to `signup?plan=<product>`. Links are built in `src/lib/signup.ts`. Static assets are served from the `ASSETS` binding configured in `wrangler.jsonc`.
 
 See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full breakdown of rendering modes, route inventory, security model, and member lifecycle.
 
@@ -26,11 +26,11 @@ See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full breakdown of rendering m
 website/
 ├── src/
 │   ├── pages/                       # Landing, community, legal, events, projects, docs (EN root, ES under /es)
-│   │   └── api/                     # signup, auth/login-request, events proxy, docs manifest
+│   │   └── api/                     # auth/login-request, events proxy, docs manifest
 │   ├── components/                  # nan/ (shell + home sections), docs/, events/
-│   ├── scripts/                     # Vanilla client scripts (signup form, reveal, dither, ...)
+│   ├── scripts/                     # Vanilla client scripts (reveal, dither, ...)
 │   ├── layouts/                     # NanBase, NanPage, Docs, NanLegal
-│   ├── lib/                         # signup, signupServer, i18n, docs, events, rate limits
+│   ├── lib/                         # signup links, i18n, docs, events, rate limits
 │   ├── styles/                      # Tokens, system CSS, Tailwind theme
 │   ├── tests/                       # Vitest suites
 │   └── env.d.ts                     # Cloudflare env typings
@@ -50,7 +50,7 @@ website/
 
 - Node.js `>=22.12.0` (uses native `--env-file=` in scripts)
 - npm (the lockfile is `package-lock.json`; do not switch package managers)
-- Access to a `cloud-api` instance (default: `https://cloud-api.nan.builders`) for the signup route to work end to end. Without `CLOUD_API_URL` the form answers with a generic error, but the site renders fine for visual work.
+- Access to a `cloud-api` instance (default: `https://cloud-api.nan.builders`) for the events pages. Without `CLOUD_API_URL` the events pages fail to load, but the landing and docs render fine.
 
 ### Setup
 
@@ -83,7 +83,7 @@ Runtime variables are declared in `src/env.d.ts` and consumed via `Astro.locals.
 
 | Name | Required | Where it's used | Description |
 |---|---|---|---|
-| `CLOUD_API_URL` | runtime | `src/lib/signupServer.ts`, `src/lib/events.ts` | Base URL of the `cloud-api` backend (e.g. `https://cloud-api.nan.builders`). |
+| `CLOUD_API_URL` | runtime | `src/lib/events.ts`, `src/pages/api/events/[...path].ts`, `src/pages/api/auth/login-request.ts` | Base URL of the `cloud-api` backend (e.g. `https://cloud-api.nan.builders`). |
 | `RATE_LIMIT_RPM` / `RATE_LIMIT_PARALLEL` | optional | `src/lib/rateLimits.ts` | Per-key limits shown in the docs; defaults apply when unset. |
 
 `RESEND_API_KEY`, `RESEND_FROM_EMAIL` and `CLOUD_API_WAITLIST_KEY` are no longer read by the site and can be removed from the Worker. None of these values should ever be committed.
@@ -95,7 +95,7 @@ npm test         # run all Vitest suites
 npm run test:watch
 ```
 
-Vitest config: [`vitest.config.ts`](./vitest.config.ts) (a `unit` project for `src/**/*.test.ts` and a `render` project for `src/**/*.render.test.ts`). The open-signup suites are `src/tests/lib/signup.test.ts`, `src/tests/api/signup.test.ts`, `src/tests/landing/signupForm.test.ts` and `src/tests/landing/openSignup.test.ts`.
+Vitest config: [`vitest.config.ts`](./vitest.config.ts) (a `unit` project for `src/**/*.test.ts` and a `render` project for `src/**/*.render.test.ts`). The signup-link suites are `src/tests/lib/signup.test.ts`, `src/tests/landing/heroCta.test.ts`, `src/tests/landing/heroCta.server.test.ts` and `src/tests/landing/openSignup.test.ts`.
 
 ## Build and local preview
 

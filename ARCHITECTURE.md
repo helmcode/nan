@@ -7,18 +7,18 @@
 
 NaN is a shared GPU infrastructure project for a paid community. The website covers:
 
-1. **Landing** — Presentation, models, pricing, and account signup (open signup)
+1. **Landing** — Presentation, models, pricing, and links to account creation (open signup)
 2. **Documentation** — Public API docs for connecting tools (Cursor, Cline, OpenCode, etc.)
 
 All community activity (chat, forums, events, model voting) lives in Discord.
-Account creation is open: anyone can create a free account from the home form, and every product (community, inference, premium, workspaces, spaces) unlocks with a purchase on the [NaN Platform](https://cloud.nan.builders/), which also handles payment, onboarding and API keys. Spec: `platform/cloud-api/docs/OPEN-SIGNUP.md`.
+Account creation is open: anyone can create a free account on cloud.nan.builders (the site only links there: hero, nav, pricing, footer), and every product (community, inference, premium, workspaces, spaces) unlocks with a purchase on the [NaN Platform](https://cloud.nan.builders/), which also handles payment, onboarding and API keys. Spec: `platform/cloud-api/docs/OPEN-SIGNUP.md`.
 
 ## Tech Stack
 
 | Layer | Technology | Why |
 |-------|-----------|-----|
 | Framework | Astro v6.0.8 (SSR mode, `output: 'server'`) | Static by default, SSR where needed |
-| Interactive bits | Vanilla TS scripts (home, nav, signup form); Preact islands only where needed (events) | Zero framework JS on the marketing pages |
+| Interactive bits | Vanilla TS scripts (home effects, nav); Preact islands only where needed (events) | Zero framework JS on the marketing pages |
 | Styling | Tailwind CSS v4.2.2 (Vite plugin) | Dark theme, technical typography |
 | Code highlighting | rehype-pretty-code + shiki | Syntax highlighting in docs |
 | Deployment | Cloudflare Workers (static assets + SSR) | Assets from CDN, SSR/API from Workers edge |
@@ -40,7 +40,6 @@ nan.builders (Cloudflare Worker)
 │   └── Static assets (CSS, JS, fonts, images, favicon)
 │
 └── Worker (Edge Functions)
-    ├── /api/signup            POST — account signup (validates, proxies to cloud-api /api/auth/signup)
     ├── /api/auth/login-request POST — magic-link login from the events pages (proxy)
     ├── /api/events/*          events API proxy
     ├── /api/docs/*            docs manifest + markdown for the Discord bot
@@ -56,10 +55,9 @@ nan.builders (Cloudflare Worker)
 
 | Route | Mode | Client JS |
 |-------|------|-----------|
-| `/`, `/es` | SSR (not prerendered) | Vanilla scripts: hero dither, signup form (`scripts/signup.ts`), reveal |
+| `/`, `/es` | SSR (not prerendered) | Vanilla scripts: hero dither, reveal (the hero CTA's `?plan=` is resolved in SSR, no JS) |
 | `/community`, `/es/community` | SSR (not prerendered) | None beyond the shared shell (CTA links to the platform signup) |
 | `/docs*` | SSR (not prerendered) | Minimal (sidebar mobile menu, TOC, copy-to-clipboard) |
-| `/api/signup` | Server endpoint | None |
 
 ## Pricing (Current)
 
@@ -105,7 +103,7 @@ Static sections, SSR-rendered (`src/pages/_home.astro`, components in `src/compo
 | Section | Component | Client JS |
 |---------|-----------|-----------|
 | Nav (Login + Create account) | `nan/Nav.astro` | Small inline script (mobile menu) |
-| Hero + signup form (`#signup`) | `Hero.astro` | `scripts/signup.ts` (vanilla) + canvas dither |
+| Hero: Create account + Log in buttons | `Hero.astro` | Canvas dither only |
 | What is NaN | `WhyNan.astro` | None |
 | Built with NaN | `BuiltWithNan.astro` | None |
 | Models | `Models.astro` | None |
@@ -130,25 +128,9 @@ Sidebar navigation comes from each guide's frontmatter (`src/content.config.ts`)
 
 ### API Endpoints
 
-#### `POST /api/signup`
+#### Account creation
 
-Creates a NaN account through cloud-api's public `POST /api/auth/signup` (`OPEN-SIGNUP.md` §2.3). The browser cannot call cloud-api directly because the CSP is `connect-src 'self'`.
-
-- **Input (JSON):** `{ fullName, email, jobRole, jobRoleOther, xUrl, linkedinUrl, plan?, _hp }`
-- **Validation** (`validateSignup()` in `src/lib/signup.ts`, shared with the form):
-  - `fullName` 1-120 chars, `email` valid and not on the blocked-domain list, `jobRole` in `software_engineer | ai_engineer | data_scientist | devops_sre | founder | product | designer | researcher | student | other`; `jobRoleOther` 1-80 chars, required only when `jobRole` is `other`.
-  - `xUrl` optional, `https://x.com/...` or `https://twitter.com/...`; `linkedinUrl` optional, `https://(www.)linkedin.com/in/...`. Missing scheme, `http://`, `www.` and LinkedIn country subdomains are normalized before sending.
-  - `plan` optional (`community | inference | premium | workspace | space`); an unknown plan is dropped, never an error. The form reads it from `?plan=` (and the legacy `?premium=1`).
-- **Honeypot:** `_hp` filled → same `202` as a real signup, nothing forwarded.
-- **Rate limit:** 5 valid submissions per IP per 10 minutes, in memory per isolate (best effort; cloud-api limits per IP and per email behind it). Invalid submissions do not count.
-- **Upstream call:** `POST ${CLOUD_API_URL}/api/auth/signup` with `Origin: https://nan.builders`, the client IP in `x-forwarded-for` / `cf-connecting-ip`, and the visitor country in `cf-ipcountry` (cloud-api derives the billing region from it). No API key: the endpoint is public.
-- **Content type:** the media type must be exactly `application/json` (parameters such as `charset` allowed). The hero form has `method="post" action="/api/signup"`, so without JS the browser posts form data instead of putting it in a URL; that post gets a `415` static HTML page (dark, no JS, own CSP; Spanish when posted from `/es` or, without a same-origin Referer, when Accept-Language prefers it) linking to `https://cloud.nan.builders/signup`, and the body is never read (`src/lib/signupNoJs.ts`).
-- **Responses:**
-  - `202`: `{ ok: true }` for every accepted signup, new or known email (no account enumeration). The form shows "Check your inbox to confirm and sign in"; cloud-api sends the English magic link.
-  - `400`: `{ ok: false, error: 'invalid_input', fields: { <field>: 'required' | 'invalid' | 'too_long' } }`
-  - `413` / `415`: oversized body / not `application/json` (`{ ok: false, error: 'unsupported_media_type' }`, or the HTML page for a no-JS form post)
-  - `429`: `{ ok: false, error: 'rate_limited' }`
-  - `502`: `{ ok: false, error: 'server_error' }` (upstream error or unreachable; details only in the Worker log)
+There is no signup route on the site. The hero's **Create account** button links to `https://cloud.nan.builders/signup`, carrying the landing's `?plan=` when it is one of `community | inference | premium | workspace | space` (the legacy `?premium=1` maps to `plan=premium`; anything else is dropped). **Log in** links to `https://cloud.nan.builders/`. Models, footer and 404 CTAs link to the bare signup; pricing cards add their plan. Links are built with `signupUrl()` / `heroSignupHref()` in `src/lib/signup.ts`. The platform collects the profile, sends the magic link and runs checkout.
 
 ## Internationalization
 
@@ -159,7 +141,7 @@ The site is bilingual: English at the root (`/`) and Spanish under `/es`. Catalo
 | Mechanism | Implementation |
 |-----------|---------------|
 | CSP | Strict policy in `NanBase.astro` (`connect-src 'self'`, no external scripts, no frames, no objects) |
-| Bot protection | Honeypot field (`_hp`) on the signup form + per-IP rate limiting at the edge + cloud-api per-IP/per-email limits + Origin allowlist |
+| Bot protection | No public write form on the marketing pages; signup lives on cloud.nan.builders (cloud-api per-IP/per-email limits). Events forms go through `/api/events/*` |
 | IP detection | `cf-connecting-ip` only (never `x-forwarded-for` on Cloudflare) |
 | Secrets | All in Cloudflare Pages dashboard via `wrangler secret put`, never in code |
 | Error handling | Intentionally opaque error responses (no internal details leaked) |
@@ -174,7 +156,6 @@ website/
 │   │   ├── _community.astro, community.astro          # Community page (CTA to platform signup)
 │   │   ├── privacy.astro, terms.astro, cookies.astro  # Legal (+ es/ versions)
 │   │   ├── api/
-│   │   │   ├── signup.ts                  # POST — account signup proxy
 │   │   │   ├── auth/login-request.ts      # POST — magic-link login proxy (events)
 │   │   │   ├── events/[...path].ts        # Events API proxy
 │   │   │   └── docs/                      # Docs manifest + markdown
@@ -183,10 +164,9 @@ website/
 │   │   ├── nan/                           # Nav, Footer, CookieBanner, home/ sections
 │   │   ├── docs/                          # Docs shell components
 │   │   └── events/                        # Events islands (Preact)
-│   ├── scripts/                           # Vanilla client scripts (signup, reveal, dither, ...)
+│   ├── scripts/                           # Vanilla client scripts (reveal, dither, ...)
 │   ├── lib/
-│   │   ├── signup.ts                      # Signup validation/normalization/parsing (client + server)
-│   │   ├── signupServer.ts                # Edge rate limit + cloud-api call (server only)
+│   │   ├── signup.ts                      # Links to the platform signup (plans, ?plan= carry-through)
 │   │   ├── i18n.ts                        # Translation helpers
 │   │   └── ...                            # docs, events, rate limits, models
 │   ├── layouts/                           # NanBase (CSP, head), NanPage (shell), Docs, NanLegal
@@ -204,7 +184,7 @@ website/
 
 | Variable | Type | Purpose |
 |----------|------|---------|
-| `CLOUD_API_URL` | `string` | Backend API base URL (e.g. `https://cloud-api.nan.builders`), used by `/api/signup`, the events proxy and login |
+| `CLOUD_API_URL` | `string` | Backend API base URL (e.g. `https://cloud-api.nan.builders`), used by the events proxy, events SSR and the events login |
 | `RATE_LIMIT_RPM` / `RATE_LIMIT_PARALLEL` | `string` (optional) | Per-key limits shown in the docs (defaults in `src/lib/rateLimits.ts`) |
 
 `RESEND_API_KEY`, `RESEND_FROM_EMAIL` and `CLOUD_API_WAITLIST_KEY` are no longer used by the site (the waitlist and its confirmation email are gone; cloud-api sends the sign-in email).
@@ -249,9 +229,9 @@ npm run test:watch  # Watch mode
 ```
 
 Tests are in `src/**/*.test.ts` (Node) and `src/**/*.render.test.ts` (Astro Container API). Open-signup suites:
-- `src/tests/lib/signup.test.ts` — validation, normalization, plan, response parsing
-- `src/tests/api/signup.test.ts` — `/api/signup` proxy, validation, honeypot, rate limit, error mapping
-- `src/tests/landing/signupForm.test.ts` — hero form markup, script wiring, copy in both locales
+- `src/tests/lib/signup.test.ts` — plans, `?plan=` parsing, signup URLs
+- `src/tests/landing/heroCta.test.ts` — hero has no form, CTA hrefs and copy, dead code gone, no `#signup` links
+- `src/tests/landing/heroCta.server.test.ts` — SSR hero hrefs with `?plan=` / `?premium=1`, `POST /api/signup` is a 404
 - `src/tests/landing/openSignup.test.ts` — CTA targets, no waitlist copy, legal pages
 - `src/tests/layouts/noWebSearch.test.ts` — web search stays removed
 
