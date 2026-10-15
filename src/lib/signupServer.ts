@@ -30,6 +30,11 @@ export function checkSignupRateLimit(ip: string, now = Date.now()): boolean {
   return true;
 }
 
+/** The media type of a Content-Type header, without parameters, lowercased. */
+export function mediaType(header: string | null): string {
+  return (header ?? '').split(';')[0].trim().toLowerCase();
+}
+
 /** Test hook. */
 export function resetSignupRateLimit(): void {
   windows.clear();
@@ -44,14 +49,28 @@ export type UpstreamOutcome =
 /**
  * Forwards a validated signup. Public endpoint: no API key. The Origin is the
  * one cloud-api allowlists for the site, and the client IP is propagated so
- * the backend's per-IP limit sees the person and not the Worker.
+ * the backend's per-IP limit sees the person and not the Worker. The visitor
+ * country goes along so the backend can pick the billing region.
  */
-export async function forwardSignup(apiBase: string, input: SignupInput, ip: string): Promise<UpstreamOutcome> {
+export interface ClientInfo {
+  ip: string;
+  /** Cloudflare's `cf-ipcountry`; cloud-api derives the billing region from it. */
+  country: string;
+}
+
+/** Two-letter country code as Cloudflare sends it (`ES`, `XX`, `T1`), or ''. */
+export function clientCountry(value: string | null): string {
+  const v = (value ?? '').trim().toUpperCase();
+  return /^[A-Z0-9]{2}$/.test(v) ? v : '';
+}
+
+export async function forwardSignup(apiBase: string, input: SignupInput, client: ClientInfo): Promise<UpstreamOutcome> {
   const headers = new Headers({ 'content-type': 'application/json', origin: 'https://nan.builders' });
-  if (ip) {
-    headers.set('x-forwarded-for', ip);
-    headers.set('cf-connecting-ip', ip);
+  if (client.ip) {
+    headers.set('x-forwarded-for', client.ip);
+    headers.set('cf-connecting-ip', client.ip);
   }
+  if (client.country) headers.set('cf-ipcountry', client.country);
 
   let res: Response;
   try {

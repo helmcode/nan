@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { json } from '../../lib/apiResponse';
-import { validateSignup } from '../../lib/signup';
-import { checkSignupRateLimit, forwardSignup } from '../../lib/signupServer';
+import { signupUrl, validateSignup } from '../../lib/signup';
+import { checkSignupRateLimit, clientCountry, forwardSignup, mediaType } from '../../lib/signupServer';
 
 export const prerender = false;
 
@@ -16,8 +16,22 @@ const MAX_BODY_BYTES = 8 * 1024;
 
 const accepted = () => json({ ok: true }, 202);
 
+// What a browser sends when the form is submitted without our script.
+const FORM_TYPES = new Set(['application/x-www-form-urlencoded', 'multipart/form-data']);
+
 export const POST: APIRoute = async ({ request }) => {
-  if (!(request.headers.get('content-type') ?? '').includes('application/json')) {
+  const type = mediaType(request.headers.get('content-type'));
+  if (FORM_TYPES.has(type)) {
+    // No JS (script blocked or failed): the hero form has method="post" so the
+    // data never lands in a URL. The body is never read nor echoed. A redirect
+    // to cloud.nan.builders would be blocked by the page's `form-action 'self'`,
+    // so the browser gets a plain 415 that says where to sign up instead.
+    return new Response(
+      `JavaScript is required to create an account from nan.builders. Sign up at ${signupUrl()}\n`,
+      { status: 415, headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } },
+    );
+  }
+  if (type !== 'application/json') {
     return json({ ok: false, error: 'unsupported_media_type' }, 415);
   }
 
@@ -40,7 +54,8 @@ export const POST: APIRoute = async ({ request }) => {
   const ip = request.headers.get('cf-connecting-ip') ?? '';
   if (!checkSignupRateLimit(ip)) return json({ ok: false, error: 'rate_limited' }, 429);
 
-  const out = await forwardSignup(env.CLOUD_API_URL, v.input, ip);
+  const country = clientCountry(request.headers.get('cf-ipcountry'));
+  const out = await forwardSignup(env.CLOUD_API_URL, v.input, { ip, country });
   switch (out.kind) {
     case 'accepted':
       return accepted();

@@ -24,12 +24,16 @@ const valid = {
 let ipCounter = 0;
 const nextIp = () => `10.0.${(++ipCounter >> 8) & 255}.${ipCounter & 255}`;
 
-function request(body: unknown, opts: { ip?: string; contentType?: string; raw?: string } = {}) {
+function request(
+  body: unknown,
+  opts: { ip?: string; contentType?: string; raw?: string; headers?: Record<string, string> } = {},
+) {
   return new Request('https://nan.builders/api/signup', {
     method: 'POST',
     headers: {
       'content-type': opts.contentType ?? 'application/json',
       'cf-connecting-ip': opts.ip ?? nextIp(),
+      ...opts.headers,
     },
     body: opts.raw ?? JSON.stringify(body),
   });
@@ -37,7 +41,8 @@ function request(body: unknown, opts: { ip?: string; contentType?: string; raw?:
 
 async function call(body: unknown, opts: Parameters<typeof request>[1] = {}) {
   const res: Response = await (POST as any)({ request: request(body, opts) });
-  return { status: res.status, body: await res.json(), headers: res.headers };
+  const text = await res.text();
+  return { status: res.status, body: text ? JSON.parse(text) : null, headers: res.headers, text };
 }
 
 function upstream(status: number, body: unknown = {}) {
@@ -58,7 +63,7 @@ describe('POST /api/signup: proxy', () => {
     const fetchMock = upstream(202, { ok: true });
     vi.stubGlobal('fetch', fetchMock);
 
-    const r = await call(valid, { ip: '203.0.113.7' });
+    const r = await call(valid, { ip: '203.0.113.7', headers: { 'cf-ipcountry': 'ES' } });
 
     expect(r.status).toBe(202);
     expect(r.body).toEqual({ ok: true });
@@ -71,6 +76,9 @@ describe('POST /api/signup: proxy', () => {
     expect(h.get('origin')).toBe('https://nan.builders');
     expect(h.get('content-type')).toBe('application/json');
     expect(h.get('x-forwarded-for')).toBe('203.0.113.7');
+    expect(h.get('cf-connecting-ip')).toBe('203.0.113.7');
+    // the backend derives the billing region from the visitor country
+    expect(h.get('cf-ipcountry')).toBe('ES');
     // public endpoint: no API key of any kind
     expect(h.get('x-api-key')).toBeNull();
     expect(h.get('authorization')).toBeNull();
@@ -155,12 +163,50 @@ describe('POST /api/signup: validation (mirrors the backend)', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('does not forward a malformed cf-ipcountry', async () => {
+    const fetchMock = upstream(202);
+    vi.stubGlobal('fetch', fetchMock);
+    await call(valid, { headers: { 'cf-ipcountry': 'ES\r\nx-evil: 1' } }).catch(() => null);
+    await call(valid, { headers: { 'cf-ipcountry': 'spain' } });
+    for (const [, init] of fetchMock.mock.calls) {
+      expect(new Headers(init.headers).get('cf-ipcountry')).toBeNull();
+    }
+  });
+
+  it('accepts application/json with parameters, matched exactly on the media type', async () => {
+    const fetchMock = upstream(202);
+    vi.stubGlobal('fetch', fetchMock);
+    expect((await call(valid, { contentType: 'Application/JSON; charset=utf-8' })).status).toBe(202);
+    for (const ct of ['application/jsonx', 'text/plain; x=application/json', 'application/json-patch+json']) {
+      expect((await call(valid, { contentType: ct })).status, ct).toBe(415);
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('a no-JS form post (urlencoded or multipart) gets a plain 415 pointing at the platform signup, never processed or echoed', async () => {
+    const fetchMock = upstream(202);
+    vi.stubGlobal('fetch', fetchMock);
+    for (const ct of ['application/x-www-form-urlencoded', 'multipart/form-data; boundary=x']) {
+      const res: Response = await (POST as any)({
+        request: request(null, { contentType: ct, raw: 'fullName=Ada&email=ada%40helmcode.com' }),
+      });
+      const text = await res.text();
+      expect(res.status, ct).toBe(415);
+      expect(res.headers.get('content-type')).toMatch(/^text\/plain/);
+      expect(res.headers.get('location')).toBeNull();
+      expect(text).toContain('https://cloud.nan.builders/signup');
+      expect(text).not.toMatch(/ada|helmcode/i);
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('rejects a non-JSON content type with 415', async () => {
     const fetchMock = upstream(202);
     vi.stubGlobal('fetch', fetchMock);
     const r = await call(valid, { contentType: 'text/plain' });
     expect(r.status).toBe(415);
-    expect(r.body.ok).toBe(false);
+    expect(r.body).toEqual({ ok: false, error: 'unsupported_media_type' });
+    expect(r.text).not.toContain('ada');
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -240,7 +286,7 @@ describe('POST /api/signup: misconfiguration', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const out = await forwardSignup('', {
       fullName: 'Ada', email: 'ada@helmcode.com', jobRole: 'founder', jobRoleOther: '', xUrl: '', linkedinUrl: '',
-    }, '');
+    }, { ip: '', country: '' });
     expect(out).toEqual({ kind: 'error' });
   });
 });

@@ -115,6 +115,14 @@ describe('validateSignup: required fields', () => {
   });
 });
 
+describe('blocked email domains (kept in sync with cloud-api)', () => {
+  test('the list is exactly this', async () => {
+    const { BLOCKED_EMAIL_DOMAINS, BLOCKED_EMAIL_TLDS } = await import('../../lib/signup');
+    expect([...BLOCKED_EMAIL_DOMAINS].sort()).toEqual(['example.com', 'example.net', 'example.org', 'mail.com', 'test.com']);
+    expect([...BLOCKED_EMAIL_TLDS].sort()).toEqual(['example', 'invalid', 'localhost', 'test']);
+  });
+});
+
 describe('validateSignup: optional social URLs', () => {
   test('empty is fine', () => {
     expect(validateSignup({ ...valid, xUrl: '   ', linkedinUrl: '' }).ok).toBe(true);

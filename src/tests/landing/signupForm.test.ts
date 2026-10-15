@@ -28,6 +28,12 @@ describe('hero signup form: markup', () => {
     expect(markup).not.toMatch(/waitlist/i);
   });
 
+  test('without JS the form still POSTs to the route, never GETs data into the URL', () => {
+    const form = markup.match(/<form[^>]*>/)?.[0] ?? '';
+    expect(form).toContain('method="post"');
+    expect(form).toContain('action="/api/signup"');
+  });
+
   test('has every field of the contract', () => {
     for (const name of ['fullName', 'email', 'jobRole', 'jobRoleOther', 'xUrl', 'linkedinUrl', '_hp']) {
       expect(markup, name).toContain(`name="${name}"`);

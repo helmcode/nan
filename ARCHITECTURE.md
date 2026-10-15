@@ -141,11 +141,12 @@ Creates a NaN account through cloud-api's public `POST /api/auth/signup` (`OPEN-
   - `plan` optional (`community | inference | premium | workspace | space`); an unknown plan is dropped, never an error. The form reads it from `?plan=` (and the legacy `?premium=1`).
 - **Honeypot:** `_hp` filled → same `202` as a real signup, nothing forwarded.
 - **Rate limit:** 5 valid submissions per IP per 10 minutes, in memory per isolate (best effort; cloud-api limits per IP and per email behind it). Invalid submissions do not count.
-- **Upstream call:** `POST ${CLOUD_API_URL}/api/auth/signup` with `Origin: https://nan.builders` and the client IP in `x-forwarded-for` / `cf-connecting-ip`. No API key: the endpoint is public.
+- **Upstream call:** `POST ${CLOUD_API_URL}/api/auth/signup` with `Origin: https://nan.builders`, the client IP in `x-forwarded-for` / `cf-connecting-ip`, and the visitor country in `cf-ipcountry` (cloud-api derives the billing region from it). No API key: the endpoint is public.
+- **Content type:** the media type must be exactly `application/json` (parameters such as `charset` allowed). The hero form has `method="post" action="/api/signup"`, so without JS the browser posts form data instead of putting it in a URL; that post gets a plain-text `415` pointing at the platform signup, and the body is never read.
 - **Responses:**
   - `202`: `{ ok: true }` for every accepted signup, new or known email (no account enumeration). The form shows "Check your inbox to confirm and sign in"; cloud-api sends the English magic link.
   - `400`: `{ ok: false, error: 'invalid_input', fields: { <field>: 'required' | 'invalid' | 'too_long' } }`
-  - `413` / `415`: oversized body / non-JSON content type
+  - `413` / `415`: oversized body / not `application/json` (`{ ok: false, error: 'unsupported_media_type' }`, or plain text for a no-JS form post)
   - `429`: `{ ok: false, error: 'rate_limited' }`
   - `502`: `{ ok: false, error: 'server_error' }` (upstream error or unreachable; details only in the Worker log)
 

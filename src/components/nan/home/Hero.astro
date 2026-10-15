@@ -50,7 +50,7 @@ const signupMsgs = JSON.stringify({
         {tt.signupLine}
       </p>
 
-      <form class="hero__form signup" data-signup data-msgs={signupMsgs} novalidate>
+      <form class="hero__form signup" method="post" action="/api/signup" data-signup data-msgs={signupMsgs} novalidate>
         <label class="hero__hp" aria-hidden="true">
           Do not fill this field
           <input type="text" name="_hp" tabindex="-1" autocomplete="off" />

@@ -44,14 +44,15 @@ const URL_MAX = 200;
 // Simple on purpose, no nested quantifiers (no catastrophic backtracking).
 const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 // RFC 2606 reserved names plus throwaway domains seen on the old form.
-const BLOCKED_EMAIL_DOMAINS: ReadonlySet<string> = new Set([
+// Keep in sync with cloud-api's signup blocklist.
+export const BLOCKED_EMAIL_DOMAINS: ReadonlySet<string> = new Set([
   'example.com',
   'example.net',
   'example.org',
   'test.com',
   'mail.com',
 ]);
-const BLOCKED_EMAIL_TLDS: ReadonlySet<string> = new Set(['test', 'invalid', 'localhost', 'example']);
+export const BLOCKED_EMAIL_TLDS: ReadonlySet<string> = new Set(['test', 'invalid', 'localhost', 'example']);
 // eslint-disable-next-line no-control-regex
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
 
