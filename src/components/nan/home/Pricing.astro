@@ -11,10 +11,10 @@
 // still exist and keep their price; that is explained in the payment-methods
 // FAQ entry, not here.
 import { getLang, useT } from '../../../lib/i18n';
+import { signupUrl } from '../../../lib/signup';
 
 const lang = getLang(Astro.url);
 const tt = useT(lang).pricing;
-const home = lang === 'es' ? '/es' : '/';
 
 const tiers = [
   // GLM 5.3 premium — price swap on the existing nan_member
@@ -28,7 +28,7 @@ const tiers = [
     includes: tt.premiumIncludes,
     cond: tt.premiumCond,
     cta: tt.premiumCta,
-    href: `${home}?premium=1#waitlist`,
+    href: signupUrl('premium'),
     primary: true,
   },
   {
@@ -40,7 +40,7 @@ const tiers = [
     includes: tt.memberIncludes,
     cond: tt.memberCond,
     cta: tt.memberCta,
-    href: `${home}#waitlist`,
+    href: signupUrl('inference'),
     primary: true,
   },
   {
@@ -52,7 +52,7 @@ const tiers = [
     includes: tt.communityIncludes,
     cond: tt.communityCond,
     cta: tt.communityCta,
-    href: lang === 'es' ? '/es/community#signup' : '/community#signup',
+    href: signupUrl('community'),
     primary: false,
   },
 ];
@@ -148,7 +148,10 @@ const wsDocs = lang === 'es' ? '/es/docs/workspaces' : '/docs/workspaces';
         {ws.notes.map((note) => <li>{note}</li>)}
       </ul>
 
-      <a class="btn btn-ghost pws__cta" href={wsDocs}>{ws.cta}</a>
+      <div class="pws__ctas">
+        <a class="btn btn-primary" href={signupUrl('workspace')} rel="noopener">{ws.signupCta}</a>
+        <a class="btn btn-ghost" href={wsDocs}>{ws.cta}</a>
+      </div>
     </div>
   </div>
 </section>
@@ -337,7 +340,7 @@ const wsDocs = lang === 'es' ? '/es/docs/workspaces' : '/docs/workspaces';
     border-radius: 50%;
     background: var(--color-violet);
   }
-  .pws__cta { margin-top: var(--space-6); }
+  .pws__ctas { margin-top: var(--space-6); display: flex; flex-wrap: wrap; gap: var(--space-4); }
 
   @media (max-width: 900px) {
     .pricing { padding-block: var(--space-16); }
