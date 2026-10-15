@@ -7,7 +7,7 @@
  * 60 rpm while the extractor hardcoded 100 rpm.
  *
  * Receives the env as a parameter so it can be unit-tested without runtime
- * bindings, mirroring src/lib/email.ts.
+ * bindings.
  */
 
 export interface PerKeyRateLimits {

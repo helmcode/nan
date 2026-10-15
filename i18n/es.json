@@ -1,42 +1,8 @@
 {
   "community": {
-    "label": "// community",
-    "pageTitle": "Comunidad NaN",
-    "title": "Únete a la comunidad mientras esperas tu plaza de inferencia.",
-    "subtitle": "Acceso al Discord, charlas con builders y plaza reservada en la cola para acceso a las GPUs cuando se libere capacidad.",
     "priceLabel": "14,99€ / mes",
     "priceTaxNote": "Impuestos incluidos · se factura en euros desde cualquier región",
-    "includesLabel": "Qué incluye",
-    "notIncludedLabel": "Qué NO incluye",
-    "notIncluded": {
-      "0": "Acceso al servicio de inferencia (GPUs)",
-      "1": "Un workspace incluido (los slots de workspace se venden aparte)",
-      "2": "API key para llamadas a modelos"
-    },
-    "faqUpgradeQ": "¿Cómo paso al plan de inferencia más adelante?",
-    "faqUpgradeA": "Cuando se libere capacidad de GPU, te invitaremos manualmente. Mientras tanto puedes pedir el upgrade desde tu panel de miembro.",
-    "faqCancelQ": "¿Puedo cancelar?",
-    "faqCancelA": "Sí, en cualquier momento desde tu panel de miembro. Sin permanencia.",
-    "backToLanding": "← Volver a nan.builders",
-    "emailLabel": "email",
-    "emailPlaceholder": "tu@email.com",
-    "regionLabel": "región",
-    "regionDefault": "Selecciona tu región",
-    "regionEU": "Europa",
-    "regionUSA": "USA",
-    "regionLATAM": "LATAM",
-    "submit": "Únete a la comunidad",
-    "submitting": "Procesando…",
-    "redirecting": "Redirigiendo al pago…",
-    "alreadySubscribed": "Ya estás dentro. Si no recibiste el recibo, escríbenos a",
-    "honeypot": "Do not fill this field",
-    "errorInvalidEmail": "Email inválido. Revisa el formato.",
-    "errorInvalidRegion": "Selecciona una región.",
-    "errorRateLimited": "Demasiados intentos. Espera un minuto.",
-    "errorServer": "Algo falló. Vuelve a intentarlo en un momento.",
-    "errorNetwork": "Sin conexión. Vuelve a intentarlo.",
-    "footer": "Cancela cuando quieras.",
-    "alreadyMemberLabel": "// ya eres miembro"
+    "footer": "Cancela cuando quieras."
   },
   "events": {
     "backToEvents": "← Eventos",
@@ -280,7 +246,7 @@
       "title": "NaN — Construye sin límites",
       "siteName": "NaN",
       "ogLocale": "es_ES",
-      "description": "Una comunidad de builders que comparten GPUs para correr modelos abiertos a tarifa fija. API compatible con OpenAI, cero logs, plazas limitadas por cómputo."
+      "description": "Una comunidad de builders que comparten GPUs para correr modelos abiertos a tarifa fija. API compatible con OpenAI, cero logs, registro abierto."
     },
     "a11y": {
       "skip": "Saltar al contenido",
@@ -311,26 +277,60 @@
       "events": "Eventos",
       "projects": "Proyectos",
       "docs": "Docs",
-      "login": "Entrar"
+      "login": "Entrar",
+      "signup": "Crear cuenta"
     },
     "hero": {
       "line1": "Construye sin",
       "line2": "límites.",
       "sub": "No te quedes sin tokens. Nunca.",
       "body": "NaN es la comunidad de builders que comparten GPUs para correr modelos de IA abiertos. Construye lo que necesites, sin pagar por token. You can just do things.",
-      "spots": "Plazas limitadas",
-      "waitline": "Únete a la waitlist para activar tu suscripción. Solo deja tu email.",
-      "emailPlaceholder": "tu@email.dev",
-      "regionLabel": "Elige tu región",
-      "submit": "Únete a la waitlist",
+      "spots": "Registro abierto",
+      "signupLine": "Crea tu cuenta gratis. Cada producto se activa con un plan, cuando quieras.",
+      "labelFullName": "Nombre completo",
+      "labelEmail": "Email",
+      "labelJobRole": "Rol",
+      "jobRolePlaceholder": "Elige tu rol",
+      "labelJobRoleOther": "Tu rol",
+      "labelXUrl": "Perfil de X",
+      "labelLinkedinUrl": "Perfil de LinkedIn",
+      "optional": "opcional",
+      "requiredNote": "obligatorio",
+      "phFullName": "Ada Lovelace",
+      "phEmail": "tu@email.dev",
+      "phJobRoleOther": "A qué te dedicas",
+      "phXUrl": "https://x.com/tu-usuario",
+      "phLinkedinUrl": "https://linkedin.com/in/tu-usuario",
+      "jobRoles": {
+        "software_engineer": "Ingeniería de software",
+        "ai_engineer": "Ingeniería de IA",
+        "data_scientist": "Ciencia de datos",
+        "devops_sre": "DevOps / SRE",
+        "founder": "Fundador/a",
+        "product": "Producto",
+        "designer": "Diseño",
+        "researcher": "Investigación",
+        "student": "Estudiante",
+        "other": "Otro"
+      },
+      "submit": "Crear cuenta",
       "sending": "Enviando…",
-      "okRegistered": "Ya estás en la waitlist.",
-      "okText": "Aprobaremos tu plaza en los próximos días. No pierdas de vista tu bandeja ^__^",
+      "okTitle": "Revisa tu bandeja de entrada para confirmar y entrar.",
+      "okText": "El email llega en inglés. Si no aparece en un par de minutos, mira en spam.",
+      "errFullName": "Dinos tu nombre (hasta 120 caracteres).",
       "errEmail": "Ese email no parece válido.",
-      "errRegion": "Elige una región.",
+      "errJobRole": "Elige tu rol.",
+      "errJobRoleOther": "Dinos tu rol (hasta 80 caracteres).",
+      "errXUrl": "Usa el enlace a tu perfil de X, como https://x.com/tu-usuario.",
+      "errLinkedinUrl": "Usa el enlace a tu perfil de LinkedIn, como https://linkedin.com/in/tu-usuario.",
+      "errFields": "Revisa los campos marcados.",
       "errNetwork": "Ha fallado la red, no tú. Prueba otra vez.",
       "errGeneric": "Algo se ha roto por nuestro lado. Prueba en un rato.",
-      "errRateLimited": "Demasiados intentos. Espera un minuto."
+      "errRateLimited": "Demasiados intentos. Espera unos minutos y vuelve a probar.",
+      "legalPre": "Al crear una cuenta aceptas los",
+      "legalTerms": "Términos",
+      "legalAnd": "y la",
+      "legalPrivacy": "Política de privacidad"
     },
     "why": {
       "label": "qué es nan",
@@ -340,7 +340,7 @@
       "p": [
         "Las APIs de modelos cerrados son cómodas, pero caras y limitadas. Los modelos abiertos son libres, pero correrlos en serio exige un hardware que casi nadie tiene en casa.",
         "NaN lo resuelve compartiendo GPUs potentes entre builders que de verdad las usan, repartiendo el coste real de la infraestructura.",
-        "Una comunidad cerrada por diseño, limitada a la capacidad real de las GPUs compartidas. Cuando se llena, abrimos waitlist.",
+        "Abierta a cualquiera que quiera construir. Crear la cuenta es gratis; el clúster, la comunidad y los workspaces se activan con un plan.",
         "La comunidad vive en Discord. La web solo gestiona el acceso. Cada miembro paga por estar aquí. Solo entra quien de verdad quiere construir."
       ]
     },
@@ -360,7 +360,7 @@
       "sub": "Todo el stack de inferencia de modelos abiertos, votado por la comunidad cada trimestre. Los datos se quedan en la UE, sin registrar nada.",
       "badgePremium": "tier premium",
       "unmetered": "sin contador",
-      "cta": "Únete a la waitlist"
+      "cta": "Crea tu cuenta"
     },
     "privacy": {
       "label": "privacidad",
@@ -394,14 +394,14 @@
         "Eventos, workshops y hackathons",
         "Voto en la votación trimestral de modelos"
       ],
-      "memberCond": "Mes a mes, sin compromiso. Se factura en euros desde cualquier región. Plazas limitadas: cuando se llena, waitlist.",
-      "memberCta": "Únete a la waitlist",
+      "memberCond": "Mes a mes, sin compromiso. Se factura en euros desde cualquier región.",
+      "memberCta": "Activar inferencia",
       "communityIncludes": [
         "Acceso a Discord",
         "Canales solo para miembros",
         "Charlas en directo, builds, AMAs",
         "Eventos, workshops y hackathons",
-        "Un sitio reservado en la cola de inferencia"
+        "Pasa a inferencia cuando quieras"
       ],
       "communityCond": "Sin compromiso. Cancela cuando quieras. Se factura en euros desde cualquier región.",
       "communityCta": "Únete a la comunidad",
@@ -414,13 +414,13 @@
         "Todo lo incluido en nan_member",
         "El acceso se activa pocos minutos después del pago"
       ],
-      "premiumCond": "GLM 5.3 premium (200€/mes) se ofrece a miembros según haya plazas. Únete a la waitlist y te marcaremos para este tier.",
-      "premiumCta": "Únete a la waitlist",
+      "premiumCond": "Mes a mes, sin compromiso. Se factura en euros desde cualquier región.",
+      "premiumCta": "Pasar a premium",
       "premiumBadge": "glm 5.3 · premium",
       "workspaces": {
         "label": "workspaces · complemento",
         "title": "Tu propia máquina en la nube.",
-        "sub": "Una máquina de desarrollo dedicada y aislada, accesible por SSH y desde el navegador, con Pi, Hermes, gentle-shell y Herdr listos para usar. Cualquier miembro de pago puede comprar slots; cada slot mantiene un workspace en marcha.",
+        "sub": "Una máquina de desarrollo dedicada y aislada, accesible por SSH y desde el navegador, con Pi, Hermes, gentle-shell y Herdr listos para usar. Cualquiera con cuenta en NaN puede comprar slots; cada slot mantiene un workspace en marcha.",
         "per": "/mes",
         "headSize": "tamaño",
         "headSpecs": "vCPU · RAM · disco",
@@ -432,7 +432,8 @@
           "Los backups son opcionales: una instantánea al día, guardada 7 días, y la restauras tú.",
           "Mensual, se factura en euros. Cancela un slot cuando quieras."
         ],
-        "cta": "Lee la guía de workspaces"
+        "cta": "Lee la guía de workspaces",
+        "signupCta": "Consigue un workspace"
       }
     },
     "who": {
@@ -491,7 +492,7 @@
         },
         {
           "q": "¿Qué es un workspace?",
-          "a": "Tu propia máquina en la nube para desarrollar: una máquina dedicada y aislada a la que entras por SSH o desde el navegador, con agentes de código como Pi y Hermes listos para usar. Cualquier miembro de pago puede comprar slots de workspace desde 4,99€ al mes, y el plan premium incluye un workspace Micro gratis. Un slot no incluye inferencia: los agentes usan los modelos de NaN solo con un plan de inferencia. La guía de workspaces de la documentación tiene los tamaños, los precios, las reglas de red y cómo funcionan los backups."
+          "a": "Tu propia máquina en la nube para desarrollar: una máquina dedicada y aislada a la que entras por SSH o desde el navegador, con agentes de código como Pi y Hermes listos para usar. Cualquiera con cuenta en NaN puede comprar slots de workspace desde 4,99€ al mes, y el plan premium incluye un workspace Micro gratis. Un slot no incluye inferencia: los agentes usan los modelos de NaN solo con un plan de inferencia. La guía de workspaces de la documentación tiene los tamaños, los precios, las reglas de red y cómo funcionan los backups."
         },
         {
           "q": "¿Qué métodos de pago aceptáis?",
@@ -499,14 +500,14 @@
         },
         {
           "q": "¿Cómo entro?",
-          "a": "Deja tu email en la waitlist y te escribimos cuando se abra una plaza. Hay waitlist porque no hay más GPUs: cuando entra cómputo, entra gente."
+          "a": "Crea tu cuenta con tu email: es gratis y se tarda un minuto. Después elige lo que necesitas (comunidad, inferencia, premium o un workspace) y se activa en cuanto pagas."
         }
       ]
     },
     "footer": {
       "cta1": "Empieza a construir.",
       "cta2": "Empieza a quemar tokens.",
-      "go": "Únete a la waitlist",
+      "go": "Crea tu cuenta",
       "privacy": "Privacidad",
       "terms": "Términos",
       "cookies": "Cookies",
@@ -533,7 +534,7 @@
       "title2": "sin tokens.",
       "body": "La dirección que escribiste no existe, o nunca existió. En cualquier caso, aquí no hay nada que renderizar. Tú, en cambio, sí encajas aquí.",
       "back": "Volver al inicio",
-      "join": "Únete a la waitlist"
+      "join": "Crea tu cuenta"
     },
     "projects": {
       "metaTitle": "Proyectos — NaN",

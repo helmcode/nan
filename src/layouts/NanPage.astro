@@ -40,13 +40,13 @@ const { title, description, noindex, nofollow, image, scale } = Astro.props;
 </NanBase>
 
 <script>
-  import { initWaitlist } from '../scripts/waitlist';
+  import { initSignup } from '../scripts/signup';
   import { initReveal } from '../scripts/reveal';
   import { initNanGlitch } from '../scripts/nanGlitch';
 
   // Las partículas NO van aquí: son solo de la home (en el resto estorban a la
   // lectura). La home las arranca por su cuenta.
-  initWaitlist();
+  initSignup();
   initReveal();
   initNanGlitch();
 </script>

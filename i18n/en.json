@@ -1,42 +1,8 @@
 {
   "community": {
-    "label": "// community",
-    "pageTitle": "NaN Community",
-    "title": "Join the community while you wait for an inference seat.",
-    "subtitle": "Discord access, conversations with builders, and a reserved spot in line for GPU access when capacity frees up.",
     "priceLabel": "14,99€ / month",
     "priceTaxNote": "Taxes included · billed in euros from any region",
-    "includesLabel": "What's included",
-    "notIncludedLabel": "Not included",
-    "notIncluded": {
-      "0": "Inference service access (GPUs)",
-      "1": "An included workspace (workspace slots are sold separately)",
-      "2": "API key for model calls"
-    },
-    "faqUpgradeQ": "How do I move to the inference plan later?",
-    "faqUpgradeA": "When GPU capacity frees up, we'll invite you manually. In the meantime you can request the upgrade from your member dashboard.",
-    "faqCancelQ": "Can I cancel?",
-    "faqCancelA": "Yes, anytime from your member dashboard. No commitment.",
-    "backToLanding": "← Back to nan.builders",
-    "emailLabel": "email",
-    "emailPlaceholder": "you@email.com",
-    "regionLabel": "region",
-    "regionDefault": "Select your region",
-    "regionEU": "Europe",
-    "regionUSA": "USA",
-    "regionLATAM": "LATAM",
-    "submit": "Join the community",
-    "submitting": "Processing…",
-    "redirecting": "Redirecting to checkout…",
-    "alreadySubscribed": "You're already in. If you didn't get a receipt, write to us at",
-    "honeypot": "Do not fill this field",
-    "errorInvalidEmail": "Invalid email. Check the format.",
-    "errorInvalidRegion": "Select a region.",
-    "errorRateLimited": "Too many attempts. Wait a minute.",
-    "errorServer": "Something went wrong. Try again in a moment.",
-    "errorNetwork": "No connection. Try again.",
-    "footer": "Cancel anytime.",
-    "alreadyMemberLabel": "// already a member"
+    "footer": "Cancel anytime."
   },
   "events": {
     "backToEvents": "← Events",
@@ -278,7 +244,7 @@
   "nan": {
     "meta": {
       "title": "NaN — Build without limits",
-      "description": "A community of builders sharing GPUs to run open models at a flat rate. OpenAI-compatible API, zero logs, spots limited by compute.",
+      "description": "A community of builders sharing GPUs to run open models at a flat rate. OpenAI-compatible API, zero logs, open signup.",
       "siteName": "NaN",
       "ogLocale": "en_US"
     },
@@ -311,26 +277,60 @@
       "events": "Events",
       "projects": "Projects",
       "docs": "Docs",
-      "login": "Login"
+      "login": "Login",
+      "signup": "Create account"
     },
     "hero": {
       "line1": "Build without",
       "line2": "limits.",
       "sub": "Don't run out of tokens. Ever.",
       "body": "NaN is the community of builders sharing GPUs to run AI open models. Build whatever you need, without paying per token. You can just do things.",
-      "spots": "Limited spots",
-      "waitline": "Join the waitlist to unlock your subscription. Just leave your email.",
-      "emailPlaceholder": "you@email.dev",
-      "regionLabel": "Select your Region",
-      "submit": "Join waitlist",
+      "spots": "Open signup",
+      "signupLine": "Create your free account. Every product unlocks with a plan, when you're ready.",
+      "labelFullName": "Full name",
+      "labelEmail": "Email",
+      "labelJobRole": "Role",
+      "jobRolePlaceholder": "Select your role",
+      "labelJobRoleOther": "Your role",
+      "labelXUrl": "X profile",
+      "labelLinkedinUrl": "LinkedIn profile",
+      "optional": "optional",
+      "requiredNote": "required",
+      "phFullName": "Ada Lovelace",
+      "phEmail": "you@email.dev",
+      "phJobRoleOther": "What you do",
+      "phXUrl": "https://x.com/you",
+      "phLinkedinUrl": "https://linkedin.com/in/you",
+      "jobRoles": {
+        "software_engineer": "Software engineer",
+        "ai_engineer": "AI engineer",
+        "data_scientist": "Data scientist",
+        "devops_sre": "DevOps / SRE",
+        "founder": "Founder",
+        "product": "Product",
+        "designer": "Designer",
+        "researcher": "Researcher",
+        "student": "Student",
+        "other": "Other"
+      },
+      "submit": "Create account",
       "sending": "Sending…",
-      "okRegistered": "You're on the waitlist.",
-      "okText": "We'll approve your spot in the next few days. Keep an eye on your inbox ^__^",
+      "okTitle": "Check your inbox to confirm and sign in.",
+      "okText": "If the email doesn't arrive in a couple of minutes, check your spam folder.",
+      "errFullName": "Tell us your name (up to 120 characters).",
       "errEmail": "That email does not look valid.",
-      "errRegion": "Pick a region.",
+      "errJobRole": "Pick your role.",
+      "errJobRoleOther": "Tell us your role (up to 80 characters).",
+      "errXUrl": "Use your X profile link, like https://x.com/you.",
+      "errLinkedinUrl": "Use your LinkedIn profile link, like https://linkedin.com/in/you.",
+      "errFields": "Check the highlighted fields.",
       "errNetwork": "The network failed, not you. Try again.",
       "errGeneric": "Something broke on our side. Try again in a bit.",
-      "errRateLimited": "Too many attempts. Wait a minute."
+      "errRateLimited": "Too many attempts. Wait a few minutes and try again.",
+      "legalPre": "By creating an account you accept the",
+      "legalTerms": "Terms",
+      "legalAnd": "and the",
+      "legalPrivacy": "Privacy Policy"
     },
     "why": {
       "label": "what is nan",
@@ -340,7 +340,7 @@
       "p": [
         "Closed-model APIs are convenient but expensive and limited. Open models are free but running them seriously requires hardware almost no one has at home.",
         "NaN solves this by sharing powerful GPUs among builders who actually use them, splitting the real cost of infrastructure.",
-        "A closed community by design, limited to the real capacity of shared GPUs. When it fills up, we open a waitlist.",
+        "Open to anyone who wants to build. Creating an account is free; the cluster, the community and the workspaces switch on with a plan.",
         "The community lives on Discord. The website only manages access. Every member pays to be here. Only those who truly want to build make it in."
       ]
     },
@@ -360,7 +360,7 @@
       "sub": "The full open-model inference stack, voted by the community every quarter. Data stays in the EU, with nothing logged.",
       "badgePremium": "premium tier",
       "unmetered": "unmetered",
-      "cta": "Join the waitlist"
+      "cta": "Create your account"
     },
     "privacy": {
       "label": "privacy",
@@ -394,14 +394,14 @@
         "Events, workshops and hackathons",
         "Voice in the quarterly model vote"
       ],
-      "memberCond": "Month to month, no commitment. Billed in euros from any region. Limited spots: when it fills up, waitlist.",
-      "memberCta": "Join the waitlist",
+      "memberCond": "Month to month, no commitment. Billed in euros from any region.",
+      "memberCta": "Get inference",
       "communityIncludes": [
         "Discord access",
         "Member-only channels",
         "Live discussions, builds, AMAs",
         "Events, workshops and hackathons",
-        "A reserved spot in line for inference"
+        "Upgrade to inference whenever you want"
       ],
       "communityCond": "No commitment. Cancel anytime. Billed in euros from any region.",
       "communityCta": "Join the community",
@@ -414,13 +414,13 @@
         "Everything in nan_member",
         "Access switches on a few minutes after payment"
       ],
-      "premiumCond": "GLM 5.3 premium (200€/mo) is offered to members as seats open. Join the waitlist and we will flag you for this tier.",
-      "premiumCta": "Join the waitlist",
+      "premiumCond": "Month to month, no commitment. Billed in euros from any region.",
+      "premiumCta": "Go premium",
       "premiumBadge": "glm 5.3 · premium",
       "workspaces": {
         "label": "workspaces · add-on",
         "title": "Your own cloud machine.",
-        "sub": "A dedicated, isolated dev box reachable over SSH and from the browser, with Pi, Hermes, gentle-shell and Herdr ready to use. Any paying member can buy slots; each slot keeps one workspace running.",
+        "sub": "A dedicated, isolated dev box reachable over SSH and from the browser, with Pi, Hermes, gentle-shell and Herdr ready to use. Anyone with a NaN account can buy slots; each slot keeps one workspace running.",
         "per": "/mo",
         "headSize": "size",
         "headSpecs": "vCPU · RAM · disk",
@@ -432,7 +432,8 @@
           "Backups are optional: one snapshot a day, kept 7 days, restore it yourself.",
           "Monthly, billed in euros. Cancel a slot anytime."
         ],
-        "cta": "Read the workspaces guide"
+        "cta": "Read the workspaces guide",
+        "signupCta": "Get a workspace"
       }
     },
     "who": {
@@ -491,7 +492,7 @@
         },
         {
           "q": "What is a workspace?",
-          "a": "Your own cloud machine for development: a dedicated, isolated box you reach over SSH or from the browser, with coding agents such as Pi and Hermes ready to use. Any paying member can buy workspace slots from 4,99€ a month, and the premium plan includes one free Micro workspace. A slot does not include inference: agents use NaN models only on an inference plan. The workspaces guide in the docs has sizes, prices, network rules and how backups work."
+          "a": "Your own cloud machine for development: a dedicated, isolated box you reach over SSH or from the browser, with coding agents such as Pi and Hermes ready to use. Anyone with a NaN account can buy workspace slots from 4,99€ a month, and the premium plan includes one free Micro workspace. A slot does not include inference: agents use NaN models only on an inference plan. The workspaces guide in the docs has sizes, prices, network rules and how backups work."
         },
         {
           "q": "What payment methods do you accept?",
@@ -499,14 +500,14 @@
         },
         {
           "q": "How do I get in?",
-          "a": "Leave your email on the waitlist and we'll write when a spot opens. There's a waitlist because there are no more GPUs: when compute comes in, people come in."
+          "a": "Create your account with your email: it's free and takes a minute. Then pick what you need (community, inference, premium or a workspace) and it switches on right after payment."
         }
       ]
     },
     "footer": {
       "cta1": "Start building.",
       "cta2": "Start burning tokens.",
-      "go": "Join the waitlist",
+      "go": "Create your account",
       "privacy": "Privacy",
       "terms": "Terms",
       "cookies": "Cookies",
@@ -533,7 +534,7 @@
       "title2": "out of tokens.",
       "body": "The address you typed doesn't exist, or it never did. Either way, there's nothing to render here. You, though, still fit here.",
       "back": "Back to home",
-      "join": "Join the waitlist"
+      "join": "Create your account"
     },
     "projects": {
       "metaTitle": "Projects — NaN",

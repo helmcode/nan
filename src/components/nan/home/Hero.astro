@@ -1,31 +1,38 @@
 ---
 // Hero del sistema definitivo. Ilustración dithered en canvas (blanco->violeta
-// al hover), glitch en el H1, formulario waitlist cableado (data-waitlist).
+// al hover), glitch en el H1 y el formulario de alta (data-signup), cableado
+// por scripts/signup.ts con la validación compartida de lib/signup.ts.
 import { getLang, useT } from '../../../lib/i18n';
+import { JOB_ROLES } from '../../../lib/signup';
 
 const lang = getLang(Astro.url);
 const tt = useT(lang).hero;
-const a11y = useT(lang).a11y;
+const p = (path: string) => (lang === 'es' ? `/es${path}` : path);
 
 // Las capas de glitch del H1 son pseudoelementos, así que su texto tiene que
 // viajar por CSS. Se lo pasamos como custom property para que siga al idioma
 // (antes iba hardcodeado en inglés y se veía sobre el titular español).
 const glitchText = `'${`${tt.line1}\\A ${tt.line2}`.replace(/'/g, "\\'")}'`;
 
-// Mensajes de estado del formulario: los lee waitlist.ts desde el <form>.
-const waitlistMsgs = JSON.stringify({
+// Mensajes de estado del formulario: los lee scripts/signup.ts desde el <form>.
+const signupMsgs = JSON.stringify({
   sending: tt.sending,
-  okRegistered: tt.okRegistered,
+  okTitle: tt.okTitle,
   okText: tt.okText,
+  errFullName: tt.errFullName,
   errEmail: tt.errEmail,
-  errRegion: tt.errRegion,
+  errJobRole: tt.errJobRole,
+  errJobRoleOther: tt.errJobRoleOther,
+  errXUrl: tt.errXUrl,
+  errLinkedinUrl: tt.errLinkedinUrl,
+  errFields: tt.errFields,
   errRateLimited: tt.errRateLimited,
   errNetwork: tt.errNetwork,
   errGeneric: tt.errGeneric,
 });
 ---
 
-<header class="hero" id="waitlist">
+<header class="hero" id="signup">
   <canvas id="hero-fx" class="hero__fx" aria-hidden="true"></canvas>
 
   <div class="container hero__inner">
@@ -38,33 +45,88 @@ const waitlistMsgs = JSON.stringify({
 
       <p class="hero__body">{tt.body}</p>
 
-      <p class="hero__waitline">
+      <p class="hero__lead">
         <span class="spots"><span class="spots__dot" aria-hidden="true"></span>{tt.spots}</span>
-        {tt.waitline}
+        {tt.signupLine}
       </p>
 
-      <form class="hero__form" data-waitlist data-msgs={waitlistMsgs} novalidate>
+      <form class="hero__form signup" data-signup data-msgs={signupMsgs} novalidate>
         <label class="hero__hp" aria-hidden="true">
           Do not fill this field
           <input type="text" name="_hp" tabindex="-1" autocomplete="off" />
         </label>
-        <input type="hidden" name="region" value="" />
 
-        <div class="hero__field field">
-          <input
-            type="email" name="email" required autocomplete="email" inputmode="email"
-            spellcheck="false" placeholder={tt.emailPlaceholder} aria-label={a11y.email}
-          />
+        <div class="signup__grid">
+          <div class="signup__row">
+            <label class="signup__label" for="signup-fullName">{tt.labelFullName} <span class="signup__req" aria-hidden="true">*</span></label>
+            <input
+              class="field signup__input" id="signup-fullName" type="text" name="fullName" required
+              maxlength="120" autocomplete="name" placeholder={tt.phFullName}
+              aria-describedby="signup-fullName-err"
+            />
+            <span class="signup__err" id="signup-fullName-err" data-error="fullName"></span>
+          </div>
+
+          <div class="signup__row">
+            <label class="signup__label" for="signup-email">{tt.labelEmail} <span class="signup__req" aria-hidden="true">*</span></label>
+            <input
+              class="field signup__input" id="signup-email" type="email" name="email" required
+              maxlength="254" autocomplete="email" inputmode="email" spellcheck="false"
+              placeholder={tt.phEmail} aria-describedby="signup-email-err"
+            />
+            <span class="signup__err" id="signup-email-err" data-error="email"></span>
+          </div>
+
+          <div class="signup__row">
+            <label class="signup__label" for="signup-jobRole">{tt.labelJobRole} <span class="signup__req" aria-hidden="true">*</span></label>
+            <select
+              class="field signup__input signup__select" id="signup-jobRole" name="jobRole" required
+              aria-describedby="signup-jobRole-err"
+            >
+              <option value="" selected disabled>{tt.jobRolePlaceholder}</option>
+              {JOB_ROLES.map((role) => <option value={role}>{tt.jobRoles[role]}</option>)}
+            </select>
+            <span class="signup__err" id="signup-jobRole-err" data-error="jobRole"></span>
+          </div>
+
+          <div class="signup__row" data-other hidden>
+            <label class="signup__label" for="signup-jobRoleOther">{tt.labelJobRoleOther} <span class="signup__req" aria-hidden="true">*</span></label>
+            <input
+              class="field signup__input" id="signup-jobRoleOther" type="text" name="jobRoleOther"
+              maxlength="80" autocomplete="organization-title" placeholder={tt.phJobRoleOther}
+              aria-describedby="signup-jobRoleOther-err"
+            />
+            <span class="signup__err" id="signup-jobRoleOther-err" data-error="jobRoleOther"></span>
+          </div>
+
+          <div class="signup__row">
+            <label class="signup__label" for="signup-xUrl">{tt.labelXUrl} <span class="signup__opt">({tt.optional})</span></label>
+            <input
+              class="field signup__input" id="signup-xUrl" type="url" name="xUrl" maxlength="200"
+              inputmode="url" spellcheck="false" autocomplete="url" placeholder={tt.phXUrl}
+              aria-describedby="signup-xUrl-err"
+            />
+            <span class="signup__err" id="signup-xUrl-err" data-error="xUrl"></span>
+          </div>
+
+          <div class="signup__row">
+            <label class="signup__label" for="signup-linkedinUrl">{tt.labelLinkedinUrl} <span class="signup__opt">({tt.optional})</span></label>
+            <input
+              class="field signup__input" id="signup-linkedinUrl" type="url" name="linkedinUrl" maxlength="200"
+              inputmode="url" spellcheck="false" autocomplete="url" placeholder={tt.phLinkedinUrl}
+              aria-describedby="signup-linkedinUrl-err"
+            />
+            <span class="signup__err" id="signup-linkedinUrl-err" data-error="linkedinUrl"></span>
+          </div>
         </div>
 
-        <div class="region" data-region role="group" aria-label={a11y.region}>
-          <span class="region__label">{tt.regionLabel}</span>
-          <button type="button" data-value="EU" aria-pressed="false">EU</button>
-          <button type="button" data-value="LATAM" aria-pressed="false">Latam</button>
-          <button type="button" data-value="USA" aria-pressed="false">USA</button>
+        <div class="signup__actions">
+          <button type="submit" class="btn btn-primary" data-submit>{tt.submit}</button>
+          <p class="signup__legal">
+            <span class="signup__req" aria-hidden="true">*</span> {tt.requiredNote} ·
+            {tt.legalPre} <a href={p('/terms')}>{tt.legalTerms}</a> {tt.legalAnd} <a href={p('/privacy')}>{tt.legalPrivacy}</a>.
+          </p>
         </div>
-
-        <button type="submit" class="btn btn-primary" data-submit>{tt.submit}</button>
 
         <p class="hero__status" data-status role="status" aria-live="polite"></p>
       </form>
@@ -155,7 +217,7 @@ const waitlistMsgs = JSON.stringify({
     margin-bottom: 52px;
   }
 
-  .hero__waitline {
+  .hero__lead {
     display: flex; align-items: center; flex-wrap: wrap;
     font-family: var(--font-sans);
     color: var(--color-muted);
@@ -178,40 +240,47 @@ const waitlistMsgs = JSON.stringify({
     100% { box-shadow: 0 0 0 0 transparent; }
   }
 
-  .hero__form { display: flex; flex-direction: column; gap: 18px; align-items: flex-start; width: 100%; max-width: 540px; }
+  .hero__form { display: flex; flex-direction: column; gap: 18px; align-items: flex-start; width: 100%; max-width: 640px; }
   .hero__hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-  .hero__field { width: 100%; display: flex; align-items: center; padding: 0; }
-  .hero__field input {
-    flex: 1; background: transparent; border: 0; outline: none; color: var(--color-text);
-    caret-color: var(--color-violet); font-family: var(--font-sans); font-size: 16px; padding: 0 16px; height: 100%;
-  }
-  .hero__field input::placeholder { color: #6a6a6e; }
 
-  /* flex-wrap: a 320px los 3 botones + la etiqueta no caben en una línea y se
-     salían de la pantalla (la subida a 44px de alto lo empeoró) */
-  .region { display: inline-flex; flex-wrap: wrap; max-width: 100%; border: 1px solid var(--color-line); }
-  .region__label {
-    display: flex; align-items: center; padding: 0 16px;
-    border-right: 1px solid var(--color-line);
-    font-family: var(--font-mono); color: var(--color-muted);
-    font-size: 12px; letter-spacing: 0.04em; white-space: nowrap;
-  }
-  .region button {
-    background: transparent; border: 0; color: var(--color-muted); cursor: pointer;
+  /* formulario de alta: rejilla de 2 columnas que pasa a 1 en móvil */
+  .signup__grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+  .signup__row { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .signup__row[hidden] { display: none; }
+  .signup__label {
     font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em;
-    /* 44px: eran 38 y son controles de formulario en móvil */
-    min-height: 44px; padding: 0 18px;
-    transition: background var(--dur-micro) var(--ease), color var(--dur-micro) var(--ease);
+    color: var(--color-muted);
   }
-  .region button + button { border-left: 1px solid var(--color-line); }
-  .region button:hover { color: var(--color-text); }
-  .region button[aria-pressed='true'] { background: var(--color-violet); color: #fff; }
+  .signup__req { color: var(--color-violet-2); }
+  .signup__opt { color: #6a6a6e; }
+  .signup__input { width: 100%; min-width: 0; caret-color: var(--color-violet); }
+  .signup__input[aria-invalid='true'] { border-color: #ff6b6b; }
+  .signup__select {
+    appearance: none; cursor: pointer; padding-right: 40px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--color-muted) 50%),
+      linear-gradient(135deg, var(--color-muted) 50%, transparent 50%);
+    background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+  .signup__select:invalid { color: #6a6a6e; }
+  .signup__select option { background: var(--color-surface); color: var(--color-text); }
+  .signup__err { min-height: 0; font-family: var(--font-mono); font-size: 12px; color: #ff8a8a; }
+  .signup__err:empty { display: none; }
+  .signup__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 20px; }
+  .signup__legal { max-width: 40ch; font-size: 12.5px; line-height: 1.5; color: var(--color-muted); }
+  .signup__legal a { color: var(--color-link); text-decoration: underline; text-decoration-color: var(--color-link-line); }
+  .signup[data-done='true'] .signup__grid,
+  .signup[data-done='true'] .signup__actions { opacity: 0.45; }
 
   .hero__status {
     min-height: 1.2em; margin-top: 2px;
     font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.02em;
     color: var(--color-violet-2);
   }
+  .hero__status[data-state='error'] { color: #ff8a8a; }
+  .hero__status[data-state='ok'] { font-size: 14px; color: var(--color-text); }
+  .hero__status[data-state='ok'] strong { color: var(--color-violet-2); font-weight: 600; }
 
   @media (max-width: 860px) {
     .hero__fx { opacity: 0.5; }
@@ -224,6 +293,7 @@ const waitlistMsgs = JSON.stringify({
     .hero { min-height: 0; padding-block: var(--space-12) var(--space-16); }
     .hero__title { white-space: normal; }
     .hero__title::before, .hero__title::after { display: none; }
+    .signup__grid { grid-template-columns: 1fr; }
   }
 </style>
 
@@ -231,19 +301,4 @@ const waitlistMsgs = JSON.stringify({
   import { initHeroDither } from '../../../scripts/heroDither';
   initHeroDither('hero-fx');
 
-  // control segmentado de región -> input oculto name="region"
-  document.querySelectorAll<HTMLElement>('[data-region]').forEach((group) => {
-    // `closest('form')` y no `parentElement`: con el padre directo, envolver el
-    // grupo en un div cualquiera hace que el input deje de encontrarse, y
-    // entonces no se actualiza nunca y el formulario rechaza siempre por región,
-    // sin error visible en consola.
-    const hidden = group.closest('form')?.querySelector<HTMLInputElement>('input[name="region"]');
-    group.querySelectorAll('button').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', 'false'));
-        btn.setAttribute('aria-pressed', 'true');
-        if (hidden) hidden.value = btn.dataset.value ?? '';
-      });
-    });
-  });
 </script>

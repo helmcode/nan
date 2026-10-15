@@ -6,10 +6,7 @@
 // and TS will merge both declarations when it IS present locally.
 declare namespace Cloudflare {
   interface Env {
-    RESEND_API_KEY: string;
-    RESEND_FROM_EMAIL: string;
     CLOUD_API_URL: string;
-    CLOUD_API_WAITLIST_KEY: string;
     // Optional: both fall back to the defaults in src/lib/rateLimits.ts.
     RATE_LIMIT_RPM?: string;
     RATE_LIMIT_PARALLEL?: string;
