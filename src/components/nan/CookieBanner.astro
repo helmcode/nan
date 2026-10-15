@@ -1,5 +1,5 @@
 ---
-// Banner de cookies con guiño retro Win95. No rastreamos nada; es un chiste.
+// Cookie banner with a retro Win95 wink. We track nothing; it's a joke.
 import { getLang, useT } from '../../lib/i18n';
 
 const lang = getLang(Astro.url);
@@ -7,7 +7,7 @@ const tt = useT(lang).cookie;
 const a11y = useT(lang).a11y;
 ---
 
-<!-- No es modal (no bloquea la página), así que region y no dialog. -->
+<!-- Not modal (it doesn't block the page), so a region, not a dialog. -->
 <div class="cwin" data-cookie hidden role="region" aria-label={a11y.cookies}>
   <div class="cwin__bar">
     <span class="cwin__title">{tt.title}</span>
@@ -45,8 +45,8 @@ const a11y = useT(lang).a11y;
   }
   .cwin[hidden] { display: none; }
 
-  /* En móvil ocupaba el centro-abajo y tapaba los botones del hero.
-     Pegado al borde y a todo el ancho estorba mucho menos. */
+  /* On mobile it sat bottom-centre and covered the hero buttons.
+     Full width and pinned to the edge, it gets in the way much less. */
   @media (max-width: 620px) {
     .cwin {
       left: 8px; right: 8px; bottom: 8px;
@@ -57,13 +57,13 @@ const a11y = useT(lang).a11y;
 
   .cwin__bar {
     display: flex; align-items: center; justify-content: space-between;
-    /* el azul claro original dejaba el título en 3.0:1; oscurecido para pasar AA */
+    /* the original light blue left the title at 3.0:1; darkened to pass AA */
     background: linear-gradient(90deg, #000080, #0b5c92);
     color: #fff; padding: 3px 4px 3px 7px;
   }
   .cwin__title { font-size: 12px; font-weight: 700; letter-spacing: 0.02em; }
   .cwin__x {
-    /* 18x16 se quedaba por debajo del mínimo de 24x24 */
+    /* 18x16 was below the 24x24 minimum target size */
     width: 26px; height: 24px; line-height: 1; font-size: 14px; color: #000;
     background: #c0c0c0; border: 1px solid #000;
     box-shadow: inset -1px -1px #808080, inset 1px 1px #fff; cursor: pointer;
@@ -89,7 +89,7 @@ const a11y = useT(lang).a11y;
   .cwin__btn:active { box-shadow: inset 1px 1px #808080, inset -1px -1px #fff; }
   .cwin__btn:focus-visible { outline: 1px dotted #000; outline-offset: 2px; }
 
-  /* ---------- nyan cat cruzando ---------- */
+  /* ---------- nyan cat crossing ---------- */
   :global(.nyan) {
     position: fixed; left: 0; z-index: 300; display: flex; align-items: center;
     pointer-events: none; animation: nyan-fly 2.6s linear forwards;
@@ -113,7 +113,7 @@ const a11y = useT(lang).a11y;
 <script>
   const KEY = 'nan-cats-ack';
   const el = document.querySelector<HTMLElement>('[data-cookie]');
-  // ¿ya se cerró en esta sesión? (sessionStorage -> reaparece en una sesión nueva)
+  // already closed this session? (sessionStorage -> it comes back in a new session)
   let acked = false;
   try { acked = sessionStorage.getItem(KEY) === '1'; } catch {}
   const nyan = () => {
@@ -128,10 +128,10 @@ const a11y = useT(lang).a11y;
 
   if (el && !acked) {
     el.hidden = false;
-    // el gato aparece con CUALQUIER botón que cierre el banner (incluida la X)
+    // the cat appears with ANY button that closes the banner (the X included)
     const dismiss = () => { nyan(); el.hidden = true; try { sessionStorage.setItem(KEY, '1'); } catch {} };
     el.querySelectorAll('[data-cookie-close]').forEach((b) => b.addEventListener('click', dismiss));
-    // Escape también lo descarta, mientras el foco esté dentro del aviso
+    // Escape dismisses it too, while focus is inside the notice
     el.addEventListener('keydown', (e) => { if (e.key === 'Escape') dismiss(); });
   }
 </script>
