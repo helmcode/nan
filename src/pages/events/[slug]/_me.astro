@@ -1,5 +1,6 @@
 ---
 // Estado del participante (SPEC §8.2): equipo en `team`, ficha + entrega en `solo`.
+import type { MembershipStrings } from '../../../lib/eventEntitlement';
 import '../../../styles/global.css';
 import NanPage from '../../../layouts/NanPage.astro';
 import EventHeader from '../../../components/events/EventHeader.astro';
@@ -24,6 +25,7 @@ const isTeam = ev.format === 'team';
 const options = tObj<Record<string, string>>('events.options', locale);
 const label = (v?: string | null) => optionLabel(options, v);
 const m = tObj<Record<string, string>>('events.me', locale);
+const membership = tObj<MembershipStrings>('events.membership', locale);
 const login = tObj<LoginStrings>('events.login', locale);
 const submissionUrl = withLang(`/events/${slug}/submission`, locale);
 const title = isTeam ? m.title : m.titleSolo;
@@ -86,7 +88,7 @@ const absent = (team?.members ?? []).filter((x) => x.id !== participant?.id);
               {ev.phase === 'building' && absent.length > 0 && (
                 <div class="mt-6">
                   <ReassignForm client:visible slug={slug} members={absent.map((x) => ({ id: x.id, name: x.name, discord_user: x.discord_user ?? undefined }))}
-                    ctaLabel={m.reassignCta} info={tObj('events.me.reassignInfo', locale)}
+                    ctaLabel={m.reassignCta} membership={membership} info={tObj('events.me.reassignInfo', locale)}
                     labels={{ pending: m.reassignPending, filled: m.reassignFilled, noPool: m.reassignNoPool, already: m.reassignAlready, selectAbsent: m.reassignSelectAbsent, errorSubmit: m.reassignErrorSubmit, sending: m.reassignSending, refresh: m.reassignRefresh }} />
                 </div>
               )}

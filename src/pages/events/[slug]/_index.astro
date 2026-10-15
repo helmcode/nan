@@ -1,6 +1,7 @@
 ---
 // Landing de un evento (SPEC §8.2): copy desde la API, CTA según fase/ventanas.
 // El marcado sigue escrito con utilidades de Tailwind (tema → tokens, ver styles/global.css).
+import type { MembershipStrings } from '../../../lib/eventEntitlement';
 import '../../../styles/global.css';
 import NanPage from '../../../layouts/NanPage.astro';
 import EventHeader from '../../../components/events/EventHeader.astro';
@@ -39,6 +40,7 @@ const hasCapacity = capacity > 0;
 const full = hasCapacity && ev.counts.registered >= capacity + reserve;
 
 const form = tObj<FormStrings>('events.form', locale);
+const membership = tObj<MembershipStrings>('events.membership', locale);
 const options = tObj<Record<string, string>>('events.options', locale);
 const already = tObj<Record<string, string>>('events.alreadyRegistered', locale);
 const login = tObj<LoginStrings>('events.login', locale);
@@ -256,7 +258,7 @@ const closedNote = fill(cap.closedNote, { cap: capacity, res: reserve });
             ) : !sessionOk ? (
               <LoginForm client:load t={login} />
             ) : (
-              <RegisterForm client:load slug={slug} t={form} meHref={meUrl}
+              <RegisterForm client:load slug={slug} t={form} membership={membership} meHref={meUrl}
                 discordMode={ev.registration.discord_user}
                 specialties={ev.registration.specialties ?? []} levels={ev.registration.levels ?? []}
                 options={options} />

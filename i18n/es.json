@@ -239,6 +239,10 @@
       "total": "Total",
       "winner": "🏆 Ganador",
       "notPrizeNote": "No opta al premio."
+    },
+    "membership": {
+      "message": "Los hackathons son para miembros de NaN. Únete a la comunidad (desde 14,99 €/mes) para participar.",
+      "cta": "Únete a la comunidad"
     }
   },
   "nan": {

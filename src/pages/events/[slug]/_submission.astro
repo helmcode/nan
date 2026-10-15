@@ -1,5 +1,6 @@
 ---
 // Alta/edición de la entrega (SPEC §8.2). Solo edita mientras `windows.submission.open`.
+import type { MembershipStrings } from '../../../lib/eventEntitlement';
 import '../../../styles/global.css';
 import NanPage from '../../../layouts/NanPage.astro';
 import EventHeader from '../../../components/events/EventHeader.astro';
@@ -25,6 +26,7 @@ const canEdit = ev.windows.submission.open;
 const beforeOpen = ev.phase === 'draft' || ev.phase === 'published' || ev.phase === 'registration' || ev.phase === 'building_pending';
 
 const s = tObj<Record<string, string>>('events.submission', locale);
+const membership = tObj<MembershipStrings>('events.membership', locale);
 const options = tObj<Record<string, string>>('events.options', locale);
 const login = tObj<LoginStrings>('events.login', locale);
 const fill = (str: string, vars: Record<string, string>) =>
@@ -71,7 +73,7 @@ const readonlyRows = existing
       ) : isTeam && !hasTeam ? (
         <p class="text-sm text-neutral-400">{s.noTeam}</p>
       ) : canEdit ? (
-        <SubmissionForm client:load slug={slug} t={s} existing={existing}
+        <SubmissionForm client:load slug={slug} t={s} membership={membership} existing={existing}
           fields={fields} format={ev.format} hasParticipant={hasParticipant}
           checks={checks} autoMax={ev.voting.auto_max}
           discordMode={ev.registration.discord_user}

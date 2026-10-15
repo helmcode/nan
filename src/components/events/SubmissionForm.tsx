@@ -2,6 +2,8 @@ import { useState } from 'preact/hooks';
 import type { TargetedSubmitEvent } from 'preact';
 import { optionLabel } from '../../lib/i18n';
 import type { Check } from '../../lib/events';
+import { isEntitlementRequired, type MembershipStrings } from '../../lib/eventEntitlement';
+import MembershipRequired from './MembershipRequired';
 
 type FieldMode = 'required' | 'optional' | 'hidden';
 interface Fields {
@@ -43,6 +45,8 @@ function toResult(raw: unknown): Result | null {
 interface Props {
   slug: string;
   t: Record<string, string>;
+  /** Notice for `entitlement_required` (no plan that unlocks hackathons). */
+  membership: MembershipStrings;
   existing?: Existing | null;
   /** Modo de cada campo opcional del evento (SPEC §3.3). `title` y `public_url` son siempre obligatorios. */
   fields: Fields;
@@ -70,7 +74,7 @@ interface Props {
  * (equipo o participante) a partir de la sesión.
  */
 export default function SubmissionForm({
-  slug, t, existing, fields, format, hasParticipant, checks, autoMax, discordMode, specialties, levels, options,
+  slug, t, membership, existing, fields, format, hasParticipant, checks, autoMax, discordMode, specialties, levels, options,
 }: Props) {
   const [f, setF] = useState({
     title: existing?.title ?? '',
@@ -86,6 +90,7 @@ export default function SubmissionForm({
   const [submitted, setSubmitted] = useState(Boolean(existing));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [needsPlan, setNeedsPlan] = useState(false);
   const [withdrawn, setWithdrawn] = useState(false);
   const askParticipant = format === 'solo' && !hasParticipant && !submitted;
   const mediaConfigured = fields.image_url !== 'hidden' || fields.video_url !== 'hidden';
@@ -110,6 +115,7 @@ export default function SubmissionForm({
     e.preventDefault();
     setBusy(true);
     setError('');
+    setNeedsPlan(false);
     const body: Record<string, unknown> = { ...f };
     if (askParticipant) {
       const part: Record<string, string> = { name: p.name.trim() };
@@ -141,6 +147,7 @@ export default function SubmissionForm({
     const code = b?.error ?? '';
     const data = b?.data ?? {};
     if (resp.status === 401) setError(t.errorLogin);
+    else if (isEntitlementRequired(code)) setNeedsPlan(true);
     else if (code === 'submission_closed') setError(t.errorClosed);
     else if (code === 'validation_failed') {
       const names = (Array.isArray(data.fields) ? data.fields as string[] : []).map((k) => fieldLabel[k] ?? k);
@@ -297,6 +304,7 @@ export default function SubmissionForm({
         )}
       </div>
       {error && <p role="alert" class="text-sm font-mono text-red-400">{error}</p>}
+      {needsPlan && <MembershipRequired t={membership} />}
       {result && checks.length > 0 && (
         <div class="mt-4 text-sm font-mono text-neutral-300">
           <p>{t.checks}: {result.auto_points}/{autoMax}</p>

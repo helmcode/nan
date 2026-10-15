@@ -1,6 +1,8 @@
 import { useState } from 'preact/hooks';
 import type { TargetedSubmitEvent } from 'preact';
 import { optionLabel } from '../../lib/i18n';
+import { isEntitlementRequired, type MembershipStrings } from '../../lib/eventEntitlement';
+import MembershipRequired from './MembershipRequired';
 
 export interface FormStrings {
   name: string; discord: string; discordHelp: string; discordOptional: string;
@@ -15,7 +17,25 @@ type Status =
   | { kind: 'idle' }
   | { kind: 'submitting' }
   | { kind: 'success'; reserve: boolean }
-  | { kind: 'error'; message: string };
+  | { kind: 'error'; message: string }
+  | { kind: 'membership' };
+
+type ErrorKey = 'errorFull' | 'errorClosed' | 'errorEligible' | 'errorRate' | 'errorDiscord' | 'errorServer';
+
+/**
+ * Which message a failed registration shows. `entitlement_required` (no plan
+ * that unlocks hackathons) is its own notice with a CTA; any other 403 keeps
+ * the "not eligible" message.
+ */
+export function registerErrorKey(status: number, code: string): ErrorKey | 'membership' {
+  if (isEntitlementRequired(code)) return 'membership';
+  if (code === 'registration_full') return 'errorFull';
+  if (code === 'registration_closed') return 'errorClosed';
+  if (status === 403 || code === 'not_eligible') return 'errorEligible';
+  if (status === 429 || code === 'rate_limited') return 'errorRate';
+  if (code === 'discord_required') return 'errorDiscord';
+  return 'errorServer';
+}
 
 /**
  * Inscripción a un evento (SPEC §6.3 `POST /api/events/{slug}/register`).
@@ -24,9 +44,10 @@ type Status =
  * no se pregunta). `options` traduce cada valor; los que no conoce (v3 los deja
  * escribir a quien organiza) salen tal cual, con la inicial en mayúscula.
  */
-export default function RegisterForm({ slug, t, meHref, discordMode, specialties, levels, options }: {
+export default function RegisterForm({ slug, t, membership, meHref, discordMode, specialties, levels, options }: {
   slug: string;
   t: FormStrings;
+  membership: MembershipStrings;
   meHref: string;
   discordMode: 'required' | 'optional' | 'none';
   specialties: string[];
@@ -74,14 +95,8 @@ export default function RegisterForm({ slug, t, meHref, discordMode, specialties
       setStatus({ kind: 'success', reserve: !!body?.data?.is_reserve });
       return;
     }
-    let message = t.errorServer;
-    const code = body?.error ?? '';
-    if (code === 'registration_full') message = t.errorFull;
-    else if (code === 'registration_closed') message = t.errorClosed;
-    else if (resp.status === 403 || code === 'not_eligible') message = t.errorEligible;
-    else if (resp.status === 429 || code === 'rate_limited') message = t.errorRate;
-    else if (code === 'discord_required') message = t.errorDiscord;
-    setStatus({ kind: 'error', message });
+    const key = registerErrorKey(resp.status, body?.error ?? '');
+    setStatus(key === 'membership' ? { kind: 'membership' } : { kind: 'error', message: t[key] });
   }
 
   if (status.kind === 'success') {
@@ -143,6 +158,7 @@ export default function RegisterForm({ slug, t, meHref, discordMode, specialties
         </div>
       )}
       {err && <p role="alert" class="font-mono text-sm text-red-400">{err}</p>}
+      {status.kind === 'membership' && <MembershipRequired t={membership} />}
       <button type="submit" disabled={submitting} class="btn btn-primary w-full disabled:opacity-50">
         {submitting ? t.submitting : t.submit}
       </button>

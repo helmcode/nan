@@ -1,4 +1,18 @@
 import { useState, useEffect } from 'preact/hooks';
+import { isEntitlementRequired, type MembershipStrings } from '../../lib/eventEntitlement';
+import MembershipRequired from './MembershipRequired';
+
+type VoteState = 'idle' | 'busy' | 'voted' | 'self' | 'login' | 'not_eligible' | 'closed' | 'membership' | 'error';
+
+/** State after a failed vote. `entitlement_required` = no plan that unlocks hackathons. */
+export function voteOutcome(status: number, code: string): VoteState {
+  if (status === 401) return 'login';
+  if (isEntitlementRequired(code)) return 'membership';
+  if (code === 'self_vote') return 'self';
+  if (code === 'not_eligible') return 'not_eligible';
+  if (code === 'voting_closed') return 'closed';
+  return 'error';
+}
 
 /**
  * Botón de voto de una entrega (SPEC §6.3 `POST /api/events/{slug}/vote`).
@@ -6,13 +20,13 @@ import { useState, useEffect } from 'preact/hooks';
  * `nan:voted` para que solo una muestre el ✓.
  */
 export default function VoteButton(
-  { slug, submissionId, votedSubmissionId, loginHref, t }:
-  { slug: string; submissionId: string; votedSubmissionId?: string | null; loginHref: string; t: Record<string, string> }
+  { slug, submissionId, votedSubmissionId, loginHref, t, membership }:
+  { slug: string; submissionId: string; votedSubmissionId?: string | null; loginHref: string; t: Record<string, string>; membership: MembershipStrings }
 ) {
   // ¿Ya votó (a cualquier entrega)? ¿Es ESTA la entrega votada?
   const hasVoted = Boolean(votedSubmissionId);
   const initial: 'idle' | 'voted' = votedSubmissionId === submissionId ? 'voted' : 'idle';
-  const [state, setState] = useState<'idle' | 'busy' | 'voted' | 'self' | 'login' | 'not_eligible' | 'closed' | 'error'>(initial);
+  const [state, setState] = useState<VoteState>(initial);
 
   useEffect(() => {
     // Otra tarjeta registró un voto: si fue para esta entrega, marca ✓; si fue
@@ -39,18 +53,14 @@ export default function VoteButton(
       return;
     }
     const body = await resp.json().catch(() => null) as { error?: string } | null;
-    const code = body?.error ?? '';
-    if (resp.status === 401) { setState('login'); return; }
-    if (code === 'self_vote') { setState('self'); return; }
-    if (code === 'not_eligible') { setState('not_eligible'); return; }
-    if (code === 'voting_closed') { setState('closed'); return; }
-    setState('error');
+    setState(voteOutcome(resp.status, body?.error ?? ''));
   }
 
   if (state === 'voted') return <span class="font-mono text-xs text-violet-400">{t.yourVote}</span>;
   if (state === 'self') return <span class="font-mono text-xs text-neutral-500">{t.selfVote}</span>;
   if (state === 'login') return <a href={loginHref} class="font-mono text-xs text-violet-400">{t.loginToVote}</a>;
   if (state === 'not_eligible') return <span class="font-mono text-xs text-neutral-500">{t.notEligible}</span>;
+  if (state === 'membership') return <MembershipRequired t={membership} compact />;
   if (state === 'closed') return <span class="font-mono text-xs text-neutral-500">{t.votingClosed}</span>;
   return (
     <button onClick={vote} disabled={state === 'busy'}

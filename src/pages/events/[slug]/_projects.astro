@@ -1,5 +1,6 @@
 ---
 // Galería pública de entregas (SPEC §8.2). Vacía hasta que `windows.gallery.visible`.
+import type { MembershipStrings } from '../../../lib/eventEntitlement';
 import '../../../styles/global.css';
 import NanPage from '../../../layouts/NanPage.astro';
 import EventHeader from '../../../components/events/EventHeader.astro';
@@ -25,6 +26,7 @@ const list = projects ?? [];
 const myVote = me?.my_vote ?? null;
 const canVote = ev.windows.voting.open;
 const pr = tObj<Record<string, string>>('events.projects', locale);
+const membership = tObj<MembershipStrings>('events.membership', locale);
 
 // Solo http/https en enlaces de proyecto (defensa en profundidad frente a
 // javascript:, data:, etc. aunque el backend ya valide).
@@ -61,7 +63,7 @@ const safeUrl = (u?: string): string | null =>
             {canVote && (
               <div class="mt-5">
                 <VoteButton client:visible slug={slug} submissionId={p.id} votedSubmissionId={myVote}
-                  loginHref={withLang(`/events/${slug}`, locale)} t={pr} />
+                  loginHref={withLang(`/events/${slug}`, locale)} t={pr} membership={membership} />
               </div>
             )}
           </article>

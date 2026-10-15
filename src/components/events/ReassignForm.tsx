@@ -1,4 +1,6 @@
 import { useState } from 'preact/hooks';
+import { isEntitlementRequired, type MembershipStrings } from '../../lib/eventEntitlement';
+import MembershipRequired from './MembershipRequired';
 
 interface Member {
   id: string;
@@ -30,15 +32,18 @@ export default function ReassignForm({
   ctaLabel,
   info,
   labels,
+  membership,
 }: {
   slug: string;
   members: Member[];
   ctaLabel: string;
   info: ReassignInfo;
   labels: ReassignLabels;
+  /** Notice for `entitlement_required` (no plan that unlocks hackathons). */
+  membership: MembershipStrings;
 }) {
   const [ghostId, setGhostId] = useState('');
-  const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
+  const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error' | 'membership'>('idle');
   const [result, setResult] = useState('');
   // La convocatoria que se ejecuta cambia el equipo (sale el ausente, entra la
   // reserva), y la lista de compañeros viene del servidor: sin recargar seguiría
@@ -61,6 +66,10 @@ export default function ReassignForm({
         if (resp.status === 409 && body?.error === 'already_voted') {
           setResult(labels.already);
           setState('done');
+          return;
+        }
+        if (isEntitlementRequired(body?.error)) {
+          setState('membership');
           return;
         }
         setState('error');
@@ -131,6 +140,7 @@ export default function ReassignForm({
         ))}
       </select>
       {state === 'error' && <p role="alert" class="text-sm text-red-400 font-mono">{labels.errorSubmit}</p>}
+      {state === 'membership' && <MembershipRequired t={membership} />}
       <button type="button" onClick={submit} disabled={state === 'busy' || !ghostId}
         class="font-mono text-xs px-5 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-50">
         {state === 'busy' ? labels.sending : ctaLabel}
