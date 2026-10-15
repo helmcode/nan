@@ -241,7 +241,7 @@
       "notPrizeNote": "Not eligible for the prize."
     },
     "membership": {
-      "message": "Hackathons are for NaN members. Join the community (from 14.99€/month) to take part.",
+      "message": "Hackathons are for NaN members. Join the community (from €14.99/month) to take part.",
       "cta": "Join the community"
     }
   },

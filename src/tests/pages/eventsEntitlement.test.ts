@@ -58,7 +58,7 @@ describe('copy', () => {
   test('says who hackathons are for and the starting price', () => {
     const en = tObj<MembershipStrings>('events.membership', 'en');
     const es = tObj<MembershipStrings>('events.membership', 'es');
-    expect(en.message).toBe('Hackathons are for NaN members. Join the community (from 14.99€/month) to take part.');
+    expect(en.message).toBe('Hackathons are for NaN members. Join the community (from €14.99/month) to take part.');
     expect(es.message).toBe('Los hackathons son para miembros de NaN. Únete a la comunidad (desde 14,99 €/mes) para participar.');
   });
 });
