@@ -191,15 +191,18 @@ const pathname = Astro.url.pathname;
 
   /* Con seis enlaces la barra horizontal ya no cabe en la franja estrecha de
      escritorio: en español desbordaba 87px a 861 y 50px a 900 (el inglés, 53 y
-     16). Se aprieta el espaciado y el cuerpo solo en esa franja; el min-height
-     de 28px mantiene el área táctil por encima del mínimo de 24. Query acotada
-     a propósito, para no filtrar nada al panel de móvil. */
-  @media (min-width: 861px) and (max-width: 1100px) {
-    .nav__links { gap: 18px; }
-    .nav__links > a:not(.btn) { font-size: 13px; }
+     16). Con el botón de Crear cuenta junto a Entrar, la franja llega hasta
+     1240px (a 1101 el español desbordaba 28px) y se aprieta algo más. Se aprieta
+     el espaciado y el cuerpo solo en esa franja; el min-height de 28px mantiene
+     el área táctil por encima del mínimo de 24. Query acotada a propósito, para
+     no filtrar nada al panel de móvil. */
+  @media (min-width: 861px) and (max-width: 1240px) {
+    .nav__links { gap: 12px; }
+    .nav__links > a:not(.btn) { font-size: 12.5px; }
     .nav__lang { font-size: 12px; }
     .nav__lang-opt { padding: 0 5px; }
-    .nav__auth .btn { padding: 0 14px; font-size: 13px; }
+    .nav__auth { gap: 6px; }
+    .nav__auth .btn { padding: 0 10px; font-size: 12px; height: 40px; }
   }
 
   @media (max-width: 860px) {
