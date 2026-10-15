@@ -79,11 +79,15 @@ describe('validateSignup: required fields', () => {
     expect(fieldsOf({ ...valid, fullName: '😀'.repeat(120) }).fullName).toBeUndefined();
   });
 
+  test('mail.com is a real provider and is accepted', () => {
+    expect(fieldsOf({ ...valid, email: 'ada@mail.com' }).email).toBeUndefined();
+  });
+
   test('email: required, valid format, length, blocked domains', () => {
     expect(fieldsOf({ ...valid, email: '' }).email).toBe('required');
     expect(fieldsOf({ ...valid, email: 'not-an-email' }).email).toBe('invalid');
     expect(fieldsOf({ ...valid, email: 'a'.repeat(250) + '@helmcode.com' }).email).toBe('invalid');
-    for (const d of ['example.com', 'example.net', 'example.org', 'test.com', 'mail.com', 'x.test', 'x.invalid', 'x.localhost', 'x.example']) {
+    for (const d of ['example.com', 'example.net', 'example.org', 'test.com', 'x.test', 'x.invalid', 'x.localhost', 'x.example']) {
       expect(fieldsOf({ ...valid, email: `someone@${d}` }).email, d).toBe('invalid');
     }
   });
@@ -118,7 +122,7 @@ describe('validateSignup: required fields', () => {
 describe('blocked email domains (kept in sync with cloud-api)', () => {
   test('the list is exactly this', async () => {
     const { BLOCKED_EMAIL_DOMAINS, BLOCKED_EMAIL_TLDS } = await import('../../lib/signup');
-    expect([...BLOCKED_EMAIL_DOMAINS].sort()).toEqual(['example.com', 'example.net', 'example.org', 'mail.com', 'test.com']);
+    expect([...BLOCKED_EMAIL_DOMAINS].sort()).toEqual(['example.com', 'example.net', 'example.org', 'test.com']);
     expect([...BLOCKED_EMAIL_TLDS].sort()).toEqual(['example', 'invalid', 'localhost', 'test']);
   });
 });

@@ -183,21 +183,67 @@ describe('POST /api/signup: validation (mirrors the backend)', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('a no-JS form post (urlencoded or multipart) gets a plain 415 pointing at the platform signup, never processed or echoed', async () => {
-    const fetchMock = upstream(202);
-    vi.stubGlobal('fetch', fetchMock);
-    for (const ct of ['application/x-www-form-urlencoded', 'multipart/form-data; boundary=x']) {
-      const res: Response = await (POST as any)({
-        request: request(null, { contentType: ct, raw: 'fullName=Ada&email=ada%40helmcode.com' }),
-      });
-      const text = await res.text();
-      expect(res.status, ct).toBe(415);
-      expect(res.headers.get('content-type')).toMatch(/^text\/plain/);
-      expect(res.headers.get('location')).toBeNull();
-      expect(text).toContain('https://cloud.nan.builders/signup');
-      expect(text).not.toMatch(/ada|helmcode/i);
+  describe('no-JS form post (urlencoded or multipart)', () => {
+    const body = 'fullName=Ada+Secret&email=ada.secret%40helmcode.com&_hp=';
+
+    async function post(ct: string, headers: Record<string, string> = {}) {
+      const res: Response = await (POST as any)({ request: request(null, { contentType: ct, raw: body, headers }) });
+      return { res, html: await res.text() };
     }
-    expect(fetchMock).not.toHaveBeenCalled();
+
+    it('answers a 415 HTML page, no JS, linking to the platform signup, without reading or echoing the body', async () => {
+      const fetchMock = upstream(202);
+      vi.stubGlobal('fetch', fetchMock);
+      for (const ct of ['application/x-www-form-urlencoded', 'multipart/form-data; boundary=x']) {
+        const { res, html } = await post(ct);
+        expect(res.status, ct).toBe(415);
+        expect(res.headers.get('content-type')).toBe('text/html; charset=utf-8');
+        expect(res.headers.get('cache-control')).toBe('no-store');
+        expect(res.headers.get('location')).toBeNull();
+        expect(html).toMatch(/^<!doctype html>/i);
+        expect(html).toContain('href="https://cloud.nan.builders/signup"');
+        expect(html).not.toMatch(/<script/i);
+        expect(html).not.toMatch(/secret|helmcode/i);
+      }
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('locks the page down with its own CSP (no scripts, inline styles only)', async () => {
+      const { html } = await post('application/x-www-form-urlencoded');
+      expect(html).toContain("default-src 'none'");
+      expect(html).toContain("style-src 'unsafe-inline'");
+    });
+
+    it('is dark, like the site', async () => {
+      const { html } = await post('application/x-www-form-urlencoded');
+      expect(html).toContain('#0B0B0C');
+    });
+
+    it('speaks Spanish when the form was posted from /es', async () => {
+      const { html } = await post('application/x-www-form-urlencoded', { referer: 'https://nan.builders/es?plan=premium' });
+      expect(html).toContain('<html lang="es">');
+      expect(html).toMatch(/JavaScript/);
+      expect(html).toMatch(/Crea tu cuenta/);
+    });
+
+    it('speaks English when the form was posted from the English home, whatever Accept-Language says', async () => {
+      const { html } = await post('application/x-www-form-urlencoded', {
+        referer: 'https://nan.builders/', 'accept-language': 'es-ES,es;q=0.9',
+      });
+      expect(html).toContain('<html lang="en">');
+      expect(html).toMatch(/Create your account/);
+    });
+
+    it('falls back to Accept-Language without a usable Referer', async () => {
+      const es = await post('application/x-www-form-urlencoded', { 'accept-language': 'es-MX,es;q=0.9,en;q=0.8' });
+      expect(es.html).toContain('<html lang="es">');
+      const en = await post('application/x-www-form-urlencoded', { 'accept-language': 'en-GB,en;q=0.9,es;q=0.5' });
+      expect(en.html).toContain('<html lang="en">');
+      const none = await post('application/x-www-form-urlencoded');
+      expect(none.html).toContain('<html lang="en">');
+      const foreign = await post('application/x-www-form-urlencoded', { referer: 'https://evil.example/es', 'accept-language': 'en' });
+      expect(foreign.html).toContain('<html lang="en">');
+    });
   });
 
   it('rejects a non-JSON content type with 415', async () => {

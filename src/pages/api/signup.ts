@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { json } from '../../lib/apiResponse';
-import { signupUrl, validateSignup } from '../../lib/signup';
+import { validateSignup } from '../../lib/signup';
+import { noJsLang, noJsPage } from '../../lib/signupNoJs';
 import { checkSignupRateLimit, clientCountry, forwardSignup, mediaType } from '../../lib/signupServer';
 
 export const prerender = false;
@@ -23,13 +24,15 @@ export const POST: APIRoute = async ({ request }) => {
   const type = mediaType(request.headers.get('content-type'));
   if (FORM_TYPES.has(type)) {
     // No JS (script blocked or failed): the hero form has method="post" so the
-    // data never lands in a URL. The body is never read nor echoed. A redirect
-    // to cloud.nan.builders would be blocked by the page's `form-action 'self'`,
-    // so the browser gets a plain 415 that says where to sign up instead.
-    return new Response(
-      `JavaScript is required to create an account from nan.builders. Sign up at ${signupUrl()}\n`,
-      { status: 415, headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } },
-    );
+    // data never lands in a URL. The body is never read nor echoed; the browser
+    // gets a small page in the visitor's language linking to the platform
+    // signup (see lib/signupNoJs.ts for why it is not a redirect). 415 stays:
+    // it is what happened, and browsers render the page all the same.
+    const lang = noJsLang(request.url, request.headers.get('referer'), request.headers.get('accept-language'));
+    return new Response(noJsPage(lang), {
+      status: 415,
+      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' },
+    });
   }
   if (type !== 'application/json') {
     return json({ ok: false, error: 'unsupported_media_type' }, 415);

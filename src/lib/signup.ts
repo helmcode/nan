@@ -50,7 +50,6 @@ export const BLOCKED_EMAIL_DOMAINS: ReadonlySet<string> = new Set([
   'example.net',
   'example.org',
   'test.com',
-  'mail.com',
 ]);
 export const BLOCKED_EMAIL_TLDS: ReadonlySet<string> = new Set(['test', 'invalid', 'localhost', 'example']);
 // eslint-disable-next-line no-control-regex
