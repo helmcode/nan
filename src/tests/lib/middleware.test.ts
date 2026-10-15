@@ -83,7 +83,7 @@ describe('middleware — enlaces del esquema ?lang=', () => {
 
   test('no redirige las rutas de API: un 301 convertiría un POST en GET', async () => {
     // Hoy ningún cliente llama con `?lang=`; es defensa en profundidad.
-    const { passedThrough, location } = await run('https://nan.builders/api/signup?lang=es');
+    const { passedThrough, location } = await run('https://nan.builders/api/docs/manifest.json?lang=es');
     expect(passedThrough).toBe(true);
     expect(location).toBeNull();
   });
@@ -184,7 +184,7 @@ describe('middleware — cabeceras de seguridad', () => {
   });
 
   test('también en las rutas de API', async () => {
-    const { res } = await run('https://nan.builders/api/signup');
+    const { res } = await run('https://nan.builders/api/docs/manifest.json');
     expect(res.headers.get('x-content-type-options')).toBe('nosniff');
   });
 });

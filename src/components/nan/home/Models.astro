@@ -1,11 +1,11 @@
 ---
 import modelos from '../../../data/modelos.json';
 import { getLang, useT } from '../../../lib/i18n';
+import { signupUrl } from '../../../lib/signup';
 import { homeQuotaLabel } from '../../../lib/modelCatalog';
 
 const lang = getLang(Astro.url);
 const tt = useT(lang).models;
-const home = lang === 'es' ? '/es' : '/';
 
 // la data es la fuente de verdad (ES); en EN traducimos la cuota al vuelo.
 // La funcion vive en modelCatalog.ts, donde un test la mira: aqui dentro no
@@ -57,7 +57,7 @@ const total = modelos.categorias.reduce((n, c) => n + c.modelos.length, 0);
     </div>
 
     <div class="models__foot">
-      <a class="btn btn-primary" href={`${home}#signup`}>{tt.cta}</a>
+      <a class="btn btn-primary" href={signupUrl()} rel="noopener">{tt.cta}</a>
     </div>
   </div>
 </section>

@@ -77,7 +77,7 @@ const ogLocale = locale === 'es' ? 'es_ES' : 'en_US';
  *  - `font-src` se queda en 'self': las fuentes van autohospedadas, no vienen
  *    de Google. `style-src` no lista fonts.googleapis.com por lo mismo, pero
  *    mantiene 'unsafe-inline' porque Astro emite estilos scoped en línea.
- *  - `connect-src 'self'` sigue: el formulario de alta llama a /api/signup.
+ *  - `connect-src 'self'` sigue: los formularios de eventos llaman a /api.
  */
 const csp = [
   "default-src 'self'",

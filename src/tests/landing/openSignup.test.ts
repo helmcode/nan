@@ -98,10 +98,10 @@ describe('CTAs go to account creation', () => {
     expect(t('nan.nav.signup', 'es')).toBe('Crear cuenta');
   });
 
-  test('models, footer and 404 point at the hero signup form', () => {
-    expect(read('components/nan/home/Models.astro')).toContain('${home}#signup');
-    expect(read('components/nan/Footer.astro')).toContain('${home}#signup');
-    expect(read('pages/404.astro')).toContain('${home}#signup');
+  test('models, footer and 404 go straight to the platform signup', () => {
+    for (const f of ['components/nan/home/Models.astro', 'components/nan/Footer.astro', 'pages/404.astro']) {
+      expect(read(f), f).toContain('href={signupUrl()}');
+    }
   });
 
   test('/community sends people to the platform signup with plan=community', () => {

@@ -1,5 +1,6 @@
 ---
 import { getLang, useT } from '../../lib/i18n';
+import { signupUrl } from '../../lib/signup';
 
 const lang = getLang(Astro.url);
 const t = useT(lang);
@@ -16,7 +17,7 @@ const year = new Date().getFullYear();
         {tt.cta1}<br />
         <span class="footer__title-2">{tt.cta2}</span>
       </h2>
-      <a href={`${home}#signup`} class="footer__go">{tt.go} →</a>
+      <a href={signupUrl()} rel="noopener" class="footer__go">{tt.go} →</a>
     </div>
   </div>
 
