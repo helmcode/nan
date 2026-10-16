@@ -79,8 +79,9 @@ describe.each(Object.entries(cases))('terms: workspace acceptable use (%s)', (_l
 
   test('marks the date it applies from, and the page date moved with it', () => {
     expect(s).toContain(c.since);
-    // Moved again on 2026-10-14 (open signup rewrote the community section).
-    expect(src).toContain('updated="October 14, 2026"');
+    // Moved again on 2026-10-14 (open signup rewrote the community section)
+    // and on 2026-10-16 (token packs clause).
+    expect(src).toContain('updated="October 16, 2026"');
   });
 
   test.each(c.prohibited)('prohibits: %s', (item) => {
