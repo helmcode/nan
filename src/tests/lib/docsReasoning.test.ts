@@ -251,13 +251,14 @@ describe('deepseek-v4-flash card: the max_tokens floor only applies while reason
 
   it('en', () => {
     expect(card('')).toContain(
-      'While reasoning is on, a max_tokens below 16384 is raised to 16384 so the reasoning fits, so a prompt within 16384 tokens of the 1,048,576-token window is rejected with a 400 even with a small max_tokens (usually Context length exceeded, sometimes a generic Invalid request). With reasoning off (reasoning_effort "none" or any of its aliases) your max_tokens is used as sent.',
+      'While reasoning is on, an output budget below 16384 is raised to 16384 so the reasoning fits (max_tokens and max_completion_tokens on /chat/completions, max_output_tokens on /responses, the same on both routes), so a prompt within 16384 tokens of the 1,048,576-token window is rejected with a 400 even with a small budget (usually Context length exceeded, sometimes a generic Invalid request). With reasoning off (reasoning_effort "none" or any of its aliases) your budget is used as sent. A budget above 16384 is never lowered.',
     );
   });
 
   it('es', () => {
-    expect(card('-es')).toContain('Con el razonamiento activado, un max_tokens por debajo de 16384 se sube a 16384');
-    expect(card('-es')).toContain('Con el razonamiento apagado (reasoning_effort "none" o cualquiera de sus alias) tu max_tokens se usa tal cual.');
+    expect(card('-es')).toContain('Con el razonamiento activado, un presupuesto de salida por debajo de 16384 se sube a 16384');
+    expect(card('-es')).toContain('Con el razonamiento apagado (reasoning_effort "none" o cualquiera de sus alias) tu presupuesto se usa tal cual.');
+    expect(card('-es')).toContain('Un presupuesto por encima de 16384 nunca se baja.');
   });
 });
 

@@ -932,10 +932,14 @@ describe('documented 400s: tool parameters and context overflow', () => {
       const start = page.indexOf('id="deepseek-v4-flash"');
       return page.slice(start, page.indexOf('/>', start));
     };
-    expect(card('')).toContain('While reasoning is on, a max_tokens below 16384 is raised to 16384 so the reasoning fits');
-    expect(card('')).toContain('rejected with a 400 even with a small max_tokens (usually Context length exceeded, sometimes a generic Invalid request)');
-    expect(card('-es')).toContain('Con el razonamiento activado, un max_tokens por debajo de 16384 se sube a 16384');
-    expect(card('-es')).toContain('se rechaza con un 400 aunque pidas un max_tokens pequeño (normalmente Context length exceeded, a veces un Invalid request genérico)');
+    expect(card('')).toContain('While reasoning is on, an output budget below 16384 is raised to 16384 so the reasoning fits');
+    expect(card('')).toContain('max_output_tokens on /responses, the same on both routes');
+    expect(card('')).toContain('rejected with a 400 even with a small budget (usually Context length exceeded, sometimes a generic Invalid request)');
+    expect(card('')).toContain('A budget above 16384 is never lowered.');
+    expect(card('-es')).toContain('Con el razonamiento activado, un presupuesto de salida por debajo de 16384 se sube a 16384');
+    expect(card('-es')).toContain('max_output_tokens en /responses, igual en las dos rutas');
+    expect(card('-es')).toContain('se rechaza con un 400 aunque pidas un presupuesto pequeño (normalmente Context length exceeded, a veces un Invalid request genérico)');
+    expect(card('-es')).toContain('Un presupuesto por encima de 16384 nunca se baja.');
   });
 });
 
