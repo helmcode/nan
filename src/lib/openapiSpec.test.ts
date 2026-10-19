@@ -918,18 +918,17 @@ describe('documented 400s: tool parameters and context overflow', () => {
   it('max_tokens is passed through as sent: no deepseek-v4-flash floor, in the spec and on both cards', () => {
     const maxTokens = (spec.paths as any)['/chat/completions'].post.requestBody.content['application/json']
       .schema.properties.max_tokens.description;
-    expect(maxTokens).toContain('on every model except `glm5.3-flash`, where a value above 131072 is lowered to 131072');
-    expect(maxTokens).toContain("lowered to 131072, the model's maximum.");
+    expect(maxTokens).toContain("except above the model's maximum on two models, where it is lowered to that maximum: 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`.");
     expect(maxTokens).not.toContain('upstream accepts');
     const maxOut = (spec.paths as any)['/responses'].post.requestBody.content['application/json'].schema.properties
       .max_output_tokens.description;
-    expect(maxOut).toContain('Used exactly as sent (except `glm5.3-flash`, lowered to 131072). Reasoning tokens count inside it; see `max_tokens`.');
+    expect(maxOut).toContain("Used exactly as sent, except above the model's maximum: lowered to 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`. Reasoning tokens count inside it; see `max_tokens`.");
     expect(maxTokens).toContain('Reasoning tokens count inside it');
     expect(maxTokens).not.toMatch(/raised to 16384|within 16384 tokens/);
     // Not promised as the exact text on deepseek-v4-flash: measured generic there.
     expect(maxTokens).not.toMatch(/deepseek-v4-flash[^.]*Context length exceeded/);
     // glm5.3-flash lowers instead of rejecting, so the generic-400 rule names its exception.
-    expect(maxTokens).toContain('A value above what the model can generate is rejected with a generic `400`, except on `glm5.3-flash` (see below).');
+    expect(maxTokens).toContain('A value above what the model can generate is rejected with a generic `400`, except on `glm5.3-flash` and `deepseek-v4-flash` (see below).');
 
     const card = (locale: string) => {
       const page = readFileSync(

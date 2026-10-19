@@ -100,7 +100,8 @@ describe('API reference: one documented way to turn reasoning off', () => {
 
   it('max_tokens: passed through as sent, reasoning counts inside it (no deepseek floor)', () => {
     const d = chatBody.max_tokens.description;
-    expect(d).toContain('The value is used exactly as sent, with reasoning on or off, on every model except `glm5.3-flash`, where a value above 131072 is lowered to 131072, the model\'s maximum.');
+    expect(d).toContain('The value is used exactly as sent, with reasoning on or off, except above the model\'s maximum on two models, where it is lowered to that maximum: 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`.');
+    expect(d).toContain('rejected with a generic `400`, except on `glm5.3-flash` and `deepseek-v4-flash` (see below).');
     expect(d).not.toMatch(/above what the model can generate is rejected with a generic `400`\./);
     expect(d).toContain('the reasoning is in `message.reasoning_content`');
     expect(d).toContain('an empty `content` and `finish_reason: "length"`');
@@ -291,13 +292,15 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
     });
   }
 
-  it(`the glm5.3-flash ceiling is the one exception, said in both locales`, () => {
-    expect(section('')).toContain('except on `glm5.3-flash`, where a value above 131072 is lowered to 131072, the model\'s maximum.');
-    expect(section('-es')).toContain('salvo en `glm5.3-flash`, donde un valor por encima de 131072 se baja a 131072, el máximo del modelo.');
+  it(`the two per-model ceilings (glm5.3-flash 131072, deepseek-v4-flash 393216) are the only exceptions, in both locales`, () => {
+    expect(section('')).toContain('except above the model\'s maximum on two models, where it is lowered to that maximum: 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`.');
+    expect(section('-es')).toContain('salvo por encima del máximo del modelo en dos modelos, donde se baja a ese máximo: 131072 en `glm5.3-flash`, 393216 en `deepseek-v4-flash`.');
+    expect(card('')).toContain('Your output budget is used exactly as sent (above 393216, its maximum, it is lowered to 393216), with reasoning on or off');
+    expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías (por encima de 393216, su máximo, se baja a 393216), con el razonamiento activado o apagado');
     expect(section('')).not.toContain('on every\nmodel.');
   });
 
-  it('empty-answer signals are scoped to Chat Completions; Responses only promises the reasoning item', () => {
+  it('empty-answer signals are scoped to Chat Completions; Responses signals are status, incomplete_details, the reasoning item and usage', () => {
     expect(section('')).toContain('On Chat Completions you get an empty `content` with\n`finish_reason: "length"`, the reasoning in `message.reasoning_content`, and');
     expect(section('')).toContain('On Responses the response has `status: "incomplete"` with `incomplete_details.reason: "max_output_tokens"`, only a `reasoning` output item and no message text, and `usage.output_tokens_details.reasoning_tokens` equals `output_tokens`.');
     expect(section('-es')).toContain('En Chat Completions recibes un `content` vacío con\n`finish_reason: "length"`, el razonamiento en `message.reasoning_content` y');
@@ -355,7 +358,7 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
   }
 
   it('en wording', () => {
-    expect(card('')).toContain('Your output budget is used exactly as sent, with reasoning on or off');
+    expect(card('')).toContain('Your output budget is used exactly as sent (above 393216');
     expect(card('')).toContain('On /chat/completions the answer then comes back with an empty content and finish_reason "length"');
     expect(card('')).toContain('Or give a generous budget and stream the answer.');
     expect(section('')).toContain('is used exactly as you send it on every model');
@@ -363,7 +366,7 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
   });
 
   it('es wording', () => {
-    expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías, con el razonamiento activado o apagado');
+    expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías (por encima de 393216');
     expect(card('-es')).toContain('En /chat/completions la respuesta llega entonces con content vacío y finish_reason "length"');
     expect(card('-es')).toContain('O da un presupuesto generoso y usa streaming.');
     expect(section('-es')).toContain('se usa tal cual lo envías en todos los modelos');
