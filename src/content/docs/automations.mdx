@@ -1,7 +1,7 @@
 ---
 title: Automations
 description: Save an agent task once and let webhooks, schedules or your own scripts run it, with the actions you choose waiting for your approval.
-order: 20
+order: 21
 group: Guides
 ---
 
@@ -11,7 +11,7 @@ import Callout from '../../components/docs/Callout.astro';
 
 # Automations.
 
-An **automation** is an [agent run](/docs/runs) you set up once and start as often as you need: the workspace, the agent, the instructions, the folder, the secrets it receives and what may start it. Every time it starts, it creates a run in your workspace with those settings.
+An **automation** is an [agent run](/docs/runs) you set up once and start as often as you need: the workspace, the agent, the instructions, the folder, the secrets it receives and what may start it. Every time it starts, it creates a run in your workspace with those settings. It can also run without a workspace, each run in its own fresh container: see [Ephemeral runs](/docs/ephemeral-runs#in-automations).
 
 What can start an automation:
 

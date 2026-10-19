@@ -1,0 +1,289 @@
+---
+title: Ejecuciones efímeras
+description: Lanza un agente sobre un repositorio de GitHub en un contenedor nuevo que se destruye al terminar, sin necesidad de workspace, con cobro por minuto.
+order: 20
+group: Guías
+parent: runs
+---
+
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Ejecuciones efímeras.
+
+Una **ejecución efímera** es un [run de agente](/es/docs/runs) que no necesita workspace. NaN arranca un contenedor nuevo solo para ese run, clona el repositorio de GitHub que le indicas, ejecuta el agente con el modelo que eliges y destruye el contenedor cuando el run termina. Sigues su log en directo, lo cancelas y lees su resultado exactamente igual que con cualquier otro run.
+
+| | Run en un workspace | Ejecución efímera |
+|---|---|---|
+| Dónde trabaja | En tu workspace, junto a tus archivos | En un contenedor nuevo, solo para ese run |
+| Qué necesita | Un workspace encendido con el agente instalado | Un repositorio de GitHub, un modelo y un método de pago |
+| Sobre qué trabaja | Una carpeta de tu workspace | Un clon nuevo del repositorio |
+| Qué queda al terminar | Tus archivos, y una rama con sus cambios | Nada: el contenedor se destruye |
+| Qué cuesta | Va incluido en tu workspace | Por minuto empezado, según el tamaño, después de tus minutos gratis |
+
+Usa una ejecución efímera cuando:
+
+- No tienes workspace, o no quieres que una tarea lo toque.
+- Quieres muchos runs a la vez: cada uno tiene su propio contenedor, así que nunca comparten archivos, CPU ni memoria.
+- La tarea parte del código de un repositorio: revisarlo, analizarlo, responder una pregunta sobre él, pasar sus tests.
+
+Usa un run en un [workspace](/es/docs/workspaces) cuando el agente necesite tus propios archivos, tus herramientas configuradas a mano o cambios que sigan ahí después del run: una ejecución efímera no guarda nada.
+
+<Callout title="Apertura gradual">
+Las ejecuciones efímeras se están abriendo poco a poco. Si no ves **Ephemeral container** al crear un run, tu cuenta todavía no la tiene: la API responde como si la opción no existiera.
+</Callout>
+
+## Antes de empezar
+
+- **Un repositorio de GitHub**, como `owner/name`, por ejemplo `acme/api`. Un run que lanzas tú clona repositorios **públicos**. Para uno privado, usa una [automatización](#repositorios-privados) con un token de GitHub.
+- **Un método de pago registrado**, siempre, aunque tus minutos gratis cubran todos los runs. Añádelo en **Settings → Ephemeral runs** con **Add a payment method** (el formulario **New run** también lo ofrece). Consulta [Método de pago y moneda](#método-de-pago-y-moneda).
+- **Un modelo.** No hay configuración de workspace a la que recurrir, así que toda ejecución efímera indica su modelo.
+- **Un plan con inferencia, o tu propia clave de proveedor.** Con la inferencia de NaN, los tokens cuentan para el uso de tu plan como en cualquier otro run. Con [tu propia clave de proveedor](/es/docs/runs#usa-tu-propia-clave-de-proveedor-byok), los factura tu proveedor, y puede usarla cualquier miembro con una suscripción activa.
+
+## Qué se ejecuta en el contenedor
+
+El contenedor viene listo con **Pi**, **Pi + Gentle Shell** y **Hermes**, además de git, Python y Node. Eliges el agente como en cualquier run (`pi`, `pi_gentle` o `hermes`: consulta [Elige el agente](/es/docs/runs#elige-el-agente)); no hay que instalar nada antes.
+
+Cada run:
+
+1. Arranca un contenedor nuevo del tamaño que elegiste.
+2. Clona el repositorio en el último commit de su rama por defecto (o, en una automatización, en el commit del que trata el evento: consulta [Qué commit](/es/docs/automations#qué-commit)).
+3. Ejecuta el agente en el clon, con tu tarea y el modelo que elegiste.
+4. Emite sus eventos como cualquier run, y termina con su estado y el resumen del agente.
+5. Destruye el contenedor y todo lo que hay en él, pase lo que pase: terminado, fallido, agotado su tiempo o cancelado.
+
+El agente trabaja en su clon: **Folder** y **Separate branch** no aplican, y no se hace push de nada. Para actuar sobre el repositorio (comentar, revisar, poner etiquetas), usa una [automatización](#en-automatizaciones): NaN aplica sus acciones después del run, con tu token.
+
+## Lanza una desde el portal
+
+Abre **New run** desde la página **Runs** del portal ([cloud.nan.builders/runs](https://cloud.nan.builders/runs)), o desde la pestaña **Runs** de un workspace, y pon **Where it runs** en **Ephemeral container**. En la página **Runs**, sin workspace, es la única opción. Después rellena:
+
+| Campo | Qué es |
+|---|---|
+| **Size** | **S**, **M** o **L**. Consulta [Tamaños y precios](#tamaños-y-precios). **S** por defecto. |
+| **GitHub repository** | `owner/name`. |
+| **Agent** | **Pi**, **Pi + Gentle Shell** o **Hermes**. |
+| **Model** | El modelo que usa el agente. |
+| **Task** | Lo que quieres que haga, hasta 32 KiB. |
+| **Time limit** | Como en cualquier run: 15 min, 30 min (por defecto), 1 hora o 2 horas. |
+| **Inference** | **NaN** o **My own key**, como en cualquier run. |
+
+Debajo del formulario, una nota de coste muestra lo máximo que podría costar el run si agota su tiempo límite, y tus minutos S gratis que quedan convertidos al tamaño elegido, por ejemplo `80 free S-minutes left this month = 40 minutes of M.` (80 minutos S gratis este mes = 40 minutos de M).
+
+La lista de runs muestra dónde se ejecutó cada uno y, cuando termina una ejecución efímera, lo que costó.
+
+Mientras una ejecución efímera trabaja, su página muestra un contador en directo: **Elapsed** (tiempo transcurrido), **Started minutes** (minutos empezados; pasa a llamarse **Minutes billed** cuando el cobro está activo), **S-minutes** (lo que gasta de tus minutos gratis, según el tamaño) y **Estimated cost** (coste estimado, antes de los minutos gratis). La página **Runs** y **Settings → Ephemeral runs** muestran los totales del mes: **S-minutes**, **Free S-minutes left** (minutos S gratis que quedan) y **Chargeable so far** (lo cobrable hasta ahora), en euros. Consulta [Minutos gratis](#minutos-gratis).
+
+## Desde la terminal
+
+```bash
+nan run --ephemeral --repo acme/api --model glm5.3 --size s "explica cómo funciona el middleware de auth"
+```
+
+| Flag | Qué hace |
+|---|---|
+| `--ephemeral` | Ejecuta en un contenedor nuevo en vez de en un workspace. No lo combines con `--ws`. |
+| `--repo owner/name` | El repositorio de GitHub que se clona. Obligatorio. |
+| `--model M` | El modelo. Obligatorio, con `--model` o con `--byok-secret`. |
+| `--size s\|m\|l` | El tamaño del contenedor. `s` por defecto. |
+
+Los demás flags de [`nan run`](/es/docs/runs#desde-la-terminal-nan-run) funcionan igual: `--agent`, `--timeout`, `--detach`, `--json`, `-f`, `--byok-secret`. `--cwd` y `--worktree` no aplican. Actualiza antes la CLI (`curl -fsSL https://nan.builders/install | bash`); `nan run --help` muestra `--ephemeral` cuando tu versión lo tiene.
+
+Para ver los minutos de este mes, el coste, los minutos gratis que te quedan y tus límites:
+
+```bash
+nan ephemeral usage
+nan ephemeral settings
+```
+
+Los límites solo se cambian en el portal: consulta [Límites](#límite-de-gasto-y-concurrencia).
+
+## Desde la API
+
+Créala con `POST https://api.nan.builders/v1/runs`, con `executor` a `ephemeral` y sin `workspace`:
+
+```bash
+curl -s https://api.nan.builders/v1/runs \
+  -H "Authorization: Bearer $NAN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "executor": "ephemeral",
+    "size": "s",
+    "github_repo": "acme/api",
+    "agent": "pi",
+    "model": "glm5.3",
+    "prompt": "explica cómo funciona el middleware de auth",
+    "timeout_seconds": 1800
+  }'
+```
+
+| Campo | Qué es |
+|---|---|
+| `executor` | `ephemeral`. Si no lo envías, o con `workspace`, el run va a un workspace. |
+| `size` | `s`, `m` o `l`. `s` por defecto. |
+| `github_repo` | `owner/name`. Obligatorio. |
+| `model` | Obligatorio. Con tu propia clave, ponlo en `inference.model`, como en [Elígela para un run](/es/docs/runs#elígela-para-un-run). |
+| `agent`, `prompt`, `timeout_seconds`, `inference` | Como en cualquier run. `timeout_seconds` va de 60 a 7200. |
+| `workspace`, `cwd`, `git_isolation` | No se permiten: una ejecución efímera no tiene workspace y trabaja en su clon. |
+
+Los eventos, el stream en directo, la cancelación y el objeto run son los mismos que en cualquier run, por id de run. El objeto run añade `executor` (`ephemeral`), `size` y, cuando el run ya está medido, `cost`: `eur`, `eur_micros` y `billed_seconds`. Su `workspace` es `null`.
+
+**Credenciales.** Las ejecuciones efímeras cuestan dinero, así que no cualquier credencial puede lanzarlas:
+
+- Una sesión iniciada (el portal, o la CLI después de `nan auth login`) puede.
+- Un token de plataforma (`nan_pat_...`) necesita el scope **`runs:ephemeral`**, además de `runs`. Lo añades al crear el token en **Settings → Tokens**, con la sesión iniciada en el portal.
+- Una API key (`sk-...`) no puede: recibe `403 token_scope_denied`.
+
+Un run con tu propia clave de proveedor lanzado por ti sigue necesitando una sesión iniciada, como cualquier run: consulta [Quién puede usarla](/es/docs/runs#quién-puede-usarla).
+
+## En automatizaciones
+
+Una [automatización](/es/docs/automations) también puede ejecutarse en contenedores efímeros: cada run que lanza, con **Run now**, un webhook o una programación, tiene su propio contenedor. En el editor, pon **Where it runs** en **Ephemeral container** y elige el **Size**. No necesitas workspace para ello: sin ningún workspace, tus automatizaciones solo pueden ser efímeras. Mientras el cobro no está activo, el editor dice que sus runs se miden por minuto de contenedor (`measured per container minute (not charged yet)`); cuando esté activo, que se cobran por minuto de contenedor (`billed per container minute`). Entonces necesita:
+
+- Un **GitHub repository**, y **Checkout** en **Fresh clone per run**: no hay carpeta de workspace en la que trabajar.
+- Un **Model**.
+
+Sin **Workspace**, **Folder** ni **Separate branch**. Desde la CLI o la API, los campos son `executor: ephemeral`, `size`, `checkout: fresh`, `github_repo` y `model`:
+
+```yaml
+name: PR review api
+template: pr_review
+executor: ephemeral
+size: m
+checkout: fresh
+github_repo: acme/api
+agent: pi
+model: glm5.3
+secrets:
+  - { secret: GITHUB_READ_TOKEN, env: GITHUB_TOKEN, exposure: agent }
+  - { secret: GITHUB_WRITE_TOKEN, env: GITHUB_TOKEN, exposure: actions }
+```
+
+Todo lo demás funciona como en cualquier automatización con clon nuevo: [qué commit](/es/docs/automations#qué-commit) se usa, el filtro de [pull requests de forks y de colaboradores externos](/es/docs/automations#pull-requests-de-forks-y-de-colaboradores-externos), los secretos, las aprobaciones y las acciones (comentarios, revisiones y etiquetas, nunca un push). Crear o cambiar una automatización efímera, o sus triggers, necesita una sesión iniciada o un token con `runs:ephemeral`.
+
+### Repositorios privados
+
+Para clonar un repositorio privado, asigna a la automatización un token de GitHub como `GITHUB_TOKEN` con **Agent (read access)**: un token fine-grained, de solo lectura, limitado a ese repositorio. NaN lo usa para clonar, como se explica en [Clon nuevo por run](/es/docs/automations#clon-nuevo-por-run), y el agente lo recibe para leer el repositorio. Consulta [El patrón del token de GitHub](/es/docs/secrets#el-patrón-del-token-de-github).
+
+Un run que lanzas tú, desde el portal, `nan run` o `POST /v1/runs`, nunca recibe secretos, así que solo puede clonar repositorios públicos.
+
+## Tamaños y precios
+
+| Tamaño | vCPU | Memoria | Disco | Precio por minuto |
+|---|---|---|---|---|
+| **S** | 1 | 4 GiB | 10 GB | 0,003 € |
+| **M** | 2 | 8 GiB | 16 GB | 0,006 € |
+| **L** | 4 | 12 GiB | 20 GB | 0,012 € |
+
+Los runs se cobran **por minuto empezado** de tiempo de contenedor, de principio a fin, al precio de su tamaño. Un run de 14 segundos cuenta como 1 minuto; uno de 61 segundos, como 2. Los tokens del modelo no entran en este precio: cuentan para tu plan, o te los factura tu proveedor con tu propia clave.
+
+La mayoría de los agentes pasan el tiempo esperando al modelo, así que **S** basta para casi todas las tareas. Elige **M** o **L** para builds o baterías de tests pesadas.
+
+<Callout title="El cobro aún no está activo">
+Las ejecuciones efímeras se miden y se muestran, en el portal, la CLI y la API, pero todavía no se cobran. Lo anunciaremos antes de empezar a cobrar.
+</Callout>
+
+## Minutos gratis
+
+Cada mes tu membresía incluye minutos gratis:
+
+| Plan | Minutos gratis al mes |
+|---|---|
+| Community | 100 |
+| Inference | 300 |
+| Premium | 1000 |
+| Sin membresía | 0 |
+
+Los minutos gratis solo vienen con una membresía. Sin ella (por ejemplo, con solo un slot de workspace), se cobra cada minuto.
+
+**Los minutos gratis son minutos S.** Sirven para cualquier tamaño, pero un minuto de un tamaño mayor gasta más:
+
+| Un minuto de | Gasta |
+|---|---|
+| **S** | 1 minuto gratis |
+| **M** | 2 minutos gratis |
+| **L** | 4 minutos gratis |
+
+Así, 100 minutos gratis son 100 minutos de **S**, o 50 de **M**, o 25 de **L**, o cualquier combinación. Nunca tienes que elegir un tamaño para no salirte de ellos.
+
+**Un ejemplo.** Con el plan Inference tienes 300 minutos gratis. Este mes ejecutas 100 minutos de **M** (200 minutos gratis) y 30 minutos de **L** (120 minutos gratis): 320 en total. Los primeros 300 son gratis, y los 20 minutos S que sobran cuestan 20 × 0,003 € = **0,06 €**.
+
+Los minutos gratis se gastan primero y se renuevan el día 1 de cada mes (UTC). Los que no uses no se acumulan. El `cost` de cada run es el precio completo de sus minutos; los minutos gratis se cuentan sobre el mes. La página **Runs** y **Settings → Ephemeral runs** muestran los **S-minutes** del mes, los **Free S-minutes left** y el **Chargeable so far**; también `nan ephemeral usage`.
+
+## Método de pago y moneda
+
+- **Hace falta un método de pago** para usar ejecuciones efímeras, también con minutos gratis. Sin él, el run se rechaza con `402 payment_method_required`. Añádelo en **Settings → Ephemeral runs** con **Add a payment method**; el formulario **New run** ofrece el mismo botón.
+- **Las ejecuciones efímeras se facturan solo en euros.** Si tu membresía se factura en dólares, pásala antes a EUR con **Switch billing to EUR**, en **Settings → Ephemeral runs** o en el formulario **New run**. Hasta entonces, los runs se rechazan con `402 currency_migration_required`.
+
+## Límite de gasto y concurrencia
+
+Dos límites te protegen de sorpresas. Se cambian en el portal, en **Settings → Ephemeral runs**, con la sesión iniciada:
+
+| Límite | Por defecto | Rango |
+|---|---|---|
+| **Monthly spend cap (€)** (límite de gasto mensual) | 100 € | De 0 € a 1000 € |
+| **Concurrent ephemeral runs** (ejecuciones efímeras a la vez) | 50 | De 1 a 50 |
+
+**El límite de gasto** se comprueba antes de que arranque cada run, y solo cuenta el dinero que se cobraría. NaN suma lo cobrable de este mes a lo máximo que podrían costar las ejecuciones efímeras aún abiertas y la nueva, menos los minutos gratis que te quedan (nunca por debajo de cero), y eso tiene que caber en el límite. Lo máximo que puede costar un run es su tiempo límite más 2,5 minutos, al precio de su tamaño: un run de 30 minutos en **S** reserva 33 minutos, 0,099 €. Si no cabe, el run se rechaza con `402 ephemeral_cap_reached`. Sube el límite, espera a que terminen los runs en marcha, o usa un tiempo límite más corto o un tamaño menor. Un límite de 0 € solo permite los runs que tus minutos gratis cubren por completo.
+
+**Concurrent ephemeral runs.** Los runs que superan tu límite no se rechazan: esperan en la cola y arrancan por orden. Los límites habituales para crear runs siguen aplicando.
+
+## Red
+
+Desde el contenedor, el agente solo puede salir a internet por **HTTP y HTTPS** (puertos 80 y 443): registros de paquetes, GitHub, documentación, APIs.
+
+- **Ningún otro puerto**: ni SSH, ni SMTP (correo), ni bases de datos u otros servicios en sus propios puertos, ni URLs con un puerto explícito distinto de 80 o 443.
+- Sin WebSockets, sin direcciones IP sueltas (usa nombres de host) y sin sitios de NaN distintos de `api.nan.builders`.
+- Hasta 30 peticiones por segundo por run.
+- Hasta 2 GiB descargados y 512 MiB enviados por run. Por encima, el run se detiene y falla con `egress_limit`.
+
+Así que clona por HTTPS, no por SSH, y descarga las dependencias de registros que sirvan HTTPS.
+
+## Seguridad
+
+- Cada run tiene su propio contenedor, creado para él y destruido después. No se comparte nada entre runs, miembros ni con tus workspaces.
+- **La clave de inferencia nunca entra en el contenedor**, ni la de NaN ni la tuya. Las peticiones del agente al modelo salen con un marcador, y la clave real se añade por el camino, solo para el proveedor del modelo de ese run.
+- El contenedor solo recibe los secretos que asignas a la automatización, [enmascarados](/es/docs/secrets#enmascarado-en-logs-y-eventos) en logs y resultados, como en cualquier run.
+- El código que clonas se ejecuta en el contenedor, junto a esos secretos. El consejo sobre [pull requests de forks](/es/docs/automations#pull-requests-de-forks-y-de-colaboradores-externos) también aplica aquí.
+
+## Si algo sale mal
+
+| Qué ves | Por qué, y qué hacer |
+|---|---|
+| `402 ephemeral_cap_reached` | El run podría llevar tu gasto por encima de tu límite mensual. Súbelo en **Settings → Ephemeral runs**, espera a que terminen los runs en marcha, o usa un tiempo límite más corto o un tamaño menor. |
+| `402 payment_method_required` | No tienes un método de pago registrado. Añade uno en **Settings → Ephemeral runs** con **Add a payment method**. |
+| `402 currency_migration_required` | Tu membresía se factura en dólares. Usa **Switch billing to EUR** en **Settings → Ephemeral runs** o en el formulario **New run**. |
+| `400 invalid_request`, `param: executor` | Las ejecuciones efímeras aún no están disponibles para tu cuenta. |
+| `400 invalid_request`, `param: github_repo` | Falta el repositorio o no es `owner/name`. |
+| `400 invalid_request`, `param: model` | Una ejecución efímera tiene que indicar su modelo. |
+| `400 invalid_request`, `param: workspace`, `cwd` o `git_isolation` | Esos campos no aplican a una ejecución efímera: no los envíes. |
+| `403 token_scope_denied` | Una API key, o un token sin `runs:ephemeral`. Usa una sesión iniciada, o un token con ese scope. |
+| El run falla al clonar el repositorio | El repositorio es privado y el run no tiene un `GITHUB_TOKEN` con **Agent (read access)**, o el token no puede leerlo. Consulta [Repositorios privados](#repositorios-privados). |
+| El run falla con `egress_limit` | Descargó más de 2 GiB o envió más de 512 MiB. |
+| El agente no puede conectarse a algún sitio | Solo están abiertos HTTP y HTTPS. Consulta [Red](#red). |
+
+## Preguntas frecuentes
+
+<Details summary="¿Una ejecución efímera necesita workspace?">
+
+No. Se ejecuta en su propio contenedor. Puedes usar ejecuciones efímeras sin tener ningún workspace.
+
+</Details>
+
+<Details summary="¿Puedo quedarme con los cambios que hizo el agente?">
+
+No desde el contenedor: se destruye cuando termina el run. Usa una [automatización](#en-automatizaciones) para comentar, revisar o etiquetar a partir del resultado, o un run en un [workspace](/es/docs/runs) cuando quieras una rama con los cambios.
+
+</Details>
+
+<Details summary="¿Dónde veo lo que llevo gastado?">
+
+En la página **Runs** y en **Settings → Ephemeral runs** del portal (los minutos S del mes, los minutos S gratis que quedan y los euros cobrables), con `nan ephemeral usage`, y en cada run: un contador en directo mientras trabaja, y su `cost` cuando termina.
+
+</Details>
+
+<Details summary="¿Dónde pido ayuda?">
+
+Escribe en `#support` en Discord.
+
+</Details>
