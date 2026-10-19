@@ -68,9 +68,11 @@ Open **New run** from the **Runs** page of the portal ([cloud.nan.builders/runs]
 | **Time limit** | As for any run: 15 min, 30 min (the default), 1 hour or 2 hours. |
 | **Inference** | **NaN** or **My own key**, as for any run. |
 
+Below the form, a cost note shows the most the run could cost if it uses its whole time limit, and your free S-minutes left converted to the size you picked, for example `80 free S-minutes left this month = 40 minutes of M.`
+
 The run list shows where each run ran and, once an ephemeral run ends, what it cost.
 
-While an ephemeral run works, its page shows a live counter: **Elapsed**, **Minutes billed** (per started minute), **S-minutes** (what it uses of your free minutes, by size) and **Estimated cost** (before free minutes). The **Runs** page and **Settings → Ephemeral runs** show this month's totals: **S-minutes**, **Free S-minutes left** and **Chargeable so far**, in euros. See [Free minutes](#free-minutes).
+While an ephemeral run works, its page shows a live counter: **Elapsed**, **Started minutes** (per started minute; it reads **Minutes billed** once billing is active), **S-minutes** (what it uses of your free minutes, by size) and **Estimated cost** (before free minutes). The **Runs** page and **Settings → Ephemeral runs** show this month's totals: **S-minutes**, **Free S-minutes left** and **Chargeable so far**, in euros. See [Free minutes](#free-minutes).
 
 ## From the terminal
 
@@ -136,7 +138,7 @@ A run on your own provider key started by you still needs a signed-in session, a
 
 ## In automations
 
-An [automation](/docs/automations) can run on ephemeral containers too: every run it starts, by **Run now**, a webhook or a schedule, gets its own container. In the editor, set **Where it runs** to **Ephemeral container** and pick the **Size**. You do not need a workspace for it: without any workspace, your automations can only be ephemeral. It then needs:
+An [automation](/docs/automations) can run on ephemeral containers too: every run it starts, by **Run now**, a webhook or a schedule, gets its own container. In the editor, set **Where it runs** to **Ephemeral container** and pick the **Size**. You do not need a workspace for it: without any workspace, your automations can only be ephemeral. While billing is not active, the editor says its runs are `measured per container minute (not charged yet)`; once it is active, `billed per container minute`. It then needs:
 
 - A **GitHub repository**, and **Checkout** set to **Fresh clone per run**: there is no workspace folder to work in.
 - A **Model**.
@@ -211,7 +213,7 @@ Free minutes are used first and reset on the 1st of each month (UTC). Unused one
 ## Payment method and currency
 
 - **A payment method is required** to use ephemeral runs at all, free minutes included. Without one, a run is refused with `402 payment_method_required`. Add it in **Settings → Ephemeral runs** with **Add a payment method**; the **New run** form offers the same button.
-- **Ephemeral runs are billed in euros only.** If your membership is billed in US dollars, switch your billing to EUR first in **Settings → Billing**. Until then, runs are refused with `402 currency_migration_required`.
+- **Ephemeral runs are billed in euros only.** If your membership is billed in US dollars, switch it to EUR first with **Switch billing to EUR**, in **Settings → Ephemeral runs** or in the **New run** form. Until then, runs are refused with `402 currency_migration_required`.
 
 ## Spend cap and concurrency
 
@@ -250,7 +252,7 @@ So clone over HTTPS, not SSH, and fetch dependencies from registries that serve 
 |---|---|
 | `402 ephemeral_cap_reached` | The run could take your spend past your monthly cap. Raise it in **Settings → Ephemeral runs**, wait for running runs to end, or use a shorter time limit or a smaller size. |
 | `402 payment_method_required` | No payment method on file. Add one in **Settings → Ephemeral runs** with **Add a payment method**. |
-| `402 currency_migration_required` | Your membership is billed in US dollars. Switch your billing to EUR in **Settings → Billing**. |
+| `402 currency_migration_required` | Your membership is billed in US dollars. Use **Switch billing to EUR** in **Settings → Ephemeral runs** or in the **New run** form. |
 | `400 invalid_request`, `param: executor` | Ephemeral runs are not available for your account yet. |
 | `400 invalid_request`, `param: github_repo` | The repository is missing or is not `owner/name`. |
 | `400 invalid_request`, `param: model` | An ephemeral run must name its model. |

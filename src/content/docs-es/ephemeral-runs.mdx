@@ -68,9 +68,11 @@ Abre **New run** desde la página **Runs** del portal ([cloud.nan.builders/runs]
 | **Time limit** | Como en cualquier run: 15 min, 30 min (por defecto), 1 hora o 2 horas. |
 | **Inference** | **NaN** o **My own key**, como en cualquier run. |
 
+Debajo del formulario, una nota de coste muestra lo máximo que podría costar el run si agota su tiempo límite, y tus minutos S gratis que quedan convertidos al tamaño elegido, por ejemplo `80 free S-minutes left this month = 40 minutes of M.` (80 minutos S gratis este mes = 40 minutos de M).
+
 La lista de runs muestra dónde se ejecutó cada uno y, cuando termina una ejecución efímera, lo que costó.
 
-Mientras una ejecución efímera trabaja, su página muestra un contador en directo: **Elapsed** (tiempo transcurrido), **Minutes billed** (minutos empezados), **S-minutes** (lo que gasta de tus minutos gratis, según el tamaño) y **Estimated cost** (coste estimado, antes de los minutos gratis). La página **Runs** y **Settings → Ephemeral runs** muestran los totales del mes: **S-minutes**, **Free S-minutes left** (minutos S gratis que quedan) y **Chargeable so far** (lo cobrable hasta ahora), en euros. Consulta [Minutos gratis](#minutos-gratis).
+Mientras una ejecución efímera trabaja, su página muestra un contador en directo: **Elapsed** (tiempo transcurrido), **Started minutes** (minutos empezados; pasa a llamarse **Minutes billed** cuando el cobro está activo), **S-minutes** (lo que gasta de tus minutos gratis, según el tamaño) y **Estimated cost** (coste estimado, antes de los minutos gratis). La página **Runs** y **Settings → Ephemeral runs** muestran los totales del mes: **S-minutes**, **Free S-minutes left** (minutos S gratis que quedan) y **Chargeable so far** (lo cobrable hasta ahora), en euros. Consulta [Minutos gratis](#minutos-gratis).
 
 ## Desde la terminal
 
@@ -136,7 +138,7 @@ Un run con tu propia clave de proveedor lanzado por ti sigue necesitando una ses
 
 ## En automatizaciones
 
-Una [automatización](/es/docs/automations) también puede ejecutarse en contenedores efímeros: cada run que lanza, con **Run now**, un webhook o una programación, tiene su propio contenedor. En el editor, pon **Where it runs** en **Ephemeral container** y elige el **Size**. No necesitas workspace para ello: sin ningún workspace, tus automatizaciones solo pueden ser efímeras. Entonces necesita:
+Una [automatización](/es/docs/automations) también puede ejecutarse en contenedores efímeros: cada run que lanza, con **Run now**, un webhook o una programación, tiene su propio contenedor. En el editor, pon **Where it runs** en **Ephemeral container** y elige el **Size**. No necesitas workspace para ello: sin ningún workspace, tus automatizaciones solo pueden ser efímeras. Mientras el cobro no está activo, el editor dice que sus runs se miden por minuto de contenedor (`measured per container minute (not charged yet)`); cuando esté activo, que se cobran por minuto de contenedor (`billed per container minute`). Entonces necesita:
 
 - Un **GitHub repository**, y **Checkout** en **Fresh clone per run**: no hay carpeta de workspace en la que trabajar.
 - Un **Model**.
@@ -211,7 +213,7 @@ Los minutos gratis se gastan primero y se renuevan el día 1 de cada mes (UTC). 
 ## Método de pago y moneda
 
 - **Hace falta un método de pago** para usar ejecuciones efímeras, también con minutos gratis. Sin él, el run se rechaza con `402 payment_method_required`. Añádelo en **Settings → Ephemeral runs** con **Add a payment method**; el formulario **New run** ofrece el mismo botón.
-- **Las ejecuciones efímeras se facturan solo en euros.** Si tu membresía se factura en dólares, cambia antes tu facturación a EUR en **Settings → Billing**. Hasta entonces, los runs se rechazan con `402 currency_migration_required`.
+- **Las ejecuciones efímeras se facturan solo en euros.** Si tu membresía se factura en dólares, pásala antes a EUR con **Switch billing to EUR**, en **Settings → Ephemeral runs** o en el formulario **New run**. Hasta entonces, los runs se rechazan con `402 currency_migration_required`.
 
 ## Límite de gasto y concurrencia
 
@@ -250,7 +252,7 @@ Así que clona por HTTPS, no por SSH, y descarga las dependencias de registros q
 |---|---|
 | `402 ephemeral_cap_reached` | El run podría llevar tu gasto por encima de tu límite mensual. Súbelo en **Settings → Ephemeral runs**, espera a que terminen los runs en marcha, o usa un tiempo límite más corto o un tamaño menor. |
 | `402 payment_method_required` | No tienes un método de pago registrado. Añade uno en **Settings → Ephemeral runs** con **Add a payment method**. |
-| `402 currency_migration_required` | Tu membresía se factura en dólares. Cambia tu facturación a EUR en **Settings → Billing**. |
+| `402 currency_migration_required` | Tu membresía se factura en dólares. Usa **Switch billing to EUR** en **Settings → Ephemeral runs** o en el formulario **New run**. |
 | `400 invalid_request`, `param: executor` | Las ejecuciones efímeras aún no están disponibles para tu cuenta. |
 | `400 invalid_request`, `param: github_repo` | Falta el repositorio o no es `owner/name`. |
 | `400 invalid_request`, `param: model` | Una ejecución efímera tiene que indicar su modelo. |

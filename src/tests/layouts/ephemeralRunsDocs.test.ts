@@ -109,8 +109,17 @@ describe.each(Object.entries(pages))('ephemeral runs guide (%s)', (_locale, page
     expect(body).toContain('**Where it runs** ');
     expect(body).toContain('**Ephemeral container**');
     expect(body).not.toMatch(/\*\*Ephemeral\*\*/);
-    for (const label of ['Monthly spend cap (€)', 'Concurrent ephemeral runs', 'Add a payment method', 'Elapsed', 'Minutes billed', 'S-minutes', 'Estimated cost', 'Free S-minutes left', 'Chargeable so far'])
+    for (const label of ['Monthly spend cap (€)', 'Concurrent ephemeral runs', 'Add a payment method', 'Switch billing to EUR', 'Elapsed', 'Started minutes', 'Minutes billed', 'S-minutes', 'Estimated cost', 'Free S-minutes left', 'Chargeable so far'])
       expect(body, label).toContain(`**${label}**`);
+  });
+
+  // cloud-ui #177 (1b964d0): labels that change with billing on/off, and the
+  // cost note converting free S-minutes to the chosen size.
+  test('describes the labels in both billing states and the per-size free minutes note', () => {
+    expect(body).toContain('`measured per container minute (not charged yet)`');
+    expect(body).toContain('`billed per container minute`');
+    expect(body).toContain('`80 free S-minutes left this month = 40 minutes of M.`');
+    expect(body).not.toContain('Settings → Billing');
   });
 
   test('owner decisions: payment method always, membership-only free minutes, EUR only, no workspace needed', () => {
