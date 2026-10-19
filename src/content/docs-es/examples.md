@@ -434,7 +434,7 @@ curl https://api.nan.builders/v1/chat/completions \
   }'
 ```
 
-Con el razonamiento activado se recomienda `max_tokens ≥ 300`, para dejarle sitio.
+Los tokens de razonamiento cuentan dentro de `max_tokens`, que se usa tal cual lo envías. Con el razonamiento activado, un presupuesto pequeño puede gastarse entero en razonar y llegar con `content` vacío y `finish_reason: "length"`. Si solo necesitas la respuesta, pon `"reasoning_effort": "none"`; si no, da un `max_tokens` generoso (los prompts densos en `deepseek-v4-flash` pueden razonar más de 16k tokens) y usa `stream: true`. Mira [Controlar el razonamiento](/es/docs/models#controlar-el-razonamiento).
 
 ### visión (curl)
 

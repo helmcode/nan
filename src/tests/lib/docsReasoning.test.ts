@@ -98,10 +98,14 @@ describe('API reference: one documented way to turn reasoning off', () => {
     }
   });
 
-  it('max_tokens: the deepseek floor applies only while reasoning is on', () => {
-    expect(chatBody.max_tokens.description).toContain(
-      'On `deepseek-v4-flash`, while reasoning is on, a smaller value is raised to 16384 so the reasoning fits, so a prompt within 16384 tokens of its 1,048,576-token window is rejected with a `400` even with a small `max_tokens`; with reasoning off (`reasoning_effort: "none"` or an alias) the value is used as sent.',
-    );
+  it('max_tokens: passed through as sent, reasoning counts inside it (no deepseek floor)', () => {
+    const d = chatBody.max_tokens.description;
+    expect(d).toContain('The value is used exactly as sent, on every model, with reasoning on or off.');
+    expect(d).toContain('an empty `content` and `finish_reason: "length"`');
+    expect(d).toContain('`usage.completion_tokens_details.reasoning_tokens` equals `completion_tokens`');
+    expect(d).toContain('`reasoning_effort: "none"`');
+    expect(d).toContain('`stream: true`');
+    expect(d).not.toMatch(/16384|raised/);
   });
 
   it('lists the accepted aliases and says the explicit value wins', () => {
@@ -242,23 +246,65 @@ describe('model cards agree with the table (en + es)', () => {
   }
 });
 
-describe('deepseek-v4-flash card: the max_tokens floor only applies while reasoning is on (en + es)', () => {
+/**
+ * NO OUTPUT-BUDGET FLOOR (owner decision 2026-10-19, nan-devops
+ * docs/community-report-2026-10-19-output-budget.md). Until then a
+ * deepseek-v4-flash budget below 16384 was silently raised while reasoning was
+ * on. Now the budget is passed through as sent on every model and route, so
+ * the docs must say that reasoning counts inside it and how a reasoning-
+ * exhausted answer looks, and must not describe the floor any more.
+ */
+describe('output budget: passed through as sent, no floor (en + es)', () => {
   const card = (locale: '' | '-es') => {
     const text = page(locale);
     const start = text.indexOf('name="deepseek-v4-flash"');
     return text.slice(start, text.indexOf('/>', start));
   };
+  const examples = (locale: '' | '-es') =>
+    readFileSync(resolve(here, `../../content/docs${locale}/examples.md`), 'utf-8');
+  const FLOOR = /raised to 16384|se sube a 16384|16384 nunca se baja|never lowered|within 16384 tokens|a menos de 16384 tokens|≥ ?300/;
 
-  it('en', () => {
-    expect(card('')).toContain(
-      'While reasoning is on, an output budget below 16384 is raised to 16384 so the reasoning fits (max_tokens and max_completion_tokens on /chat/completions, max_output_tokens on /responses, the same on both routes), so a prompt within 16384 tokens of the 1,048,576-token window is rejected with a 400 even with a small budget (usually Context length exceeded, sometimes a generic Invalid request). With reasoning off (reasoning_effort "none" or any of its aliases) your budget is used as sent. A budget above 16384 is never lowered.',
-    );
+  for (const locale of ['', '-es'] as const) {
+    it(`${locale || 'en'}: no page describes the floor or the old max_tokens >= 300 advice`, () => {
+      expect(page(locale)).not.toMatch(FLOOR);
+      expect(examples(locale)).not.toMatch(FLOOR);
+    });
+
+    it(`${locale || 'en'}: the reasoning section and the card name every field and the empty-answer signature`, () => {
+      for (const text of [section(locale), card(locale)]) {
+        for (const needle of ['max_tokens', 'max_completion_tokens', 'max_output_tokens', 'finish_reason', '"length"',
+          'reasoning_content', 'usage.completion_tokens_details.reasoning_tokens', 'completion_tokens', 'reasoning_effort', '"none"']) {
+          expect(text, needle).toContain(needle);
+        }
+      }
+    });
+
+    it(`${locale || 'en'}: examples point at reasoning off or a generous budget plus streaming`, () => {
+      expect(examples(locale)).toContain('`finish_reason: "length"`');
+      expect(examples(locale)).toContain('`"reasoning_effort": "none"`');
+      expect(examples(locale)).toContain('`stream: true`');
+    });
+  }
+
+  it('en wording', () => {
+    expect(card('')).toContain('Your output budget is used exactly as sent, with reasoning on or off');
+    expect(card('')).toContain('with reasoning on, a small budget can be spent entirely on reasoning, and the answer comes back with an empty content and finish_reason "length"');
+    expect(card('')).toContain('turn reasoning off (reasoning_effort "none"), lower the effort, or give a generous budget and stream the answer.');
+    expect(section('')).toContain('is used exactly as you send it, on every\nmodel.');
+    expect(section('')).toContain('[stream the answer](#long-outputs-stream-them)');
   });
 
-  it('es', () => {
-    expect(card('-es')).toContain('Con el razonamiento activado, un presupuesto de salida por debajo de 16384 se sube a 16384');
-    expect(card('-es')).toContain('Con el razonamiento apagado (reasoning_effort "none" o cualquiera de sus alias) tu presupuesto se usa tal cual.');
-    expect(card('-es')).toContain('Un presupuesto por encima de 16384 nunca se baja.');
+  it('es wording', () => {
+    expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías, con el razonamiento activado o apagado');
+    expect(card('-es')).toContain('con el razonamiento activado, un presupuesto pequeño puede gastarse entero en razonar, y la respuesta llega con content vacío y finish_reason "length"');
+    expect(card('-es')).toContain('apaga el razonamiento (reasoning_effort "none"), baja el esfuerzo, o da un presupuesto generoso y usa streaming.');
+    expect(section('-es')).toContain('se usa tal cual lo envías, en\ntodos los modelos.');
+    expect(section('-es')).toContain('[usa streaming](#respuestas-largas-usa-streaming)');
+  });
+
+  it('both anchors the prose links to exist as headings', () => {
+    expect(page('')).toContain('\n## Long outputs: stream them.\n');
+    expect(page('-es')).toContain('\n## Respuestas largas: usa streaming.\n');
   });
 });
 

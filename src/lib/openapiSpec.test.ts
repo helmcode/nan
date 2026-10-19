@@ -874,9 +874,10 @@ describe('documented context: qwen3.8-flash is 1M', () => {
  * automatically. The exact "Context length exceeded for model '...'" text was
  * measured on the hosted models (gemma4); on deepseek-v4-flash an overflow
  * measured 2026-09-29 came back as the GENERIC "Invalid request. Check your
- * request parameters.", so the docs promise the text only where measured. On
- * deepseek-v4-flash a small `max_tokens` is raised to 16384 so the reasoning
- * fits, which is why a prompt close to the window overflows with a small one.
+ * request parameters.", so the docs promise the text only where measured.
+ * Since 2026-10-19 there is no output-budget floor: `max_tokens` is passed
+ * through as sent on every model, so a small one no longer overflows a prompt
+ * close to the window.
  */
 describe('documented 400s: tool parameters and context overflow', () => {
   const schemas = spec.components.schemas as any;
@@ -914,12 +915,12 @@ describe('documented 400s: tool parameters and context overflow', () => {
     expect(bad).toContain('Invalid request. Check your request parameters.');
   });
 
-  it('explains the deepseek-v4-flash 16384 floor on max_tokens, in the spec and on both cards', () => {
+  it('max_tokens is passed through as sent: no deepseek-v4-flash floor, in the spec and on both cards', () => {
     const maxTokens = (spec.paths as any)['/chat/completions'].post.requestBody.content['application/json']
       .schema.properties.max_tokens.description;
-    expect(maxTokens).toContain('On `deepseek-v4-flash`, while reasoning is on, a smaller value is raised to 16384');
-    expect(maxTokens).toContain('with reasoning off (`reasoning_effort: "none"` or an alias) the value is used as sent');
-    expect(maxTokens).toContain('1,048,576-token window');
+    expect(maxTokens).toContain('The value is used exactly as sent, on every model, with reasoning on or off.');
+    expect(maxTokens).toContain('Reasoning tokens count inside it');
+    expect(maxTokens).not.toMatch(/raised to 16384|within 16384 tokens/);
     // Not promised as the exact text on deepseek-v4-flash: measured generic there.
     expect(maxTokens).not.toMatch(/deepseek-v4-flash[^.]*Context length exceeded/);
     expect(maxTokens).toMatch(/above what the model can generate is rejected with a generic `400`/);
@@ -932,14 +933,12 @@ describe('documented 400s: tool parameters and context overflow', () => {
       const start = page.indexOf('id="deepseek-v4-flash"');
       return page.slice(start, page.indexOf('/>', start));
     };
-    expect(card('')).toContain('While reasoning is on, an output budget below 16384 is raised to 16384 so the reasoning fits');
-    expect(card('')).toContain('max_output_tokens on /responses, the same on both routes');
-    expect(card('')).toContain('rejected with a 400 even with a small budget (usually Context length exceeded, sometimes a generic Invalid request)');
-    expect(card('')).toContain('A budget above 16384 is never lowered.');
-    expect(card('-es')).toContain('Con el razonamiento activado, un presupuesto de salida por debajo de 16384 se sube a 16384');
-    expect(card('-es')).toContain('max_output_tokens en /responses, igual en las dos rutas');
-    expect(card('-es')).toContain('se rechaza con un 400 aunque pidas un presupuesto pequeño (normalmente Context length exceeded, a veces un Invalid request genérico)');
-    expect(card('-es')).toContain('Un presupuesto por encima de 16384 nunca se baja.');
+    expect(card('')).toContain('Your output budget is used exactly as sent');
+    expect(card('')).toContain('max_output_tokens on /responses');
+    expect(card('')).not.toMatch(/raised to 16384|never lowered|within 16384 tokens/);
+    expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías');
+    expect(card('-es')).toContain('max_output_tokens en /responses');
+    expect(card('-es')).not.toMatch(/se sube a 16384|nunca se baja|a menos de 16384 tokens/);
   });
 });
 
