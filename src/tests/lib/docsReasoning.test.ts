@@ -107,6 +107,8 @@ describe('API reference: one documented way to turn reasoning off', () => {
     expect(d).toContain('`usage.completion_tokens_details.reasoning_tokens` equals `completion_tokens`');
     expect(d).toContain('`reasoning_effort: "none"`');
     expect(d).toContain('`stream: true`');
+    expect(d).toContain('Turn reasoning off (`reasoning_effort: "none"`) for a reliable fix (GLM cannot turn it off; `minimal` is its shortest); a lower effort is a hint, not a cap, on `deepseek-v4-flash` and `qwen3.8-flash`.');
+    expect(d).not.toMatch(/lower the effort,/);
     expect(d).not.toMatch(/16384|raised/);
   });
 
@@ -295,9 +297,31 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
     expect(section('')).not.toContain('on every\nmodel.');
   });
 
-  it('reasoning location is scoped per route (Chat Completions field, Responses output item)', () => {
-    expect(section('')).toContain('the reasoning in `message.reasoning_content` on Chat Completions (a `reasoning` output item on Responses)');
-    expect(section('-es')).toContain('el razonamiento en `message.reasoning_content` en Chat Completions (un elemento de salida `reasoning` en Responses)');
+  it('empty-answer signals are scoped to Chat Completions; Responses only promises the reasoning item', () => {
+    expect(section('')).toContain('On Chat Completions you get an empty `content` with\n`finish_reason: "length"`, the reasoning in `message.reasoning_content`, and');
+    expect(section('')).toContain('On Responses the reasoning arrives as a `reasoning` output item and there is no message text.');
+    expect(section('-es')).toContain('En Chat Completions recibes un `content` vacío con\n`finish_reason: "length"`, el razonamiento en `message.reasoning_content` y');
+    expect(section('-es')).toContain('En Responses el razonamiento llega como un elemento de salida `reasoning` y no hay texto de mensaje.');
+    // finish_reason / completion_tokens_details must not be promised for Responses.
+    for (const locale of ['', '-es'] as const) {
+      expect(section(locale)).not.toMatch(/Responses[^.]*finish_reason|Responses[^.]*completion_tokens_details/);
+      expect(card(locale)).not.toMatch(/\/responses[^.;]*finish_reason|\/responses[^.;]*completion_tokens_details/);
+    }
+    expect(card('')).toContain('on /responses the reasoning arrives as a reasoning output item with no message text');
+    expect(card('-es')).toContain('en /responses el razonamiento llega como un elemento de salida reasoning sin texto de mensaje');
+  });
+
+  it('remedies: none is the reliable fix, on both routes; lower effort is a hint on deepseek/qwen3.8-flash; GLM has no off switch', () => {
+    expect(section('')).toContain('the reliable fix is to turn reasoning off: `reasoning_effort: "none"` on Chat Completions, `reasoning: {"effort": "none"}` on Responses (GLM cannot turn it off; `minimal` is its shortest).');
+    expect(section('')).toContain('A lower effort usually reasons less, but on `deepseek-v4-flash` and `qwen3.8-flash` it is a hint, not a cap; only `qwen3.6` and `gemma4` cap it, on Chat Completions.');
+    expect(section('-es')).toContain('la solución fiable es apagar el razonamiento: `reasoning_effort: "none"` en Chat Completions, `reasoning: {"effort": "none"}` en Responses (GLM no puede apagarlo; `minimal` es lo más corto).');
+    expect(section('-es')).toContain('Un esfuerzo menor suele razonar menos, pero en `deepseek-v4-flash` y `qwen3.8-flash` es una pista, no un tope; solo `qwen3.6` y `gemma4` lo acotan, en Chat Completions.');
+    expect(card('')).toContain('The reliable fix is reasoning off (reasoning_effort "none" on /chat/completions, reasoning.effort "none" on /responses); a lower effort is a hint on this model, not a cap.');
+    expect(card('-es')).toContain('La solución fiable es apagar el razonamiento (reasoning_effort "none" en /chat/completions, reasoning.effort "none" en /responses); un esfuerzo menor es una pista en este modelo, no un tope.');
+    for (const locale of ['', '-es'] as const) {
+      // "lower the effort" is never offered as an unqualified fix.
+      expect(section(locale) + card(locale)).not.toMatch(/lower the effort|baja el esfuerzo/);
+    }
   });
 
   it('mimo-v2.6-flash card: no number, points at Controlling reasoning (en + es)', () => {
@@ -319,16 +343,16 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
 
   it('en wording', () => {
     expect(card('')).toContain('Your output budget is used exactly as sent, with reasoning on or off');
-    expect(card('')).toContain('with reasoning on, a small budget can be spent entirely on reasoning, and the answer comes back with an empty content and finish_reason "length"');
-    expect(card('')).toContain('turn reasoning off (reasoning_effort "none"), lower the effort, or give a generous budget and stream the answer.');
+    expect(card('')).toContain('On /chat/completions the answer then comes back with an empty content and finish_reason "length"');
+    expect(card('')).toContain('Or give a generous budget and stream the answer.');
     expect(section('')).toContain('is used exactly as you send it on every model');
     expect(section('')).toContain('[stream the answer](#long-outputs-stream-them)');
   });
 
   it('es wording', () => {
     expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías, con el razonamiento activado o apagado');
-    expect(card('-es')).toContain('con el razonamiento activado, un presupuesto pequeño puede gastarse entero en razonar, y la respuesta llega con content vacío y finish_reason "length"');
-    expect(card('-es')).toContain('apaga el razonamiento (reasoning_effort "none"), baja el esfuerzo, o da un presupuesto generoso y usa streaming.');
+    expect(card('-es')).toContain('En /chat/completions la respuesta llega entonces con content vacío y finish_reason "length"');
+    expect(card('-es')).toContain('O da un presupuesto generoso y usa streaming.');
     expect(section('-es')).toContain('se usa tal cual lo envías en todos los modelos');
     expect(section('-es')).toContain('[usa streaming](#respuestas-largas-usa-streaming)');
   });
