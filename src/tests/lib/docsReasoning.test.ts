@@ -108,6 +108,7 @@ describe('API reference: one documented way to turn reasoning off', () => {
     expect(d).toContain('`usage.completion_tokens_details.reasoning_tokens` equals `completion_tokens`');
     expect(d).toContain('`reasoning_effort: "none"`');
     expect(d).toContain('`stream: true`');
+    expect(d).toContain('non-streamed calls also carry the `x-nan-truncated-in-reasoning: true` response header.');
     expect(d).toContain('Turn reasoning off (`reasoning_effort: "none"`) for a reliable fix (GLM cannot turn it off; `minimal` is its shortest); a lower effort is a hint, not a cap, on `deepseek-v4-flash` and `qwen3.8-flash`.');
     expect(d).not.toMatch(/lower the effort,/);
     expect(d).not.toMatch(/16384|raised/);
@@ -220,6 +221,32 @@ describe('models page: the per-model table is the contract (en + es)', () => {
   }
 });
 
+describe('models page: the reasoning token budget (en + es)', () => {
+  // Measured live 2026-10-19 (nan-devops#895): both names reach every model
+  // under the name it reads; 64 caps reasoning on qwen3.6, gemma4 and
+  // qwen3.8-flash, 0 turns it off, NaN lowers anything above 32768.
+  for (const locale of ['', '-es'] as const) {
+    const text = section(locale);
+    it(`${locale || 'en'}: names both parameters, the three models, the range and the off value`, () => {
+      expect(text).toContain('`thinking_token_budget`');
+      expect(text).toContain('`thinking_budget`');
+      for (const model of ['`qwen3.6`', '`gemma4`', '`qwen3.8-flash`']) expect(text).toContain(model);
+      expect(text).toContain('`32768`');
+      expect(text).toMatch(locale === '' ? /`0` turns reasoning off/ : /`0` apaga el razonamiento/);
+    });
+
+    it(`${locale || 'en'}: says not to combine it with reasoning_effort, and what the other models do`, () => {
+      expect(text).toMatch(locale === '' ? /not both/ : /no los dos/);
+      expect(text).toMatch(locale === '' ? /a budget is not part of this contract/ : /el presupuesto no forma\s+parte de este contrato/);
+    });
+
+    it(`${locale || 'en'}: shows it top level and through extra_body`, () => {
+      expect(text).toContain('"thinking_budget": 2048');
+      expect(text).toContain('extra_body={"thinking_budget": 2048}');
+    });
+  }
+});
+
 describe('model cards agree with the table (en + es)', () => {
   for (const locale of ['', '-es'] as const) {
     it(`${locale || 'en'}: every chat card says how reasoning is controlled`, () => {
@@ -302,6 +329,12 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
 
   it('empty-answer signals are scoped to Chat Completions; Responses signals are status, incomplete_details, the reasoning item and usage', () => {
     expect(section('')).toContain('On Chat Completions you get an empty `content` with\n`finish_reason: "length"`, the reasoning in `message.reasoning_content`, and');
+    expect(section('')).toContain('only the three together mean the budget ran out while reasoning, and a non-streamed call also carries the response header `x-nan-truncated-in-reasoning: true`.');
+    expect(section('-es')).toContain('solo las tres juntas significan que el presupuesto se agotó razonando, y una llamada sin streaming además trae el header de respuesta `x-nan-truncated-in-reasoning: true`.');
+    // The header is a Chat Completions signal: never promised on Responses.
+    for (const locale of ['', '-es'] as const) {
+      expect(section(locale)).not.toMatch(/Responses[^.]*x-nan-truncated-in-reasoning/);
+    }
     expect(section('')).toContain('On Responses the response has `status: "incomplete"` with `incomplete_details.reason: "max_output_tokens"`, only a `reasoning` output item and no message text, and `usage.output_tokens_details.reasoning_tokens` equals `output_tokens`.');
     expect(section('-es')).toContain('En Chat Completions recibes un `content` vacío con\n`finish_reason: "length"`, el razonamiento en `message.reasoning_content` y');
     expect(section('-es')).toContain('En Responses la respuesta tiene `status: "incomplete"` con `incomplete_details.reason: "max_output_tokens"`, solo un elemento de salida `reasoning` y ningún texto de mensaje, y `usage.output_tokens_details.reasoning_tokens` es igual a `output_tokens`.');
@@ -376,6 +409,10 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
   it('both anchors the prose links to exist as headings', () => {
     expect(page('')).toContain('\n## Long outputs: stream them.\n');
     expect(page('-es')).toContain('\n## Respuestas largas: usa streaming.\n');
+    expect(page('')).toContain('\n### Capping reasoning with a token budget.\n');
+    expect(page('-es')).toContain('\n### Limitar el razonamiento con un presupuesto de tokens.\n');
+    expect(section('')).toContain('[Capping reasoning with a token budget](#capping-reasoning-with-a-token-budget)');
+    expect(section('-es')).toContain('[Limitar el razonamiento con un presupuesto de tokens](#limitar-el-razonamiento-con-un-presupuesto-de-tokens)');
   });
 });
 

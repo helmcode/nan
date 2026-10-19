@@ -922,7 +922,11 @@ describe('documented 400s: tool parameters and context overflow', () => {
     expect(maxTokens).not.toContain('upstream accepts');
     const maxOut = (spec.paths as any)['/responses'].post.requestBody.content['application/json'].schema.properties
       .max_output_tokens.description;
-    expect(maxOut).toContain("Used exactly as sent, except above the model's maximum: lowered to 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`. Reasoning tokens count inside it; see `max_tokens`.");
+    expect(maxOut).toContain("Used exactly as sent, except above the model's maximum: lowered to 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`.");
+    expect(maxOut).toContain('a budget spent entirely on reasoning returns `status: "incomplete"` with `incomplete_details.reason: "max_output_tokens"` and only a `reasoning` output item');
+    // The header and finish_reason are Chat Completions signals (nan-devops#901 reads `choices`).
+    expect(maxOut).not.toMatch(/finish_reason|x-nan-truncated-in-reasoning/);
+    expect(maxTokens).toContain('non-streamed calls also carry the `x-nan-truncated-in-reasoning: true` response header.');
     expect(maxTokens).toContain('Reasoning tokens count inside it');
     expect(maxTokens).not.toMatch(/raised to 16384|within 16384 tokens/);
     // Not promised as the exact text on deepseek-v4-flash: measured generic there.
@@ -940,9 +944,11 @@ describe('documented 400s: tool parameters and context overflow', () => {
     };
     expect(card('')).toContain('Your output budget is used exactly as sent');
     expect(card('')).toContain('max_output_tokens on /responses');
+    expect(card('')).toContain('non-streamed calls also carry the response header x-nan-truncated-in-reasoning: true); on /responses');
     expect(card('')).not.toMatch(/raised to 16384|never lowered|within 16384 tokens/);
     expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías');
     expect(card('-es')).toContain('max_output_tokens en /responses');
+    expect(card('-es')).toContain('las llamadas sin streaming además traen el header de respuesta x-nan-truncated-in-reasoning: true); en /responses');
     expect(card('-es')).not.toMatch(/se sube a 16384|nunca se baja|a menos de 16384 tokens/);
   });
 });
