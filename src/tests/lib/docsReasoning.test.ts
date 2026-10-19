@@ -100,7 +100,7 @@ describe('API reference: one documented way to turn reasoning off', () => {
 
   it('max_tokens: passed through as sent, reasoning counts inside it (no deepseek floor)', () => {
     const d = chatBody.max_tokens.description;
-    expect(d).toContain('The value is used exactly as sent, with reasoning on or off, on every model except `glm5.3-flash`, where a value above 131072 is lowered to 131072, the most its upstream accepts.');
+    expect(d).toContain('The value is used exactly as sent, with reasoning on or off, on every model except `glm5.3-flash`, where a value above 131072 is lowered to 131072, the model\'s maximum.');
     expect(d).not.toMatch(/above what the model can generate is rejected with a generic `400`\./);
     expect(d).toContain('the reasoning is in `message.reasoning_content`');
     expect(d).toContain('an empty `content` and `finish_reason: "length"`');
@@ -292,23 +292,36 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
   }
 
   it(`the glm5.3-flash ceiling is the one exception, said in both locales`, () => {
-    expect(section('')).toContain('except on `glm5.3-flash`, where a value above 131072 is lowered to 131072, the most its upstream accepts.');
-    expect(section('-es')).toContain('salvo en `glm5.3-flash`, donde un valor por encima de 131072 se baja a 131072, lo máximo que acepta su proveedor.');
+    expect(section('')).toContain('except on `glm5.3-flash`, where a value above 131072 is lowered to 131072, the model\'s maximum.');
+    expect(section('-es')).toContain('salvo en `glm5.3-flash`, donde un valor por encima de 131072 se baja a 131072, el máximo del modelo.');
     expect(section('')).not.toContain('on every\nmodel.');
   });
 
   it('empty-answer signals are scoped to Chat Completions; Responses only promises the reasoning item', () => {
     expect(section('')).toContain('On Chat Completions you get an empty `content` with\n`finish_reason: "length"`, the reasoning in `message.reasoning_content`, and');
-    expect(section('')).toContain('On Responses the reasoning arrives as a `reasoning` output item and there is no message text.');
+    expect(section('')).toContain('On Responses the response has `status: "incomplete"` with `incomplete_details.reason: "max_output_tokens"`, only a `reasoning` output item and no message text, and `usage.output_tokens_details.reasoning_tokens` equals `output_tokens`.');
     expect(section('-es')).toContain('En Chat Completions recibes un `content` vacío con\n`finish_reason: "length"`, el razonamiento en `message.reasoning_content` y');
-    expect(section('-es')).toContain('En Responses el razonamiento llega como un elemento de salida `reasoning` y no hay texto de mensaje.');
+    expect(section('-es')).toContain('En Responses la respuesta tiene `status: "incomplete"` con `incomplete_details.reason: "max_output_tokens"`, solo un elemento de salida `reasoning` y ningún texto de mensaje, y `usage.output_tokens_details.reasoning_tokens` es igual a `output_tokens`.');
     // finish_reason / completion_tokens_details must not be promised for Responses.
     for (const locale of ['', '-es'] as const) {
       expect(section(locale)).not.toMatch(/Responses[^.]*finish_reason|Responses[^.]*completion_tokens_details/);
       expect(card(locale)).not.toMatch(/\/responses[^.;]*finish_reason|\/responses[^.;]*completion_tokens_details/);
     }
-    expect(card('')).toContain('on /responses the reasoning arrives as a reasoning output item with no message text');
-    expect(card('-es')).toContain('en /responses el razonamiento llega como un elemento de salida reasoning sin texto de mensaje');
+    expect(card('')).toContain('on /responses the status is incomplete, with only a reasoning output item');
+    expect(card('-es')).toContain('en /responses el status es incomplete, con solo un elemento de salida reasoning');
+  });
+
+  it('the empty-answer paragraph has a bold lead, and reasoning off still respects the budget (en + es)', () => {
+    expect(section('')).toContain('\n\n**Empty answer with `finish_reason: "length"`?** ');
+    expect(section('-es')).toContain('\n\n**¿Respuesta vacía con `finish_reason: "length"`?** ');
+    expect(section('')).toContain('With reasoning off the answer can still stop at the budget, with text, so the budget must fit the answer.');
+    expect(section('-es')).toContain('Con el razonamiento apagado la respuesta también puede cortarse en el presupuesto, con texto, así que el presupuesto tiene que caberle a la respuesta.');
+    // The old one-line mention is folded into the paragraph, not repeated.
+    expect(section('')).not.toContain('its tokens count toward');
+    expect(section('-es')).not.toMatch(/sus tokens\s+cuentan dentro de/);
+    for (const locale of ['', '-es'] as const) {
+      expect(section(locale)).not.toMatch(/upstream accepts|acepta su proveedor/);
+    }
   });
 
   it('remedies: none is the reliable fix, on both routes; lower effort is a hint on deepseek/qwen3.8-flash; GLM has no off switch', () => {

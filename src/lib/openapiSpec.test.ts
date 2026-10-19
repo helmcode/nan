@@ -919,6 +919,11 @@ describe('documented 400s: tool parameters and context overflow', () => {
     const maxTokens = (spec.paths as any)['/chat/completions'].post.requestBody.content['application/json']
       .schema.properties.max_tokens.description;
     expect(maxTokens).toContain('on every model except `glm5.3-flash`, where a value above 131072 is lowered to 131072');
+    expect(maxTokens).toContain("lowered to 131072, the model's maximum.");
+    expect(maxTokens).not.toContain('upstream accepts');
+    const maxOut = (spec.paths as any)['/responses'].post.requestBody.content['application/json'].schema.properties
+      .max_output_tokens.description;
+    expect(maxOut).toContain('Used exactly as sent (except `glm5.3-flash`, lowered to 131072). Reasoning tokens count inside it; see `max_tokens`.');
     expect(maxTokens).toContain('Reasoning tokens count inside it');
     expect(maxTokens).not.toMatch(/raised to 16384|within 16384 tokens/);
     // Not promised as the exact text on deepseek-v4-flash: measured generic there.

@@ -50,7 +50,7 @@ OpenAI y la misma `base URL`.
   tag="305B MoE"
   leftLabel="generación de texto, chat y visión"
   rightLabel="capacidades"
-  description={'Modelo MoE de 305B parámetros, servido en su variante Vision-Exp: acepta imágenes de entrada. Contexto de 1M tokens. Tool calling y razonamiento. Cuota de 3B tokens al mes por miembro. Salida estructurada: response_format json_object es compatible (en api.nan.builders el prompt debe contener la palabra JSON; si no, se rechaza con un 400). json_schema se acepta en peticiones a /chat/completions sin streaming y sin tools: la respuesta se comprueba contra tu esquema y, si no lo cumple, normalmente la vuelve a servir un proveedor que lo impone; una respuesta que no se pudo comprobar, o un fallo que no se pudo reemplazar a tiempo, se devuelve tal cual (valídala si tu código depende de ella). En api.nan.builders el resto de peticiones json_schema se rechazan con un 400: con streaming, con tools, a /responses, con n mayor que 1, con un esquema de más de 16 KB, que no sea un JSON Schema válido o que el gateway no valida (un $ref fuera del esquema, $dynamicRef o $anchor, un $id anidado o demasiado grande al resolver sus $ref); en api.helmcode.com se aceptan. json_object solo garantiza JSON sintácticamente válido, no su forma: describe el esquema en el prompt. Para salida restringida a un esquema en esas otras peticiones, usa qwen3.6 o gemma4, donde json_schema con strict restringe campos, tipos y claves obligatorias; o, en este modelo, fuerza una única herramienta de tipo función cuyo parameters sea tu esquema (ver Ejemplos). Tu presupuesto de salida se usa tal cual lo envías, con el razonamiento activado o apagado (max_tokens y max_completion_tokens en /chat/completions, max_output_tokens en /responses). Los tokens de razonamiento cuentan dentro de ese presupuesto: con el razonamiento activado, un presupuesto pequeño puede gastarse entero en razonar. En /chat/completions la respuesta llega entonces con content vacío y finish_reason "length" (el razonamiento está en reasoning_content, y usage.completion_tokens_details.reasoning_tokens es igual a completion_tokens); en /responses el razonamiento llega como un elemento de salida reasoning sin texto de mensaje. Los prompts densos pueden razonar más de 16k tokens. La solución fiable es apagar el razonamiento (reasoning_effort "none" en /chat/completions, reasoning.effort "none" en /responses); un esfuerzo menor es una pista en este modelo, no un tope. O da un presupuesto generoso y usa streaming.'}
+  description={'Modelo MoE de 305B parámetros, servido en su variante Vision-Exp: acepta imágenes de entrada. Contexto de 1M tokens. Tool calling y razonamiento. Cuota de 3B tokens al mes por miembro. Salida estructurada: response_format json_object es compatible (en api.nan.builders el prompt debe contener la palabra JSON; si no, se rechaza con un 400). json_schema se acepta en peticiones a /chat/completions sin streaming y sin tools: la respuesta se comprueba contra tu esquema y, si no lo cumple, normalmente la vuelve a servir un proveedor que lo impone; una respuesta que no se pudo comprobar, o un fallo que no se pudo reemplazar a tiempo, se devuelve tal cual (valídala si tu código depende de ella). En api.nan.builders el resto de peticiones json_schema se rechazan con un 400: con streaming, con tools, a /responses, con n mayor que 1, con un esquema de más de 16 KB, que no sea un JSON Schema válido o que el gateway no valida (un $ref fuera del esquema, $dynamicRef o $anchor, un $id anidado o demasiado grande al resolver sus $ref); en api.helmcode.com se aceptan. json_object solo garantiza JSON sintácticamente válido, no su forma: describe el esquema en el prompt. Para salida restringida a un esquema en esas otras peticiones, usa qwen3.6 o gemma4, donde json_schema con strict restringe campos, tipos y claves obligatorias; o, en este modelo, fuerza una única herramienta de tipo función cuyo parameters sea tu esquema (ver Ejemplos). Tu presupuesto de salida se usa tal cual lo envías, con el razonamiento activado o apagado (max_tokens y max_completion_tokens en /chat/completions, max_output_tokens en /responses). Los tokens de razonamiento cuentan dentro de ese presupuesto: con el razonamiento activado, un presupuesto pequeño puede gastarse entero en razonar. En /chat/completions la respuesta llega entonces con content vacío y finish_reason "length" (el razonamiento está en reasoning_content, y usage.completion_tokens_details.reasoning_tokens es igual a completion_tokens); en /responses el status es incomplete, con solo un elemento de salida reasoning. Los prompts densos pueden razonar más de 16k tokens. La solución fiable es apagar el razonamiento (reasoning_effort "none" en /chat/completions, reasoning.effort "none" en /responses); un esfuerzo menor es una pista en este modelo, no un tope. O da un presupuesto generoso y usa streaming.'}
   specs={[
     { label: 'Tipo', value: 'MoE (305B total)' },
     { label: 'Cuantización', value: 'FP8' },
@@ -364,22 +364,24 @@ el valor.
 | `glm5.3` · `glm5.3-flash` | No es posible: GLM siempre razona. `none` se aplica como `minimal`, su razonamiento más corto (unos pocos tokens). | De `minimal` a `max`; los valores más altos razonan más antes de responder. |
 
 Sin parámetro, todos los modelos razonan (`qwen3.6` y `gemma4` con un
-presupuesto de 16.384 tokens). El razonamiento cuesta latencia y sus tokens
-cuentan dentro de `max_tokens`. Usa solo los valores de esta página.
+presupuesto de 16.384 tokens). El razonamiento cuesta latencia. Usa solo los valores de esta página.
 Cualquier otro valor se envía tal cual y queda fuera de este contrato: según el modelo,
 se rechaza con un `400` o se ignora.
 
 Tu presupuesto de salida (`max_tokens` o `max_completion_tokens` en Chat
 Completions, `max_output_tokens` en Responses) se usa tal cual lo envías en todos los modelos,
-salvo en `glm5.3-flash`, donde un valor por encima de 131072 se baja a 131072, lo máximo que acepta su proveedor.
-El razonamiento sale de ese mismo presupuesto, así que con
-el razonamiento activado un presupuesto pequeño puede agotarse antes de que
+salvo en `glm5.3-flash`, donde un valor por encima de 131072 se baja a 131072, el máximo del modelo.
+Los tokens de razonamiento salen de ese mismo presupuesto.
+
+**¿Respuesta vacía con `finish_reason: "length"`?** Con el razonamiento activado,
+un presupuesto pequeño puede agotarse antes de que
 empiece la respuesta. En Chat Completions recibes un `content` vacío con
 `finish_reason: "length"`, el razonamiento en `message.reasoning_content` y
 `usage.completion_tokens_details.reasoning_tokens` igual a `completion_tokens`.
-En Responses el razonamiento llega como un elemento de salida `reasoning` y no hay texto de mensaje.
+En Responses la respuesta tiene `status: "incomplete"` con `incomplete_details.reason: "max_output_tokens"`, solo un elemento de salida `reasoning` y ningún texto de mensaje, y `usage.output_tokens_details.reasoning_tokens` es igual a `output_tokens`.
 En `deepseek-v4-flash` un prompt denso puede razonar más de 16k tokens. Si solo
 necesitas la respuesta, la solución fiable es apagar el razonamiento: `reasoning_effort: "none"` en Chat Completions, `reasoning: {"effort": "none"}` en Responses (GLM no puede apagarlo; `minimal` es lo más corto).
+Con el razonamiento apagado la respuesta también puede cortarse en el presupuesto, con texto, así que el presupuesto tiene que caberle a la respuesta.
 Un esfuerzo menor suele razonar menos, pero en `deepseek-v4-flash` y `qwen3.8-flash` es una pista, no un tope; solo `qwen3.6` y `gemma4` lo acotan, en Chat Completions.
 Si quieres el razonamiento, da un presupuesto generoso y
 [usa streaming](#respuestas-largas-usa-streaming).
