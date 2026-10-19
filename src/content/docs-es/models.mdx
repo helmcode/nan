@@ -134,7 +134,7 @@ OpenAI y la misma `base URL`.
   ]}
   items={[
     'Tool calling (function calling)',
-    'Control del razonamiento (<code>reasoning_effort</code>: <code>none</code> lo apaga · de <code>low</code> a <code>max</code>; se recomienda <code>max_tokens &ge; 300</code>) · <a href="#controlar-el-razonamiento">detalles</a>',
+    'Control del razonamiento (<code>reasoning_effort</code>: <code>none</code> lo apaga · de <code>low</code> a <code>max</code>; el razonamiento cuenta dentro de <code>max_tokens</code>) · <a href="#controlar-el-razonamiento">detalles</a>',
     'Visión (entrada de imagen)',
     'Audio (entrada de audio)',
     'Contexto de 1M tokens',
@@ -370,11 +370,12 @@ Cualquier otro valor se envía tal cual y queda fuera de este contrato: según e
 se rechaza con un `400` o se ignora.
 
 Tu presupuesto de salida (`max_tokens` o `max_completion_tokens` en Chat
-Completions, `max_output_tokens` en Responses) se usa tal cual lo envías, en
-todos los modelos. El razonamiento sale de ese mismo presupuesto, así que con
+Completions, `max_output_tokens` en Responses) se usa tal cual lo envías en todos los modelos,
+salvo en `glm5.3-flash`, donde un valor por encima de 131072 se baja a 131072, lo máximo que acepta su proveedor.
+El razonamiento sale de ese mismo presupuesto, así que con
 el razonamiento activado un presupuesto pequeño puede agotarse antes de que
 empiece la respuesta: recibes un `content` vacío con `finish_reason: "length"`,
-el razonamiento en `message.reasoning_content` y
+el razonamiento en `message.reasoning_content` en Chat Completions (un elemento de salida `reasoning` en Responses) y
 `usage.completion_tokens_details.reasoning_tokens` igual a `completion_tokens`.
 En `deepseek-v4-flash` un prompt denso puede razonar más de 16k tokens. Si solo
 necesitas la respuesta, apaga el razonamiento (`reasoning_effort: "none"`) o

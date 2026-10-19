@@ -100,7 +100,9 @@ describe('API reference: one documented way to turn reasoning off', () => {
 
   it('max_tokens: passed through as sent, reasoning counts inside it (no deepseek floor)', () => {
     const d = chatBody.max_tokens.description;
-    expect(d).toContain('The value is used exactly as sent, on every model, with reasoning on or off.');
+    expect(d).toContain('The value is used exactly as sent, with reasoning on or off, on every model except `glm5.3-flash`, where a value above 131072 is lowered to 131072, the most its upstream accepts.');
+    expect(d).not.toMatch(/above what the model can generate is rejected with a generic `400`\./);
+    expect(d).toContain('the reasoning is in `message.reasoning_content`');
     expect(d).toContain('an empty `content` and `finish_reason: "length"`');
     expect(d).toContain('`usage.completion_tokens_details.reasoning_tokens` equals `completion_tokens`');
     expect(d).toContain('`reasoning_effort: "none"`');
@@ -262,7 +264,8 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
   };
   const examples = (locale: '' | '-es') =>
     readFileSync(resolve(here, `../../content/docs${locale}/examples.md`), 'utf-8');
-  const FLOOR = /raised to 16384|se sube a 16384|16384 nunca se baja|never lowered|within 16384 tokens|a menos de 16384 tokens|≥ ?300/;
+  // `&ge;` / `&amp;ge;` too: card strings are HTML, and the entity slipped past `≥` once.
+  const FLOOR = /raised to 16384|se sube a 16384|16384 nunca se baja|never lowered|within 16384 tokens|a menos de 16384 tokens|(?:≥|&ge;|&amp;ge;)\s*(?:<\/?code>)?\s*300|max_tokens\s*(?:≥|&ge;|&amp;ge;)/;
 
   for (const locale of ['', '-es'] as const) {
     it(`${locale || 'en'}: no page describes the floor or the old max_tokens >= 300 advice`, () => {
@@ -286,11 +289,39 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
     });
   }
 
+  it(`the glm5.3-flash ceiling is the one exception, said in both locales`, () => {
+    expect(section('')).toContain('except on `glm5.3-flash`, where a value above 131072 is lowered to 131072, the most its upstream accepts.');
+    expect(section('-es')).toContain('salvo en `glm5.3-flash`, donde un valor por encima de 131072 se baja a 131072, lo máximo que acepta su proveedor.');
+    expect(section('')).not.toContain('on every\nmodel.');
+  });
+
+  it('reasoning location is scoped per route (Chat Completions field, Responses output item)', () => {
+    expect(section('')).toContain('the reasoning in `message.reasoning_content` on Chat Completions (a `reasoning` output item on Responses)');
+    expect(section('-es')).toContain('el razonamiento en `message.reasoning_content` en Chat Completions (un elemento de salida `reasoning` en Responses)');
+  });
+
+  it('mimo-v2.6-flash card: no number, points at Controlling reasoning (en + es)', () => {
+    const mimo = (locale: '' | '-es') => cardReasoning(locale, 'mimo-v2.6-flash').join(' ');
+    expect(mimo('')).toContain('reasoning counts inside <code>max_tokens</code>');
+    expect(mimo('-es')).toContain('el razonamiento cuenta dentro de <code>max_tokens</code>');
+    expect(mimo('')).not.toMatch(FLOOR);
+    expect(mimo('-es')).not.toMatch(FLOOR);
+  });
+
+  for (const locale of ['', '-es'] as const) {
+    it(`${locale || 'en'}: the examples paragraph is model-generic`, () => {
+      const ex = examples(locale);
+      const i = ex.indexOf('`finish_reason: "length"`');
+      const para = ex.slice(ex.lastIndexOf('\n\n', i), ex.indexOf('\n\n', i));
+      expect(para).not.toContain('deepseek-v4-flash');
+    });
+  }
+
   it('en wording', () => {
     expect(card('')).toContain('Your output budget is used exactly as sent, with reasoning on or off');
     expect(card('')).toContain('with reasoning on, a small budget can be spent entirely on reasoning, and the answer comes back with an empty content and finish_reason "length"');
     expect(card('')).toContain('turn reasoning off (reasoning_effort "none"), lower the effort, or give a generous budget and stream the answer.');
-    expect(section('')).toContain('is used exactly as you send it, on every\nmodel.');
+    expect(section('')).toContain('is used exactly as you send it on every model');
     expect(section('')).toContain('[stream the answer](#long-outputs-stream-them)');
   });
 
@@ -298,7 +329,7 @@ describe('output budget: passed through as sent, no floor (en + es)', () => {
     expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías, con el razonamiento activado o apagado');
     expect(card('-es')).toContain('con el razonamiento activado, un presupuesto pequeño puede gastarse entero en razonar, y la respuesta llega con content vacío y finish_reason "length"');
     expect(card('-es')).toContain('apaga el razonamiento (reasoning_effort "none"), baja el esfuerzo, o da un presupuesto generoso y usa streaming.');
-    expect(section('-es')).toContain('se usa tal cual lo envías, en\ntodos los modelos.');
+    expect(section('-es')).toContain('se usa tal cual lo envías en todos los modelos');
     expect(section('-es')).toContain('[usa streaming](#respuestas-largas-usa-streaming)');
   });
 

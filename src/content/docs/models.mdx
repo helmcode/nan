@@ -134,7 +134,7 @@ with the same `base URL`.
   ]}
   items={[
     'Tool calling (function calling)',
-    'Reasoning control (<code>reasoning_effort</code>: <code>none</code> turns it off · <code>low</code> to <code>max</code>; recommended <code>max_tokens &ge; 300</code>) · <a href="#controlling-reasoning">details</a>',
+    'Reasoning control (<code>reasoning_effort</code>: <code>none</code> turns it off · <code>low</code> to <code>max</code>; reasoning counts inside <code>max_tokens</code>) · <a href="#controlling-reasoning">details</a>',
     'Vision (image input)',
     'Audio (audio input)',
     '1M token context',
@@ -367,10 +367,11 @@ Any other value is passed through unchanged and is not part of this contract: de
 on the model it is rejected with a `400` or ignored.
 
 Your output budget (`max_tokens` or `max_completion_tokens` on Chat Completions,
-`max_output_tokens` on Responses) is used exactly as you send it, on every
-model. Reasoning is spent from that same budget, so with reasoning on a small
+`max_output_tokens` on Responses) is used exactly as you send it on every model,
+except on `glm5.3-flash`, where a value above 131072 is lowered to 131072, the most its upstream accepts.
+Reasoning is spent from that same budget, so with reasoning on a small
 budget can run out before the answer starts: you get an empty `content` with
-`finish_reason: "length"`, the reasoning in `message.reasoning_content`, and
+`finish_reason: "length"`, the reasoning in `message.reasoning_content` on Chat Completions (a `reasoning` output item on Responses), and
 `usage.completion_tokens_details.reasoning_tokens` equal to `completion_tokens`.
 On `deepseek-v4-flash` a dense prompt can reason past 16k tokens. If you only
 need the answer, turn reasoning off (`reasoning_effort: "none"`) or lower the

@@ -918,12 +918,13 @@ describe('documented 400s: tool parameters and context overflow', () => {
   it('max_tokens is passed through as sent: no deepseek-v4-flash floor, in the spec and on both cards', () => {
     const maxTokens = (spec.paths as any)['/chat/completions'].post.requestBody.content['application/json']
       .schema.properties.max_tokens.description;
-    expect(maxTokens).toContain('The value is used exactly as sent, on every model, with reasoning on or off.');
+    expect(maxTokens).toContain('on every model except `glm5.3-flash`, where a value above 131072 is lowered to 131072');
     expect(maxTokens).toContain('Reasoning tokens count inside it');
     expect(maxTokens).not.toMatch(/raised to 16384|within 16384 tokens/);
     // Not promised as the exact text on deepseek-v4-flash: measured generic there.
     expect(maxTokens).not.toMatch(/deepseek-v4-flash[^.]*Context length exceeded/);
-    expect(maxTokens).toMatch(/above what the model can generate is rejected with a generic `400`/);
+    // glm5.3-flash lowers instead of rejecting, so the generic-400 rule names its exception.
+    expect(maxTokens).toContain('A value above what the model can generate is rejected with a generic `400`, except on `glm5.3-flash` (see below).');
 
     const card = (locale: string) => {
       const page = readFileSync(
