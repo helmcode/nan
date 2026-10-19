@@ -98,10 +98,12 @@ describe('API reference: one documented way to turn reasoning off', () => {
     }
   });
 
-  it('max_tokens: the deepseek floor applies only while reasoning is on', () => {
+  it('max_tokens: the budget is used as sent, and reasoning counts against it', () => {
     expect(chatBody.max_tokens.description).toContain(
-      'On `deepseek-v4-flash`, while reasoning is on, a smaller value is raised to 16384 so the reasoning fits, so a prompt within 16384 tokens of its 1,048,576-token window is rejected with a `400` even with a small `max_tokens`; with reasoning off (`reasoning_effort: "none"` or an alias) the value is used as sent.',
+      'The value is used exactly as sent on every model: it is never raised.',
     );
+    expect(chatBody.max_tokens.description).toContain('x-nan-truncated-in-reasoning: true');
+    expect(chatBody.max_tokens.description).not.toContain('raised to 16384');
   });
 
   it('lists the accepted aliases and says the explicit value wins', () => {
@@ -277,14 +279,16 @@ describe('deepseek-v4-flash card: the max_tokens floor only applies while reason
 
   it('en', () => {
     expect(card('')).toContain(
-      'While reasoning is on, an output budget below 16384 is raised to 16384 so the reasoning fits (max_tokens and max_completion_tokens on /chat/completions, max_output_tokens on /responses, the same on both routes), so a prompt within 16384 tokens of the 1,048,576-token window is rejected with a 400 even with a small budget (usually Context length exceeded, sometimes a generic Invalid request). With reasoning off (reasoning_effort "none" or any of its aliases) your budget is used as sent. A budget above 16384 is never lowered.',
+      'Your output budget is used exactly as sent on every route (max_tokens and max_completion_tokens on /chat/completions, max_output_tokens on /responses): we never raise it.',
     );
+    expect(card('')).toContain('non-streamed calls also carry the response header x-nan-truncated-in-reasoning: true');
+    expect(card('')).not.toContain('raised to 16384');
   });
 
   it('es', () => {
-    expect(card('-es')).toContain('Con el razonamiento activado, un presupuesto de salida por debajo de 16384 se sube a 16384');
-    expect(card('-es')).toContain('Con el razonamiento apagado (reasoning_effort "none" o cualquiera de sus alias) tu presupuesto se usa tal cual.');
-    expect(card('-es')).toContain('Un presupuesto por encima de 16384 nunca se baja.');
+    expect(card('-es')).toContain('Tu presupuesto de salida se usa exactamente como lo mandás en las dos rutas');
+    expect(card('-es')).toContain('las llamadas sin streaming además traen el header x-nan-truncated-in-reasoning: true');
+    expect(card('-es')).not.toContain('se sube a 16384');
   });
 });
 
