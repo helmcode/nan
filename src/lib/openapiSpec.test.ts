@@ -924,6 +924,9 @@ describe('documented 400s: tool parameters and context overflow', () => {
       .max_output_tokens.description;
     expect(maxOut).toContain("Used exactly as sent, except above the model's maximum: lowered to 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`.");
     expect(maxOut).toContain('a budget spent entirely on reasoning returns `status: "incomplete"` with `incomplete_details.reason: "max_output_tokens"` and only a `reasoning` output item');
+    // Responses has its own off switch: the remedy must name it, not the Chat form.
+    expect(maxOut).toContain('the reliable fix is reasoning off with `reasoning: {"effort": "none"}` (GLM cannot turn it off; `minimal` is its shortest)');
+    expect(maxOut).not.toContain('reasoning_effort');
     // The header and finish_reason are Chat Completions signals (nan-devops#901 reads `choices`).
     expect(maxOut).not.toMatch(/finish_reason|x-nan-truncated-in-reasoning/);
     expect(maxTokens).toContain('non-streamed calls also carry the `x-nan-truncated-in-reasoning: true` response header.');

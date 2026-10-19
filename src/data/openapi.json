@@ -1087,7 +1087,7 @@
                   "max_output_tokens": {
                     "type": "integer",
                     "minimum": 1,
-                    "description": "The maximum number of output tokens. Default 65536 on `qwen3.6`. Used exactly as sent, except above the model's maximum: lowered to 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`. Reasoning tokens count inside it: a budget spent entirely on reasoning returns `status: \"incomplete\"` with `incomplete_details.reason: \"max_output_tokens\"` and only a `reasoning` output item; see `max_tokens` for the remedies."
+                    "description": "The maximum number of output tokens. Default 65536 on `qwen3.6`. Used exactly as sent, except above the model's maximum: lowered to 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`. Reasoning tokens count inside it: a budget spent entirely on reasoning returns `status: \"incomplete\"` with `incomplete_details.reason: \"max_output_tokens\"` and only a `reasoning` output item; the reliable fix is reasoning off with `reasoning: {\"effort\": \"none\"}` (GLM cannot turn it off; `minimal` is its shortest), or a larger value."
                   },
                   "reasoning": {
                     "type": "object",
