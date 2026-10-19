@@ -16,7 +16,7 @@ Una **ejecución efímera** es un [run de agente](/es/docs/runs) que no necesita
 | | Run en un workspace | Ejecución efímera |
 |---|---|---|
 | Dónde trabaja | En tu workspace, junto a tus archivos | En un contenedor nuevo, solo para ese run |
-| Qué necesita | Un workspace encendido con el agente instalado | Un repositorio de GitHub y un modelo |
+| Qué necesita | Un workspace encendido con el agente instalado | Un repositorio de GitHub, un modelo y un método de pago |
 | Sobre qué trabaja | Una carpeta de tu workspace | Un clon nuevo del repositorio |
 | Qué queda al terminar | Tus archivos, y una rama con sus cambios | Nada: el contenedor se destruye |
 | Qué cuesta | Va incluido en tu workspace | Por minuto empezado, según el tamaño, después de tus minutos gratis |
@@ -30,12 +30,13 @@ Usa una ejecución efímera cuando:
 Usa un run en un [workspace](/es/docs/workspaces) cuando el agente necesite tus propios archivos, tus herramientas configuradas a mano o cambios que sigan ahí después del run: una ejecución efímera no guarda nada.
 
 <Callout title="Apertura gradual">
-Las ejecuciones efímeras se están abriendo poco a poco. Si no ves **Ephemeral** al crear un run, tu cuenta todavía no la tiene: la API responde como si la opción no existiera.
+Las ejecuciones efímeras se están abriendo poco a poco. Si no ves **Ephemeral container** al crear un run, tu cuenta todavía no la tiene: la API responde como si la opción no existiera.
 </Callout>
 
 ## Antes de empezar
 
 - **Un repositorio de GitHub**, como `owner/name`, por ejemplo `acme/api`. Un run que lanzas tú clona repositorios **públicos**. Para uno privado, usa una [automatización](#repositorios-privados) con un token de GitHub.
+- **Un método de pago registrado**, siempre, aunque tus minutos gratis cubran todos los runs. Añádelo en **Settings → Ephemeral runs** con **Add a payment method** (el formulario **New run** también lo ofrece). Consulta [Método de pago y moneda](#método-de-pago-y-moneda).
 - **Un modelo.** No hay configuración de workspace a la que recurrir, así que toda ejecución efímera indica su modelo.
 - **Un plan con inferencia, o tu propia clave de proveedor.** Con la inferencia de NaN, los tokens cuentan para el uso de tu plan como en cualquier otro run. Con [tu propia clave de proveedor](/es/docs/runs#usa-tu-propia-clave-de-proveedor-byok), los factura tu proveedor, y puede usarla cualquier miembro con una suscripción activa.
 
@@ -55,7 +56,7 @@ El agente trabaja en su clon: **Folder** y **Separate branch** no aplican, y no 
 
 ## Lanza una desde el portal
 
-Abre **New run** y pon **Where it runs** en **Ephemeral**. Después rellena:
+Abre **New run** desde la página **Runs** del portal ([cloud.nan.builders/runs](https://cloud.nan.builders/runs)), o desde la pestaña **Runs** de un workspace, y pon **Where it runs** en **Ephemeral container**. En la página **Runs**, sin workspace, es la única opción. Después rellena:
 
 | Campo | Qué es |
 |---|---|
@@ -68,6 +69,8 @@ Abre **New run** y pon **Where it runs** en **Ephemeral**. Después rellena:
 | **Inference** | **NaN** o **My own key**, como en cualquier run. |
 
 La lista de runs muestra dónde se ejecutó cada uno y, cuando termina una ejecución efímera, lo que costó.
+
+Mientras una ejecución efímera trabaja, su página muestra un contador en directo: **Elapsed** (tiempo transcurrido), **Minutes billed** (minutos empezados), **S-minutes** (lo que gasta de tus minutos gratis, según el tamaño) y **Estimated cost** (coste estimado, antes de los minutos gratis). La página **Runs** y **Settings → Ephemeral runs** muestran los totales del mes: **S-minutes**, **Free S-minutes left** (minutos S gratis que quedan) y **Chargeable so far** (lo cobrable hasta ahora), en euros. Consulta [Minutos gratis](#minutos-gratis).
 
 ## Desde la terminal
 
@@ -133,7 +136,7 @@ Un run con tu propia clave de proveedor lanzado por ti sigue necesitando una ses
 
 ## En automatizaciones
 
-Una [automatización](/es/docs/automations) también puede ejecutarse en contenedores efímeros: cada run que lanza, con **Run now**, un webhook o una programación, tiene su propio contenedor. En el editor, pon **Where it runs** en **Ephemeral** y elige el **Size**. Entonces necesita:
+Una [automatización](/es/docs/automations) también puede ejecutarse en contenedores efímeros: cada run que lanza, con **Run now**, un webhook o una programación, tiene su propio contenedor. En el editor, pon **Where it runs** en **Ephemeral container** y elige el **Size**. No necesitas workspace para ello: sin ningún workspace, tus automatizaciones solo pueden ser efímeras. Entonces necesita:
 
 - Un **GitHub repository**, y **Checkout** en **Fresh clone per run**: no hay carpeta de workspace en la que trabajar.
 - Un **Model**.
@@ -180,13 +183,16 @@ Las ejecuciones efímeras se miden y se muestran, en el portal, la CLI y la API,
 
 ## Minutos gratis
 
-Cada mes tienes minutos gratis, según tu plan:
+Cada mes tu membresía incluye minutos gratis:
 
 | Plan | Minutos gratis al mes |
 |---|---|
 | Community | 100 |
 | Inference | 300 |
 | Premium | 1000 |
+| Sin membresía | 0 |
+
+Los minutos gratis solo vienen con una membresía. Sin ella (por ejemplo, con solo un slot de workspace), se cobra cada minuto.
 
 **Los minutos gratis son minutos S.** Sirven para cualquier tamaño, pero un minuto de un tamaño mayor gasta más:
 
@@ -200,7 +206,12 @@ Así, 100 minutos gratis son 100 minutos de **S**, o 50 de **M**, o 25 de **L**,
 
 **Un ejemplo.** Con el plan Inference tienes 300 minutos gratis. Este mes ejecutas 100 minutos de **M** (200 minutos gratis) y 30 minutos de **L** (120 minutos gratis): 320 en total. Los primeros 300 son gratis, y los 20 minutos S que sobran cuestan 20 × 0,003 € = **0,06 €**.
 
-Los minutos gratis se gastan primero y se renuevan el día 1 de cada mes (UTC). Los que no uses no se acumulan. El `cost` de cada run es el precio completo de sus minutos; los minutos gratis se cuentan sobre el mes, en **Settings → Ephemeral runs** y en `nan ephemeral usage`.
+Los minutos gratis se gastan primero y se renuevan el día 1 de cada mes (UTC). Los que no uses no se acumulan. El `cost` de cada run es el precio completo de sus minutos; los minutos gratis se cuentan sobre el mes. La página **Runs** y **Settings → Ephemeral runs** muestran los **S-minutes** del mes, los **Free S-minutes left** y el **Chargeable so far**; también `nan ephemeral usage`.
+
+## Método de pago y moneda
+
+- **Hace falta un método de pago** para usar ejecuciones efímeras, también con minutos gratis. Sin él, el run se rechaza con `402 payment_method_required`. Añádelo en **Settings → Ephemeral runs** con **Add a payment method**; el formulario **New run** ofrece el mismo botón.
+- **Las ejecuciones efímeras se facturan solo en euros.** Si tu membresía se factura en dólares, cambia antes tu facturación a EUR en **Settings → Billing**. Hasta entonces, los runs se rechazan con `402 currency_migration_required`.
 
 ## Límite de gasto y concurrencia
 
@@ -208,12 +219,12 @@ Dos límites te protegen de sorpresas. Se cambian en el portal, en **Settings �
 
 | Límite | Por defecto | Rango |
 |---|---|---|
-| **Límite de gasto mensual** | 100 € | De 0 € a 1000 € |
-| **Ejecuciones efímeras a la vez** | 50 | De 1 a 50 |
+| **Monthly spend cap (€)** (límite de gasto mensual) | 100 € | De 0 € a 1000 € |
+| **Concurrent ephemeral runs** (ejecuciones efímeras a la vez) | 50 | De 1 a 50 |
 
-**El límite de gasto** se comprueba antes de que arranque cada run. Lo gastado este mes después de tus minutos gratis, más lo máximo que podría costar cada ejecución efímera aún abierta, más lo máximo que podría costar la nueva, tiene que caber en el límite. Lo máximo que puede costar un run es su tiempo límite más 2,5 minutos, al precio de su tamaño: un run de 30 minutos en **S** reserva 33 minutos, 0,099 €. Si no cabe, el run se rechaza con `402 ephemeral_cap_reached`. Sube el límite, espera a que terminen los runs en marcha, o usa un tiempo límite más corto o un tamaño menor. La comprobación usa el precio completo de los runs abiertos, aunque al final los cubran tus minutos gratis: un límite de 0 € frena todas las ejecuciones efímeras.
+**El límite de gasto** se comprueba antes de que arranque cada run, y solo cuenta el dinero que se cobraría. NaN suma lo cobrable de este mes a lo máximo que podrían costar las ejecuciones efímeras aún abiertas y la nueva, menos los minutos gratis que te quedan (nunca por debajo de cero), y eso tiene que caber en el límite. Lo máximo que puede costar un run es su tiempo límite más 2,5 minutos, al precio de su tamaño: un run de 30 minutos en **S** reserva 33 minutos, 0,099 €. Si no cabe, el run se rechaza con `402 ephemeral_cap_reached`. Sube el límite, espera a que terminen los runs en marcha, o usa un tiempo límite más corto o un tamaño menor. Un límite de 0 € solo permite los runs que tus minutos gratis cubren por completo.
 
-**Ejecuciones a la vez.** Los runs que superan tu límite no se rechazan: esperan en la cola y arrancan por orden. Los límites habituales para crear runs siguen aplicando.
+**Concurrent ephemeral runs.** Los runs que superan tu límite no se rechazan: esperan en la cola y arrancan por orden. Los límites habituales para crear runs siguen aplicando.
 
 ## Red
 
@@ -238,6 +249,8 @@ Así que clona por HTTPS, no por SSH, y descarga las dependencias de registros q
 | Qué ves | Por qué, y qué hacer |
 |---|---|
 | `402 ephemeral_cap_reached` | El run podría llevar tu gasto por encima de tu límite mensual. Súbelo en **Settings → Ephemeral runs**, espera a que terminen los runs en marcha, o usa un tiempo límite más corto o un tamaño menor. |
+| `402 payment_method_required` | No tienes un método de pago registrado. Añade uno en **Settings → Ephemeral runs** con **Add a payment method**. |
+| `402 currency_migration_required` | Tu membresía se factura en dólares. Cambia tu facturación a EUR en **Settings → Billing**. |
 | `400 invalid_request`, `param: executor` | Las ejecuciones efímeras aún no están disponibles para tu cuenta. |
 | `400 invalid_request`, `param: github_repo` | Falta el repositorio o no es `owner/name`. |
 | `400 invalid_request`, `param: model` | Una ejecución efímera tiene que indicar su modelo. |
@@ -263,7 +276,7 @@ No desde el contenedor: se destruye cuando termina el run. Usa una [automatizaci
 
 <Details summary="¿Dónde veo lo que llevo gastado?">
 
-En **Settings → Ephemeral runs** en el portal, con `nan ephemeral usage`, y en cada run (su `cost`).
+En la página **Runs** y en **Settings → Ephemeral runs** del portal (los minutos S del mes, los minutos S gratis que quedan y los euros cobrables), con `nan ephemeral usage`, y en cada run: un contador en directo mientras trabaja, y su `cost` cuando termina.
 
 </Details>
 

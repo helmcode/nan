@@ -96,6 +96,31 @@ describe.each(Object.entries(pages))('ephemeral runs guide (%s)', (_locale, page
     expect(flat).toMatch(/33 (minutes|minutos), (€0\.099|0,099 €)/);
   });
 
+  // E3 (cloud-api #379): only chargeable money counts against the cap, so a
+  // EUR 0 cap still admits runs the free S-minutes fully cover.
+  test('spend cap counts only chargeable money; a EUR 0 cap allows fully free runs', () => {
+    expect(flat).toMatch(/only money that would be charged counts|solo cuenta el dinero que se cobraría/);
+    expect(flat).toMatch(/never below zero|nunca por debajo de cero/);
+    expect(flat).toMatch(/A cap of €0 allows only the runs your free minutes fully cover|Un límite de 0 € solo permite los runs que tus minutos gratis cubren por completo/);
+    expect(flat).not.toMatch(/stops every ephemeral run|frena todas las ejecuciones/);
+  });
+
+  test('uses the exact portal labels (cloud-ui EPHEMERAL_LABEL, EphemeralSection, counters)', () => {
+    expect(body).toContain('**Where it runs** ');
+    expect(body).toContain('**Ephemeral container**');
+    expect(body).not.toMatch(/\*\*Ephemeral\*\*/);
+    for (const label of ['Monthly spend cap (€)', 'Concurrent ephemeral runs', 'Add a payment method', 'Elapsed', 'Minutes billed', 'S-minutes', 'Estimated cost', 'Free S-minutes left', 'Chargeable so far'])
+      expect(body, label).toContain(`**${label}**`);
+  });
+
+  test('owner decisions: payment method always, membership-only free minutes, EUR only, no workspace needed', () => {
+    expect(body).toContain('`402 payment_method_required`');
+    expect(body).toContain('`402 currency_migration_required`');
+    expect(body).toMatch(/\| (No membership|Sin membresía) \| 0 \|/);
+    expect(flat).toMatch(/billed in euros only|se facturan solo en euros/);
+    expect(flat).toMatch(/without any workspace, your automations can only be ephemeral|sin ningún workspace, tus automatizaciones solo pueden ser efímeras/);
+  });
+
   test('network: HTTP and HTTPS only, no SSH or SMTP, the byte caps', () => {
     expect(flat).toMatch(/HTTP (and|y) HTTPS/);
     expect(flat).toContain('SSH');
