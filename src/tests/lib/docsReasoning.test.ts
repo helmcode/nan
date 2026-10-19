@@ -98,12 +98,20 @@ describe('API reference: one documented way to turn reasoning off', () => {
     }
   });
 
-  it('max_tokens: the budget is used as sent, and reasoning counts against it', () => {
-    expect(chatBody.max_tokens.description).toContain(
-      'The value is used exactly as sent on every model: it is never raised.',
-    );
-    expect(chatBody.max_tokens.description).toContain('x-nan-truncated-in-reasoning: true');
-    expect(chatBody.max_tokens.description).not.toContain('raised to 16384');
+  it('max_tokens: passed through as sent, reasoning counts inside it (no deepseek floor)', () => {
+    const d = chatBody.max_tokens.description;
+    expect(d).toContain('The value is used exactly as sent, with reasoning on or off, except above the model\'s maximum on two models, where it is lowered to that maximum: 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`.');
+    expect(d).toContain('rejected with a generic `400`, except on `glm5.3-flash` and `deepseek-v4-flash` (see below).');
+    expect(d).not.toMatch(/above what the model can generate is rejected with a generic `400`\./);
+    expect(d).toContain('the reasoning is in `message.reasoning_content`');
+    expect(d).toContain('an empty `content` and `finish_reason: "length"`');
+    expect(d).toContain('`usage.completion_tokens_details.reasoning_tokens` equals `completion_tokens`');
+    expect(d).toContain('`reasoning_effort: "none"`');
+    expect(d).toContain('`stream: true`');
+    expect(d).toContain('non-streamed calls also carry the `x-nan-truncated-in-reasoning: true` response header.');
+    expect(d).toContain('Turn reasoning off (`reasoning_effort: "none"`) for a reliable fix (GLM cannot turn it off; `minimal` is its shortest); a lower effort is a hint, not a cap, on `deepseek-v4-flash` and `qwen3.8-flash`.');
+    expect(d).not.toMatch(/lower the effort,/);
+    expect(d).not.toMatch(/16384|raised/);
   });
 
   it('lists the accepted aliases and says the explicit value wins', () => {
@@ -270,25 +278,141 @@ describe('model cards agree with the table (en + es)', () => {
   }
 });
 
-describe('deepseek-v4-flash card: the max_tokens floor only applies while reasoning is on (en + es)', () => {
+/**
+ * NO OUTPUT-BUDGET FLOOR (owner decision 2026-10-19, nan-devops
+ * docs/community-report-2026-10-19-output-budget.md). Until then a
+ * deepseek-v4-flash budget below 16384 was silently raised while reasoning was
+ * on. Now the budget is passed through as sent on every model and route, so
+ * the docs must say that reasoning counts inside it and how a reasoning-
+ * exhausted answer looks, and must not describe the floor any more.
+ */
+describe('output budget: passed through as sent, no floor (en + es)', () => {
   const card = (locale: '' | '-es') => {
     const text = page(locale);
     const start = text.indexOf('name="deepseek-v4-flash"');
     return text.slice(start, text.indexOf('/>', start));
   };
+  const examples = (locale: '' | '-es') =>
+    readFileSync(resolve(here, `../../content/docs${locale}/examples.md`), 'utf-8');
+  // `&ge;` / `&amp;ge;` too: card strings are HTML, and the entity slipped past `≥` once.
+  const FLOOR = /raised to 16384|se sube a 16384|16384 nunca se baja|never lowered|within 16384 tokens|a menos de 16384 tokens|(?:≥|&ge;|&amp;ge;)\s*(?:<\/?code>)?\s*300|max_tokens\s*(?:≥|&ge;|&amp;ge;)/;
 
-  it('en', () => {
-    expect(card('')).toContain(
-      'Your output budget is used exactly as sent on every route (max_tokens and max_completion_tokens on /chat/completions, max_output_tokens on /responses): we never raise it.',
-    );
-    expect(card('')).toContain('non-streamed calls also carry the response header x-nan-truncated-in-reasoning: true');
-    expect(card('')).not.toContain('raised to 16384');
+  for (const locale of ['', '-es'] as const) {
+    it(`${locale || 'en'}: no page describes the floor or the old max_tokens >= 300 advice`, () => {
+      expect(page(locale)).not.toMatch(FLOOR);
+      expect(examples(locale)).not.toMatch(FLOOR);
+    });
+
+    it(`${locale || 'en'}: the reasoning section and the card name every field and the empty-answer signature`, () => {
+      for (const text of [section(locale), card(locale)]) {
+        for (const needle of ['max_tokens', 'max_completion_tokens', 'max_output_tokens', 'finish_reason', '"length"',
+          'reasoning_content', 'usage.completion_tokens_details.reasoning_tokens', 'completion_tokens', 'reasoning_effort', '"none"']) {
+          expect(text, needle).toContain(needle);
+        }
+      }
+    });
+
+    it(`${locale || 'en'}: examples point at reasoning off or a generous budget plus streaming`, () => {
+      expect(examples(locale)).toContain('`finish_reason: "length"`');
+      expect(examples(locale)).toContain('`"reasoning_effort": "none"`');
+      expect(examples(locale)).toContain('`stream: true`');
+    });
+  }
+
+  it(`the two per-model ceilings (glm5.3-flash 131072, deepseek-v4-flash 393216) are the only exceptions, in both locales`, () => {
+    expect(section('')).toContain('except above the model\'s maximum on two models, where it is lowered to that maximum: 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`.');
+    expect(section('-es')).toContain('salvo por encima del máximo del modelo en dos modelos, donde se baja a ese máximo: 131072 en `glm5.3-flash`, 393216 en `deepseek-v4-flash`.');
+    expect(card('')).toContain('Your output budget is used exactly as sent (above 393216, its maximum, it is lowered to 393216), with reasoning on or off');
+    expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías (por encima de 393216, su máximo, se baja a 393216), con el razonamiento activado o apagado');
+    expect(section('')).not.toContain('on every\nmodel.');
   });
 
-  it('es', () => {
-    expect(card('-es')).toContain('Tu presupuesto de salida se usa exactamente como lo mandás en las dos rutas');
-    expect(card('-es')).toContain('las llamadas sin streaming además traen el header x-nan-truncated-in-reasoning: true');
-    expect(card('-es')).not.toContain('se sube a 16384');
+  it('empty-answer signals are scoped to Chat Completions; Responses signals are status, incomplete_details, the reasoning item and usage', () => {
+    expect(section('')).toContain('On Chat Completions you get an empty `content` with\n`finish_reason: "length"`, the reasoning in `message.reasoning_content`, and');
+    expect(section('')).toContain('only the three together mean the budget ran out while reasoning, and a non-streamed call also carries the response header `x-nan-truncated-in-reasoning: true`.');
+    expect(section('-es')).toContain('solo las tres juntas significan que el presupuesto se agotó razonando, y una llamada sin streaming además trae el header de respuesta `x-nan-truncated-in-reasoning: true`.');
+    // The header is a Chat Completions signal: never promised on Responses.
+    for (const locale of ['', '-es'] as const) {
+      expect(section(locale)).not.toMatch(/Responses[^.]*x-nan-truncated-in-reasoning/);
+    }
+    expect(section('')).toContain('On Responses the response has `status: "incomplete"` with `incomplete_details.reason: "max_output_tokens"`, only a `reasoning` output item and no message text, and `usage.output_tokens_details.reasoning_tokens` equals `output_tokens`.');
+    expect(section('-es')).toContain('En Chat Completions recibes un `content` vacío con\n`finish_reason: "length"`, el razonamiento en `message.reasoning_content` y');
+    expect(section('-es')).toContain('En Responses la respuesta tiene `status: "incomplete"` con `incomplete_details.reason: "max_output_tokens"`, solo un elemento de salida `reasoning` y ningún texto de mensaje, y `usage.output_tokens_details.reasoning_tokens` es igual a `output_tokens`.');
+    // finish_reason / completion_tokens_details must not be promised for Responses.
+    for (const locale of ['', '-es'] as const) {
+      expect(section(locale)).not.toMatch(/Responses[^.]*finish_reason|Responses[^.]*completion_tokens_details/);
+      expect(card(locale)).not.toMatch(/\/responses[^.;]*finish_reason|\/responses[^.;]*completion_tokens_details/);
+    }
+    expect(card('')).toContain('on /responses the status is incomplete, with only a reasoning output item');
+    expect(card('-es')).toContain('en /responses el status es incomplete, con solo un elemento de salida reasoning');
+  });
+
+  it('the empty-answer paragraph has a bold lead, and reasoning off still respects the budget (en + es)', () => {
+    expect(section('')).toContain('\n\n**Empty answer with `finish_reason: "length"`?** ');
+    expect(section('-es')).toContain('\n\n**¿Respuesta vacía con `finish_reason: "length"`?** ');
+    expect(section('')).toContain('With reasoning off the answer can still stop at the budget, with text, so the budget must fit the answer.');
+    expect(section('-es')).toContain('Con el razonamiento apagado la respuesta también puede cortarse en el presupuesto, con texto, así que el presupuesto tiene que caberle a la respuesta.');
+    // The old one-line mention is folded into the paragraph, not repeated.
+    expect(section('')).not.toContain('its tokens count toward');
+    expect(section('-es')).not.toMatch(/sus tokens\s+cuentan dentro de/);
+    for (const locale of ['', '-es'] as const) {
+      expect(section(locale)).not.toMatch(/upstream accepts|acepta su proveedor/);
+    }
+  });
+
+  it('remedies: none is the reliable fix, on both routes; lower effort is a hint on deepseek/qwen3.8-flash; GLM has no off switch', () => {
+    expect(section('')).toContain('the reliable fix is to turn reasoning off: `reasoning_effort: "none"` on Chat Completions, `reasoning: {"effort": "none"}` on Responses (GLM cannot turn it off; `minimal` is its shortest).');
+    expect(section('')).toContain('A lower effort usually reasons less, but on `deepseek-v4-flash` and `qwen3.8-flash` it is a hint, not a cap; only `qwen3.6` and `gemma4` cap it, on Chat Completions.');
+    expect(section('-es')).toContain('la solución fiable es apagar el razonamiento: `reasoning_effort: "none"` en Chat Completions, `reasoning: {"effort": "none"}` en Responses (GLM no puede apagarlo; `minimal` es lo más corto).');
+    expect(section('-es')).toContain('Un esfuerzo menor suele razonar menos, pero en `deepseek-v4-flash` y `qwen3.8-flash` es una pista, no un tope; solo `qwen3.6` y `gemma4` lo acotan, en Chat Completions.');
+    expect(card('')).toContain('The reliable fix is reasoning off (reasoning_effort "none" on /chat/completions, reasoning.effort "none" on /responses); a lower effort is a hint on this model, not a cap.');
+    expect(card('-es')).toContain('La solución fiable es apagar el razonamiento (reasoning_effort "none" en /chat/completions, reasoning.effort "none" en /responses); un esfuerzo menor es una pista en este modelo, no un tope.');
+    for (const locale of ['', '-es'] as const) {
+      // "lower the effort" is never offered as an unqualified fix.
+      expect(section(locale) + card(locale)).not.toMatch(/lower the effort|baja el esfuerzo/);
+    }
+  });
+
+  it('mimo-v2.6-flash card: no number, points at Controlling reasoning (en + es)', () => {
+    const mimo = (locale: '' | '-es') => cardReasoning(locale, 'mimo-v2.6-flash').join(' ');
+    expect(mimo('')).toContain('reasoning counts inside <code>max_tokens</code>');
+    expect(mimo('-es')).toContain('el razonamiento cuenta dentro de <code>max_tokens</code>');
+    expect(mimo('')).not.toMatch(FLOOR);
+    expect(mimo('-es')).not.toMatch(FLOOR);
+  });
+
+  for (const locale of ['', '-es'] as const) {
+    it(`${locale || 'en'}: the examples paragraph is model-generic`, () => {
+      const ex = examples(locale);
+      const i = ex.indexOf('`finish_reason: "length"`');
+      const para = ex.slice(ex.lastIndexOf('\n\n', i), ex.indexOf('\n\n', i));
+      expect(para).not.toContain('deepseek-v4-flash');
+    });
+  }
+
+  it('en wording', () => {
+    expect(card('')).toContain('Your output budget is used exactly as sent (above 393216');
+    expect(card('')).toContain('On /chat/completions the answer then comes back with an empty content and finish_reason "length"');
+    expect(card('')).toContain('Or give a generous budget and stream the answer.');
+    expect(section('')).toContain('is used exactly as you send it on every model');
+    expect(section('')).toContain('[stream the answer](#long-outputs-stream-them)');
+  });
+
+  it('es wording', () => {
+    expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías (por encima de 393216');
+    expect(card('-es')).toContain('En /chat/completions la respuesta llega entonces con content vacío y finish_reason "length"');
+    expect(card('-es')).toContain('O da un presupuesto generoso y usa streaming.');
+    expect(section('-es')).toContain('se usa tal cual lo envías en todos los modelos');
+    expect(section('-es')).toContain('[usa streaming](#respuestas-largas-usa-streaming)');
+  });
+
+  it('both anchors the prose links to exist as headings', () => {
+    expect(page('')).toContain('\n## Long outputs: stream them.\n');
+    expect(page('-es')).toContain('\n## Respuestas largas: usa streaming.\n');
+    expect(page('')).toContain('\n### Capping reasoning with a token budget.\n');
+    expect(page('-es')).toContain('\n### Limitar el razonamiento con un presupuesto de tokens.\n');
+    expect(section('')).toContain('[Capping reasoning with a token budget](#capping-reasoning-with-a-token-budget)');
+    expect(section('-es')).toContain('[Limitar el razonamiento con un presupuesto de tokens](#limitar-el-razonamiento-con-un-presupuesto-de-tokens)');
   });
 });
 

@@ -874,9 +874,10 @@ describe('documented context: qwen3.8-flash is 1M', () => {
  * automatically. The exact "Context length exceeded for model '...'" text was
  * measured on the hosted models (gemma4); on deepseek-v4-flash an overflow
  * measured 2026-09-29 came back as the GENERIC "Invalid request. Check your
- * request parameters.", so the docs promise the text only where measured. On
- * deepseek-v4-flash a small `max_tokens` is raised to 16384 so the reasoning
- * fits, which is why a prompt close to the window overflows with a small one.
+ * request parameters.", so the docs promise the text only where measured.
+ * Since 2026-10-19 there is no output-budget floor: `max_tokens` is passed
+ * through as sent on every model, so a small one no longer overflows a prompt
+ * close to the window.
  */
 describe('documented 400s: tool parameters and context overflow', () => {
   const schemas = spec.components.schemas as any;
@@ -914,16 +915,27 @@ describe('documented 400s: tool parameters and context overflow', () => {
     expect(bad).toContain('Invalid request. Check your request parameters.');
   });
 
-  it('explains the deepseek-v4-flash 16384 floor on max_tokens, in the spec and on both cards', () => {
+  it('max_tokens is passed through as sent: no deepseek-v4-flash floor, in the spec and on both cards', () => {
     const maxTokens = (spec.paths as any)['/chat/completions'].post.requestBody.content['application/json']
       .schema.properties.max_tokens.description;
-    expect(maxTokens).toContain('The value is used exactly as sent on every model: it is never raised.');
-    expect(maxTokens).toContain('Reasoning is billed against this same budget');
-    expect(maxTokens).toContain('x-nan-truncated-in-reasoning: true');
-    expect(maxTokens).not.toContain('raised to 16384');
+    expect(maxTokens).toContain("except above the model's maximum on two models, where it is lowered to that maximum: 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`.");
+    expect(maxTokens).not.toContain('upstream accepts');
+    const maxOut = (spec.paths as any)['/responses'].post.requestBody.content['application/json'].schema.properties
+      .max_output_tokens.description;
+    expect(maxOut).toContain("Used exactly as sent, except above the model's maximum: lowered to 131072 on `glm5.3-flash`, 393216 on `deepseek-v4-flash`.");
+    expect(maxOut).toContain('a budget spent entirely on reasoning returns `status: "incomplete"` with `incomplete_details.reason: "max_output_tokens"` and only a `reasoning` output item');
+    // Responses has its own off switch: the remedy must name it, not the Chat form.
+    expect(maxOut).toContain('the reliable fix is reasoning off with `reasoning: {"effort": "none"}` (GLM cannot turn it off; `minimal` is its shortest)');
+    expect(maxOut).not.toContain('reasoning_effort');
+    // The header and finish_reason are Chat Completions signals (nan-devops#901 reads `choices`).
+    expect(maxOut).not.toMatch(/finish_reason|x-nan-truncated-in-reasoning/);
+    expect(maxTokens).toContain('non-streamed calls also carry the `x-nan-truncated-in-reasoning: true` response header.');
+    expect(maxTokens).toContain('Reasoning tokens count inside it');
+    expect(maxTokens).not.toMatch(/raised to 16384|within 16384 tokens/);
     // Not promised as the exact text on deepseek-v4-flash: measured generic there.
     expect(maxTokens).not.toMatch(/deepseek-v4-flash[^.]*Context length exceeded/);
-    expect(maxTokens).toMatch(/above what the model can generate is rejected with a generic `400`/);
+    // glm5.3-flash lowers instead of rejecting, so the generic-400 rule names its exception.
+    expect(maxTokens).toContain('A value above what the model can generate is rejected with a generic `400`, except on `glm5.3-flash` and `deepseek-v4-flash` (see below).');
 
     const card = (locale: string) => {
       const page = readFileSync(
@@ -933,12 +945,14 @@ describe('documented 400s: tool parameters and context overflow', () => {
       const start = page.indexOf('id="deepseek-v4-flash"');
       return page.slice(start, page.indexOf('/>', start));
     };
-    expect(card('')).toContain('Your output budget is used exactly as sent on every route');
-    expect(card('')).toContain('non-streamed calls also carry the response header x-nan-truncated-in-reasoning: true');
-    expect(card('')).not.toContain('raised to 16384');
-    expect(card('-es')).toContain('Tu presupuesto de salida se usa exactamente como lo mandás en las dos rutas');
-    expect(card('-es')).toContain('las llamadas sin streaming además traen el header x-nan-truncated-in-reasoning: true');
-    expect(card('-es')).not.toContain('se sube a 16384');
+    expect(card('')).toContain('Your output budget is used exactly as sent');
+    expect(card('')).toContain('max_output_tokens on /responses');
+    expect(card('')).toContain('non-streamed calls also carry the response header x-nan-truncated-in-reasoning: true); on /responses');
+    expect(card('')).not.toMatch(/raised to 16384|never lowered|within 16384 tokens/);
+    expect(card('-es')).toContain('Tu presupuesto de salida se usa tal cual lo envías');
+    expect(card('-es')).toContain('max_output_tokens en /responses');
+    expect(card('-es')).toContain('las llamadas sin streaming además traen el header de respuesta x-nan-truncated-in-reasoning: true); en /responses');
+    expect(card('-es')).not.toMatch(/se sube a 16384|nunca se baja|a menos de 16384 tokens/);
   });
 });
 

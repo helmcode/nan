@@ -434,7 +434,7 @@ curl https://api.nan.builders/v1/chat/completions \
   }'
 ```
 
-With reasoning enabled, `max_tokens ≥ 300` is recommended to leave room for reasoning.
+Reasoning tokens count inside `max_tokens`, which is used exactly as sent. With reasoning on, a small budget can be spent entirely on reasoning and come back with an empty `content` and `finish_reason: "length"`. If you only need the answer, set `"reasoning_effort": "none"`; otherwise give a generous `max_tokens` (dense prompts can reason for thousands of tokens) and use `stream: true`. See [Controlling reasoning](/docs/models#controlling-reasoning).
 
 ### vision (curl)
 
