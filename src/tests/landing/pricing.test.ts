@@ -270,3 +270,74 @@ describe('Pricing section — workspaces block', () => {
     expect(source.indexOf('id="workspaces"')).toBeGreaterThan(source.indexOf('tiers.map('));
   });
 });
+
+/**
+ * The 14,99€ community tier sells Discord and events. It has never sold
+ * inference, but three surfaces said otherwise or said it ambiguously, and
+ * prospects paid, found out, and cancelled within the hour:
+ *
+ *   - the pricing card's last bullet promised "upgrade to inference whenever
+ *     you want", while the upgrade is a manual invite when capacity frees up;
+ *   - the FAQ said "each member gets a personal API key", on a page whose
+ *     cheapest tier is "NaN Community";
+ *   - the docs said "you have to be a member of the NaN community", which the
+ *     14,99€ buyer satisfies literally and cannot act on.
+ *
+ * Members wrote it verbatim in their cancellation feedback ("NO SE PUEDE USAR
+ * SIN CONTRATAR EL PLAN DE $70", "the docs said that I can create an API
+ * KEY"), so these asserts are the memory of that bill.
+ */
+describe.each(locales)('Pricing copy — community tier is Discord only (%s)', (locale) => {
+  test('states before the Checkout that inference and the API key are not included', () => {
+    const note = t('nan.pricing.communityNote', locale);
+    expect(note).toMatch(/nan_member/);
+    expect(note).toMatch(/API key/i);
+    expect(note).toMatch(/70€/);
+    expect(note).toMatch(/(no API key|sin API key)/i);
+  });
+
+  /**
+   * The bullets sell what the plan gives. Inference is the note's job, so the
+   * list must not mention it at all: a negative line in a bulleted list of
+   * inclusions inherits the violet "included" dot and reads as a feature.
+   */
+  test('the bullets never promise inference on demand', () => {
+    const copy = tArr('nan.pricing.communityIncludes', locale).join(' ');
+    expect(copy).not.toMatch(/inference|inferencia|API key/i);
+  });
+
+  test('the section intro does not sell inference as an add-on to the cheap tier', () => {
+    const sub = t('nan.pricing.sub', locale);
+    expect(sub).toMatch(/nan_member/);
+  });
+
+  test('the cluster FAQ names the plan that owns the key', () => {
+    const faq = tObj<{ items?: FaqItem[] }>('nan.faq', locale);
+    const answer = (faq.items ?? []).map((item) => item.a).find((a) => /API key/i.test(a));
+    expect(answer).toBeDefined();
+    expect(answer).toMatch(/nan_member/);
+    expect(answer).toMatch(/70€/);
+  });
+
+  test('the card renders the note, so the copy cannot sit unused in the dictionary', () => {
+    expect(tiers).toContain('note: tt.communityNote');
+    expect(source).toContain('{tier.note && <p class="ptier__note">{tier.note}</p>}');
+  });
+
+  /**
+   * The docs are where the churned members said they read it, and both locales
+   * ship their own files, so both are read here rather than trusting the fix to
+   * be remembered twice.
+   */
+  test('the docs send a buyer to nan_member before saying how to create a key', () => {
+    const files =
+      locale === 'en'
+        ? ['src/content/docs/intro.md', 'src/content/docs/getting-started.mdx']
+        : ['src/content/docs-es/intro.md', 'src/content/docs-es/getting-started.mdx'];
+    for (const file of files) {
+      const body = readFileSync(resolve(here, '../../../', file), 'utf-8');
+      expect(body, file).toMatch(/nan_member/);
+      expect(body, file).not.toMatch(/(have to be a member of the NaN community|ser miembro de la comunidad de? ?NaN)/i);
+    }
+  });
+});

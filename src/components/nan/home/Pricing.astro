@@ -26,6 +26,7 @@ const tiers = [
     badge: tt.premiumBadge,
     ref: true,
     includes: tt.premiumIncludes,
+    note: null,
     cond: tt.premiumCond,
     cta: tt.premiumCta,
     href: signupUrl('premium'),
@@ -38,6 +39,7 @@ const tiers = [
     badge: tt.inferenceIncluded,
     ref: true,
     includes: tt.memberIncludes,
+    note: null,
     cond: tt.memberCond,
     cta: tt.memberCta,
     href: signupUrl('inference'),
@@ -50,6 +52,10 @@ const tiers = [
     badge: null,
     ref: false,
     includes: tt.communityIncludes,
+    // The negative half of the offer, stated before the Checkout rather than
+    // only on /community: prospects bought 14,99€ expecting the API key the
+    // 70€ tier sells and cancelled within the hour. See communityNote.
+    note: tt.communityNote,
     cond: tt.communityCond,
     cta: tt.communityCta,
     href: signupUrl('community'),
@@ -101,6 +107,7 @@ const wsDocs = lang === 'es' ? '/es/docs/workspaces' : '/docs/workspaces';
           <ul class="ptier__list">
             {tier.includes.map((item) => <li>{item}</li>)}
           </ul>
+          {tier.note && <p class="ptier__note">{tier.note}</p>}
 
           <a
             class:list={['btn', 'ptier__cta', tier.primary ? 'btn-primary' : 'btn-ghost']}
@@ -259,6 +266,19 @@ const wsDocs = lang === 'es' ? '/es/docs/workspaces' : '/docs/workspaces';
     height: 8px;
     border-radius: 50%;
     background: var(--color-violet);
+  }
+
+  /* What the tier does NOT include, next to the list instead of in fine print
+     at the bottom: this is the line that stops someone buying 14,99€ expecting
+     an API key. */
+  .ptier__note {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--color-text-dim);
+    border-left: 2px solid var(--color-violet);
+    padding-left: var(--space-3);
+    margin: 0 0 var(--space-6);
   }
 
   /* botón anclado abajo; los 3 CTAs quedan a la misma altura */

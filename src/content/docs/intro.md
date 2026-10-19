@@ -10,7 +10,7 @@ group: Get started
 This documentation explains how to connect your tools to our GPUs. The cluster runs open models behind an OpenAI-compatible API. If something accepts a `base URL` and an `API key`, it works with NaN. The exception is a tool that speaks a different protocol: [Claude Code](/docs/claude-code) talks to Anthropic's API, not to an OpenAI-compatible one, so it reaches the cluster through OpenCode or through a local gateway. Its page explains both.
 
 > **To get your API Key**
-> You have to be a member of the NaN community. You can generate your API Key from the user settings, under "API Keys" on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable.
+> You need an inference plan: **nan_member** (70€/mo) or GLM 5.3 premium (200€/mo). Generate the key from the user settings, under "API Keys", on the [platform](https://cloud.nan.builders/). The 14,99€ NaN Community plan covers Discord and events only, so it runs no models and cannot create a key. The key is personal and non-transferable.
 
 ## The essentials
 
