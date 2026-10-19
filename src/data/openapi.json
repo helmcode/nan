@@ -200,7 +200,7 @@
                   "max_tokens": {
                     "type": "integer",
                     "minimum": 1,
-                    "description": "Maximum number of tokens to generate. A value above what the model can generate is rejected with a generic `400`. A request that does not fit the model's context window is rejected with a `400`: \"Context length exceeded for model '...'\" on `qwen3.6` and `gemma4`, usually the same text (sometimes the generic \"Invalid request\") on the other models. On `deepseek-v4-flash`, while reasoning is on, a smaller value is raised to 16384 so the reasoning fits, so a prompt within 16384 tokens of its 1,048,576-token window is rejected with a `400` even with a small `max_tokens`; with reasoning off (`reasoning_effort: \"none\"` or an alias) the value is used as sent.",
+                    "description": "Maximum number of tokens to generate. A value above what the model can generate is rejected with a generic `400`. A request that does not fit the model's context window is rejected with a `400`: \"Context length exceeded for model '...'\" on `qwen3.6` and `gemma4`, usually the same text (sometimes the generic \"Invalid request\") on the other models. The value is used exactly as sent on every model: it is never raised. Reasoning is billed against this same budget, so a small value on a prompt that needs deliberation can be spent entirely thinking, and the answer then arrives as HTTP 200 with `finish_reason` `\"length\"` and empty content; non-streamed calls carry the `x-nan-truncated-in-reasoning: true` response header. Raise the budget, or stream.",
                     "example": 512
                   },
                   "temperature": {
@@ -1087,7 +1087,7 @@
                   "max_output_tokens": {
                     "type": "integer",
                     "minimum": 1,
-                    "description": "The maximum number of output tokens. Default 65536 on `qwen3.6`."
+                    "description": "The maximum number of output tokens. Used exactly as sent: it is never raised. Reasoning is billed against this same budget, so the answer can come back as 200 with `finish_reason` `\"length\"` and empty content; non-streamed calls then carry the `x-nan-truncated-in-reasoning: true` response header. Default 65536 on `qwen3.6`."
                   },
                   "reasoning": {
                     "type": "object",
