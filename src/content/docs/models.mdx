@@ -452,6 +452,47 @@ const chat = await client.chat.completions.create({
 });
 ```
 
+### Capping reasoning with a token budget.
+
+On `qwen3.6`, `gemma4` and `qwen3.8-flash` you can also cap the reasoning
+phase at a number of tokens, on Chat Completions. Send
+`thinking_token_budget` or `thinking_budget`: they are two names for the same
+parameter, so use whichever your code already sends. Each model
+receives the name it reads. Put it at the top level of the body or inside
+`extra_body`.
+
+- An integer from `1` to `32768` caps reasoning at that many tokens. It is a
+  hard cap: the model stops reasoning there and writes its answer.
+- `0` turns reasoning off, like `reasoning_effort: "none"`.
+- On NaN, a larger value (or one that is not an integer) is lowered to `32768`.
+
+Send either a budget or `reasoning_effort`, not both: combined, the result
+differs by model. On the other models a budget is not part of this contract
+(depending on the model it is rejected with a `400` or ignored); use
+`reasoning_effort` there. On Responses the budget is not guaranteed to apply;
+use `reasoning: {"effort": ...}` there.
+
+```bash
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Authorization: Bearer $NAN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.8-flash",
+    "thinking_budget": 2048,
+    "messages": [{"role": "user", "content": "How many primes are there below 200?"}]
+  }'
+```
+
+With the OpenAI SDK it goes through `extra_body`:
+
+```python
+chat = client.chat.completions.create(
+    model="qwen3.8-flash",
+    extra_body={"thinking_budget": 2048},
+    messages=[{"role": "user", "content": "How many primes are there below 200?"}],
+)
+```
+
 ## Long outputs: stream them.
 
 A request without `stream: true` returns nothing until the whole answer is ready, and it has to be ready within **120 seconds**. Past that, the connection is closed with a `524` (or an error a few seconds earlier), whatever the model. At `deepseek-v4-flash` speeds that is roughly 10,000 to 15,000 output tokens; slower models, and reasoning models that think before they answer, fit less.
