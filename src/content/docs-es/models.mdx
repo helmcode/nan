@@ -455,6 +455,45 @@ const chat = await client.chat.completions.create({
 });
 ```
 
+### Limitar el razonamiento con un presupuesto de tokens.
+
+En `qwen3.6`, `gemma4` y `qwen3.8-flash` también puedes limitar la fase de
+razonamiento a un número exacto de tokens, en Chat Completions. Envía
+`thinking_token_budget` o `thinking_budget`: son dos nombres del mismo
+parámetro, así que usa el que ya envíe tu código. Cada modelo
+recibe el nombre que entiende. Ponlo en el primer nivel del cuerpo o dentro de
+`extra_body`.
+
+- Un entero de `1` a `32768` limita el razonamiento a ese número de tokens. Es
+  un tope estricto: el modelo deja de razonar ahí y escribe su respuesta.
+- `0` apaga el razonamiento, igual que `reasoning_effort: "none"`.
+- En NaN, un valor mayor (o que no sea un entero) se baja a `32768`.
+
+Envía un presupuesto o `reasoning_effort`, no los dos: combinados, el
+resultado depende del modelo. El resto de modelos no admite presupuesto; usa
+`reasoning_effort`.
+
+```bash
+curl https://api.nan.builders/v1/chat/completions \
+  -H "Authorization: Bearer $NAN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3.8-flash",
+    "thinking_budget": 2048,
+    "messages": [{"role": "user", "content": "How many primes are there below 200?"}]
+  }'
+```
+
+Con el SDK de OpenAI va por `extra_body`:
+
+```python
+chat = client.chat.completions.create(
+    model="qwen3.8-flash",
+    extra_body={"thinking_budget": 2048},
+    messages=[{"role": "user", "content": "How many primes are there below 200?"}],
+)
+```
+
 ## Respuestas largas: usa streaming.
 
 Una petición sin `stream: true` no devuelve nada hasta que la respuesta
