@@ -296,11 +296,19 @@ describe.each(locales)('Pricing copy — community tier is Discord only (%s)', (
     expect(note).toMatch(/(no API key|sin API key)/i);
   });
 
+  /**
+   * The bullets sell what the plan gives. Inference is the note's job, so the
+   * list must not mention it at all: a negative line in a bulleted list of
+   * inclusions inherits the violet "included" dot and reads as a feature.
+   */
   test('the bullets never promise inference on demand', () => {
     const copy = tArr('nan.pricing.communityIncludes', locale).join(' ');
-    expect(copy).toMatch(/(not included|no incluida)/i);
-    expect(copy).not.toMatch(/upgrade to inference whenever|API key personal/i);
-    expect(copy).not.toMatch(/Personal API key compatible|API key personal compatible/i);
+    expect(copy).not.toMatch(/inference|inferencia|API key/i);
+  });
+
+  test('the section intro does not sell inference as an add-on to the cheap tier', () => {
+    const sub = t('nan.pricing.sub', locale);
+    expect(sub).toMatch(/nan_member/);
   });
 
   test('the cluster FAQ names the plan that owns the key', () => {

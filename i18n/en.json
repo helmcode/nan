@@ -341,7 +341,7 @@
       "label": "membership",
       "title1": "One community.",
       "title2": "Two tiers. One premium path.",
-      "sub": "The community is the product. Inference is the superpower you add; GLM 5.3 is the frontier option for members.",
+      "sub": "The community is the product. Inference is the superpower you add on nan_member; GLM 5.3 is the frontier option for members.",
       "perVat": "/mo · VAT included",
       "perTaxes": "/mo · taxes included",
       "inferenceIncluded": "inference included",
@@ -360,8 +360,7 @@
         "Discord access",
         "Member-only channels",
         "Live discussions, builds, AMAs",
-        "Events, workshops and hackathons",
-        "Inference not included: it lives in nan_member"
+        "Events, workshops and hackathons"
       ],
       "communityNote": "Discord and events only: no API key and no model calls. Inference is included in nan_member (70€/mo).",
       "communityCond": "No commitment. Cancel anytime. Billed in euros from any region.",
