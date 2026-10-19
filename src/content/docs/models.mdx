@@ -455,7 +455,7 @@ const chat = await client.chat.completions.create({
 ### Capping reasoning with a token budget.
 
 On `qwen3.6`, `gemma4` and `qwen3.8-flash` you can also cap the reasoning
-phase at an exact number of tokens, on Chat Completions. Send
+phase at a number of tokens, on Chat Completions. Send
 `thinking_token_budget` or `thinking_budget`: they are two names for the same
 parameter, so use whichever your code already sends. Each model
 receives the name it reads. Put it at the top level of the body or inside
@@ -467,8 +467,10 @@ receives the name it reads. Put it at the top level of the body or inside
 - On NaN, a larger value (or one that is not an integer) is lowered to `32768`.
 
 Send either a budget or `reasoning_effort`, not both: combined, the result
-differs by model. The other models do not support a budget; use
-`reasoning_effort` there.
+differs by model. On the other models a budget is not part of this contract
+(depending on the model it is rejected with a `400` or ignored); use
+`reasoning_effort` there. On Responses the budget is not guaranteed to apply;
+use `reasoning: {"effort": ...}` there.
 
 ```bash
 curl https://api.nan.builders/v1/chat/completions \
