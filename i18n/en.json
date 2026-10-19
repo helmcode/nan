@@ -361,8 +361,9 @@
         "Member-only channels",
         "Live discussions, builds, AMAs",
         "Events, workshops and hackathons",
-        "Upgrade to inference whenever you want"
+        "Inference not included: it lives in nan_member"
       ],
+      "communityNote": "Discord and events only: no API key and no model calls. Inference is included in nan_member (70€/mo).",
       "communityCond": "No commitment. Cancel anytime. Billed in euros from any region.",
       "communityCta": "Join the community",
       "premiumIncludes": [
@@ -424,7 +425,7 @@
         },
         {
           "q": "How does the cluster work?",
-          "a": "The models run 24/7 on a shared inference cluster. Each member gets a personal API key compatible with OpenAI: change the base_url and you're in."
+          "a": "The models run 24/7 on a shared inference cluster. Each nan_member (70€/mo, inference included) gets a personal API key compatible with OpenAI: change the base_url and you're in. The 14,99€ NaN Community plan runs no models and has no API key."
         },
         {
           "q": "Is it really unlimited tokens?",
@@ -521,7 +522,7 @@
       "leadA": "This doc explains how to connect your tools to our GPUs. The cluster runs open models with an OpenAI-compatible API. If something accepts a ",
       "leadB": ", it works with NaN.",
       "apiKeyH": "Your API key",
-      "apiKeyP1": "To get your API key you must be a NaN community member. Generate it from your user settings under ",
+      "apiKeyP1": "To get your API key you need the nan_member plan (70€/mo, inference included). The 14,99€ NaN Community plan has no inference and cannot create a key. Generate it from your user settings under ",
       "apiKeyStrong": "API Keys",
       "apiKeyP2": " on ",
       "apiKeyP3": ". It is personal and non-transferable.",

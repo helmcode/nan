@@ -361,8 +361,9 @@
         "Canales solo para miembros",
         "Charlas en directo, builds, AMAs",
         "Eventos, workshops y hackathons",
-        "Pasa a inferencia cuando quieras"
+        "Inferencia no incluida: está en nan_member"
       ],
+      "communityNote": "Solo Discord y eventos: sin API key y sin llamadas a modelos. La inferencia está incluida en nan_member (70€/mes).",
       "communityCond": "Sin compromiso. Cancela cuando quieras. Se factura en euros desde cualquier región.",
       "communityCta": "Únete a la comunidad",
       "premiumIncludes": [
@@ -424,7 +425,7 @@
         },
         {
           "q": "¿Cómo funciona el cluster?",
-          "a": "Los modelos corren 24/7 en un cluster de inferencia compartido. Cada miembro recibe una API key personal compatible con OpenAI: cambias el base_url y ya estás dentro."
+          "a": "Los modelos corren 24/7 en un cluster de inferencia compartido. Cada miembro de nan_member (70€/mes, con inferencia incluida) recibe una API key personal compatible con OpenAI: cambias el base_url y ya estás dentro. El plan NaN Community de 14,99€ no corre modelos y no tiene API key."
         },
         {
           "q": "¿De verdad son tokens ilimitados?",
@@ -521,7 +522,7 @@
       "leadA": "Esta doc explica cómo conectar tus herramientas a nuestras GPUs. El cluster corre modelos abiertos con una API compatible con OpenAI. Si algo acepta un ",
       "leadB": ", funciona con NaN.",
       "apiKeyH": "Tu API key",
-      "apiKeyP1": "Para conseguir tu API key tienes que ser miembro de la comunidad NaN. Genérala desde los ajustes de tu usuario, en ",
+      "apiKeyP1": "Para conseguir tu API key necesitas el plan nan_member (70€/mes, con inferencia incluida). El plan NaN Community de 14,99€ no tiene inferencia y no puede generar una key. Genérala desde los ajustes de tu usuario, en ",
       "apiKeyStrong": "API Keys",
       "apiKeyP2": ", en ",
       "apiKeyP3": ". Es personal e intransferible.",

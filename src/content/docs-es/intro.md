@@ -10,7 +10,7 @@ group: Primeros pasos
 Esta documentación explica cómo conectar tus herramientas a nuestras GPUs. El clúster ejecuta modelos abiertos con una API compatible con OpenAI. Si algo acepta una `base URL` y una `API key`, funciona con NaN. La excepción es una herramienta que hable otro protocolo: [Claude Code](/es/docs/claude-code) habla con la API de Anthropic, no con una compatible con OpenAI, así que llega al clúster a través de OpenCode o de una pasarela local. Su página explica las dos formas.
 
 > **Para conseguir tu API Key**
-> Tienes que ser miembro de la comunidad de NaN. Puedes generar tu API Key desde los ajustes de usuario, en el apartado "API Keys" de la [plataforma](https://cloud.nan.builders/). La key es personal e intransferible.
+> Necesitas el plan **nan_member** (70€/mes): es el que incluye inferencia. Puedes generar tu API Key desde los ajustes de usuario, en el apartado "API Keys" de la [plataforma](https://cloud.nan.builders/). El plan NaN Community de 14,99€ cubre solo Discord y eventos: no corre modelos y no puede generar una key. La key es personal e intransferible.
 
 ## Lo esencial
 
