@@ -211,6 +211,32 @@ describe('models page: the per-model table is the contract (en + es)', () => {
   }
 });
 
+describe('models page: the reasoning token budget (en + es)', () => {
+  // Measured live 2026-10-19 (nan-devops#895): both names reach every model
+  // under the name it reads; 64 caps reasoning on qwen3.6, gemma4 and
+  // qwen3.8-flash, 0 turns it off, NaN lowers anything above 32768.
+  for (const locale of ['', '-es'] as const) {
+    const text = section(locale);
+    it(`${locale || 'en'}: names both parameters, the three models, the range and the off value`, () => {
+      expect(text).toContain('`thinking_token_budget`');
+      expect(text).toContain('`thinking_budget`');
+      for (const model of ['`qwen3.6`', '`gemma4`', '`qwen3.8-flash`']) expect(text).toContain(model);
+      expect(text).toContain('`32768`');
+      expect(text).toMatch(locale === '' ? /`0` turns reasoning off/ : /`0` apaga el razonamiento/);
+    });
+
+    it(`${locale || 'en'}: says not to combine it with reasoning_effort, and what the other models do`, () => {
+      expect(text).toMatch(locale === '' ? /not both/ : /no los dos/);
+      expect(text).toMatch(locale === '' ? /a budget is not part of this contract/ : /el presupuesto no forma\s+parte de este contrato/);
+    });
+
+    it(`${locale || 'en'}: shows it top level and through extra_body`, () => {
+      expect(text).toContain('"thinking_budget": 2048');
+      expect(text).toContain('extra_body={"thinking_budget": 2048}');
+    });
+  }
+});
+
 describe('model cards agree with the table (en + es)', () => {
   for (const locale of ['', '-es'] as const) {
     it(`${locale || 'en'}: every chat card says how reasoning is controlled`, () => {
