@@ -3,7 +3,7 @@
   "info": {
     "title": "NaN API",
     "version": "1.0.0",
-    "description": "Open models on a shared EU inference cluster. Zero logs.\n\nThe NaN API is OpenAI-compatible: predictable, resource-oriented URLs, JSON request and response bodies, and standard HTTP verbs and status codes. Point any OpenAI SDK at our base URL and your existing code keeps working. Change the base URL and the API key, and that's it.\n\nOne schema across every model, so you only learn the API once. Change the `model` field to switch models; everything else stays the same.\n\n- Base URL: `https://api.nan.builders/v1`\n- OpenAPI spec: this document. Import it into Postman, Insomnia, or your own tooling.\n\nIf you use the [Helmcode](https://helmcode.com) enterprise service, the base URL is `https://api.helmcode.com/v1` instead. Every other endpoint is identical.\n\n## Authentication\n\nEvery inference request authenticates with an API key, sent as a Bearer token:\n\n```\nAuthorization: Bearer $NAN_API_KEY\n```\n\nYou must be a NaN community member. Generate your key from user settings, under \"API Keys\", on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable. Keep it secret: never embed one in client-side code or commit it to source control. Requests must go over HTTPS; calls over plain HTTP fail.\n\n### Platform tokens\n\nFor scripts that only manage [Runs](#tag/runs), [Automations](#tag/automations), [Secrets](#tag/secrets), [Notifications](#tag/notifications) and [Approvals](#tag/approvals), and list your [Workspaces](#tag/workspaces), create a **platform token** (`nan_pat_...`) under \"Tokens\" in your settings, and send it the same way: `Authorization: Bearer $NAN_TOKEN`. An API key works on inference and on Runs, Approvals, Workspaces and reading and running Automations; never on Secrets, Notifications or changes to automations. Each endpoint lists the credentials it accepts.\n\nA platform token carries **scopes**, and each endpoint names the one it needs: `runs` (runs and approvals), `workspaces:read`, `automations:read` (read automations, templates, triggers and deliveries), `automations:run` (run an existing automation), `automations:write` (create, change and delete automations and their triggers), `secrets:read` (read secret metadata, never values), `secrets:write` (create, replace, change and delete secrets), `notifications:read` (read notification channels and their deliveries, never their URLs) and `notifications:write` (create, change, test and delete notification channels, and rotate their signing secrets). Scopes are independent: `secrets:write` does not include `secrets:read`, and `notifications:write` does not include `notifications:read`. New tokens get `runs` and `workspaces:read`. A token without the scope gets `403`:\n\n```json\n{\n  \"error\": {\n    \"message\": \"This platform token does not have the \\\"automations:run\\\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.\",\n    \"type\": \"permission_error\",\n    \"param\": null,\n    \"code\": \"token_scope_denied\"\n  }\n}\n```\n\nA platform token never works for inference: the model endpoints answer `401`:\n\n```json\n{\n  \"error\": {\n    \"message\": \"Platform tokens (nan_pat_) cannot be used for inference. Use an inference API key (sk-) instead. Platform tokens only work on the platform API (/v1/runs, /v1/automations, /v1/approvals, /v1/secrets, /v1/notification-channels and GET /api/workspaces).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": null,\n    \"code\": \"token_not_valid_for_inference\"\n  }\n}\n```\n\n### CLI session and the write scopes\n\nYour secrets and your automations (with their triggers) can be managed through the API and the [NaN CLI](https://nan.builders/docs/nan-cli) where the write API is available for your account (it is being opened gradually). Three credentials can change them: you signed in at [cloud.nan.builders](https://cloud.nan.builders/), the **CLI session** that `nan auth login` saves, and a platform token with `automations:write` or `secrets:write`. Secret metadata is read with a CLI session or `secrets:read`. API keys (`sk-...`), the key inside a workspace and sessions from older clients are refused:\n\n```json\n{\n  \"error\": {\n    \"message\": \"This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \\\"secrets:write\\\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.\",\n    \"type\": \"permission_error\",\n    \"param\": null,\n    \"code\": \"credential_not_allowed\"\n  }\n}\n```\n\nA token with `secrets:write` lets whoever holds it replace any of your secrets. A token with `automations:write` lets whoever holds it create or change an automation that receives any of your secrets, with instructions of their choice and nothing waiting for approval: that is as good as reading every secret you have. Such a token, held by an agent or a script, can change your secrets or automations. These scopes can only be added to a token in the portal, signed in through your browser. The same goes for `notifications:read` and `notifications:write`, offered only where your account has notifications and the write API: a token with `notifications:write` decides where your notifications go. Give a token only the scopes its job needs, and run `nan auth login` on your own machine, never inside a workspace: the agents there could read the session.\n\n### Browser sign-in\n\nSome actions need you signed in through your browser at [cloud.nan.builders](https://cloud.nan.builders/), and no API key, platform token or CLI session can do them: approving a run, and creating a token with an `automations:`, `secrets:` or `notifications:` scope. Where the write API is not yet available for your account, changing automations and their triggers is also browser-only. Through the API they answer `403`:\n\n```json\n{\n  \"error\": {\n    \"message\": \"This action needs a browser session: sign in at cloud.nan.builders in your browser and try again from there. CLI sessions, API keys and platform tokens cannot approve runs or create tokens with automations or secrets scopes.\",\n    \"type\": \"permission_error\",\n    \"param\": null,\n    \"code\": \"browser_session_required\"\n  }\n}\n```\n\n## Making requests\n\nThe API is OpenAI-compatible, so point an official OpenAI SDK at our base URL and change nothing else:\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.chat.completions.create(\n    model=\"deepseek-v4-flash\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello\"}],\n)\nprint(resp.choices[0].message.content)\n```\n\n## Streaming\n\nChat responses can stream token-by-token. Set `\"stream\": true` on `/chat/completions` and the response arrives as Server-Sent Events: each event is a `data:` line carrying a `chat.completion.chunk`, with the new text in `choices[0].delta.content`. A final `data: [DONE]` line ends the stream. `/chat/completions` streams incrementally on every chat model. `/responses` streams incrementally on `deepseek-v4-flash`, `glm5.3-flash`, `qwen3.8-flash`, `mimo-v2.6-flash` and `glm5.3`; on `qwen3.6` and `gemma4` it holds the whole answer and sends it in one burst at the end.\n\n## Reasoning\n\nEvery chat model in the catalogue reasons before it answers, and one parameter controls it on every model in the catalogue, the same on both hosts: `reasoning_effort` on `/chat/completions`, `reasoning.effort` on `/responses`. The values are `none`, `minimal`, `low`, `medium`, `high`, `xhigh` and `max`.\n\nTo turn reasoning off, send `\"reasoning_effort\": \"none\"` (or `\"reasoning\": {\"effort\": \"none\"}` on `/responses`). `glm5.3` and `glm5.3-flash` always reason and cannot stop: there `none` is applied as `minimal`, their shortest reasoning.\n\nThe switches other providers document are accepted too and mean exactly `none`: `thinking: {\"type\": \"disabled\"}`, `reasoning: {\"enabled\": false}`, `enable_thinking: false` and `chat_template_kwargs: {\"enable_thinking\": false}`, at the top level or inside `extra_body`. If a request carries both a value and one of these, the value wins. Any other value is passed through unchanged and is not part of this contract: depending on the model it is rejected with a `400` or ignored. Models outside the catalogue take `reasoning_effort` as their own API defines it, without these aliases.\n\nWhat each value does per model: [Controlling reasoning](https://nan.builders/docs/models#controlling-reasoning).\n\n## Rate limits\n\n{{RATE_LIMITS}}\n\nImage endpoints run on their own budget, separate from the model endpoints: 20 requests per minute and 100 requests per month. The usage endpoint is metered separately too: {{USAGE_RATE_LIMIT}} requests per minute per member. Exceed any limit and you get a `429`.\n\n## Errors\n\nNaN uses conventional HTTP status codes: `2xx` on success, `4xx` for a problem with the request (a missing parameter, an invalid key, an unavailable model) and `5xx` for a server-side error. Every error returns a JSON body in the OpenAI shape:\n\n```json\n{\n  \"error\": {\n    \"message\": \"The model 'foo' does not exist.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"model\",\n    \"code\": \"model_not_found\"\n  }\n}\n```\n\n`message` is human-readable, `param` names the offending field when applicable, and `code` is a short machine-readable string you can branch on.\n\n| Status | Meaning | `code` |\n| --- | --- | --- |\n| `400` | Invalid or malformed parameter (`param` says which); content blocked by the safety filter; a `max_tokens` above what the model can generate (a generic \"Invalid request\" message today); or a request that does not fit the model's context window. On the models hosted on the cluster (`qwen3.6`, `gemma4`) the overflow message is \"Context length exceeded for model '...'\" with the model's limit; on the other models it is usually that text, but it can arrive as the generic \"Invalid request. Check your request parameters.\" | `\"400\"` (with `type: invalid_request_error`) · `content_policy_violation` |\n| `401` | Missing or invalid API key, or a key whose tier does not reach the requested model (`glm5.3`): \"This API key does not have access to the requested model\", `type: auth_error`. Measured 2026-09-12. A platform token (`nan_pat_...`) sent to an inference endpoint answers `token_not_valid_for_inference`. | `invalid_api_key` · `token_not_valid_for_inference` |\n| `402` | The token allowance is spent on a model that carries one. Not retryable: the counter returns to zero when that model's quota period does, the calendar month for the models counted per month and your billing period for `glm5.3`. | `monthly_cap_reached` |\n| `403` | Your tier can't access this endpoint. Image generation requires inference membership. A model your tier cannot reach answers `401`, not this. On the platform endpoints: a platform token without the scope the endpoint needs, a credential that cannot change secrets or automations (see [CLI session and the write scopes](#description/cli-session-and-the-write-scopes)), or an action that needs a [browser sign-in](#description/browser-sign-in). | `tier_restricted` · `token_scope_denied` · `credential_not_allowed` · `browser_session_required` |\n| `404` | The requested model doesn't exist. | `model_not_found` |\n| `429` | Rate limit hit (`rpm_limit`, `max_parallel_requests`), the rolling 4h token budget of `glm5.3`, or a quota exhausted. | `rate_limit_exceeded` · `insufficient_quota` · `quota_exceeded` |\n| `500` | Something went wrong on our side (includes upstream model errors). | (none) |\n| `524` | Timeout, typical with large audio files on `/audio/transcriptions`. | (none) |\n\nRetry `429` and `5xx` responses with exponential backoff. Don't retry `400`, `401`, `403`, or `404` blindly (a context overflow is not retried automatically either: shorten the input or pick a model with a larger window): they'll fail the same way every time until you change the request. `402` cannot be fixed by repetition either: it clears when that model's quota period resets.\n\n## Model catalog\n\nEvery endpoint takes a `model` id. Capabilities vary by model:\n\n| Model | Use for | Capabilities |\n| --- | --- | --- |\n| `deepseek-v4-flash` | Chat, vision, reasoning | Streaming, tool calling, reasoning, image input, 1M-token context. 3B tokens/month per member |\n| `mimo-v2.6-flash` | Chat, vision, audio | Streaming, tool calling, reasoning, image input, audio input, 1M-token context. 1.0B tokens/month per member |\n| `qwen3.8-flash` | Chat, vision, agents | Streaming, tool calling, reasoning (on by default), vision, 1M-token context. 500M tokens/month per member |\n| `glm5.3-flash` | Chat, vision, agents | Streaming, tool calling, reasoning, vision, 1M-token context. 2B tokens/month per member |\n| `qwen3.6` | Chat, agents | Streaming, tool calling, vision, reasoning (on by default; `reasoning_effort: \"none\"` turns it off) |\n| `gemma4` | Chat, vision, agents | Streaming, tool calling, vision, reasoning (on by default; `reasoning_effort: \"none\"` turns it off) |\n| `glm5.3` | Coding, long-horizon agents | Streaming, tool calling, reasoning trace, image, audio and video input, 1M-token context. Premium tier only |\n| `qwen3-embedding` | Embeddings | 4096-dimension vectors |\n| `rerank` | RAG reranking | Qwen3-Reranker-8B, 100+ languages |\n| `kokoro` | Text-to-speech | Multiple voices and audio formats |\n| `whisper` | Speech-to-text | Transcription with word/segment timestamps |\n| `flux-2-klein` | Image generation | Text-to-image and image-to-image |\n| `qwen-image-2.1` | Image generation (text→image) | 512-1280 px, 1-4 per request, seed 0-2147483647. 100 images/month per member (shared pool with flux-2-klein) |\n\n`glm5.3` is served only to keys on the GLM 5.3 premium tier; every other model is available to any inference member. Call [List models](#tag/Models) for the exact set available to your key.\n\n## Versioning & compatibility\n\nThe API tracks the OpenAI API surface, so OpenAI SDKs and tools work against `https://api.nan.builders/v1` unchanged. This reference documents the stable public `/v1` endpoints, plus the two read-only [Workspaces](#tag/workspaces) endpoints under `/api/workspaces`, and we add capabilities without breaking existing fields.",
+    "description": "Open models on a shared EU inference cluster. Zero logs.\n\nThe NaN API is OpenAI-compatible: predictable, resource-oriented URLs, JSON request and response bodies, and standard HTTP verbs and status codes. Point any OpenAI SDK at our base URL and your existing code keeps working. Change the base URL and the API key, and that's it.\n\nOne schema across every model, so you only learn the API once. Change the `model` field to switch models; everything else stays the same.\n\n- Base URL: `https://api.nan.builders/v1`\n- OpenAPI spec: this document. Import it into Postman, Insomnia, or your own tooling.\n\nIf you use the [Helmcode](https://helmcode.com) enterprise service, the base URL is `https://api.helmcode.com/v1` instead. Every other endpoint is identical.\n\n## Authentication\n\nEvery inference request authenticates with an API key, sent as a Bearer token:\n\n```\nAuthorization: Bearer $NAN_API_KEY\n```\n\nYou must be a NaN community member. Generate your key from user settings, under \"API Keys\", on the [platform](https://cloud.nan.builders/). The key is personal and non-transferable. Keep it secret: never embed one in client-side code or commit it to source control. Requests must go over HTTPS; calls over plain HTTP fail.\n\n### Platform tokens\n\nFor scripts that only manage [Runs](#tag/runs), [Automations](#tag/automations), [Secrets](#tag/secrets), [Notifications](#tag/notifications), [Contexts](#tag/contexts) and [Approvals](#tag/approvals), and list your [Workspaces](#tag/workspaces), create a **platform token** (`nan_pat_...`) under \"Tokens\" in your settings, and send it the same way: `Authorization: Bearer $NAN_TOKEN`. An API key works on inference and on Runs, Approvals, Workspaces, reading Contexts and reading and running Automations; never on Secrets, Notifications or changes to automations or contexts. Each endpoint lists the credentials it accepts.\n\nA platform token carries **scopes**, and each endpoint names the one it needs: `runs` (runs and approvals), `workspaces:read`, `automations:read` (read automations, templates, triggers and deliveries), `automations:run` (run an existing automation), `automations:write` (create, change and delete automations and their triggers), `secrets:read` (read secret metadata, never values), `secrets:write` (create, replace, change and delete secrets), `notifications:read` (read notification channels and their deliveries, never their URLs) `notifications:write` (create, change, test and delete notification channels, and rotate their signing secrets), `contexts:read` (list, read and download contexts) and `contexts:write` (create, upload to, publish, rename and delete contexts; not offered under \"Tokens\" yet, use a CLI session meanwhile). Scopes are independent: `secrets:write` does not include `secrets:read`, and `notifications:write` does not include `notifications:read`. New tokens get `runs` and `workspaces:read`. A token without the scope gets `403`:\n\n```json\n{\n  \"error\": {\n    \"message\": \"This platform token does not have the \\\"automations:run\\\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.\",\n    \"type\": \"permission_error\",\n    \"param\": null,\n    \"code\": \"token_scope_denied\"\n  }\n}\n```\n\nA platform token never works for inference: the model endpoints answer `401`:\n\n```json\n{\n  \"error\": {\n    \"message\": \"Platform tokens (nan_pat_) cannot be used for inference. Use an inference API key (sk-) instead. Platform tokens only work on the platform API (/v1/runs, /v1/automations, /v1/approvals, /v1/secrets, /v1/notification-channels, /v1/contexts and GET /api/workspaces).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": null,\n    \"code\": \"token_not_valid_for_inference\"\n  }\n}\n```\n\n### CLI session and the write scopes\n\nYour secrets and your automations (with their triggers) can be managed through the API and the [NaN CLI](https://nan.builders/docs/nan-cli) where the write API is available for your account (it is being opened gradually). Three credentials can change them: you signed in at [cloud.nan.builders](https://cloud.nan.builders/), the **CLI session** that `nan auth login` saves, and a platform token with `automations:write` or `secrets:write`. Secret metadata is read with a CLI session or `secrets:read`. API keys (`sk-...`), the key inside a workspace and sessions from older clients are refused:\n\n```json\n{\n  \"error\": {\n    \"message\": \"This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \\\"secrets:write\\\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.\",\n    \"type\": \"permission_error\",\n    \"param\": null,\n    \"code\": \"credential_not_allowed\"\n  }\n}\n```\n\nA token with `secrets:write` lets whoever holds it replace any of your secrets. A token with `automations:write` lets whoever holds it create or change an automation that receives any of your secrets, with instructions of their choice and nothing waiting for approval: that is as good as reading every secret you have. Such a token, held by an agent or a script, can change your secrets or automations. These scopes can only be added to a token in the portal, signed in through your browser. The same goes for `notifications:read` and `notifications:write`, offered only where your account has notifications and the write API: a token with `notifications:write` decides where your notifications go. Give a token only the scopes its job needs, and run `nan auth login` on your own machine, never inside a workspace: the agents there could read the session.\n\n### Browser sign-in\n\nSome actions need you signed in through your browser at [cloud.nan.builders](https://cloud.nan.builders/), and no API key, platform token or CLI session can do them: approving a run, and creating a token with an `automations:`, `secrets:` or `notifications:` scope. Where the write API is not yet available for your account, changing automations and their triggers is also browser-only. Through the API they answer `403`:\n\n```json\n{\n  \"error\": {\n    \"message\": \"This action needs a browser session: sign in at cloud.nan.builders in your browser and try again from there. CLI sessions, API keys and platform tokens cannot approve runs or create tokens with automations or secrets scopes.\",\n    \"type\": \"permission_error\",\n    \"param\": null,\n    \"code\": \"browser_session_required\"\n  }\n}\n```\n\n## Making requests\n\nThe API is OpenAI-compatible, so point an official OpenAI SDK at our base URL and change nothing else:\n\n```python\nfrom openai import OpenAI\n\nclient = OpenAI(\n    api_key=\"$NAN_API_KEY\",\n    base_url=\"https://api.nan.builders/v1\",\n)\n\nresp = client.chat.completions.create(\n    model=\"deepseek-v4-flash\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello\"}],\n)\nprint(resp.choices[0].message.content)\n```\n\n## Streaming\n\nChat responses can stream token-by-token. Set `\"stream\": true` on `/chat/completions` and the response arrives as Server-Sent Events: each event is a `data:` line carrying a `chat.completion.chunk`, with the new text in `choices[0].delta.content`. A final `data: [DONE]` line ends the stream. `/chat/completions` streams incrementally on every chat model. `/responses` streams incrementally on `deepseek-v4-flash`, `glm5.3-flash`, `qwen3.8-flash`, `mimo-v2.6-flash` and `glm5.3`; on `qwen3.6` and `gemma4` it holds the whole answer and sends it in one burst at the end.\n\n## Reasoning\n\nEvery chat model in the catalogue reasons before it answers, and one parameter controls it on every model in the catalogue, the same on both hosts: `reasoning_effort` on `/chat/completions`, `reasoning.effort` on `/responses`. The values are `none`, `minimal`, `low`, `medium`, `high`, `xhigh` and `max`.\n\nTo turn reasoning off, send `\"reasoning_effort\": \"none\"` (or `\"reasoning\": {\"effort\": \"none\"}` on `/responses`). `glm5.3` and `glm5.3-flash` always reason and cannot stop: there `none` is applied as `minimal`, their shortest reasoning.\n\nThe switches other providers document are accepted too and mean exactly `none`: `thinking: {\"type\": \"disabled\"}`, `reasoning: {\"enabled\": false}`, `enable_thinking: false` and `chat_template_kwargs: {\"enable_thinking\": false}`, at the top level or inside `extra_body`. If a request carries both a value and one of these, the value wins. Any other value is passed through unchanged and is not part of this contract: depending on the model it is rejected with a `400` or ignored. Models outside the catalogue take `reasoning_effort` as their own API defines it, without these aliases.\n\nWhat each value does per model: [Controlling reasoning](https://nan.builders/docs/models#controlling-reasoning).\n\n## Rate limits\n\n{{RATE_LIMITS}}\n\nImage endpoints run on their own budget, separate from the model endpoints: 20 requests per minute and 100 requests per month. The usage endpoint is metered separately too: {{USAGE_RATE_LIMIT}} requests per minute per member. Exceed any limit and you get a `429`.\n\n## Errors\n\nNaN uses conventional HTTP status codes: `2xx` on success, `4xx` for a problem with the request (a missing parameter, an invalid key, an unavailable model) and `5xx` for a server-side error. Every error returns a JSON body in the OpenAI shape:\n\n```json\n{\n  \"error\": {\n    \"message\": \"The model 'foo' does not exist.\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"model\",\n    \"code\": \"model_not_found\"\n  }\n}\n```\n\n`message` is human-readable, `param` names the offending field when applicable, and `code` is a short machine-readable string you can branch on.\n\n| Status | Meaning | `code` |\n| --- | --- | --- |\n| `400` | Invalid or malformed parameter (`param` says which); content blocked by the safety filter; a `max_tokens` above what the model can generate (a generic \"Invalid request\" message today); or a request that does not fit the model's context window. On the models hosted on the cluster (`qwen3.6`, `gemma4`) the overflow message is \"Context length exceeded for model '...'\" with the model's limit; on the other models it is usually that text, but it can arrive as the generic \"Invalid request. Check your request parameters.\" | `\"400\"` (with `type: invalid_request_error`) · `content_policy_violation` |\n| `401` | Missing or invalid API key, or a key whose tier does not reach the requested model (`glm5.3`): \"This API key does not have access to the requested model\", `type: auth_error`. Measured 2026-09-12. A platform token (`nan_pat_...`) sent to an inference endpoint answers `token_not_valid_for_inference`. | `invalid_api_key` · `token_not_valid_for_inference` |\n| `402` | The token allowance is spent on a model that carries one. Not retryable: the counter returns to zero when that model's quota period does, the calendar month for the models counted per month and your billing period for `glm5.3`. | `monthly_cap_reached` |\n| `403` | Your tier can't access this endpoint. Image generation requires inference membership. A model your tier cannot reach answers `401`, not this. On the platform endpoints: a platform token without the scope the endpoint needs, a credential that cannot change secrets or automations (see [CLI session and the write scopes](#description/cli-session-and-the-write-scopes)), or an action that needs a [browser sign-in](#description/browser-sign-in). | `tier_restricted` · `token_scope_denied` · `credential_not_allowed` · `browser_session_required` |\n| `404` | The requested model doesn't exist. | `model_not_found` |\n| `429` | Rate limit hit (`rpm_limit`, `max_parallel_requests`), the rolling 4h token budget of `glm5.3`, or a quota exhausted. | `rate_limit_exceeded` · `insufficient_quota` · `quota_exceeded` |\n| `500` | Something went wrong on our side (includes upstream model errors). | (none) |\n| `524` | Timeout, typical with large audio files on `/audio/transcriptions`. | (none) |\n\nRetry `429` and `5xx` responses with exponential backoff. Don't retry `400`, `401`, `403`, or `404` blindly (a context overflow is not retried automatically either: shorten the input or pick a model with a larger window): they'll fail the same way every time until you change the request. `402` cannot be fixed by repetition either: it clears when that model's quota period resets.\n\n## Model catalog\n\nEvery endpoint takes a `model` id. Capabilities vary by model:\n\n| Model | Use for | Capabilities |\n| --- | --- | --- |\n| `deepseek-v4-flash` | Chat, vision, reasoning | Streaming, tool calling, reasoning, image input, 1M-token context. 3B tokens/month per member |\n| `mimo-v2.6-flash` | Chat, vision, audio | Streaming, tool calling, reasoning, image input, audio input, 1M-token context. 1.0B tokens/month per member |\n| `qwen3.8-flash` | Chat, vision, agents | Streaming, tool calling, reasoning (on by default), vision, 1M-token context. 500M tokens/month per member |\n| `glm5.3-flash` | Chat, vision, agents | Streaming, tool calling, reasoning, vision, 1M-token context. 2B tokens/month per member |\n| `qwen3.6` | Chat, agents | Streaming, tool calling, vision, reasoning (on by default; `reasoning_effort: \"none\"` turns it off) |\n| `gemma4` | Chat, vision, agents | Streaming, tool calling, vision, reasoning (on by default; `reasoning_effort: \"none\"` turns it off) |\n| `glm5.3` | Coding, long-horizon agents | Streaming, tool calling, reasoning trace, image, audio and video input, 1M-token context. Premium tier only |\n| `qwen3-embedding` | Embeddings | 4096-dimension vectors |\n| `rerank` | RAG reranking | Qwen3-Reranker-8B, 100+ languages |\n| `kokoro` | Text-to-speech | Multiple voices and audio formats |\n| `whisper` | Speech-to-text | Transcription with word/segment timestamps |\n| `flux-2-klein` | Image generation | Text-to-image and image-to-image |\n| `qwen-image-2.1` | Image generation (text→image) | 512-1280 px, 1-4 per request, seed 0-2147483647. 100 images/month per member (shared pool with flux-2-klein) |\n\n`glm5.3` is served only to keys on the GLM 5.3 premium tier; every other model is available to any inference member. Call [List models](#tag/Models) for the exact set available to your key.\n\n## Versioning & compatibility\n\nThe API tracks the OpenAI API surface, so OpenAI SDKs and tools work against `https://api.nan.builders/v1` unchanged. This reference documents the stable public `/v1` endpoints, plus the two read-only [Workspaces](#tag/workspaces) endpoints under `/api/workspaces`, and we add capabilities without breaking existing fields.",
     "contact": {
       "name": "NaN",
       "url": "https://nan.builders"
@@ -81,6 +81,10 @@
     {
       "name": "Workspaces",
       "description": "Read-only access to your own workspaces, for scripts that need a workspace's name, id or status. Served at `https://api.nan.builders/api/workspaces`, outside `/v1`, to bearer credentials only (no cookies, no browser CORS). Creating, starting, stopping and deleting workspaces is done from the platform, not from this API. Guide: [Workspaces](https://nan.builders/docs/workspaces)."
+    },
+    {
+      "name": "Contexts",
+      "description": "Agent contexts: versioned folders of instructions (`AGENTS.md`), skills (`skills/<name>/SKILL.md`) and reference files (`files/...`) that your runs and automations hand to the agent. Upload files by their SHA-256 (check, upload, multipart for files over 16 MiB), then publish a version that lists the whole tree. Reading needs a CLI session (`nan auth login`), an API key or a platform token with `contexts:read`; writing, a CLI session or a token with `contexts:write`. Using a context in a run needs no context scope. Where contexts are not yet available for your account, these routes answer `404`. Layout, limits, file types and names: [Contexts](https://nan.builders/docs/contexts)."
     }
   ],
   "paths": {
@@ -9132,6 +9136,2374 @@
           }
         }
       }
+    },
+    "/contexts": {
+      "get": {
+        "operationId": "listContexts",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "List your contexts",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "apiKey": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "Your contexts, by name, at their current version, and how much of your context storage you use.\n\nAuthentication: a CLI session (`nan auth login`), a member API key (`sk-...`) or a platform token (`nan_pat_...`) with the `contexts:read` scope. The key that lives inside a workspace is refused (`403 workspace_key_not_allowed`).",
+        "responses": {
+          "200": {
+            "description": "Your contexts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:read` scope (`token_scope_denied`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:read` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:read\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No context of yours with that id or name (another member's is also `404`), or contexts are not available for your account (`404 Not found.`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "context not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createContext",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Create a context",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "Creates an empty context (version 1). Up to 20 contexts per member.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+            },
+            "description": "Optional. 1 to 128 characters of `A-Z a-z 0-9 . _ : -`. The same key with the same body returns what the first request created; with a different body, `422 idempotency_key_reused`."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContextRequest"
+              },
+              "example": {
+                "name": "acme-api",
+                "description": "Acme API conventions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Context"
+                },
+                "example": {
+                  "id": "3f2b8c1e-5a4d-4e8f-9b7a-2c6d1e0f4a9b",
+                  "object": "context",
+                  "name": "acme-api",
+                  "description": "Acme API conventions",
+                  "version": 1,
+                  "tree_sha256": "b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c",
+                  "file_count": 0,
+                  "total_bytes": 0,
+                  "has_instructions": false,
+                  "skills": [],
+                  "created_at": "2026-10-27T09:12:44Z",
+                  "updated_at": "2026-10-27T10:03:10Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A name or description that is not allowed (`invalid_request`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "name must be 1-63 characters of a-z, 0-9 and -, starting with a letter or digit (and not a reserved name such as con or nul)",
+                    "type": "invalid_request_error",
+                    "param": "name",
+                    "code": "invalid_request"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No context of yours with that id or name (another member's is also `404`), or contexts are not available for your account (`404 Not found.`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "context not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_not_found"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "You already have a context with this name (`context_name_taken`), or 20 contexts (`too_many_contexts`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "You already have 20 contexts; delete one first.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "too_many_contexts"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The `Idempotency-Key` was used with a different body (`idempotency_key_reused`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "This Idempotency-Key was already used with a different request body.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "idempotency_key_reused"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contexts/{id}": {
+      "get": {
+        "operationId": "getContext",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Get a context",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "apiKey": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "The current version of a context and its files.\n\nAuthentication: a CLI session (`nan auth login`), a member API key (`sk-...`) or a platform token (`nan_pat_...`) with the `contexts:read` scope. The key that lives inside a workspace is refused (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The context id, or its name. Only this route resolves names; every other route takes the id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The context and its files.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:read` scope (`token_scope_denied`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:read` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:read\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No context of yours with that id or name (another member's is also `404`), or contexts are not available for your account (`404 Not found.`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "context not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateContext",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Rename a context",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "Changes the name or the description. It does not create a version.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The context id."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateContextRequest"
+              },
+              "example": {
+                "description": "Acme API conventions, v2 style guide"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The context.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Context"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A name or description that is not allowed (`invalid_request`)."
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No context of yours with that id or name (another member's is also `404`), or contexts are not available for your account (`404 Not found.`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "context not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_not_found"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "You already have a context with this name (`context_name_taken`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "You already have a context with this name.",
+                    "type": "invalid_request_error",
+                    "param": "name",
+                    "code": "context_name_taken"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteContext",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Delete a context",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "Deletes the context and all its versions, and frees its name. Runs already queued or working keep the version they pinned. Refused while an automation uses it: the answer's `automations` lists them. Allowed also over the storage quota.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The context id."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No context of yours with that id or name (another member's is also `404`), or contexts are not available for your account (`404 Not found.`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "context not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_not_found"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Automations use this context (`context_in_use`): `automations` lists them.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Automations use this context; remove it from them first.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_in_use"
+                  },
+                  "automations": [
+                    {
+                      "id": "5b0e6f2a-8c1d-4e3f-a7b9-0d2c4e6f8a1b",
+                      "name": "PR review api"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contexts/{id}/versions": {
+      "get": {
+        "operationId": "listContextVersions",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "List versions",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "apiKey": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "The versions still kept: the current one and any a queued or working run uses. The others are deleted once they are about an hour old.\n\nAuthentication: a CLI session (`nan auth login`), a member API key (`sk-...`) or a platform token (`nan_pat_...`) with the `contexts:read` scope. The key that lives inside a workspace is refused (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The context id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The versions, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContextVersion"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:read` scope (`token_scope_denied`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:read` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:read\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No context of yours with that id or name (another member's is also `404`), or contexts are not available for your account (`404 Not found.`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "context not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "publishContextVersion",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Publish a version",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "Publishes the next version with the whole tree. Every file must be uploaded first (Check uploaded files, Upload a file). Checks, in order: the `Idempotency-Key` replay (the same key and body return that version's own representation, `201`, while that version is kept); file names, types and limits; `base_version`; storage (over quota, only a version that reuses files you already keep); text that looks like a credential. At most 120 attempts per hour.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The context id."
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:-]{1,128}$"
+            },
+            "description": "Optional. 1 to 128 characters of `A-Z a-z 0-9 . _ : -`. The same key with the same body returns what the first request created; with a different body, `422 idempotency_key_reused`."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishContextRequest"
+              },
+              "example": {
+                "base_version": 1,
+                "files": [
+                  {
+                    "path": "AGENTS.md",
+                    "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                    "executable": false
+                  },
+                  {
+                    "path": "files/dataset.csv",
+                    "sha256": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae",
+                    "executable": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The new version.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Context"
+                },
+                "example": {
+                  "id": "3f2b8c1e-5a4d-4e8f-9b7a-2c6d1e0f4a9b",
+                  "object": "context",
+                  "name": "acme-api",
+                  "description": "Acme API conventions",
+                  "version": 2,
+                  "tree_sha256": "b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c",
+                  "file_count": 3,
+                  "total_bytes": 73403442,
+                  "has_instructions": true,
+                  "skills": [
+                    "release-notes"
+                  ],
+                  "created_at": "2026-10-27T09:12:44Z",
+                  "updated_at": "2026-10-27T10:03:10Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A file name or folder that is not allowed (`invalid_path`), or too many files: `files` lists each refused file and its reason (`dotfile`, `bad_character`, `not_nfc`, `too_long`, `too_deep`, `reserved_name`, `case_collision`, `bad_top_level`, `not_supported_yet`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Some file names are not allowed.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "invalid_path"
+                  },
+                  "files": [
+                    {
+                      "path": "files/.env",
+                      "reason": "dotfile"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No context of yours with that id or name (another member's is also `404`), or contexts are not available for your account (`404 Not found.`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "context not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_not_found"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Someone published in between (`version_conflict`, with `current_version`), or an uploaded file was cleaned up before you published (`blob_missing`, with `sha256`: upload those again).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "The context changed since you loaded it; reload and publish again.",
+                    "type": "invalid_request_error",
+                    "param": "base_version",
+                    "code": "version_conflict"
+                  },
+                  "current_version": 3
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Over your context storage and the version adds files (`context_quota_exceeded`, with `used`, `quota` and `growing`), or the version is over 250 MiB or 1000 files (`context_too_large`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "You are over your plan's context storage: delete content or upgrade. Versions that only reuse files you already keep can still be published.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_quota_exceeded"
+                  },
+                  "used": 2251799813,
+                  "quota": 2147483648,
+                  "growing": true
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "A file's extension does not match its content, or a binary file outside `files/` and `skills/<name>/` (`unsupported_file_type`)."
+          },
+          "422": {
+            "description": "Text that looks like a credential (`context_secret_detected`, with `findings`: path, line and kind, never the match); publish anyway with `allow_secret_like: true`. Also `skill_invalid` (a `SKILL.md` without the exact `name` and `description` frontmatter) and `idempotency_key_reused`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Some files look like they contain secrets. Keep secrets in Secrets, or publish anyway.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_secret_detected"
+                  },
+                  "findings": [
+                    {
+                      "path": "files/deploy.md",
+                      "line": 12,
+                      "pattern": "github_token"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Over an hourly limit (`rate_limited`). `Retry-After` is the number of seconds left in the window.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Too many publish attempts; try again later.",
+                    "type": "rate_limit_exceeded",
+                    "param": null,
+                    "code": "rate_limited"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Context storage is unavailable right now (`storage_unavailable`). Retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Context storage is unavailable right now; try again later.",
+                    "type": "server_error",
+                    "param": null,
+                    "code": "storage_unavailable"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contexts/{id}/file": {
+      "get": {
+        "operationId": "downloadContextFile",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Download a file",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "apiKey": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "One file of a version, as an attachment (`application/octet-stream`, `Content-Disposition: attachment`). Up to 1000 downloads per hour.\n\nAuthentication: a CLI session (`nan auth login`), a member API key (`sk-...`) or a platform token (`nan_pat_...`) with the `contexts:read` scope. The key that lives inside a workspace is refused (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The context id."
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The file path, for example `files/dataset.csv`."
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "A version still kept. The current one by default."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The file.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:read` scope (`token_scope_denied`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:read` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:read\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such context, version (`version_not_found`) or file (`file_not_found`)."
+          },
+          "429": {
+            "description": "Over an hourly limit (`rate_limited`). `Retry-After` is the number of seconds left in the window.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Too many downloads; try again later.",
+                    "type": "rate_limit_exceeded",
+                    "param": null,
+                    "code": "rate_limited"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Context storage is unavailable right now (`storage_unavailable`). Retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Context storage is unavailable right now; try again later.",
+                    "type": "server_error",
+                    "param": null,
+                    "code": "storage_unavailable"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contexts/blobs/check": {
+      "post": {
+        "operationId": "checkContextBlobs",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Check uploaded files",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "Which of these files (by SHA-256) you have not uploaded yet. Upload only those. Up to 1000 per call; only your own uploads count.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "sha256": {
+                    "type": "array",
+                    "maxItems": 1000,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  }
+                },
+                "required": [
+                  "sha256"
+                ]
+              },
+              "example": {
+                "sha256": [
+                  "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                  "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The ones to upload.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "missing": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "missing"
+                  ]
+                },
+                "example": {
+                  "missing": [
+                    "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not a list of up to 1000 lowercase SHA-256 values (`invalid_request`)."
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No context of yours with that id or name (another member's is also `404`), or contexts are not available for your account (`404 Not found.`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "context not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contexts/blobs/{sha256}": {
+      "put": {
+        "operationId": "uploadContextBlob",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Upload a file",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "Uploads a file of up to 16 MiB in one request: the raw bytes, with an exact `Content-Length`. The content is hashed, typed and scanned before it is stored; a body that does not match `sha256` stores nothing. Larger files: Start a multipart upload. Uploads count against 2 GiB per hour and 8 open at once.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "description": "The SHA-256 of the whole file, lowercase hex."
+          },
+          {
+            "name": "X-Nan-Filename",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The file name, only as a type hint (needed to tell `.docx`, `.xlsx` and `.pptx` apart). Never stored or logged."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The file, at most 16 MiB.",
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Already stored: the body is not read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextBlob"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Stored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextBlob"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No context of yours with that id or name (another member's is also `404`), or contexts are not available for your account (`404 Not found.`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "context not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_not_found"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "This file is still being deleted from an earlier cleanup (`blob_busy`, `Retry-After: 30`), or another request is uploading it (`upload_in_progress`, `Retry-After: 5`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "This file is still being deleted from an earlier cleanup; try again in a few minutes.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "blob_busy"
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The upload does not fit in your context storage (`context_quota_exceeded`, with `used` and `quota`), or the file is over 100 MiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "This upload does not fit in your plan's context storage.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_quota_exceeded"
+                  },
+                  "used": 2147000000,
+                  "quota": 2147483648
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Not an allowed file type (`unsupported_file_type`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "This file type is not supported in agent contexts.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "unsupported_file_type"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The bytes do not match `sha256` and the size (`blob_hash_mismatch`); nothing was stored."
+          },
+          "429": {
+            "description": "Over an hourly limit (`rate_limited`). `Retry-After` is the number of seconds left in the window.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Upload limit reached (2 GiB per hour); try again later.",
+                    "type": "rate_limit_exceeded",
+                    "param": null,
+                    "code": "rate_limited"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Context storage is unavailable right now (`storage_unavailable`). Retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Context storage is unavailable right now; try again later.",
+                    "type": "server_error",
+                    "param": null,
+                    "code": "storage_unavailable"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contexts/blobs/{sha256}/uploads": {
+      "post": {
+        "operationId": "startContextUpload",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Start a multipart upload",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "For a file over 16 MiB (up to 100 MiB): send it in parts of exactly 16 MiB (the last one, the rest), in order, then complete. An upload expires after 24 hours.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "description": "The SHA-256 of the whole file, lowercase hex."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "size": {
+                    "type": "integer",
+                    "minimum": 16777217,
+                    "maximum": 104857600
+                  },
+                  "filename": {
+                    "type": "string",
+                    "description": "Type hint only, as `X-Nan-Filename`."
+                  }
+                },
+                "required": [
+                  "size",
+                  "filename"
+                ]
+              },
+              "example": {
+                "size": 73400320,
+                "filename": "dataset.csv"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Already stored: nothing to upload.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextBlob"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Started.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextUpload"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No context of yours with that id or name (another member's is also `404`), or contexts are not available for your account (`404 Not found.`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "context not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_not_found"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "This file is still being deleted from an earlier cleanup (`blob_busy`, `Retry-After: 30`), or another request is uploading it (`upload_in_progress`, `Retry-After: 5`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "This file is still being deleted from an earlier cleanup; try again in a few minutes.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "blob_busy"
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The upload does not fit in your context storage (`context_quota_exceeded`, with `used` and `quota`), or the file is over 100 MiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "This upload does not fit in your plan's context storage.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_quota_exceeded"
+                  },
+                  "used": 2147000000,
+                  "quota": 2147483648
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Not an allowed file type (`unsupported_file_type`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "This file type is not supported in agent contexts.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "unsupported_file_type"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Over an hourly limit (`rate_limited`). `Retry-After` is the number of seconds left in the window.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Upload limit reached (2 GiB per hour); try again later.",
+                    "type": "rate_limit_exceeded",
+                    "param": null,
+                    "code": "rate_limited"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Context storage is unavailable right now (`storage_unavailable`). Retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Context storage is unavailable right now; try again later.",
+                    "type": "server_error",
+                    "param": null,
+                    "code": "storage_unavailable"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contexts/blobs/{sha256}/uploads/{upload_id}": {
+      "get": {
+        "operationId": "getContextUpload",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Get a multipart upload",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "Which part comes next, to resume an interrupted upload.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "description": "The SHA-256 of the whole file, lowercase hex."
+          },
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The upload id from Start a multipart upload."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The upload.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextUpload"
+                },
+                "example": {
+                  "upload_id": "7a1c9e2b-4f6d-4b8a-9c3e-1d2f5a6b7c8d",
+                  "part_size": 16777216,
+                  "parts": 5,
+                  "next_part": 3
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such upload (`upload_not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "upload not found",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "upload_not_found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "abortContextUpload",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Abort a multipart upload",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "Cancels the upload and frees what it reserved. Always allowed to the owner.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "description": "The SHA-256 of the whole file, lowercase hex."
+          },
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The upload id from Start a multipart upload."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Aborted."
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such upload (`upload_not_found`)."
+          }
+        }
+      }
+    },
+    "/contexts/blobs/{sha256}/uploads/{upload_id}/parts/{n}": {
+      "put": {
+        "operationId": "uploadContextPart",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Upload a part",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "One part, in order: exactly 16 MiB, the last one the rest. A part already stored answers `200` without reading it again.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "description": "The SHA-256 of the whole file, lowercase hex."
+          },
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The upload id from Start a multipart upload."
+          },
+          {
+            "name": "n",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "The part number, from 1, in order."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The part: exactly 16777216 bytes, or the rest for the last part.",
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "next_part": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "next_part"
+                  ]
+                },
+                "example": {
+                  "next_part": 2
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such upload (`upload_not_found`)."
+          },
+          "409": {
+            "description": "This file is still being deleted from an earlier cleanup (`blob_busy`, `Retry-After: 30`), or another request is uploading it (`upload_in_progress`, `Retry-After: 5`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "This file is still being deleted from an earlier cleanup; try again in a few minutes.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "blob_busy"
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The upload does not fit in your context storage (`context_quota_exceeded`, with `used` and `quota`), or the file is over 100 MiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "This upload does not fit in your plan's context storage.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "context_quota_exceeded"
+                  },
+                  "used": 2147000000,
+                  "quota": 2147483648
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Not an allowed file type (`unsupported_file_type`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "This file type is not supported in agent contexts.",
+                    "type": "invalid_request_error",
+                    "param": null,
+                    "code": "unsupported_file_type"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Over an hourly limit (`rate_limited`). `Retry-After` is the number of seconds left in the window.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Upload limit reached (2 GiB per hour); try again later.",
+                    "type": "rate_limit_exceeded",
+                    "param": null,
+                    "code": "rate_limited"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Context storage is unavailable right now (`storage_unavailable`). Retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Context storage is unavailable right now; try again later.",
+                    "type": "server_error",
+                    "param": null,
+                    "code": "storage_unavailable"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contexts/blobs/{sha256}/uploads/{upload_id}/complete": {
+      "post": {
+        "operationId": "completeContextUpload",
+        "tags": [
+          "Contexts"
+        ],
+        "summary": "Complete a multipart upload",
+        "security": [
+          {
+            "cliSession": []
+          },
+          {
+            "platformToken": []
+          }
+        ],
+        "description": "Checks the whole file against `sha256` and its size, and stores it. A mismatch stores nothing.\n\nAuthentication: a CLI session (`nan auth login`) or a platform token (`nan_pat_...`) with the `contexts:write` scope. An API key (`sk-...`) is refused (`403 credential_not_allowed`), and so is the key that lives inside a workspace (`403 workspace_key_not_allowed`).",
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "description": "The SHA-256 of the whole file, lowercase hex."
+          },
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The upload id from Start a multipart upload."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Stored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextBlob"
+                },
+                "example": {
+                  "sha256": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae",
+                  "size": 73400320,
+                  "format": "text",
+                  "secret_findings": []
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/RunsUnauthorized"
+          },
+          "403": {
+            "description": "A platform token without the `contexts:write` scope (`token_scope_denied`), an API key (`sk-...`) or a session from an older client (`credential_not_allowed`), or the key that lives inside a workspace (`workspace_key_not_allowed`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "token_scope_denied": {
+                    "summary": "A platform token without the `contexts:write` scope.",
+                    "value": {
+                      "error": {
+                        "message": "This platform token does not have the \"contexts:write\" scope this endpoint requires. Create a token with that scope in the Tokens section of Settings at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "token_scope_denied"
+                      }
+                    }
+                  },
+                  "credential_not_allowed": {
+                    "summary": "An API key (`sk-...`), or a session the write routes do not accept.",
+                    "value": {
+                      "error": {
+                        "message": "This endpoint needs a browser session, a CLI session (nan auth login) or a platform token with the \"contexts:write\" scope. API keys (sk-), workspace keys and sessions from older clients are not accepted here: sign in again with the CLI or at cloud.nan.builders.",
+                        "type": "permission_error",
+                        "param": null,
+                        "code": "credential_not_allowed"
+                      }
+                    }
+                  },
+                  "workspace_key_not_allowed": {
+                    "summary": "The key that lives inside a workspace.",
+                    "value": {
+                      "error": {
+                        "message": "workspace keys cannot manage runs",
+                        "type": "invalid_request_error",
+                        "param": null,
+                        "code": "workspace_key_not_allowed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such upload (`upload_not_found`)."
+          },
+          "409": {
+            "description": "Parts are missing, or the upload expired (`upload_expired`)."
+          },
+          "415": {
+            "description": "Not an allowed file type (`unsupported_file_type`)."
+          },
+          "422": {
+            "description": "The bytes do not match `sha256` and the size (`blob_hash_mismatch`); nothing was stored."
+          },
+          "503": {
+            "description": "Context storage is unavailable right now (`storage_unavailable`). Retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextError"
+                },
+                "example": {
+                  "error": {
+                    "message": "Context storage is unavailable right now; try again later.",
+                    "type": "server_error",
+                    "param": null,
+                    "code": "storage_unavailable"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -9139,13 +11511,13 @@
       "apiKey": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Member API key (`sk-...`), from \"API Keys\" in your settings on the platform. Send it as `Authorization: Bearer <api-key>`. It works on every inference endpoint, on the Runs, Automations and Approvals endpoints and on the two Workspaces endpoints (it cannot approve runs or change automations). Personal and non-transferable. The key that lives inside a workspace (the one its agents use) is refused by the Runs endpoints with `403 workspace_key_not_allowed`."
+        "description": "Member API key (`sk-...`), from \"API Keys\" in your settings on the platform. Send it as `Authorization: Bearer <api-key>`. It works on every inference endpoint, on the Runs, Automations and Approvals endpoints, on reading Contexts and on the two Workspaces endpoints (it cannot approve runs or change automations). Personal and non-transferable. The key that lives inside a workspace (the one its agents use) is refused by the Runs endpoints with `403 workspace_key_not_allowed`."
       },
       "platformToken": {
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "nan_pat_...",
-        "description": "Platform token (`nan_pat_...`), from \"Tokens\" in your settings on the platform. Send it as `Authorization: Bearer <token>`. It works only on the platform API: Runs (`/v1/runs...`), Automations (`/v1/automations...`), Approvals, Secrets (`/v1/secrets...`), Notifications (`/v1/notification-channels...`) and the two Workspaces endpoints, and only where it carries the scope the endpoint names: `runs`, `workspaces:read`, `automations:read`, `automations:run`, `automations:write`, `secrets:read`, `secrets:write`, `notifications:read` or `notifications:write`. A missing scope answers `403 token_scope_denied`. New tokens get `runs` and `workspaces:read` by default; a token with an `automations:`, `secrets:` or `notifications:` scope can only be created from a browser sign-in. It never works for inference: inference endpoints refuse it with `401 token_not_valid_for_inference`. It can never approve a run, and it changes automations, secrets or notification channels only with `automations:write`, `secrets:write` or `notifications:write`. Shown once when you create it; up to 10 active; expires after 30, 90 or 365 days, or never; revocable at any time. Any member with an active subscription can create one; creating runs still needs a plan with inference."
+        "description": "Platform token (`nan_pat_...`), from \"Tokens\" in your settings on the platform. Send it as `Authorization: Bearer <token>`. It works only on the platform API: Runs (`/v1/runs...`), Automations (`/v1/automations...`), Approvals, Secrets (`/v1/secrets...`), Notifications (`/v1/notification-channels...`), Contexts (`/v1/contexts...`) and the two Workspaces endpoints, and only where it carries the scope the endpoint names: `runs`, `workspaces:read`, `automations:read`, `automations:run`, `automations:write`, `secrets:read`, `secrets:write`, `contexts:read`, `contexts:write`, `notifications:read` or `notifications:write`. A missing scope answers `403 token_scope_denied`. New tokens get `runs` and `workspaces:read` by default; a token with an `automations:`, `secrets:` or `notifications:` scope can only be created from a browser sign-in. It never works for inference: inference endpoints refuse it with `401 token_not_valid_for_inference`. It can never approve a run, and it changes automations, secrets or notification channels only with `automations:write`, `secrets:write` or `notifications:write`. Shown once when you create it; up to 10 active; expires after 30, 90 or 365 days, or never; revocable at any time. Any member with an active subscription can create one; creating runs still needs a plan with inference."
       },
       "cliSession": {
         "type": "http",
@@ -10176,6 +12548,15 @@
           },
           "inference": {
             "$ref": "#/components/schemas/CreateRunInference"
+          },
+          "contexts": {
+            "type": "array",
+            "maxItems": 5,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            },
+            "description": "Up to 5 of your [contexts](https://nan.builders/docs/contexts), by name or id, in the order the agent reads them; none twice. The run pins each one's current version when it is queued. Unknown: `404 context_not_found` with `param` `contexts[i]`; two contexts defining the same skill: `422 context_skill_conflict`; more than one run can load (250 MiB, 5000 files, 64 KiB of instructions): `413 context_too_large`. With at least one context, an ephemeral run may leave `github_repo` out: see [Runs without a repository](https://nan.builders/docs/contexts#runs-without-a-repository)."
           }
         }
       },
@@ -10638,6 +13019,13 @@
           "sticky_pr_comment": {
             "type": "boolean",
             "description": "On an automation run (`phase: \"propose\"`): whether its pull request comments edit the automation's one comment per pull request (`sticky_pr_comment` of the automation when the run started). `false` on other runs."
+          },
+          "contexts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RunContext"
+            },
+            "description": "The contexts the run loads, at the versions pinned when it was queued, in order. `[]` without contexts."
           }
         }
       },
@@ -11738,10 +14126,11 @@
             "type": "string",
             "enum": [
               "workspace",
-              "fresh"
+              "fresh",
+              "none"
             ],
             "default": "workspace",
-            "description": "Where the agent works. `workspace`: in `cwd`, in your workspace, as any run. `fresh`: NaN clones `github_repo` for each run into a folder of its own, at the event's exact commit (the pull request's head commit for a `pull_request` event on that repository, the run's head commit for a `workflow_run` event on that repository, the latest commit of the default branch otherwise), and deletes it when the run ends, whatever the outcome; `cwd` is not used and `git_isolation` must be `null` or `false`. A `git_push` is refused in `fresh` mode. Needs `github_repo`."
+            "description": "Where the agent works. `workspace`: in `cwd`, in your workspace, as any run. `fresh`: NaN clones `github_repo` for each run into a folder of its own, at the event's exact commit (the pull request's head commit for a `pull_request` event on that repository, the run's head commit for a `workflow_run` event on that repository, the latest commit of the default branch otherwise), and deletes it when the run ends, whatever the outcome; `cwd` is not used and `git_isolation` must be `null` or `false`. A `git_push` is refused in `fresh` mode. Needs `github_repo`. `none`: no repository and no checkout; the agent works on its contexts only. Only for an automation that runs in its own container, with at least one context and `github_repo` set to `null`. See [Runs without a repository](https://nan.builders/docs/contexts#runs-without-a-repository)."
           },
           "sticky_pr_comment": {
             "type": "boolean",
@@ -11761,6 +14150,13 @@
               "platform_token"
             ],
             "description": "The kind of credential that made the last change: `browser_session` (the portal), `cli_session` (the NaN CLI after `nan auth login`) or `platform_token` (a `nan_pat_...` token). Objects last changed before the write API read `browser_session`."
+          },
+          "contexts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AutomationContext"
+            },
+            "description": "The contexts its runs load, in order, with the latest version of each."
           }
         }
       },
@@ -12786,10 +15182,11 @@
             "type": "string",
             "enum": [
               "workspace",
-              "fresh"
+              "fresh",
+              "none"
             ],
             "default": "workspace",
-            "description": "Where the agent works. `workspace`: in `cwd`, in your workspace, as any run. `fresh`: NaN clones `github_repo` for each run into a folder of its own, at the event's exact commit (the pull request's head commit for a `pull_request` event on that repository, the run's head commit for a `workflow_run` event on that repository, the latest commit of the default branch otherwise), and deletes it when the run ends, whatever the outcome; `cwd` is not used and `git_isolation` must be `null` or `false`. A `git_push` is refused in `fresh` mode. Needs `github_repo`."
+            "description": "Where the agent works. `workspace`: in `cwd`, in your workspace, as any run. `fresh`: NaN clones `github_repo` for each run into a folder of its own, at the event's exact commit (the pull request's head commit for a `pull_request` event on that repository, the run's head commit for a `workflow_run` event on that repository, the latest commit of the default branch otherwise), and deletes it when the run ends, whatever the outcome; `cwd` is not used and `git_isolation` must be `null` or `false`. A `git_push` is refused in `fresh` mode. Needs `github_repo`. `none`: no repository and no checkout; the agent works on its contexts only. Only for an automation that runs in its own container, with at least one context and `github_repo` set to `null`. See [Runs without a repository](https://nan.builders/docs/contexts#runs-without-a-repository)."
           },
           "sticky_pr_comment": {
             "type": "boolean",
@@ -12800,6 +15197,15 @@
             "type": "boolean",
             "default": false,
             "description": "Only with `checkout: \"fresh\"`. `false` (the default): pull requests from forks, pull requests whose author has no write access to the repository (not an owner, member or collaborator) and `workflow_run` events from forks are ignored (delivery outcome `ignored`), because the agent and the tests it runs would execute that code with the automation's agent secrets in your workspace. `true`: they run too. Your decision."
+          },
+          "contexts": {
+            "type": "array",
+            "maxItems": 5,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            },
+            "description": "Up to 5 of your [contexts](https://nan.builders/docs/contexts), by name or id, in order. Runs use each one's latest version. `[]` removes them all. A context an automation uses cannot be deleted (`409 context_in_use`)."
           }
         }
       },
@@ -12949,10 +15355,11 @@
             "type": "string",
             "enum": [
               "workspace",
-              "fresh"
+              "fresh",
+              "none"
             ],
             "default": "workspace",
-            "description": "Where the agent works. `workspace`: in `cwd`, in your workspace, as any run. `fresh`: NaN clones `github_repo` for each run into a folder of its own, at the event's exact commit (the pull request's head commit for a `pull_request` event on that repository, the run's head commit for a `workflow_run` event on that repository, the latest commit of the default branch otherwise), and deletes it when the run ends, whatever the outcome; `cwd` is not used and `git_isolation` must be `null` or `false`. A `git_push` is refused in `fresh` mode. Needs `github_repo`."
+            "description": "Where the agent works. `workspace`: in `cwd`, in your workspace, as any run. `fresh`: NaN clones `github_repo` for each run into a folder of its own, at the event's exact commit (the pull request's head commit for a `pull_request` event on that repository, the run's head commit for a `workflow_run` event on that repository, the latest commit of the default branch otherwise), and deletes it when the run ends, whatever the outcome; `cwd` is not used and `git_isolation` must be `null` or `false`. A `git_push` is refused in `fresh` mode. Needs `github_repo`. `none`: no repository and no checkout; the agent works on its contexts only. Only for an automation that runs in its own container, with at least one context and `github_repo` set to `null`. See [Runs without a repository](https://nan.builders/docs/contexts#runs-without-a-repository)."
           },
           "sticky_pr_comment": {
             "type": "boolean",
@@ -12963,6 +15370,15 @@
             "type": "boolean",
             "default": false,
             "description": "Only with `checkout: \"fresh\"`. `false` (the default): pull requests from forks, pull requests whose author has no write access to the repository (not an owner, member or collaborator) and `workflow_run` events from forks are ignored (delivery outcome `ignored`), because the agent and the tests it runs would execute that code with the automation's agent secrets in your workspace. `true`: they run too. Your decision."
+          },
+          "contexts": {
+            "type": "array",
+            "maxItems": 5,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            },
+            "description": "Up to 5 of your [contexts](https://nan.builders/docs/contexts), by name or id, in order. Runs use each one's latest version. `[]` removes them all. A context an automation uses cannot be deleted (`409 context_in_use`)."
           }
         }
       },
@@ -13781,6 +16197,600 @@
             "description": "`nan_nsec_` and 43 base64url characters. Only for `https` channels (absent otherwise). Never shown again."
           }
         }
+      },
+      "Context": {
+        "type": "object",
+        "description": "A context at one version (the current one, unless the answer is a replay). Guide: [Contexts](https://nan.builders/docs/contexts).",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "context"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$",
+            "description": "Unique among your contexts. Not a Windows reserved name (`con`, `nul`, ...), not `blobs` and not shaped like a UUID."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 280,
+            "description": "One line, no control characters."
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The version this object describes. Version 1 is the empty context created with it."
+          },
+          "tree_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "Fingerprint of the version's files."
+          },
+          "file_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "total_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 262144000
+          },
+          "has_instructions": {
+            "type": "boolean",
+            "description": "The version has an `AGENTS.md`."
+          },
+          "skills": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "string"
+            },
+            "description": "The names of its skills."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "name",
+          "description",
+          "version",
+          "tree_sha256",
+          "file_count",
+          "total_bytes",
+          "has_instructions",
+          "skills",
+          "created_at",
+          "updated_at"
+        ],
+        "example": {
+          "id": "3f2b8c1e-5a4d-4e8f-9b7a-2c6d1e0f4a9b",
+          "object": "context",
+          "name": "acme-api",
+          "description": "Acme API conventions",
+          "version": 2,
+          "tree_sha256": "b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c",
+          "file_count": 3,
+          "total_bytes": 73403442,
+          "has_instructions": true,
+          "skills": [
+            "release-notes"
+          ],
+          "created_at": "2026-10-27T09:12:44Z",
+          "updated_at": "2026-10-27T10:03:10Z"
+        }
+      },
+      "ContextFile": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 512,
+            "description": "`AGENTS.md`, `skills/<name>/...` or `files/...`. See [File names](https://nan.builders/docs/contexts#file-names)."
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 104857600
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "executable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "path",
+          "size",
+          "sha256",
+          "executable"
+        ]
+      },
+      "ContextDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Context"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "files": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ContextFile"
+                },
+                "description": "Every file of the current version, by path."
+              }
+            },
+            "required": [
+              "files"
+            ]
+          }
+        ],
+        "example": {
+          "id": "3f2b8c1e-5a4d-4e8f-9b7a-2c6d1e0f4a9b",
+          "object": "context",
+          "name": "acme-api",
+          "description": "Acme API conventions",
+          "version": 2,
+          "tree_sha256": "b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c",
+          "file_count": 3,
+          "total_bytes": 73403442,
+          "has_instructions": true,
+          "skills": [
+            "release-notes"
+          ],
+          "created_at": "2026-10-27T09:12:44Z",
+          "updated_at": "2026-10-27T10:03:10Z",
+          "files": [
+            {
+              "path": "AGENTS.md",
+              "size": 812,
+              "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+              "executable": false
+            },
+            {
+              "path": "files/dataset.csv",
+              "size": 73400320,
+              "sha256": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae",
+              "executable": false
+            },
+            {
+              "path": "skills/release-notes/SKILL.md",
+              "size": 2310,
+              "sha256": "fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9",
+              "executable": false
+            }
+          ]
+        }
+      },
+      "ContextList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Context"
+            },
+            "description": "Your contexts, by name."
+          },
+          "usage": {
+            "type": "object",
+            "properties": {
+              "stored_bytes": {
+                "type": "integer",
+                "description": "Your stored files, each distinct file once, plus uploads in progress."
+              },
+              "quota_bytes": {
+                "type": "integer",
+                "description": "Your plan's storage: 5 GiB Premium, 2 GiB Inference, 500 MiB Community, 100 MiB without a membership."
+              }
+            },
+            "required": [
+              "stored_bytes",
+              "quota_bytes"
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "usage"
+        ],
+        "example": {
+          "data": [
+            {
+              "id": "3f2b8c1e-5a4d-4e8f-9b7a-2c6d1e0f4a9b",
+              "object": "context",
+              "name": "acme-api",
+              "description": "Acme API conventions",
+              "version": 2,
+              "tree_sha256": "b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c",
+              "file_count": 3,
+              "total_bytes": 73403442,
+              "has_instructions": true,
+              "skills": [
+                "release-notes"
+              ],
+              "created_at": "2026-10-27T09:12:44Z",
+              "updated_at": "2026-10-27T10:03:10Z"
+            }
+          ],
+          "usage": {
+            "stored_bytes": 73403442,
+            "quota_bytes": 2147483648
+          }
+        }
+      },
+      "ContextVersion": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "tree_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "file_count": {
+            "type": "integer"
+          },
+          "total_bytes": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "version",
+          "tree_sha256",
+          "file_count",
+          "total_bytes",
+          "created_at"
+        ]
+      },
+      "ContextBlob": {
+        "type": "object",
+        "description": "An uploaded file, by its content. It belongs to no context until a version lists it; one that no version uses is deleted after about a day.",
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 104857600
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "text",
+              "pdf",
+              "png",
+              "jpeg",
+              "webp",
+              "gif",
+              "docx",
+              "xlsx",
+              "pptx"
+            ],
+            "description": "Detected from the content."
+          },
+          "secret_findings": {
+            "type": "array",
+            "maxItems": 5,
+            "description": "Text that looks like a credential (text files only): the line and the kind of match, never the match. Publishing a version with such a file needs `allow_secret_like: true`.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "pattern": {
+                  "type": "string",
+                  "enum": [
+                    "github_token",
+                    "anthropic_key",
+                    "openai_key",
+                    "nan_pat",
+                    "aws_access_key",
+                    "slack_token",
+                    "stripe_key",
+                    "private_key"
+                  ]
+                }
+              },
+              "required": [
+                "line",
+                "pattern"
+              ]
+            }
+          }
+        },
+        "required": [
+          "sha256",
+          "size",
+          "format",
+          "secret_findings"
+        ],
+        "example": {
+          "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+          "size": 812,
+          "format": "text",
+          "secret_findings": []
+        }
+      },
+      "ContextUpload": {
+        "type": "object",
+        "description": "A multipart upload in progress.",
+        "properties": {
+          "upload_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "part_size": {
+            "type": "integer",
+            "enum": [
+              16777216
+            ]
+          },
+          "parts": {
+            "type": "integer",
+            "description": "How many parts the file takes."
+          },
+          "next_part": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The part to send next."
+          }
+        },
+        "required": [
+          "upload_id",
+          "part_size",
+          "parts",
+          "next_part"
+        ],
+        "example": {
+          "upload_id": "7a1c9e2b-4f6d-4b8a-9c3e-1d2f5a6b7c8d",
+          "part_size": 16777216,
+          "parts": 5,
+          "next_part": 1
+        }
+      },
+      "CreateContextRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 280
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateContextRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Renames the context or changes its description. It does not create a version.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 280
+          }
+        }
+      },
+      "PublishContextRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "base_version": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The version you started from. If it is no longer the current one, `409 version_conflict`."
+          },
+          "files": {
+            "type": "array",
+            "maxItems": 1000,
+            "description": "The whole tree of the new version: files left out are not in it. Every `sha256` must be uploaded first.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "executable": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ]
+            }
+          },
+          "allow_secret_like": {
+            "type": "boolean",
+            "default": false,
+            "description": "Publish even if a text file looks like it holds a credential. Keep credentials in Secrets instead: an agent may copy a context file into a commit."
+          }
+        },
+        "required": [
+          "base_version",
+          "files"
+        ]
+      },
+      "RunContext": {
+        "type": "object",
+        "description": "A context a run loaded, at the version it pinned when it was queued.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "tree_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "version",
+          "tree_sha256"
+        ]
+      },
+      "AutomationContext": {
+        "type": "object",
+        "description": "A context an automation gives its runs. Runs use its latest version.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "ContextError": {
+        "type": "object",
+        "description": "The error envelope of the Contexts routes. Some refusals add fields next to `error`: `automations` (`context_in_use`), `files` (`invalid_path`, `unsupported_file_type`, `skill_invalid`), `current_version` (`version_conflict`), `sha256` (`blob_missing`), `used`, `quota` and `growing` (`context_quota_exceeded`), `findings` (`context_secret_detected`).",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/Error/properties/error"
+          },
+          "automations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ]
+            }
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "reason"
+              ]
+            }
+          },
+          "current_version": {
+            "type": "integer"
+          },
+          "sha256": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "used": {
+            "type": "integer"
+          },
+          "quota": {
+            "type": "integer"
+          },
+          "growing": {
+            "type": "boolean"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "line": {
+                  "type": "integer"
+                },
+                "pattern": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "line",
+                "pattern"
+              ]
+            }
+          }
+        },
+        "required": [
+          "error"
+        ]
       }
     },
     "responses": {

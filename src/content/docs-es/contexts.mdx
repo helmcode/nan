@@ -1,0 +1,375 @@
+---
+title: Contextos
+description: Da a tus runs de agentes y automatizaciones las mismas instrucciones, skills y archivos de referencia cada vez, desde una carpeta versionada que guardas en tu cuenta de NaN.
+order: 24
+group: Guías
+parent: automations
+---
+
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Contextos.
+
+Un **contexto** es una carpeta que guardas en tu cuenta de NaN y entregas al agente de un [run](/es/docs/runs) o de una [automatización](/es/docs/automations): instrucciones que debe seguir, skills que puede usar y archivos de referencia que puede leer. Lo escribes una vez y lo eliges por su nombre, en lugar de pegar las mismas convenciones en cada tarea.
+
+Cada vez que guardas un contexto, se convierte en una nueva **versión**. Un run usa la versión que era la actual cuando entró en cola; una automatización usa siempre la última. Un run admite hasta 5 contextos, y el agente nunca escribe en ellos.
+
+Los contextos aparecen en el portal como **Context**, debajo de **Automations**, donde tu cuenta los tiene (se están abriendo poco a poco). Crearlos y cambiarlos requiere un plan que pueda lanzar agentes.
+
+## Qué va en un contexto
+
+Un contexto tiene tres partes, cada una en su sitio:
+
+```
+AGENTS.md                instrucciones (opcional, hasta 32 KiB)
+skills/<nombre>/SKILL.md una skill, más los archivos que use
+files/...                archivos de referencia: docs, specs, CSV, PDF, imágenes, documentos de Office
+```
+
+No se acepta nada más en el nivel superior. `mcp/` está reservado para una versión posterior.
+
+| Parte | Para qué sirve | Cómo lo trata el agente |
+|---|---|---|
+| **Instrucciones** (`AGENTS.md`) | Reglas para cada tarea: convenciones, tono, lo que no debe hacer nunca. | De confianza, como las instrucciones de una automatización. Se añaden a lo que el agente lee antes de la tarea. |
+| **Skills** (`skills/<nombre>/`) | Un procedimiento para un tipo de tarea, con sus propios archivos: cómo escribir las notas de una versión, cómo revisar una migración. | Se listan por nombre y descripción; el agente lee el `SKILL.md` completo cuando la tarea encaja. |
+| **Archivos** (`files/...`) | Material de consulta: la spec de una API, una guía de estilo, una lista de precios, un diagrama. | Datos de referencia, nunca instrucciones. De solo lectura. |
+
+### Instrucciones
+
+`AGENTS.md` es texto plano (Markdown vale), hasta 32 KiB. Escríbelo como escribirías el `AGENTS.md` de un repositorio. Se suma al `AGENTS.md` propio del repositorio, nunca lo sustituye.
+
+### Skills
+
+Una skill es una carpeta dentro de `skills/` con un `SKILL.md` y los archivos que necesite: scripts, plantillas, ejemplos. El nombre de su carpeta usa `a-z`, `0-9` y `-` (hasta 64 caracteres). `SKILL.md` empieza con un frontmatter de exactamente dos campos:
+
+- `name`: igual que el nombre de la carpeta.
+- `description`: una línea, de 1 a 1024 caracteres. El agente decide con ella cuándo usar la skill, así que di cuándo aplica.
+
+No se acepta ninguna otra clave, ancla, alias ni etiqueta, y `SKILL.md` ocupa como mucho 64 KiB. Un contexto admite hasta 30 skills, y dos contextos del mismo run no pueden definir una skill con el mismo nombre.
+
+### Archivos
+
+Todo lo que está en `files/` se copia tal cual junto al agente. El agente puede abrir, leer y pasar herramientas por estos archivos, pero son una copia de solo lectura: los cambios no vuelven al contexto. Consulta [Archivos permitidos](#archivos-permitidos).
+
+## Ejemplo: una skill
+
+```
+release-notes/
+├── AGENTS.md
+├── skills/
+│   └── release-notes/
+│       ├── SKILL.md
+│       └── template.md
+└── files/
+    └── product-glossary.csv
+```
+
+`skills/release-notes/SKILL.md`:
+
+```markdown
+---
+name: release-notes
+description: Use when asked to write release notes or a changelog entry from merged pull requests.
+---
+
+# Release notes
+
+1. List the pull requests merged since the last tag: `git log --merges <tag>..HEAD`.
+2. Group them under Added, Changed and Fixed. Skip pure refactors and CI changes.
+3. Fill in `template.md` from this folder. One line per change, user-facing words.
+4. Use the product names from `product-glossary.csv` in the reference files.
+```
+
+`AGENTS.md`:
+
+```markdown
+Write for customers, not for developers. British English. No emoji.
+Never mention internal ticket numbers.
+```
+
+## Cómo lo ve cada agente
+
+Cuando arranca un run, NaN copia las versiones que fijó en una carpeta de solo lectura junto al agente, nunca dentro del repositorio ni de la carpeta en la que trabaja. Su ruta está en `$NAN_CONTEXT_DIR`, y los archivos de referencia en `$NAN_CONTEXT_FILES`:
+
+```
+$NAN_CONTEXT_DIR/AGENTS.md                   tus instrucciones, unidas, tras una nota breve de la plataforma
+$NAN_CONTEXT_DIR/skills/<skill>/SKILL.md     las skills de todos los contextos elegidos
+$NAN_CONTEXT_DIR/files/<nombre del contexto>/...    los archivos de referencia, una carpeta por contexto
+```
+
+La nota de la plataforma, al principio, le dice al agente dónde está cada cosa, que los archivos de referencia son datos y no instrucciones, y que no copie archivos del contexto en el repositorio ni en sus resultados salvo que la tarea lo pida. Después vienen las instrucciones de cada contexto, en el orden en que los elegiste, cada una bajo su propio encabezado (`## Context: <nombre> (v<versión>)`).
+
+| Agente | Instrucciones | Skills |
+|---|---|---|
+| **Pi** | Se añaden al prompt de sistema de Pi. Aparecen **antes** del `AGENTS.md` del repositorio, que Pi sigue cargando como siempre. | Cada skill se añade al índice de skills de Pi (nombre, descripción y ruta). Pi lee su `SKILL.md` cuando la tarea encaja. |
+| **Pi + Gentle Shell** | Igual que Pi. | Igual que Pi. |
+| **Hermes** | Al principio de la tarea, como texto de confianza: las instrucciones de los contextos, luego las instrucciones de la automatización y luego la tarea. El texto de un webhook sigue yendo después de todo eso, como datos. | Un índice de skills al principio de la tarea: nombre, descripción y la ruta de cada `SKILL.md`. |
+
+Si el Pi instalado en el workspace es demasiado antiguo para las dos opciones que esto necesita, el run usa la forma de Hermes y su log lo dice. Si el contexto no se puede cargar, el run falla antes de que arranque el agente, con `config_error` y "the context could not be loaded".
+
+## Versiones
+
+- **Cada guardado es una versión nueva**: publicar desde el portal, un `nan context push` o una publicación por la API. Cambiar el nombre o la descripción no crea una.
+- **Un run fija sus versiones cuando entra en cola.** Guardar una versión nueva después nunca cambia un run que está esperando o trabajando. La página del run muestra cada contexto como `nombre v3`, y la API devuelve `contexts: [{id, name, version, tree_sha256}]`.
+- **Una automatización sigue la última versión.** Su próximo run usa lo último que guardaste; no hay nada que actualizar en la automatización.
+- **Las versiones antiguas se limpian.** NaN conserva la versión actual y cualquier versión que todavía use un run en cola o trabajando. Las demás se borran cuando tienen alrededor de una hora. No hay historial al que volver: guarda tu contexto en git si quieres uno.
+- **Dos personas editando a la vez.** Cada guardado dice de qué versión parte. Si alguien guardó entre medias (otro push, el portal en otra pestaña), se rechaza en lugar de sobrescribir: el portal dice "Changed elsewhere. Reload.", y `nan context push` se para con el código de salida 1 (`--force` enseña qué cambió y guarda encima).
+
+## Runs sin repositorio
+
+Un contexto puede ser todo lo que el agente necesita: un informe escrito a partir de sus archivos, un documento traducido con un glosario, una respuesta redactada con tu guía de estilo. Para eso, un run o una automatización en un [contenedor efímero](/es/docs/ephemeral-runs) puede prescindir del repositorio de GitHub:
+
+- **Sin repositorio**, el agente arranca en una carpeta vacía propia, con sus contextos, y no clona nada. Lo que produce va a sus artefactos.
+- **Con repositorio**, trabaja sobre un clon nuevo como siempre, y los contextos quedan al lado, nunca dentro.
+
+Un run efímero necesita un repositorio o al menos un contexto; un run en un workspace trabaja en su carpeta como siempre, con o sin contextos.
+
+- **Portal:** en **New run**, pon **Where it runs** en **Ephemeral container** y elige un contexto: el campo pasa a ser **GitHub repository (optional)**.
+- **CLI:** `nan run --ephemeral --context NAME --model M "..."`, sin `--repo`.
+- **API:** `POST /v1/runs` con `"executor": "ephemeral"`, `"contexts"` y sin `github_repo`.
+- **Automatización:** con **Ephemeral container**, un contexto y sin repositorio, **Checkout** pasa a ser **No repository** (`checkout: none` en la API). `none` necesita al menos un contexto y ningún `github_repo`, y solo existe para automatizaciones efímeras.
+
+## Crea uno en el portal
+
+1. Abre **Context** en la barra lateral y pulsa **New context**. Dale un **Name** (minúsculas, dígitos y `-`, hasta 63 caracteres, único entre tus contextos) y, si quieres, una **Description** (una línea, hasta 280 caracteres).
+2. Escribe las **Instructions** (`AGENTS.md`) en el cuadro y pulsa **Save**. El contador muestra los bytes usados de 32 KiB.
+3. En **Skills**, **Upload skill folder** añade una carpeta con su `SKILL.md`.
+4. En **Files**, **Upload files** o **Upload folder**, o suéltalos sobre la tarjeta. Las carpetas conservan su estructura dentro de `files/`.
+5. El diálogo de subida comprueba primero cada archivo y muestra, junto a cada uno, por qué se rechazaría. Los archivos que la plataforma ya tiene no se vuelven a subir. Cada archivo muestra su progreso y se puede reintentar o quitar. Pulsa **Publish** cuando terminen todos: eso guarda la versión nueva.
+
+Cada archivo se puede descargar o quitar de la lista; quitar uno publica una versión nueva sin él. **Delete**, arriba, borra el contexto entero (consulta [Borra un contexto](#borra-un-contexto)).
+
+Para usarlo, elígelo en **Contexts (optional)** en **New run** o en el editor de la automatización, y pulsa **Add** (hasta 5, en el orden en que el agente los lee). Un contexto guardado después lo recoge el próximo run de la automatización.
+
+## Desde la CLI
+
+Desde la versión de la [CLI de NaN](/es/docs/nan-cli) con `nan context` (actualiza con `curl -fsSL https://nan.builders/install | bash`), mantén la carpeta en tu máquina, en git si quieres, y súbela:
+
+```bash
+nan context create acme-api --description "Acme API conventions"
+nan context push acme-api ./acme-context --dry-run   # qué cambiaría, no sube nada
+nan context push acme-api ./acme-context             # guarda la versión siguiente
+nan context ls
+nan context show acme-api
+nan context pull acme-api ./acme-copy                # la versión actual, en una carpeta vacía
+nan context edit acme-api --name acme --description "Acme conventions"
+nan context rm acme --yes
+```
+
+- `push` convierte la carpeta en todo el contenido del contexto: los archivos que ya no están en ella desaparecen de la versión nueva. Primero comprueba la estructura y cada nombre, se salta los dotfiles y las carpetas que empiezan por punto con un aviso, e imprime cada otro archivo rechazado con su motivo; entonces se para con el código de salida 65 y no sube nada, salvo que `--skip-invalid` deje fuera esos archivos. Un `CLAUDE.md` se rechaza con la sugerencia de renombrarlo a `AGENTS.md`. Sube solo los archivos que la plataforma aún no tiene, en partes de 16 MiB los grandes, y una subida interrumpida se reanuda en el siguiente push.
+- `push --create` crea el contexto si no existe; `create --from DIR` lo crea y sube la carpeta de una vez.
+- `pull` escribe la versión actual en una carpeta vacía (`--force` escribe en una que tiene archivos). Cada ruta se comprueba antes de escribir nada.
+- Códigos de salida: 0 hecho, 1 el contexto cambió durante el push, 64 uso, 65 contenido rechazado (nombres, tipos, límites, texto que parece un secreto, almacenamiento) o credencial rechazada, 69 nan.builders no disponible.
+
+Luego úsalo en un run o en una automatización:
+
+```bash
+nan run --context acme-api --context style-guide "review PR 42"
+nan run --ephemeral --context release-notes --model glm5.3 "write this week's release notes"
+nan automations create -f weekly-notes.yaml --context release-notes --checkout none
+nan automations edit "PR review api" -f changes.yaml --context acme-api
+```
+
+`--context` acepta un nombre o un id, se puede repetir hasta 5 veces y respeta el orden que das. En `nan automations create` y `edit` sustituye los `contexts` del archivo; `--checkout none` es para una automatización efímera sin repositorio y necesita `--context`.
+
+Estos comandos usan tu sesión de `nan auth login`. Un token de plataforma necesita `contexts:read` para listar, ver y descargar, y `contexts:write` para crear, subir, editar y borrar; usar un contexto en un run no necesita ningún scope de contextos. Las API keys (`sk-`) no se usan en `nan context`, y la clave que vive dentro de un workspace nunca lee ni escribe contextos.
+
+## Desde la API
+
+Las rutas están en `https://api.nan.builders/v1/contexts`. Cada ruta, cuerpo y error está en [Referencia de la API → Contexts](/es/docs/api#tag/contexts).
+
+| Credencial | Lecturas (listar, ver, versiones, descargar) | Escrituras (crear, subir, publicar, editar, borrar) |
+|---|---|---|
+| Sesión del navegador o de la CLI | Sí | Sí |
+| Token de plataforma (`nan_pat_...`) | Con `contexts:read` | Con `contexts:write` |
+| API key (`sk-...`) | Sí | No: `403 credential_not_allowed` |
+| La clave de dentro de un workspace | No | No |
+
+Los tokens con los scopes de contextos aún no se ofrecen en **Settings → Tokens**: hasta entonces, usa una sesión de la CLI. `GET /v1/contexts/{id_or_name}` acepta un nombre o un id; el resto de rutas acepta el id.
+
+### Crea un contexto y sube archivos
+
+Los archivos se suben por su SHA-256 y luego una versión los lista por ruta. Pregunta antes cuáles no tiene aún la plataforma:
+
+```bash
+curl -s https://api.nan.builders/v1/contexts \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/json" \
+  -H "Idempotency-Key: create-acme-api-1" \
+  -d '{"name": "acme-api", "description": "Acme API conventions"}'
+# {"id": "<id del contexto>", "object": "context", "name": "acme-api", "version": 1, ...}
+
+sha=$(sha256sum AGENTS.md | cut -d' ' -f1)
+curl -s https://api.nan.builders/v1/contexts/blobs/check \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/json" \
+  -d "{\"sha256\": [\"$sha\"]}"
+# {"missing": ["<sha>"]}
+
+curl -s -X PUT "https://api.nan.builders/v1/contexts/blobs/$sha" \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/octet-stream" \
+  -H "X-Nan-Filename: AGENTS.md" --data-binary @AGENTS.md
+# {"sha256": "<sha>", "size": 812, "format": "text", "secret_findings": []}
+```
+
+Un archivo de hasta 16 MiB va en un solo `PUT` (`201`, o `200` si ya estaba guardado). `X-Nan-Filename` es solo una pista del tipo para los archivos de Office; nunca se guarda. Un archivo mayor va en partes de 16 MiB, en orden:
+
+```bash
+curl -s https://api.nan.builders/v1/contexts/blobs/$sha/uploads \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"size": 73400320, "filename": "dataset.csv"}'
+# {"upload_id": "<id de la subida>", "part_size": 16777216, "parts": 5, "next_part": 1}
+
+split -b 16777216 -d -a 3 dataset.csv part-
+for n in 1 2 3 4 5; do
+  curl -s -X PUT "https://api.nan.builders/v1/contexts/blobs/$sha/uploads/$upload_id/parts/$n" \
+    -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/octet-stream" \
+    --data-binary @"part-$(printf %03d $((n - 1)))"
+done
+curl -s -X POST "https://api.nan.builders/v1/contexts/blobs/$sha/uploads/$upload_id/complete" \
+  -H "Authorization: Bearer $NAN_TOKEN"
+```
+
+`GET .../uploads/{upload_id}` dice qué parte toca, para reanudar; `DELETE` sobre ella cancela la subida. Una subida sin terminar caduca a las 24 horas.
+
+### Publica una versión
+
+Una versión lista el árbol completo: cada archivo de la versión nueva, por ruta, con su SHA-256. `base_version` es la versión de la que partes:
+
+```bash
+curl -s "https://api.nan.builders/v1/contexts/$context_id/versions" \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/json" \
+  -H "Idempotency-Key: acme-api-v2" \
+  -d '{
+    "base_version": 1,
+    "files": [
+      {"path": "AGENTS.md", "sha256": "<sha>", "executable": false},
+      {"path": "skills/release-notes/SKILL.md", "sha256": "<sha>", "executable": false},
+      {"path": "files/dataset.csv", "sha256": "<sha>", "executable": false}
+    ]
+  }'
+```
+
+- `409 version_conflict`: alguien guardó entre medias. Vuelve a leer el contexto y publica encima de su `current_version`.
+- `409 blob_missing`: un archivo que subiste se limpió antes de publicar (las subidas que no usa ninguna versión se borran pasado más o menos un día). Compruébalos y vuelve a subirlos.
+- `422 context_secret_detected`: consulta [Los secretos no van en un contexto](#los-secretos-no-van-en-un-contexto).
+- La misma `Idempotency-Key` con el mismo cuerpo devuelve esa versión otra vez en lugar de crear otra.
+
+`GET /v1/contexts/{id}/file?path=files/dataset.csv&version=2` descarga un archivo, como adjunto.
+
+### Usa contextos en runs y automatizaciones
+
+`POST /v1/runs` acepta `"contexts"`: hasta 5 nombres o ids, en orden, sin repetir:
+
+```bash
+curl -s https://api.nan.builders/v1/runs \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"workspace": "develop", "agent": "pi", "prompt": "review PR 42", "contexts": ["acme-api", "style-guide"]}'
+```
+
+`POST /v1/automations` y `PATCH /v1/automations/{id}` aceptan el mismo `"contexts"` (`[]` los quita todos), y los devuelven como `[{id, name}]`. Un contexto que no existe responde `404 context_not_found` nombrándolo (`contexts[1]`), dos contextos con la misma skill `422 context_skill_conflict`, y contextos demasiado grandes para un run `413 context_too_large`.
+
+## Archivos permitidos
+
+### Tipos de archivo
+
+El tipo se comprueba por el contenido, no solo por el nombre:
+
+| Tipo | Extensiones | Dónde |
+|---|---|---|
+| Texto: UTF-8 válido, sin bytes NUL | `.md .txt .csv .tsv .json .jsonl .yaml .yml .toml .xml .html .sql`, código (`.py .sh .js .mjs .ts .tsx .jsx .go .rb .rs .java .kt .c .h .cpp .hpp .cs .php .swift .scala .lua .r .pl .ps1 .css .scss .ini .cfg .tf .hcl .proto .graphql .dockerfile`), `Dockerfile` y `Makefile`. Dentro de `skills/`, cualquier archivo de texto. | En cualquier sitio |
+| PDF e imágenes | `.pdf .png .jpg .jpeg .webp .gif` | `files/` y `skills/<nombre>/` |
+| Documentos de Office | `.docx .xlsx .pptx` (sin cifrar) | `files/` y `skills/<nombre>/` |
+
+Cualquier otra cosa se rechaza con `unsupported_file_type`. Un archivo se puede marcar como ejecutable, para los scripts de una skill.
+
+### Nombres de archivo
+
+Los nombres pueden usar letras de cualquier idioma, tildes, dígitos, espacios y `. _ - ( ) + , @`. Así que `Informe de ventas 2026.pdf` y `Guía del producto.docx` valen. Se rechazan, cada uno con su motivo junto al archivo:
+
+- **Archivos ocultos**: un nombre que empieza por punto (`.env`, `.git`, `.DS_Store`). El portal y la CLI se los saltan con un aviso.
+- **Emoji, símbolos y caracteres invisibles**, y `/ \ : * ? " < > |`, el apóstrofo y el acento grave.
+- Un nombre que empieza por espacio, o acaba en espacio o en punto.
+- **Nombres reservados de Windows**: `CON`, `PRN`, `AUX`, `NUL`, `COM1` a `COM9`, `LPT1` a `LPT9`, con cualquier extensión.
+- Dos nombres que solo se diferencian en mayúsculas y minúsculas.
+- Rutas de más de 512 bytes, nombres de más de 128 bytes, o más de 8 niveles de carpetas.
+- Nombres que no están en forma NFC. El portal y la CLI los convierten por ti (macOS entrega nombres descompuestos); solo la API los rechaza.
+
+## Los secretos no van en un contexto
+
+Guarda los tokens, contraseñas y claves en [Secretos](/es/docs/secrets), nunca en un contexto. Un contexto se copia tal cual junto al agente, y sus archivos no se enmascaran en los logs.
+
+Al publicar, cada archivo de texto se revisa en busca de cosas que parecen credenciales: tokens de GitHub, claves de NaN y de OpenAI (`sk-`), claves de Anthropic, tokens de plataforma de NaN, claves de acceso de AWS, tokens de Slack, claves live de Stripe y claves privadas. Si alguno coincide, la publicación se rechaza con el archivo, la línea y el tipo de coincidencia (nunca la coincidencia en sí):
+
+- El portal los muestra y ofrece **Save anyway**.
+- `nan context push` se para con el código de salida 65; `--allow-secrets` publica igualmente.
+- La API responde `422 context_secret_detected`; `"allow_secret_like": true` publica igualmente.
+
+Los PDF, las imágenes y los archivos de Office no se revisan.
+
+<Callout title="Un agente puede copiar un archivo del contexto en un commit" variant="warning">
+El agente puede leer cada archivo de sus contextos y podría copiar uno en el repositorio en el que trabaja, y de ahí a un commit o a una pull request. Si guardas algo sensible con **Save anyway**, da por hecho que puede acabar ahí.
+</Callout>
+
+## Borra un contexto
+
+**Delete** en el portal, `nan context rm` o `DELETE /v1/contexts/{id}` borra el contexto con todas sus versiones, y libera su nombre.
+
+- **Se rechaza mientras una automatización lo usa**, con `409 context_in_use` y la lista de esas automatizaciones. Quítalo de ellas primero.
+- Los runs que ya están en cola o trabajando conservan la versión que fijaron hasta que terminan.
+- Los archivos se borran cuando ninguna versión los usa. Eso libera tu almacenamiento en el día siguiente.
+
+Borrar un contexto y cancelar una subida siempre está permitido, también cuando superas tu almacenamiento o tu plan ha cambiado.
+
+## Almacenamiento y límites
+
+Tus contextos comparten un almacenamiento, que cuenta una vez cada archivo distinto: el mismo archivo en dos contextos o en dos versiones cuenta una vez.
+
+| Plan | Almacenamiento |
+|---|---|
+| Premium | 5 GiB |
+| Inference | 2 GiB |
+| Community | 500 MiB |
+| Sin membresía | 100 MiB |
+
+**Si superas tu almacenamiento**, por ejemplo tras cambiar de plan, no se borra nada y tus runs y automatizaciones siguen funcionando con las versiones que tienes. Las subidas nuevas, y las versiones que añadirían archivos, se rechazan con `413 context_quota_exceeded`. Quitar archivos de un contexto o borrar un contexto sigue siendo posible. El portal muestra la barra de uso en rojo.
+
+| Límite | Valor |
+|---|---|
+| Contextos | 20 por miembro |
+| Contextos por run o automatización | 5 |
+| Tamaño de un archivo | 100 MiB |
+| `AGENTS.md` | 32 KiB |
+| `SKILL.md` | 64 KiB |
+| Archivos por contexto | 1000 |
+| Skills por contexto | 30 |
+| Tamaño de una versión | 250 MiB |
+| Todo lo que carga un run | 250 MiB, 5000 archivos y 64 KiB de instrucciones |
+| Subidas | 2 GiB por hora, 8 abiertas a la vez |
+| Intentos de publicación | 120 por hora |
+| Descargas | 1000 por hora |
+
+Los límites por hora responden `429 rate_limited` con `Retry-After`, los segundos que quedan de la hora. Las subidas cuentan desde que empiezan, así que una subida cancelada también cuenta.
+
+## Si algo sale mal
+
+| Qué ves | Qué significa |
+|---|---|
+| `404 context_not_found` | No tienes ningún contexto con ese nombre o id. Los contextos son privados: el id de otro miembro tampoco se encuentra. |
+| `409 context_name_taken` | Ya tienes un contexto con ese nombre. |
+| `409 too_many_contexts` | Tienes 20 contextos. Borra uno primero. |
+| `409 context_in_use` | Una automatización lo usa. Quítalo de la automatización y luego bórralo. |
+| `409 version_conflict` | Ha cambiado en otro sitio. Recarga y guarda otra vez. |
+| `409 blob_busy` | Este archivo aún se está borrando de una limpieza anterior. Inténtalo de nuevo en unos minutos. |
+| `409 upload_in_progress` | Otra petición está subiendo el mismo archivo. Espera unos segundos. |
+| `400 invalid_path` | Un nombre de archivo o carpeta no está permitido. La respuesta lista cada archivo con su motivo. |
+| `415 unsupported_file_type` | El tipo de archivo no está permitido, o su contenido no coincide con su extensión. |
+| `422 skill_invalid` | Un `SKILL.md` no tiene frontmatter, tiene otras claves, o su `name` no es el nombre de la carpeta. |
+| `422 context_skill_conflict` | Dos contextos del run definen una skill con el mismo nombre. Quita uno. |
+| `413 context_too_large` | Los contextos del run suman más de lo que un run puede cargar. Quita uno. |
+| `413 context_quota_exceeded` | Tu almacenamiento está lleno. Consulta [Almacenamiento y límites](#almacenamiento-y-límites). |
+| `503 storage_unavailable` | Los contextos no están disponibles ahora mismo. Inténtalo más tarde. |
+| El run falla con `config_error` "the context could not be loaded" | El contexto no se pudo copiar junto al agente. Lanza el run otra vez; si sigue fallando, avísanos en Discord con el id del run. |
+
+<Details summary="¿Por qué no puedo usar el contexto de otro miembro?">
+Los contextos son privados de tu cuenta: no se comparten entre miembros. Para dar el mismo contexto a un compañero, comparte la carpeta (por ejemplo en un repositorio de git) y que la suba a su propia cuenta.
+</Details>

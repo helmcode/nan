@@ -70,6 +70,7 @@ Las tres plantillas de GitHub actúan sobre un repositorio, así que necesitan u
 | **Run pull requests from forks and outside contributors** | Aparece con **Fresh clone per run**. Desactivado por defecto. Consulta [Pull requests de forks y de colaboradores externos](#pull-requests-de-forks-y-de-colaboradores-externos). |
 | **Keep one comment per pull request** | Cada run edita el comentario de la automatización en la pull request en vez de añadir uno nuevo. Desactivado por defecto, y disponible cuando hay un **GitHub repository (optional)**. Consulta [Un comentario por pull request](#un-comentario-por-pull-request). |
 | **Secrets** | Cuáles de tus [secretos](#secretos) reciben los runs, y quién recibe cada uno. |
+| **Contexts (optional)** | Hasta 5 de tus [contextos](/es/docs/contexts): instrucciones, skills y archivos de referencia para cada run. Consulta [Contextos](#contextos). |
 | **Approval** | Qué tipos de acción esperan tu aprobación. Consulta [Acciones y aprobación](#acciones-y-aprobación). |
 | **Runs per hour** | Runs por hora, de 1 a 120, contados sobre la última hora. 30 por defecto. Por encima, los nuevos arranques se rechazan hasta que los runs más antiguos salen de esa hora. |
 | **When a run is active** | **Skip the new event** (descarta el evento nuevo), **Queue it** (lo pone en cola) o **Cancel the previous run** (cancela el run anterior). Consulta [Cuando ya hay un run activo](#cuando-ya-hay-un-run-activo). |
@@ -131,6 +132,16 @@ Crea un [fine-grained personal access token](https://github.com/settings/persona
 Si un push puede cambiar archivos dentro de `.github/workflows/` (la plantilla **CI failure** puede hacerlo), el token de escritura también necesita **Workflows** de lectura y escritura.
 
 Si el agente también necesita leer el repositorio (uno privado, o para traer logs de CI), crea un segundo token solo con permisos de lectura (**Contents**, **Pull requests**, **Issues**, y **Actions** para los logs de CI) y asígnalo como `GITHUB_TOKEN`, **Agent**.
+
+## Contextos
+
+Un [contexto](/es/docs/contexts) es una carpeta de instrucciones, skills y archivos de referencia que guardas en tu cuenta. Dale a una automatización los que necesitan sus runs en **Contexts (optional)** en el editor: elige uno y pulsa **Add**, hasta 5, en el orden en que el agente los lee. Por la CLI o la API el campo es `contexts`, una lista de nombres o ids (`[]` los quita todos); la API lo devuelve como `[{id, name}]`.
+
+- **Una automatización sigue la última versión** de cada contexto: guarda una versión nueva y el siguiente run la usa, sin cambiar la automatización. Cada run fija las versiones con las que arrancó, así que un run que ya está en cola no se ve afectado.
+- **Un contexto en uso no se puede borrar**: borrarlo se rechaza con `409 context_in_use` y la lista de las automatizaciones que lo usan. Quítalo de ellas primero.
+- **Sin repositorio.** Una automatización que se ejecuta en su propio contenedor puede trabajar solo con sus contextos, sin repositorio de GitHub: **Checkout** muestra **No repository** (`checkout: none` en la API, que necesita al menos un contexto y ningún `github_repo`). Consulta [Runs sin repositorio](/es/docs/contexts#runs-sin-repositorio).
+
+El agente lee las instrucciones de tus contextos antes que las **Instructions** de la automatización, y lo que envíe un webhook sigue yendo después de ambas, como datos.
 
 ## Usa tu propia clave de proveedor (BYOK)
 
@@ -418,7 +429,7 @@ secrets:
 approval_kinds: [git_push, github_create_pr]
 ```
 
-Los campos que no pongas toman su valor por defecto; con una plantilla, sus instrucciones y su concurrencia. Sin `approval_kinds`, todos los tipos de acción esperan tu aprobación; con `[]`, ninguno. `edit` cambia solo los campos del archivo, y `secrets` ahí reemplaza todas las asignaciones. La lista completa de campos está en [Referencia de la API → Create an automation](/es/docs/api#tag/automations/POST/automations).
+Los campos que no pongas toman su valor por defecto; con una plantilla, sus instrucciones y su concurrencia. Sin `approval_kinds`, todos los tipos de acción esperan tu aprobación; con `[]`, ninguno. `edit` cambia solo los campos del archivo, y `secrets` ahí reemplaza todas las asignaciones. `--context NAME` (repetible, hasta 5) fija `contexts` desde la línea de comandos, sustituyendo los del archivo, y `--checkout none` fija `checkout`: consulta [Contextos](#contextos). La lista completa de campos está en [Referencia de la API → Create an automation](/es/docs/api#tag/automations/POST/automations).
 
 ### Triggers desde la CLI
 
@@ -498,6 +509,7 @@ Para CI, dale al token `automations:run` y `runs` (para seguir el run y conocer 
 | Runs por hora | 30 por automatización por defecto, hasta 120 |
 | Runs desde webhooks y programaciones | 120 por hora por miembro, entre todas tus automatizaciones |
 | Secretos | 100 por miembro, 20 por automatización, 48 KiB por run |
+| Contextos | 5 por automatización. Consulta [Almacenamiento y límites](/es/docs/contexts#almacenamiento-y-límites) |
 | Instrucciones | 16 KiB |
 | Input de un run | Un objeto JSON de hasta 48 KiB, con 8 niveles de anidamiento como mucho |
 | Cambios en secretos | 30 seguidos, luego 120 por hora, sumando el portal, la CLI y la API |

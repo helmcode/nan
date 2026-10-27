@@ -69,6 +69,7 @@ Press **New run** and fill in the form:
 | **Separate branch** | **Auto** (the default), **On** or **Off**. In a git repository, the agent works on its own branch and your checkout stays as it is. See [Where the agent works](#where-the-agent-works). |
 | **Time limit** | **30 min** by default, the same as the CLI and the API. The options are 15 min, 30 min, 1 hour and 2 hours. The run is stopped when it reaches it. |
 | **Inference** | **NaN (included in your plan)**, the default (shown as **NaN (not in your plan)** when your plan has no inference), or **My own key**: a **Provider key** of yours and the **Model** to use. See [Use your own provider key](#use-your-own-provider-key-byok). |
+| **Contexts (optional)** | Up to 5 of your [contexts](/docs/contexts): pick one and press **Add**. The agent reads them in that order. |
 
 Press **Start run**, or `Ctrl+Enter` (`⌘+Enter` on a Mac) from the task box.
 
@@ -152,6 +153,12 @@ Runs on NaN inference use the inference key of the workspace, the same one its a
 Secrets in your workspace's environment file, such as that inference key or a Telegram bot token, are shown as `[masked]` in run logs and results, so a log does not leak them. See [Masking in logs and events](/docs/secrets#masking-in-logs-and-events).
 
 The secrets you keep in your settings are not given to these runs: they go only to the runs of the [automations](/docs/automations#secrets) you assign them to. See [Secrets](/docs/secrets).
+
+## Contexts
+
+A run can load up to 5 of your [contexts](/docs/contexts): instructions, skills and reference files you keep in your account, so you do not paste the same conventions into every task. Pick them under **Contexts (optional)** in **New run**, pass `--context NAME` to `nan run` (once per context), or send `"contexts": ["acme-api", "style-guide"]` in `POST /v1/runs`, by name or id, in the order the agent reads them.
+
+The run pins the version each context had when it was queued: saving a new version later does not change it. The agent gets them as a read-only folder next to it, never inside your repository or your folder. How Pi and Hermes see them is in [How each agent sees it](/docs/contexts#how-each-agent-sees-it). With at least one context, a run in its own container can leave the GitHub repository out: see [Runs without a repository](/docs/contexts#runs-without-a-repository).
 
 ## Use your own provider key (BYOK)
 
@@ -310,6 +317,7 @@ nan run --detach "upgrade the dependencies"
 | `--agent pi\|pi_gentle\|hermes` | `pi` | The agent: `pi` (Pi), `pi_gentle` (Pi + Gentle Shell) or `hermes` (Hermes). It must be installed in the workspace. See [Pick the agent](#pick-the-agent). |
 | `--model M` | the agent's own | The model the agent uses. Required with `--byok-secret`. |
 | `--byok-secret NAME` | NaN inference | Run on your own provider key: the name of a provider key secret. Needs `--model` and your `nan auth login` session. See [Use your own provider key](#use-your-own-provider-key-byok). |
+| `--context NAME` | none | Load one of your [contexts](/docs/contexts), by name or id. Repeat it for more, up to 5, in the order the agent reads them. |
 | `--cwd PATH` | `/home/nan` | The folder in the workspace. |
 | `--worktree` / `--no-worktree` | auto | Force a separate branch on or off. See [Where the agent works](#where-the-agent-works). |
 | `--timeout D` | `30m` | The time limit, from `1m` to `2h`. |

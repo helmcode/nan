@@ -204,6 +204,22 @@ Estos comandos usan primero tu sesión de `nan auth login` (gana a `NAN_TOKEN`; 
 
 Un run que espera aprobación hace que `nan run`, `nan runs logs -f` y `nan automations run` salgan con código 10. Los detalles están en [Automatizaciones](/es/docs/automations#desde-la-terminal).
 
+## Contextos
+
+`nan context` mantiene tus [contextos](/es/docs/contexts) (instrucciones, skills y archivos de referencia para tus runs) como carpetas en tu máquina, y sube cada cambio como una versión nueva:
+
+```bash
+nan context create acme-api --from ./acme-context
+nan context push acme-api ./acme-context --dry-run
+nan context push acme-api ./acme-context
+nan context ls
+nan context pull acme-api ./acme-copy
+nan run --context acme-api "review PR 42"
+nan automations edit "PR review api" -f changes.yaml --context acme-api
+```
+
+`push` comprueba el nombre y el tipo de cada archivo antes de subir nada, sube solo lo que ha cambiado y rechaza el texto que parece una credencial salvo que añadas `--allow-secrets`. `--context` en `nan run` y en `nan automations create` / `edit` acepta un nombre o un id, hasta 5 veces. Estos comandos usan tu sesión de `nan auth login`, o un token de plataforma con `contexts:read` y `contexts:write`. Cada comando, opción y código de salida está en [Contextos](/es/docs/contexts#desde-la-cli).
+
 ## Actualizar
 
 Vuelve a pasar el instalador. Siempre trae la última versión publicada y sobrescribe la que tengas:

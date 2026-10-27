@@ -11,7 +11,7 @@ import { startDocsApiServer, type DocsApiServer } from '../helpers/docsApiServer
  */
 let server: DocsApiServer;
 
-const PATHS = ['/docs/pr-gatekeeper', '/docs/secrets', '/docs/notifications', '/docs/automations', '/docs/webhooks'];
+const PATHS = ['/docs/pr-gatekeeper', '/docs/secrets', '/docs/notifications', '/docs/contexts', '/docs/automations', '/docs/webhooks'];
 const html = new Map<string, string>();
 
 /*
@@ -46,11 +46,11 @@ const between = (html: string, start: RegExp, end: string) => {
 };
 
 const LOCALES = [
-  { lang: 'en', pfx: '', automations: 'Automations', webhooks: 'Webhooks and schedules', secrets: 'Secrets', notifications: 'Notifications' },
-  { lang: 'es', pfx: '/es', automations: 'Automatizaciones', webhooks: 'Webhooks y programaciones', secrets: 'Secretos', notifications: 'Notificaciones' },
+  { lang: 'en', pfx: '', automations: 'Automations', webhooks: 'Webhooks and schedules', secrets: 'Secrets', notifications: 'Notifications', contexts: 'Contexts' },
+  { lang: 'es', pfx: '/es', automations: 'Automatizaciones', webhooks: 'Webhooks y programaciones', secrets: 'Secretos', notifications: 'Notificaciones', contexts: 'Contextos' },
 ] as const;
 
-for (const { lang, pfx, automations, webhooks, secrets, notifications } of LOCALES) {
+for (const { lang, pfx, automations, webhooks, secrets, notifications, contexts } of LOCALES) {
   describe(`nested docs page (${lang})`, () => {
     it('breadcrumb: Docs / parent / current page', async () => {
       const body = await page(`${pfx}/docs/pr-gatekeeper`);
@@ -78,10 +78,17 @@ for (const { lang, pfx, automations, webhooks, secrets, notifications } of LOCAL
       expect(pn).toMatch(new RegExp(`<a href="${pfx}/docs/notifications" class="dpn dpn-next">.*?${notifications}`));
     });
 
-    it('prev/next of the last child: its previous sibling, then the parent\'s next sibling', async () => {
+    it('prev/next of a later middle child: its previous sibling, then its next sibling', async () => {
       const body = await page(`${pfx}/docs/notifications`);
       const pn = between(body, /<nav class="docs-prevnext"/, '</nav>');
       expect(pn).toMatch(new RegExp(`<a href="${pfx}/docs/secrets" class="dpn dpn-prev">.*?${secrets}`));
+      expect(pn).toMatch(new RegExp(`<a href="${pfx}/docs/contexts" class="dpn dpn-next">.*?${contexts}`));
+    });
+
+    it('prev/next of the last child: its previous sibling, then the parent\'s next sibling', async () => {
+      const body = await page(`${pfx}/docs/contexts`);
+      const pn = between(body, /<nav class="docs-prevnext"/, '</nav>');
+      expect(pn).toMatch(new RegExp(`<a href="${pfx}/docs/notifications" class="dpn dpn-prev">.*?${notifications}`));
       expect(pn).toMatch(new RegExp(`<a href="${pfx}/docs/webhooks" class="dpn dpn-next">.*?${webhooks}`));
     });
 
@@ -101,7 +108,7 @@ for (const { lang, pfx, automations, webhooks, secrets, notifications } of LOCAL
 
     it('prev of the parent\'s next sibling is the last child', async () => {
       const pn = between(await page(`${pfx}/docs/webhooks`), /<nav class="docs-prevnext"/, '</nav>');
-      expect(pn).toContain(`<a href="${pfx}/docs/notifications" class="dpn dpn-prev">`);
+      expect(pn).toContain(`<a href="${pfx}/docs/contexts" class="dpn dpn-prev">`);
     });
 
     it('a top-level page keeps its plain breadcrumb', async () => {

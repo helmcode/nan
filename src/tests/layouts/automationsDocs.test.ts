@@ -96,10 +96,10 @@ describe.each(Object.entries(pages))('automations guides (%s)', (_locale, page) 
     expect(a.group).toBe(page.group);
     expect(h.group).toBe(page.group);
     expect(a.order).toBe(runs.order + 1);
-    // The PR gatekeeper guide, the Secrets page and the Notifications page
-    // are nested under Automations (frontmatter `parent`), so they take the
-    // three slots right after it and Webhooks follows.
-    expect(h.order).toBe(a.order + 4);
+    // The PR gatekeeper guide, the Secrets page, the Notifications page and
+    // the Contexts page are nested under Automations (frontmatter `parent`),
+    // so they take the four slots right after it and Webhooks follows.
+    expect(h.order).toBe(a.order + 5);
     for (const later of ['examples.md', 'apps.md']) {
       const o = (parseFrontmatter(read(page.dir + later)).frontmatter as { order: number }).order;
       expect(o, later).toBeGreaterThan(h.order);
