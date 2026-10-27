@@ -256,11 +256,11 @@ with the same `base URL`.
   tag="large-v3"
   leftLabel="speech-to-text"
   rightLabel="capabilities"
-  description="CPU-based STT with CTranslate2 and INT8. ~1x realtime. 99+ languages."
+  description="GPU STT with faster-whisper-large-v3 (Speaches, fp16 on CUDA). 99+ languages."
   specs={[
-    { label: 'Size', value: '~3 GB (INT8)' },
+    { label: 'Size', value: '~4.3 GB (GPU VRAM, fp16)' },
     { label: 'WER ES', value: '~3.2%' },
-    { label: 'RPM', value: '10' },
+    { label: 'Timeout', value: '180 s' },
   ]}
   items={[
     'Audio-to-text transcription',
@@ -277,8 +277,8 @@ with the same `base URL`.
       body: 'Maximum size per request. Compressed formats (OGG/Opus, MP3) make better use of this limit than uncompressed WAV.',
     },
     {
-      title: 'Timeout — audios > 2 min duration',
-      body: 'Whisper processes on CPU at ~1x realtime. For audios longer than ~2 minutes, the proxy may return a <code>524</code> (timeout) error before transcription completes. Use compressed formats like <strong>OGG/Opus</strong> and split long files into ≤ 2 minute segments to avoid this.',
+      title: 'Request timeout — 180 s',
+      body: 'Transcription runs on GPU, much faster than realtime. Even so, very long audios can exceed the 180 s proxy limit — split long files into segments to avoid it.',
     },
     {
       title: 'Recommended formats',
