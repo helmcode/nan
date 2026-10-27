@@ -109,6 +109,8 @@ describe('openapi.json: the Automations contract (cloud-api)', () => {
       'checkout', 'sticky_pr_comment', 'checkout_untrusted_heads',
       // Phase 3 write API (migration 114).
       'updated_by',
+      // Agent contexts (automationJSON, B4b #407), last as in the handler.
+      'contexts',
     ]);
     expect(sc.Automation.properties.template.enum).toEqual(['custom', 'pr_review', 'issue_triage', 'ci_failure', 'generic_webhook']);
     expect(sc.Automation.properties.approval_kinds.items.enum).toEqual(ACTION_KINDS);
@@ -121,7 +123,7 @@ describe('openapi.json: the Automations contract (cloud-api)', () => {
 
   it('the PR gatekeeper settings (cloud-api PR #343): checkout, sticky comment, untrusted heads, supersede', () => {
     const p = sc.Automation.properties;
-    expect(p.checkout).toMatchObject({ type: 'string', enum: ['workspace', 'fresh'], default: 'workspace' });
+    expect(p.checkout).toMatchObject({ type: 'string', enum: ['workspace', 'fresh', 'none'], default: 'workspace' });
     expect(p.checkout.description).toMatch(/clones `github_repo` for each run/);
     expect(p.checkout.description).toMatch(/deletes it when the run ends, whatever the outcome/);
     expect(p.checkout.description).toMatch(/`git_push` is refused/);
@@ -252,10 +254,10 @@ describe('openapi.json: credentials for the platform API', () => {
     expect(desc).toContain('### Browser sign-in');
     const blocks = [...desc.matchAll(/```json\n([\s\S]*?)\n```/g)].map((m) => JSON.parse(m[1]));
     const byCode = Object.fromEntries(blocks.filter((b) => b.error?.code).map((b) => [b.error.code, b.error]));
-    // devops edge Worker TOKEN_NOT_VALID_FOR_INFERENCE (origin/main 6e4f7588, cloudflare/api-edge-normaliser/src/index.js), byte for byte.
+    // devops edge Worker TOKEN_NOT_VALID_FOR_INFERENCE (origin/main, cloudflare/api-edge-normaliser/src/index.js, /v1/contexts added by D3), byte for byte.
     expect(byCode.token_not_valid_for_inference).toEqual({
       message:
-        'Platform tokens (nan_pat_) cannot be used for inference. Use an inference API key (sk-) instead. Platform tokens only work on the platform API (/v1/runs, /v1/automations, /v1/approvals, /v1/secrets, /v1/notification-channels and GET /api/workspaces).',
+        'Platform tokens (nan_pat_) cannot be used for inference. Use an inference API key (sk-) instead. Platform tokens only work on the platform API (/v1/runs, /v1/automations, /v1/approvals, /v1/secrets, /v1/notification-channels, /v1/contexts and GET /api/workspaces).',
       type: 'invalid_request_error',
       param: null,
       code: 'token_not_valid_for_inference',

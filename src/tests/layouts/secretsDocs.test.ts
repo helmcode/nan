@@ -121,7 +121,8 @@ describe.each(Object.entries(pages))('Secrets page (%s)', (_locale, page) => {
     expect(fm.description.length).toBeGreaterThan(40);
     expect(fm.order).toBe(order('pr-gatekeeper.mdx') + 1);
     expect(order('notifications.mdx')).toBe(fm.order + 1);
-    expect(order('webhooks.mdx')).toBe(fm.order + 2);
+    expect(order('contexts.mdx')).toBe(fm.order + 2);
+    expect(order('webhooks.mdx')).toBe(fm.order + 3);
   });
 
   test('is served by /api/docs without errors', async () => {

@@ -64,7 +64,7 @@ describe('openapi.json: credentials', () => {
   it('inference operations take the API key only (the global default)', () => {
     expect(s.security).toEqual([{ apiKey: [] }]);
     for (const [path, item] of Object.entries(s.paths) as Array<[string, any]>) {
-      if (/^\/(runs|automations|approvals|secrets|notification-channels|api)(\/|$)/.test(path)) continue;
+      if (/^\/(runs|automations|approvals|secrets|notification-channels|contexts|api)(\/|$)/.test(path)) continue;
       for (const method of ['get', 'post']) if (item[method]) expect(item[method].security, path).toBeUndefined();
     }
   });
@@ -96,6 +96,8 @@ describe('openapi.json: the Runs contract (cloud-api)', () => {
     expect(body.additionalProperties).toBe(false);
     expect(Object.keys(body.properties)).toEqual([
       'workspace', 'agent', 'prompt', 'cwd', 'git_isolation', 'timeout_seconds', 'model', 'trigger', 'inference',
+      // Agent contexts (cloud-api handlers/runs.go createRunBody, B4a #406).
+      'contexts',
     ]);
     expect(body.properties.agent.enum).toEqual(['pi', 'pi_gentle', 'hermes']);
     expect(body.properties.prompt.description).toContain('32768 bytes');
@@ -172,6 +174,8 @@ describe('openapi.json: the Runs contract (cloud-api)', () => {
       'approval_kinds', 'github_repo', 'trigger_depth', 'secrets', 'agent_finished_at', 'error',
       // Migration 110 (PR gatekeeper), same order.
       'checkout', 'superseded_by', 'sticky_pr_comment',
+      // Agent contexts (runJSON, B4a #406), last as in the handler.
+      'contexts',
     ]);
     expect(Object.keys(s.components.schemas.RunCheckout.properties)).toEqual(['mode', 'sha', 'pr_number', 'base_ref', 'label']);
     expect(s.components.schemas.RunCheckout.properties.mode.enum).toEqual(['fresh']);

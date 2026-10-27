@@ -69,6 +69,7 @@ Pulsa **New run** y rellena el formulario (el portal está en inglés):
 | **Separate branch** | Rama aparte: **Auto** (por defecto), **On** u **Off**. En un repositorio git, el agente trabaja en su propia rama y tu checkout se queda como está. Consulta [Dónde trabaja el agente](#dónde-trabaja-el-agente). |
 | **Time limit** | El tiempo máximo: **30 min** por defecto, igual que en la CLI y la API. Las opciones son 15 min, 30 min, 1 hour y 2 hours (1 hora y 2 horas). El run se para al llegar a él. |
 | **Inference** | La inferencia: **NaN (included in your plan)**, la predeterminada (aparece como **NaN (not in your plan)** si tu plan no incluye inferencia), o **My own key**, una **Provider key** tuya y el **Model** que usar. Consulta [Usa tu propia clave de proveedor](#usa-tu-propia-clave-de-proveedor-byok). |
+| **Contexts (optional)** | Hasta 5 de tus [contextos](/es/docs/contexts): elige uno y pulsa **Add**. El agente los lee en ese orden. |
 
 Pulsa **Start run**, o `Ctrl+Enter` (`⌘+Enter` en un Mac) desde la caja de la tarea.
 
@@ -152,6 +153,12 @@ Los runs con la inferencia de NaN usan la clave de inferencia del workspace, la 
 Los secretos del archivo de entorno de tu workspace, como esa clave de inferencia o un token de bot de Telegram, aparecen como `[masked]` en los logs y resultados de los runs, así que un log no los filtra. Consulta [Enmascarado en logs y eventos](/es/docs/secrets#enmascarado-en-logs-y-eventos).
 
 Los secretos que guardas en tus ajustes no se les dan a estos runs: solo llegan a los runs de las [automatizaciones](/es/docs/automations#secretos) a las que los asignas. Consulta [Secretos](/es/docs/secrets).
+
+## Contextos
+
+Un run puede cargar hasta 5 de tus [contextos](/es/docs/contexts): instrucciones, skills y archivos de referencia que guardas en tu cuenta, para no pegar las mismas convenciones en cada tarea. Elígelos en **Contexts (optional)** en **New run**, pasa `--context NAME` a `nan run` (una vez por contexto), o envía `"contexts": ["acme-api", "style-guide"]` en `POST /v1/runs`, por nombre o id, en el orden en que el agente los lee.
+
+El run fija la versión que tenía cada contexto cuando entró en cola: guardar una versión nueva después no lo cambia. El agente los recibe como una carpeta de solo lectura junto a él, nunca dentro de tu repositorio ni de tu carpeta. Cómo los ven Pi y Hermes está en [Cómo lo ve cada agente](/es/docs/contexts#cómo-lo-ve-cada-agente). Con al menos un contexto, un run en su propio contenedor puede prescindir del repositorio de GitHub: consulta [Runs sin repositorio](/es/docs/contexts#runs-sin-repositorio).
 
 ## Usa tu propia clave de proveedor (BYOK)
 
@@ -310,6 +317,7 @@ nan run --detach "actualiza las dependencias"
 | `--agent pi\|pi_gentle\|hermes` | `pi` | El agente: `pi` (Pi), `pi_gentle` (Pi + Gentle Shell) o `hermes` (Hermes). Tiene que estar instalado en el workspace. Consulta [Elige el agente](#elige-el-agente). |
 | `--model M` | el del agente | El modelo que usa el agente. Obligatorio con `--byok-secret`. |
 | `--byok-secret NAME` | inferencia de NaN | Ejecuta el run con tu propia clave de proveedor: el nombre de un secreto de tipo provider key. Necesita `--model` y tu sesión de `nan auth login`. Consulta [Usa tu propia clave de proveedor](#usa-tu-propia-clave-de-proveedor-byok). |
+| `--context NAME` | ninguno | Carga uno de tus [contextos](/es/docs/contexts), por nombre o id. Repítelo para más, hasta 5, en el orden en que el agente los lee. |
 | `--cwd PATH` | `/home/nan` | La carpeta en el workspace. |
 | `--worktree` / `--no-worktree` | auto | Fuerza la rama aparte a on u off. Consulta [Dónde trabaja el agente](#dónde-trabaja-el-agente). |
 | `--timeout D` | `30m` | El tiempo máximo, de `1m` a `2h`. |

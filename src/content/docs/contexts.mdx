@@ -1,0 +1,375 @@
+---
+title: Contexts
+description: Give your agent runs and automations the same instructions, skills and reference files every time, from a versioned folder you keep in your NaN account.
+order: 24
+group: Guides
+parent: automations
+---
+
+import Details from '../../components/docs/Details.astro';
+import Callout from '../../components/docs/Callout.astro';
+
+# Contexts.
+
+A **context** is a folder you keep in your NaN account and hand to the agent of a [run](/docs/runs) or an [automation](/docs/automations): instructions it must follow, skills it can use and reference files it can read. You write it once and pick it by name, instead of pasting the same conventions into every task.
+
+Every time you save a context, it becomes a new **version**. A run uses the version that was current when it was queued; an automation always uses the latest one. A run takes up to 5 contexts, and the agent never writes to them.
+
+Contexts appear in the portal as **Context**, below **Automations**, where your account has them (they are being opened gradually). Creating and changing them needs a plan that can run agents.
+
+## What goes in a context
+
+A context has three parts, each in its own place:
+
+```
+AGENTS.md                instructions (optional, up to 32 KiB)
+skills/<name>/SKILL.md   a skill, plus any files it uses
+files/...                reference files: docs, specs, CSV, PDF, images, Office documents
+```
+
+Nothing else is accepted at the top level. `mcp/` is reserved for a later version.
+
+| Part | What it is for | How the agent treats it |
+|---|---|---|
+| **Instructions** (`AGENTS.md`) | Rules for every task: conventions, tone, what to never do. | Trusted, like the instructions of an automation. Added to what the agent reads before the task. |
+| **Skills** (`skills/<name>/`) | A procedure for one kind of task, with its own files: how to write release notes, how to review a migration. | Listed by name and description; the agent reads the full `SKILL.md` when the task matches. |
+| **Files** (`files/...`) | Material to consult: an API spec, a style guide, a price list, a diagram. | Reference data, never instructions. Read-only. |
+
+### Instructions
+
+`AGENTS.md` is plain text (Markdown is fine), up to 32 KiB. Write it as you would write the `AGENTS.md` of a repository. It adds to the repository's own `AGENTS.md`, it never replaces it.
+
+### Skills
+
+A skill is a folder under `skills/` with a `SKILL.md` and any files it needs: scripts, templates, examples. Its folder name uses `a-z`, `0-9` and `-` (up to 64 characters). `SKILL.md` starts with a frontmatter of exactly two fields:
+
+- `name`: the same as the folder name.
+- `description`: one line, 1 to 1024 characters. The agent decides from it when to use the skill, so say when it applies.
+
+No other key, anchor, alias or tag is accepted, and `SKILL.md` is at most 64 KiB. A context holds up to 30 skills, and two contexts of the same run cannot define a skill with the same name.
+
+### Files
+
+Everything under `files/` is copied, as it is, next to the agent. The agent can open, read and run tools on these files, but they are a read-only snapshot: changes are not saved back to the context. See [Allowed files](#allowed-files).
+
+## Example: a skill
+
+```
+release-notes/
+├── AGENTS.md
+├── skills/
+│   └── release-notes/
+│       ├── SKILL.md
+│       └── template.md
+└── files/
+    └── product-glossary.csv
+```
+
+`skills/release-notes/SKILL.md`:
+
+```markdown
+---
+name: release-notes
+description: Use when asked to write release notes or a changelog entry from merged pull requests.
+---
+
+# Release notes
+
+1. List the pull requests merged since the last tag: `git log --merges <tag>..HEAD`.
+2. Group them under Added, Changed and Fixed. Skip pure refactors and CI changes.
+3. Fill in `template.md` from this folder. One line per change, user-facing words.
+4. Use the product names from `product-glossary.csv` in the reference files.
+```
+
+`AGENTS.md`:
+
+```markdown
+Write for customers, not for developers. British English. No emoji.
+Never mention internal ticket numbers.
+```
+
+## How each agent sees it
+
+When a run starts, NaN copies the versions it pinned into a read-only folder next to the agent, never into the repository or the folder it works in. Its path is in `$NAN_CONTEXT_DIR`, and the reference files are in `$NAN_CONTEXT_FILES`:
+
+```
+$NAN_CONTEXT_DIR/AGENTS.md                   your instructions, merged, after a short platform note
+$NAN_CONTEXT_DIR/skills/<skill>/SKILL.md     the skills of every selected context
+$NAN_CONTEXT_DIR/files/<context name>/...    the reference files, one folder per context
+```
+
+The platform note at the top tells the agent where everything is, that the reference files are data and not instructions, and that it must not copy context files into the repository or its outputs unless the task asks for it. Then come the instructions of each context, in the order you selected them, each under its own heading (`## Context: <name> (v<version>)`).
+
+| Agent | Instructions | Skills |
+|---|---|---|
+| **Pi** | Appended to Pi's system prompt. They appear **before** the repository's `AGENTS.md`, which Pi still loads as usual. | Each skill is added to Pi's skills index (name, description and path). Pi reads its `SKILL.md` when the task matches. |
+| **Pi + Gentle Shell** | The same as Pi. | The same as Pi. |
+| **Hermes** | At the top of the task, as trusted text: the context instructions, then the automation's instructions, then the task. Text from a webhook still comes after all of them, as data. | A skills index at the top of the task: name, description and the path of each `SKILL.md`. |
+
+If the Pi installed in the workspace is too old for the two options this needs, the run uses the Hermes way and its log says so. If the context cannot be loaded, the run fails before the agent starts, with `config_error` and "the context could not be loaded".
+
+## Versions
+
+- **Every save is a new version**: publishing from the portal, a `nan context push` or a publish through the API. Changing the name or the description does not create one.
+- **A run pins its versions when it is queued.** Saving a new version afterwards never changes a run that is waiting or working. The run page shows each context as `name v3`, and the API returns `contexts: [{id, name, version, tree_sha256}]`.
+- **An automation follows the latest version.** Its next run uses whatever you saved last; there is nothing to update in the automation.
+- **Old versions are cleaned up.** NaN keeps the current version and every version a queued or working run still uses. The others are deleted once they are about an hour old. There is no history to go back to: keep your context in git if you want one.
+- **Two editors at once.** Every save says which version it starts from. If someone saved in between (another push, the portal in another tab), it is refused instead of overwriting: the portal says "Changed elsewhere. Reload.", and `nan context push` stops with exit code 1 (`--force` shows what changed and saves on top).
+
+## Runs without a repository
+
+A context can be all the agent needs: a report written from the files in it, a document translated with a glossary, a reply drafted with your style guide. For that, a run or an automation in an [ephemeral container](/docs/ephemeral-runs) can leave the GitHub repository out:
+
+- **Without a repository**, the agent starts in an empty folder of its own, with its contexts, and clones nothing. Its outputs go to its artifacts.
+- **With a repository**, it works on a fresh clone as usual, and the contexts sit next to it, never inside it.
+
+An ephemeral run needs a repository or at least one context; a run in a workspace works in its folder as always, with or without contexts.
+
+- **Portal:** in **New run**, set **Where it runs** to **Ephemeral container** and pick a context: the field becomes **GitHub repository (optional)**.
+- **CLI:** `nan run --ephemeral --context NAME --model M "..."`, without `--repo`.
+- **API:** `POST /v1/runs` with `"executor": "ephemeral"`, `"contexts"` and no `github_repo`.
+- **Automation:** with **Ephemeral container**, a context and no repository, **Checkout** becomes **No repository** (`checkout: none` in the API). `none` needs at least one context and no `github_repo`, and only exists for ephemeral automations.
+
+## Create one in the portal
+
+1. Open **Context** in the sidebar and press **New context**. Give it a **Name** (lowercase letters, digits and `-`, up to 63 characters, unique among your contexts) and, if you like, a **Description** (one line, up to 280 characters).
+2. Write the **Instructions** (`AGENTS.md`) in the box and press **Save**. The counter shows the bytes used out of 32 KiB.
+3. Under **Skills**, **Upload skill folder** adds a folder with its `SKILL.md`.
+4. Under **Files**, **Upload files** or **Upload folder**, or drop them on the card. Folders keep their structure under `files/`.
+5. The upload dialog checks every file first and shows, next to each one, why it would be refused. Files the platform already holds are not uploaded again. Each file shows its progress and can be retried or removed. Press **Publish** when they are all done: that saves the new version.
+
+Each file can be downloaded or removed from the list; removing one publishes a new version without it. **Delete**, at the top, deletes the whole context (see [Delete a context](#delete-a-context)).
+
+To use it, pick it under **Contexts (optional)** in **New run** or in the automation editor, and press **Add** (up to 5, in the order the agent reads them). A context saved later is picked up by the automation's next run.
+
+## From the CLI
+
+From the [NaN CLI](/docs/nan-cli) version with `nan context` (update with `curl -fsSL https://nan.builders/install | bash`), keep the folder on your machine, in git if you like, and push it:
+
+```bash
+nan context create acme-api --description "Acme API conventions"
+nan context push acme-api ./acme-context --dry-run   # what would change, uploads nothing
+nan context push acme-api ./acme-context             # saves the next version
+nan context ls
+nan context show acme-api
+nan context pull acme-api ./acme-copy                # the current version, into an empty folder
+nan context edit acme-api --name acme --description "Acme conventions"
+nan context rm acme --yes
+```
+
+- `push` makes the folder the context's whole content: files no longer in it are removed from the new version. It checks the layout and every name first, skips dotfiles and dot-folders with a notice, and prints every other refused file with its reason; then it stops with exit code 65 and uploads nothing, unless `--skip-invalid` leaves those files out. A `CLAUDE.md` is refused with a hint to rename it to `AGENTS.md`. It uploads only the files the platform does not hold yet, in 16 MiB parts for large files, and an interrupted upload resumes on the next push.
+- `push --create` creates the context if it does not exist; `create --from DIR` creates it and pushes the folder in one go.
+- `pull` writes the current version into an empty folder (`--force` writes into one that has files). Every path is checked before anything is written.
+- Exit codes: 0 done, 1 the context changed while pushing, 64 usage, 65 content refused (names, types, limits, secret-like text, storage) or credential refused, 69 nan.builders unavailable.
+
+Then use it in a run or an automation:
+
+```bash
+nan run --context acme-api --context style-guide "review PR 42"
+nan run --ephemeral --context release-notes --model glm5.3 "write this week's release notes"
+nan automations create -f weekly-notes.yaml --context release-notes --checkout none
+nan automations edit "PR review api" -f changes.yaml --context acme-api
+```
+
+`--context` takes a name or an id, can be repeated up to 5 times and keeps the order you give. On `nan automations create` and `edit` it replaces the file's `contexts`; `--checkout none` is for an ephemeral automation without a repository and needs `--context`.
+
+These commands use your `nan auth login` session. A platform token needs `contexts:read` to list, show and pull, and `contexts:write` to create, push, edit and delete; using a context in a run needs no context scope. API keys (`sk-`) are not used by `nan context`, and the key inside a workspace never reads or writes contexts.
+
+## From the API
+
+The routes are under `https://api.nan.builders/v1/contexts`. Every route, body and error is in [API reference → Contexts](/docs/api#tag/contexts).
+
+| Credential | Reads (list, show, versions, download) | Writes (create, upload, publish, edit, delete) |
+|---|---|---|
+| Browser or CLI session | Yes | Yes |
+| Platform token (`nan_pat_...`) | With `contexts:read` | With `contexts:write` |
+| API key (`sk-...`) | Yes | No: `403 credential_not_allowed` |
+| The key inside a workspace | No | No |
+
+Tokens with the context scopes are not offered in **Settings → Tokens** yet: until they are, use a CLI session. `GET /v1/contexts/{id_or_name}` takes a name or an id; every other route takes the id.
+
+### Create a context and upload files
+
+Files are uploaded by their SHA-256, then a version lists them by path. Ask first which ones the platform does not hold yet:
+
+```bash
+curl -s https://api.nan.builders/v1/contexts \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/json" \
+  -H "Idempotency-Key: create-acme-api-1" \
+  -d '{"name": "acme-api", "description": "Acme API conventions"}'
+# {"id": "<context id>", "object": "context", "name": "acme-api", "version": 1, ...}
+
+sha=$(sha256sum AGENTS.md | cut -d' ' -f1)
+curl -s https://api.nan.builders/v1/contexts/blobs/check \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/json" \
+  -d "{\"sha256\": [\"$sha\"]}"
+# {"missing": ["<sha>"]}
+
+curl -s -X PUT "https://api.nan.builders/v1/contexts/blobs/$sha" \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/octet-stream" \
+  -H "X-Nan-Filename: AGENTS.md" --data-binary @AGENTS.md
+# {"sha256": "<sha>", "size": 812, "format": "text", "secret_findings": []}
+```
+
+A file of up to 16 MiB goes in one `PUT` (`201`, or `200` when it was already stored). `X-Nan-Filename` is only a type hint for Office files; it is never stored. A larger file goes in 16 MiB parts, in order:
+
+```bash
+curl -s https://api.nan.builders/v1/contexts/blobs/$sha/uploads \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"size": 73400320, "filename": "dataset.csv"}'
+# {"upload_id": "<upload id>", "part_size": 16777216, "parts": 5, "next_part": 1}
+
+split -b 16777216 -d -a 3 dataset.csv part-
+for n in 1 2 3 4 5; do
+  curl -s -X PUT "https://api.nan.builders/v1/contexts/blobs/$sha/uploads/$upload_id/parts/$n" \
+    -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/octet-stream" \
+    --data-binary @"part-$(printf %03d $((n - 1)))"
+done
+curl -s -X POST "https://api.nan.builders/v1/contexts/blobs/$sha/uploads/$upload_id/complete" \
+  -H "Authorization: Bearer $NAN_TOKEN"
+```
+
+`GET .../uploads/{upload_id}` says which part comes next, to resume; `DELETE` on it aborts the upload. An unfinished upload expires after 24 hours.
+
+### Publish a version
+
+A version lists the whole tree: every file of the new version, by path, with its SHA-256. `base_version` is the version you started from:
+
+```bash
+curl -s "https://api.nan.builders/v1/contexts/$context_id/versions" \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/json" \
+  -H "Idempotency-Key: acme-api-v2" \
+  -d '{
+    "base_version": 1,
+    "files": [
+      {"path": "AGENTS.md", "sha256": "<sha>", "executable": false},
+      {"path": "skills/release-notes/SKILL.md", "sha256": "<sha>", "executable": false},
+      {"path": "files/dataset.csv", "sha256": "<sha>", "executable": false}
+    ]
+  }'
+```
+
+- `409 version_conflict`: someone saved in between. Read the context again and publish on top of its `current_version`.
+- `409 blob_missing`: a file you uploaded was cleaned up before you published (uploads that no version uses are deleted after about a day). Check and upload those again.
+- `422 context_secret_detected`: see [Secrets do not belong in a context](#secrets-do-not-belong-in-a-context).
+- The same `Idempotency-Key` with the same body returns that version again instead of creating another.
+
+`GET /v1/contexts/{id}/file?path=files/dataset.csv&version=2` downloads one file, as an attachment.
+
+### Use contexts in runs and automations
+
+`POST /v1/runs` takes `"contexts"`: up to 5 names or ids, in order, none twice:
+
+```bash
+curl -s https://api.nan.builders/v1/runs \
+  -H "Authorization: Bearer $NAN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"workspace": "develop", "agent": "pi", "prompt": "review PR 42", "contexts": ["acme-api", "style-guide"]}'
+```
+
+`POST /v1/automations` and `PATCH /v1/automations/{id}` take the same `"contexts"` (`[]` removes them all), and return them as `[{id, name}]`. A context that does not exist answers `404 context_not_found` naming it (`contexts[1]`), two contexts with the same skill `422 context_skill_conflict`, and contexts too large for one run `413 context_too_large`.
+
+## Allowed files
+
+### File types
+
+The type is checked from the content, not only the name:
+
+| Type | Extensions | Where |
+|---|---|---|
+| Text: valid UTF-8, no NUL bytes | `.md .txt .csv .tsv .json .jsonl .yaml .yml .toml .xml .html .sql`, code (`.py .sh .js .mjs .ts .tsx .jsx .go .rb .rs .java .kt .c .h .cpp .hpp .cs .php .swift .scala .lua .r .pl .ps1 .css .scss .ini .cfg .tf .hcl .proto .graphql .dockerfile`), `Dockerfile` and `Makefile`. Under `skills/`, any text file. | Anywhere |
+| PDF and images | `.pdf .png .jpg .jpeg .webp .gif` | `files/` and `skills/<name>/` |
+| Office documents | `.docx .xlsx .pptx` (not encrypted) | `files/` and `skills/<name>/` |
+
+Anything else is refused with `unsupported_file_type`. A file can be marked executable, for the scripts of a skill.
+
+### File names
+
+Names can use letters of any language, accents, digits, spaces and `. _ - ( ) + , @`. So `Informe de ventas 2026.pdf` and `Guía del producto.docx` are fine. Refused, each with its reason next to the file:
+
+- **Hidden files**: a name starting with a dot (`.env`, `.git`, `.DS_Store`). The portal and the CLI skip them with a notice.
+- **Emoji, symbols and invisible characters**, and `/ \ : * ? " < > |`, the apostrophe and the backtick.
+- A name that starts with a space, or ends with a space or a dot.
+- **Windows reserved names**: `CON`, `PRN`, `AUX`, `NUL`, `COM1` to `COM9`, `LPT1` to `LPT9`, with any extension.
+- Two names that differ only in upper or lower case.
+- Paths over 512 bytes, names over 128 bytes, or more than 8 levels of folders.
+- Names not in NFC form. The portal and the CLI convert them for you (macOS hands out decomposed names); only the API refuses them.
+
+## Secrets do not belong in a context
+
+Keep tokens, passwords and keys in [Secrets](/docs/secrets), never in a context. A context is copied as it is next to the agent, and its files are not masked in logs.
+
+When you publish, every text file is checked for things that look like credentials: GitHub tokens, NaN and OpenAI keys (`sk-`), Anthropic keys, NaN platform tokens, AWS access keys, Slack tokens, Stripe live keys and private keys. If one matches, publishing is refused with the file, the line and the kind of match (never the match itself):
+
+- The portal shows them and offers **Save anyway**.
+- `nan context push` stops with exit code 65; `--allow-secrets` publishes anyway.
+- The API answers `422 context_secret_detected`; `"allow_secret_like": true` publishes anyway.
+
+PDF, images and Office files are not checked.
+
+<Callout title="An agent may copy a context file into a commit" variant="warning">
+The agent can read every file of its contexts and could copy one into the repository it works on, and from there into a commit or a pull request. If you keep something sensitive with **Save anyway**, assume it can end up there.
+</Callout>
+
+## Delete a context
+
+**Delete** in the portal, `nan context rm` or `DELETE /v1/contexts/{id}` deletes the context with all its versions, and frees its name.
+
+- **It is refused while an automation uses it**, with `409 context_in_use` and the list of those automations. Remove it from them first.
+- Runs already queued or working keep the version they pinned until they end.
+- The files are deleted once no version uses them. This frees your storage within the next day.
+
+Deleting a context and aborting an upload are always allowed, also when you are over your storage or your plan changed.
+
+## Storage and limits
+
+Your contexts share one storage, counted once per distinct file: the same file in two contexts or two versions counts once.
+
+| Plan | Storage |
+|---|---|
+| Premium | 5 GiB |
+| Inference | 2 GiB |
+| Community | 500 MiB |
+| No membership | 100 MiB |
+
+**Over your storage**, for example after changing plan, nothing is deleted and your runs and automations keep working with the versions you have. New uploads, and versions that would add files, are refused with `413 context_quota_exceeded`. Removing files from a context or deleting a context is still possible. The portal shows the usage bar in red.
+
+| Limit | Value |
+|---|---|
+| Contexts | 20 per member |
+| Contexts per run or automation | 5 |
+| File size | 100 MiB |
+| `AGENTS.md` | 32 KiB |
+| `SKILL.md` | 64 KiB |
+| Files per context | 1000 |
+| Skills per context | 30 |
+| Size of one version | 250 MiB |
+| Everything one run loads | 250 MiB, 5000 files and 64 KiB of instructions |
+| Uploads | 2 GiB per hour, 8 open at once |
+| Publish attempts | 120 per hour |
+| Downloads | 1000 per hour |
+
+The hourly limits answer `429 rate_limited` with `Retry-After`, the seconds left in the hour. Uploads count as soon as they start, so an aborted upload counts too.
+
+## If something goes wrong
+
+| What you see | What it means |
+|---|---|
+| `404 context_not_found` | No context of yours with that name or id. Contexts are private: another member's id is not found either. |
+| `409 context_name_taken` | You already have a context with that name. |
+| `409 too_many_contexts` | You have 20 contexts. Delete one first. |
+| `409 context_in_use` | An automation uses it. Remove it from the automation, then delete. |
+| `409 version_conflict` | Changed elsewhere. Reload and save again. |
+| `409 blob_busy` | This file is still being deleted from an earlier cleanup. Try again in a few minutes. |
+| `409 upload_in_progress` | The same file is being uploaded by another request. Wait a few seconds. |
+| `400 invalid_path` | A file name or folder is not allowed. The answer lists each file and its reason. |
+| `415 unsupported_file_type` | The file type is not allowed, or its content does not match its extension. |
+| `422 skill_invalid` | A `SKILL.md` is missing its frontmatter, has other keys, or its `name` is not the folder name. |
+| `422 context_skill_conflict` | Two contexts of the run define a skill with the same name. Remove one. |
+| `413 context_too_large` | The contexts of the run add up to more than one run can load. Remove one. |
+| `413 context_quota_exceeded` | Your storage is full. See [Storage and limits](#storage-and-limits). |
+| `503 storage_unavailable` | Contexts are not available right now. Try again later. |
+| The run fails with `config_error` "the context could not be loaded" | The context could not be copied next to the agent. Start the run again; if it keeps failing, tell us in Discord with the run id. |
+
+<Details summary="Why can't I use a context from another member?">
+Contexts are private to your account: there is no sharing between members. To give a teammate the same context, share the folder (for example in a git repository) and let them push it to their own account.
+</Details>
