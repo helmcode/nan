@@ -197,8 +197,7 @@ with the same `base URL`.
   description="Vector embedding model. MMTEB score 70.58 — top-tier open models. Supports 100+ languages including Spanish and code."
   specs={[
     { label: 'Dimension', value: '4096' },
-    { label: 'Precision', value: 'Float32 (CPU)' },
-    { label: 'RPM', value: '60' },
+    { label: 'Precision', value: 'BF16 (GPU)' },
     { label: 'Batch size', value: '32' },
   ]}
   items={[
@@ -236,11 +235,10 @@ with the same `base URL`.
   tag="v1.0"
   leftLabel="text-to-speech"
   rightLabel="available voices"
-  description="82M parameter TTS with 67 voice packs. Sub-second latency on CPU."
+  description="82M parameter TTS with 67 voice packs. Sub-second latency on GPU."
   specs={[
     { label: 'Latency', value: '< 1s' },
     { label: 'Parameters', value: '82M' },
-    { label: 'RPM', value: '15' },
   ]}
   items={[
     '<span class="text-white">af_heart</span> — English (female)',
