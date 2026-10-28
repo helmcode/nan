@@ -256,11 +256,11 @@ OpenAI y la misma `base URL`.
   tag="large-v3"
   leftLabel="voz a texto"
   rightLabel="capacidades"
-  description="STT en CPU con CTranslate2 e INT8. Aproximadamente 1x tiempo real. Más de 99 idiomas."
+  description="STT en GPU con faster-whisper-large-v3 (Speaches, fp16 en CUDA). Más de 99 idiomas."
   specs={[
-    { label: 'Tamaño', value: '~3 GB (INT8)' },
+    { label: 'Tamaño', value: '~4.3 GB (VRAM GPU, fp16)' },
     { label: 'WER ES', value: '~3.2%' },
-    { label: 'RPM', value: '10' },
+    { label: 'Timeout', value: '180 s' },
   ]}
   items={[
     'Transcripción de audio a texto',
@@ -278,8 +278,8 @@ OpenAI y la misma `base URL`.
       body: 'Tamaño máximo por petición. Los formatos comprimidos (OGG/Opus, MP3) aprovechan mucho mejor este límite que un WAV sin comprimir.',
     },
     {
-      title: 'Timeout: audios de más de 2 minutos',
-      body: 'Whisper procesa en CPU a aproximadamente 1x tiempo real. Con audios de más de 2 minutos, el proxy puede devolver un error <code>524</code> (timeout) antes de que termine la transcripción. Usa formatos comprimidos como <strong>OGG/Opus</strong> y parte los ficheros largos en tramos de 2 minutos o menos para evitarlo.',
+      title: 'Timeout de petición: 180 s',
+      body: 'La transcripción corre en GPU, mucho más rápida que el tiempo real. Aun así, audios muy largos pueden superar el límite de 180 s del proxy — parte los ficheros largos en tramos para evitarlo.',
     },
     {
       title: 'Formatos recomendados',
