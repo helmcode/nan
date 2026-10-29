@@ -712,7 +712,7 @@ describe('documented 400s: tool names and structured output', () => {
       'On `deepseek-v4-flash` it is accepted on non-streamed `/chat/completions` requests without `tools`: the answer is checked against your schema and, when it does not match, usually re-served by a provider that enforces it; an answer that could not be checked, or a miss the re-serve could not replace in time, is returned as is (validate it if your code depends on it).',
     );
     expect(description).toContain(
-      'Other `json_schema` requests on `deepseek-v4-flash` are rejected with a `400` on BOTH hosts, the enterprise base URL included, before they reach the model: a request that streams, carries `tools`, goes to `/responses`, sets `n` above 1, or whose schema is over 16 KB, invalid or one the gateway will not validate (a `$ref` outside the schema, `$dynamicRef` or `$anchor`, a nested `$id`, or too large once its `$ref`s are inlined). We refuse it there instead of deriving it to another provider: a request the gateway cannot honour is a client bug, and a paid fallback would hide it from you. `json_object` still works there.',
+      'Other `json_schema` requests on `deepseek-v4-flash` are rejected with a `400` before the model is called, on BOTH hosts: a request that carries `tools`, goes to `/responses`, or whose schema is over 16 KB, invalid or one the gateway will not validate (a `$ref` outside the schema, `$dynamicRef` or `$anchor`, a nested `$id`, or too large once its `$ref`s are inlined). (`api.nan.builders` reduces `n` to 1 and answers a single response; the enterprise base URL rejects `n` above 1 with a `400`.) Streamed requests are the one exception: the enterprise base URL serves them through its streamed wrapper. We refuse instead of deriving to another provider: a request the gateway cannot honour is a client bug, and a paid fallback would hide it from you. `json_object` still works there.',
     );
     // The old blanket "rejected on api.nan.builders" must not come back.
     // The host split is GONE: no host may be described as accepting them again.
@@ -735,17 +735,25 @@ describe('documented 400s: tool names and structured output', () => {
       return page.slice(start, page.indexOf('/>', start));
     };
     const en = card('');
-    expect(en).toContain('json_schema is accepted on non-streamed /chat/completions requests without tools: the answer is checked against your schema and, when it does not match, usually re-served by a provider that enforces it; an answer that could not be checked, or a miss the re-serve could not replace in time, is returned as is (validate it if your code depends on it). Every other json_schema request is rejected with a 400, on BOTH api.nan.builders and api.helmcode.com: streamed, with tools, on /responses, with n above 1, with a schema over 16 KB, not a valid JSON Schema, or one the gateway will not validate (a $ref outside the schema, $dynamicRef or $anchor, a nested $id, or too large once its $refs are inlined). We refuse it there instead of deriving it to another provider: a request the gateway cannot honour is a client bug, and a paid fallback would hide it from you.');
+    expect(en).toContain('json_schema is accepted on non-streamed /chat/completions requests without tools: the answer is checked against your schema and, when it does not match, usually re-served by a provider that enforces it; an answer that could not be checked, or a miss the re-serve could not replace in time, is returned as is (validate it if your code depends on it). Every other json_schema request is rejected with a 400 before the model is called, on BOTH api.nan.builders and api.helmcode.com: with tools, on /responses, with a schema over 16 KB, not a valid JSON Schema, or one the gateway will not validate (a $ref outside the schema, $dynamicRef or $anchor, a nested $id, or too large once its $refs are inlined). (`api.nan.builders` reduces `n` to 1 and answers a single response; `api.helmcode.com` rejects `n` above 1 with a 400.) Streamed requests are the one exception: api.nan.builders rejects them, api.helmcode.com serves them through its streamed wrapper. We refuse instead of deriving to another provider: a request the gateway cannot honour is a client bug, and a paid fallback would hide it from you.');
     expect(en).toContain('on api.nan.builders the prompt must contain the word JSON, otherwise it is rejected with a 400');
     expect(en).toContain('use qwen3.6 or gemma4');
     expect(en).toContain('<code>json_schema</code> on non-streamed chat without tools (on api.nan.builders the other cases, e.g. streamed, with tools or on /responses: 400)');
     expect(en).not.toContain('json_schema is rejected with a 400.');
     expect(en).not.toMatch(/not supported \(400\)|json_schema is not and/);
     const es = card('-es');
-    expect(es).toContain('json_schema se acepta en peticiones a /chat/completions sin streaming y sin tools: la respuesta se comprueba contra tu esquema y, si no lo cumple, normalmente la vuelve a servir un proveedor que lo impone; una respuesta que no se pudo comprobar, o un fallo que no se pudo reemplazar a tiempo, se devuelve tal cual (valídala si tu código depende de ella). El resto de peticiones json_schema se rechazan con un 400, tanto en api.nan.builders como en api.helmcode.com: con streaming, con tools, a /responses, con n mayor que 1, con un esquema de más de 16 KB, que no sea un JSON Schema válido o que el gateway no valida (un $ref fuera del esquema, $dynamicRef o $anchor, un $id anidado o demasiado grande al resolver sus $ref). Las rechazamos en vez de derivarlas a otro proveedor: una petición que el gateway no puede cumplir es un bug del cliente, y un fallback pago lo escondería.');
+    expect(es).toContain('json_schema se acepta en peticiones a /chat/completions sin streaming y sin tools: la respuesta se comprueba contra tu esquema y, si no lo cumple, normalmente la vuelve a servir un proveedor que lo impone; una respuesta que no se pudo comprobar, o un fallo que no se pudo reemplazar a tiempo, se devuelve tal cual (valídala si tu código depende de ella). El resto de peticiones json_schema se rechazan con un 400 antes de llamar al modelo, tanto en api.nan.builders como en api.helmcode.com: con tools, a /responses, con un esquema de más de 16 KB, que no sea un JSON Schema válido o que el gateway no valida (un $ref fuera del esquema, $dynamicRef o $anchor, un $id anidado o demasiado grande al resolver sus $ref). (`api.nan.builders` reduce `n` a 1 y devuelve una sola respuesta; `api.helmcode.com` rechaza `n` mayor que 1 con un 400.) Las peticiones con streaming son la única excepción: api.nan.builders las rechaza y api.helmcode.com las sirve con su wrapper de streaming. Las rechazamos en vez de derivarlas a otro proveedor: una petición que el gateway no puede cumplir es un bug del cliente, y un fallback pago lo escondería.');
     expect(es).toContain('en api.nan.builders el prompt debe contener la palabra JSON; si no, se rechaza con un 400');
     expect(es).toContain('usa qwen3.6 o gemma4');
     expect(es).toContain('<code>json_schema</code> en chat sin streaming y sin tools (en api.nan.builders el resto, p. ej. con streaming, con tools o en /responses: 400)');
+    // The enterprise stream exception must stay stated: it is the ONE case where
+    // the two hosts differ, and enterprise runs the streamed wrapper.
+    expect(en).toContain('api.helmcode.com serves them through its streamed wrapper');
+    // n above 1 is NOT the same fate on the two hosts: community reduces it to
+    // 1 and serves one response (CLIENT_N_CAP), enterprise refuses it.
+    expect(en).toContain('reduces `n` to 1 and answers a single response');
+    expect(es).toContain('reduce `n` a 1 y devuelve una sola respuesta');
+    expect(es).toContain('api.helmcode.com las sirve con su wrapper de streaming');
     expect(es).not.toContain('json_schema se rechaza con un 400.');
     expect(es).not.toMatch(/no soportado \(400\)|json_schema no y/);
   });
@@ -1033,15 +1041,17 @@ describe('documented structured output: guarantees and the deepseek-v4-flash rec
       expect(section).toMatch(locale ? /donde el modelo admite decodificación estricta/ : /where the model supports strict decoding/);
       expect(section).not.toMatch(/guaranteed|garantizad/);
       // Since 2026-10-16 json_schema is served on non-streamed chat without
-      // tools; the 400 is for streamed / tools / /responses requests, and only
-      // on api.nan.builders (api.helmcode.com accepts those too).
+      // tools; the 400 is for tools / /responses and the schema shapes, on both
+      // hosts; the STREAMED case is the one exception (enterprise serves it).
       expect(section).toContain(locale
         ? '`deepseek-v4-flash` acepta `response_format` `json_schema` en peticiones a `/chat/completions` sin streaming y sin tools.'
         : '`deepseek-v4-flash` accepts `response_format` `json_schema` on non-streamed `/chat/completions` requests without tools.');
       expect(section).toContain(locale
         ? 'En `api.nan.builders` lo rechaza con un `400` cuando la petición usa streaming, lleva `tools` o va a `/responses`'
         : 'On `api.nan.builders` it rejects it with a `400` when the request streams, carries `tools` or goes to `/responses`');
-      expect(section).toContain(locale ? 'en `api.helmcode.com` se acepta en todos esos casos' : 'on `api.helmcode.com` it is accepted in all of them');
+      expect(section).toContain(locale
+        ? 'En `api.helmcode.com` el caso con streaming también se sirve, y el resto de esa lista se rechaza con el mismo `400`'
+        : 'On `api.helmcode.com` the streamed case is served too, and the rest of that list is rejected with the same `400`');
       expect(section).toContain(locale ? 'un `$ref` fuera del esquema' : 'a `$ref` outside the schema');
       // Schemas the gateway refuses to validate (remote refs, dynamic refs,
       // nested $id, ref explosion) are still a 400 on api.nan.builders.
