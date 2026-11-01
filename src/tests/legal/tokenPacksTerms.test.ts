@@ -82,6 +82,6 @@ describe('terms: token packs (ES)', () => {
 
 describe('terms: last updated', () => {
   test.each(['terms.astro', 'es/terms.astro'])('%s', (f) => {
-    expect(flat(f)).toContain('updated="October 16, 2026"');
+    expect(flat(f)).toContain('updated="November 1, 2026"');
   });
 });
