@@ -68,7 +68,7 @@ describe('ephemeral runs: prepaid minutes (EN)', () => {
 
   test('order of consumption: free, prepaid, postpaid for members only', () => {
     expect(s).toMatch(/free minutes first, then your prepaid balance, then/i);
-    expect(s).toMatch(/only members/i);
+    expect(s).toMatch(/then, only for members/i);
   });
 
   test('expiry: 6 months from the last purchase or recharge, the whole balance', () => {
@@ -113,7 +113,7 @@ describe('ephemeral runs: prepaid minutes (ES)', () => {
   const s = prepaidSection(body, pages.es.heading);
 
   test('carries the exact English anchor cloud-ui links to, right before the heading', () => {
-    expect(body).toMatch(new RegExp(`<span id="${ANCHOR}"></span>\\n\\n## ${pages.es.heading}`));
+    expect(body).toMatch(new RegExp(`<a id="${ANCHOR}"></a>\\n\\n## ${pages.es.heading}`));
   });
 
   test('packs, free amount, price per S-minute', () => {

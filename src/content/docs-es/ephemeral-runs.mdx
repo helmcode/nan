@@ -222,7 +222,37 @@ Dos límites te protegen de sorpresas. Se cambian en el portal, en **Settings �
 
 **El límite de gasto** se comprueba antes de que arranque cada run, y solo cuenta el dinero que se cobraría. NaN suma lo cobrable de este mes a lo máximo que podrían costar las ejecuciones efímeras aún abiertas y la nueva, menos los minutos gratis que te quedan (nunca por debajo de cero), y eso tiene que caber en el límite. Lo máximo que puede costar un run es su tiempo límite más 2,5 minutos, al precio de su tamaño: un run de 30 minutos en **S** reserva 33 minutos, 0,099 €. Si no cabe, el run se rechaza con `402 ephemeral_cap_reached`. Sube el límite, espera a que terminen los runs en marcha, o usa un tiempo límite más corto o un tamaño menor. Un límite de 0 € solo permite los runs que tus minutos gratis cubren por completo.
 
-**Concurrent ephemeral runs.** Los runs que superan tu límite no se rechazan: esperan en la cola y arrancan por orden. Los límites habituales para crear runs siguen aplicando.
+**Concurrent ephemeral runs.** Los runs que superan tu límite no se rechazan: esperan en la cola y arrancan por orden. Sin membresía, el valor por defecto es 5 y el máximo 10. Los límites habituales para crear runs siguen aplicando.
+
+<a id="prepaid-minutes-and-auto-recharge"></a>
+
+## Minutos prepago y recarga automática
+
+Puedes pagar minutos por adelantado y tener un **saldo prepago**. Está abierto a cualquier cuenta con un método de pago: miembros de cualquier plan, Community incluido, y cuentas sin membresía. Sin una membresía Inference o Premium, las ejecuciones efímeras usan tu propia key para el modelo, y una cuenta sin membresía funciona solo con su saldo prepago.
+
+**Comprar.** En **Settings → Ephemeral runs**, usa **Add funds** y elige 5 €, 10 € o 25 €, o **Other amount**: cualquier importe de 5 € a 200 €, en euros enteros. Pagas una vez, con tarjeta, en una página de pago segura; no es una suscripción. Los minutos prepago son minutos S a 0,003 €, así que 5 € compran 1.666 minutos S (los céntimos que sobran se quedan en tu saldo y se suman a tu siguiente compra). La tarjeta con la que pagas se guarda, así que también cuenta como tu método de pago.
+
+**Orden de uso.** Cada run gasta primero los minutos gratis, después tu saldo prepago y después, solo para miembros, el cobro por minuto habitual en tu membresía. Un run solo arranca si entre todo eso se cubre lo máximo que puede costar (consulta [Límite de gasto y concurrencia](#límite-de-gasto-y-concurrencia)). Las cuentas sin membresía no tienen cobro por minuto, así que un run que el saldo no cubre se rechaza con `402 ephemeral_funds_insufficient`.
+
+**Caducidad.** Tu saldo es válido durante **6 meses desde tu última compra o recarga**. Cada nueva compra o recarga amplía todo el saldo a 6 meses desde ese momento. El saldo caducado se pierde; te avisamos por email 30 días antes. Settings muestra el saldo en euros, cuántos minutos S compra aproximadamente y cuándo caduca.
+
+**Recarga automática.** Activa **Recharge automatically** y fija dos importes:
+
+| Ajuste | Por defecto | Rango |
+|---|---|---|
+| Recargar cuando el saldo baje de | 2 € | de 1 € a 50 € |
+| Importe de cada recarga | 10 € | de 5 € a 100 € |
+
+- La recarga tiene que ser mayor que el umbral, y no mayor que tu límite de gasto mensual.
+- La recarga automática necesita una tarjeta. Siempre cobra la tarjeta que elegiste al activarla, aunque después cambies tu método de pago por defecto.
+- Activarla no te cobra nada ahora. Cobramos el importe de la recarga solo cuando un run usa tu saldo prepago y lo deja por debajo del umbral, o cuando un run necesita más de lo que tienes y una recarga basta para cubrirlo. La caducidad, los reembolsos y las disputas nunca provocan una recarga.
+- Va sin límite diario. Las recargas cuentan para tu límite de gasto mensual, así que el límite acota cuánto se cobra sin un clic cada mes. Las compras manuales no cuentan para el límite, ni tampoco gastar tu saldo prepago (se pagó al comprarlo).
+- Mientras hay una recarga en curso, un run nuevo recibe `402 ephemeral_recharge_pending`: vuelve a intentarlo en unos segundos.
+- La recarga automática se desactiva sola si tu banco pide confirmar un pago, tras 3 pagos rechazados seguidos, si se elimina su tarjeta, o tras un reembolso o una disputa del pago. Settings te dice por qué; actívala de nuevo para seguir usándola.
+
+**Saldo congelado.** Si el pago de tu membresía está pendiente (periodo de gracia) o tu cuenta está bloqueada, el saldo se conserva pero queda **Frozen** (congelado): los runs nuevos no pueden usarlo, no se puede recargar, la recarga automática queda en pausa y la caducidad sigue corriendo. Los runs que ya habían arrancado sí lo usan. Dejar una membresía no lo congela: tu cuenta lo sigue usando con tu propia key.
+
+**Reembolsos.** Al comprar, pides que los minutos se añadan de inmediato y aceptas que pierdes tu derecho de desistimiento una vez añadidos; lo mismo aplica a cada recarga automática. Los minutos prepago no son reembolsables. Si un run falla por un problema nuestro, escribe en `#support` y te abonamos el saldo. El saldo se pierde si eliminas tu cuenta. Las condiciones completas están en los [términos](/es/terms#ephemeral-prepaid).
 
 ## Red
 
@@ -247,6 +277,10 @@ Así que clona por HTTPS, no por SSH, y descarga las dependencias de registros q
 | Qué ves | Por qué, y qué hacer |
 |---|---|
 | `402 ephemeral_cap_reached` | El run podría llevar tu gasto por encima de tu límite mensual. Súbelo en **Settings → Ephemeral runs**, espera a que terminen los runs en marcha, o usa un tiempo límite más corto o un tamaño menor. |
+| `402 ephemeral_funds_insufficient` | Tus minutos gratis y tu saldo prepago no cubren lo máximo que puede costar el run, y no tienes cobro de membresía que cubra el resto. Usa **Add funds** en **Settings → Ephemeral runs**, activa la recarga automática, o usa un tiempo límite más corto o un tamaño menor. |
+| `402 ephemeral_recharge_pending` | Hay una recarga automática en curso. Vuelve a intentarlo en unos segundos. |
+| `409 card_required` | La recarga automática necesita una tarjeta. Añade una tarjeta como método de pago y vuelve a activarla. |
+| `400 withdrawal_waiver_required` | Para comprar minutos prepago, acepta la renuncia al desistimiento en **Add funds**. |
 | `402 payment_method_required` | No tienes un método de pago registrado. Añade uno en **Settings → Ephemeral runs** con **Add a payment method**. |
 | `402 currency_migration_required` | Tu membresía se factura en dólares. Usa **Switch billing to EUR** en **Settings → Ephemeral runs** o en el formulario **New run**. |
 | `400 invalid_request`, `param: executor` | Las ejecuciones efímeras aún no están disponibles para tu cuenta. |
