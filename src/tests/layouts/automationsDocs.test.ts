@@ -88,14 +88,18 @@ describe.each(Object.entries(pages))('automations guides (%s)', (_locale, page) 
   const autoFlat = autoBody.replace(/\s+/g, ' ');
   const hooksFlat = hooksBody.replace(/\s+/g, ' ');
 
-  test('sit in the guides group, right after Agent runs', () => {
+  test('sit in the guides group, right after Agent runs and its child', () => {
     const runs = parseFrontmatter(read(page.dir + 'runs.mdx')).frontmatter as { order: number };
     const a = parseFrontmatter(auto).frontmatter as { order: number; group: string; title: string };
     const h = parseFrontmatter(hooks).frontmatter as { order: number; group: string; title: string };
     expect([a.title, h.title]).toEqual(page.titles);
     expect(a.group).toBe(page.group);
     expect(h.group).toBe(page.group);
-    expect(a.order).toBe(runs.order + 1);
+    // Ephemeral runs is nested under Agent runs and takes the slot after it.
+    const eph = parseFrontmatter(read(page.dir + 'ephemeral-runs.mdx')).frontmatter as { order: number; parent: string };
+    expect(eph.parent).toBe('runs');
+    expect(eph.order).toBe(runs.order + 1);
+    expect(a.order).toBe(runs.order + 2);
     // The PR gatekeeper guide, the Secrets page and the Notifications page
     // are nested under Automations (frontmatter `parent`), so they take the
     // three slots right after it and Webhooks follows.
@@ -340,8 +344,13 @@ describe.each(Object.entries(pages))('automations guides (%s)', (_locale, page) 
     }
   });
 
-  test('ephemeral executors are not documented', () => {
-    for (const body of [autoBody, hooksBody]) expect(body).not.toMatch(/ephemeral|ef[ií]mer/i);
+  // Ephemeral executors live on their own page (ephemeral-runs.mdx); this
+  // guide only points at it, once, from the introduction.
+  test('ephemeral executors are only a link to their own page', () => {
+    expect(hooksBody).not.toMatch(/ephemeral|ef[ií]mer/i);
+    const withoutLinks = autoBody.replace(/\[[^\]]*\]\([^)]*ephemeral-runs[^)]*\)/g, '');
+    expect(withoutLinks).not.toMatch(/ephemeral|ef[ií]mer/i);
+    expect(autoBody).toContain(`(${page.prefix}/docs/ephemeral-runs#`);
   });
 
   // BYOK (AGENT-AUTOMATIONS-PHASE3-BYOK.md): portal labels from the cloud-ui
