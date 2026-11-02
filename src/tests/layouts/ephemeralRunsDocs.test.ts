@@ -83,8 +83,9 @@ describe.each(Object.entries(pages))('ephemeral runs guide (%s)', (_locale, page
     expect(flat).toMatch(/20 × (€0\.003|0,003 €) = \*\*(€0\.06|0,06 €)\*\*/);
   });
 
-  test('says billing is not active yet', () => {
-    expect(body).toMatch(/<Callout title="(Billing is not active yet|El cobro aún no está activo)">/);
+  test('billing is active: no "not charged yet" notice', () => {
+    expect(body).not.toMatch(/Billing is not active yet|El cobro aún no está activo|not charged yet/);
+    expect(body).toMatch(/billed per container minute/);
   });
 
   test('documents the member limits with their defaults and ranges', () => {
@@ -115,8 +116,7 @@ describe.each(Object.entries(pages))('ephemeral runs guide (%s)', (_locale, page
 
   // cloud-ui #177 (1b964d0): labels that change with billing on/off, and the
   // cost note converting free S-minutes to the chosen size.
-  test('describes the labels in both billing states and the per-size free minutes note', () => {
-    expect(body).toContain('`measured per container minute (not charged yet)`');
+  test('describes the billed label and the per-size free minutes note', () => {
     expect(body).toContain('`billed per container minute`');
     expect(body).toContain('`80 free S-minutes left this month = 40 minutes of M.`');
     expect(body).not.toContain('Settings → Billing');

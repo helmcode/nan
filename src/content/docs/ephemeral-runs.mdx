@@ -138,7 +138,7 @@ A run on your own provider key started by you still needs a signed-in session, a
 
 ## In automations
 
-An [automation](/docs/automations) can run on ephemeral containers too: every run it starts, by **Run now**, a webhook or a schedule, gets its own container. In the editor, set **Where it runs** to **Ephemeral container** and pick the **Size**. You do not need a workspace for it: without any workspace, your automations can only be ephemeral. While billing is not active, the editor says its runs are `measured per container minute (not charged yet)`; once it is active, `billed per container minute`. It then needs:
+An [automation](/docs/automations) can run on ephemeral containers too: every run it starts, by **Run now**, a webhook or a schedule, gets its own container. In the editor, set **Where it runs** to **Ephemeral container** and pick the **Size**. You do not need a workspace for it: without any workspace, your automations can only be ephemeral. The editor says its runs are `billed per container minute`. It then needs:
 
 - A **GitHub repository**, and **Checkout** set to **Fresh clone per run**: there is no workspace folder to work in.
 - A **Model**.
@@ -178,10 +178,6 @@ A run you start yourself, from the portal, `nan run` or `POST /v1/runs`, never r
 Runs are billed **per started minute** of container time, from start to end, at the price of their size. A run of 14 seconds counts as 1 minute; one of 61 seconds, as 2. The model's tokens are not part of this price: they count against your plan, or your provider bills them with your own key.
 
 Most agents spend their time waiting for the model, so **S** is enough for most tasks. Pick **M** or **L** for heavy builds or test suites.
-
-<Callout title="Billing is not active yet">
-Ephemeral runs are metered and shown, in the portal, the CLI and the API, but not charged yet. We will announce it before charging starts.
-</Callout>
 
 ## Free minutes
 

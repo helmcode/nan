@@ -138,7 +138,7 @@ Un run con tu propia clave de proveedor lanzado por ti sigue necesitando una ses
 
 ## En automatizaciones
 
-Una [automatización](/es/docs/automations) también puede ejecutarse en contenedores efímeros: cada run que lanza, con **Run now**, un webhook o una programación, tiene su propio contenedor. En el editor, pon **Where it runs** en **Ephemeral container** y elige el **Size**. No necesitas workspace para ello: sin ningún workspace, tus automatizaciones solo pueden ser efímeras. Mientras el cobro no está activo, el editor dice que sus runs se miden por minuto de contenedor (`measured per container minute (not charged yet)`); cuando esté activo, que se cobran por minuto de contenedor (`billed per container minute`). Entonces necesita:
+Una [automatización](/es/docs/automations) también puede ejecutarse en contenedores efímeros: cada run que lanza, con **Run now**, un webhook o una programación, tiene su propio contenedor. En el editor, pon **Where it runs** en **Ephemeral container** y elige el **Size**. No necesitas workspace para ello: sin ningún workspace, tus automatizaciones solo pueden ser efímeras. El editor dice que sus runs se cobran por minuto de contenedor (`billed per container minute`). Entonces necesita:
 
 - Un **GitHub repository**, y **Checkout** en **Fresh clone per run**: no hay carpeta de workspace en la que trabajar.
 - Un **Model**.
@@ -178,10 +178,6 @@ Un run que lanzas tú, desde el portal, `nan run` o `POST /v1/runs`, nunca recib
 Los runs se cobran **por minuto empezado** de tiempo de contenedor, de principio a fin, al precio de su tamaño. Un run de 14 segundos cuenta como 1 minuto; uno de 61 segundos, como 2. Los tokens del modelo no entran en este precio: cuentan para tu plan, o te los factura tu proveedor con tu propia clave.
 
 La mayoría de los agentes pasan el tiempo esperando al modelo, así que **S** basta para casi todas las tareas. Elige **M** o **L** para builds o baterías de tests pesadas.
-
-<Callout title="El cobro aún no está activo">
-Las ejecuciones efímeras se miden y se muestran, en el portal, la CLI y la API, pero todavía no se cobran. Lo anunciaremos antes de empezar a cobrar.
-</Callout>
 
 ## Minutos gratis
 
