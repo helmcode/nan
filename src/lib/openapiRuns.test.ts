@@ -231,14 +231,22 @@ describe('openapi.json: the Runs contract (cloud-api)', () => {
 });
 
 describe('openapi.json: the Workspaces contract (cloud-api)', () => {
-  it('both routes live on api.nan.builders, outside /v1, and nothing else under /api', () => {
-    const apiPaths = Object.keys(s.paths).filter((p) => p.startsWith('/api/'));
+  it('both routes live on api.nan.builders, outside /v1, and nothing else under /api but the partner report', () => {
+    // The partner payout report (openapiPartners.test.ts) is the only other
+    // /api route, and it lives on cloud-api.nan.builders, not here.
+    const apiPaths = Object.keys(s.paths).filter((p) => p.startsWith('/api/') && !p.startsWith('/api/partners/'));
+    expect(Object.keys(s.paths).filter((p) => p.startsWith('/api/partners/'))).toEqual(['/api/partners/{partner}/payouts']);
     expect(apiPaths).toEqual(['/api/workspaces', '/api/workspaces/{id}']);
     for (const p of apiPaths) {
       expect(s.paths[p].servers).toEqual([expect.objectContaining({ url: 'https://api.nan.builders' })]);
       expect(Object.keys(s.paths[p]).filter((k) => k !== 'servers')).toEqual(['get']);
     }
-    expect(JSON.stringify(s)).not.toContain('cloud-api.nan.builders');
+    // cloud-api.nan.builders is the console's host: members are never sent
+    // there. The one exception is the partner payout report, a server-to-server
+    // route for resellers that lives only on that host (routing it through
+    // api.nan.builders would mean opening it in the inference edge Worker).
+    const { ['/api/partners/{partner}/payouts']: _partner, ...memberPaths } = s.paths;
+    expect(JSON.stringify({ ...s, paths: memberPaths })).not.toContain('cloud-api.nan.builders');
   });
 
   it('GET /api/workspaces/{id}: a foreign workspace is the same 404 as an unknown one, never 403 (cloud-api #324)', () => {
