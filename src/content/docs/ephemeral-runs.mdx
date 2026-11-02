@@ -222,7 +222,35 @@ Two limits protect you from surprises. You change them in the portal, under **Se
 
 **The spend cap** is checked before each run starts, and only money that would be charged counts. NaN adds this month's chargeable spend to the most the ephemeral runs still open and the new one could cost, minus the free minutes you still have (never below zero), and that must stay within the cap. The most a run can cost is its time limit plus 2.5 minutes, at its size price: a 30 minute run of **S** reserves 33 minutes, €0.099. If it does not fit, the run is refused with `402 ephemeral_cap_reached`. Raise the cap, wait for running runs to end, or use a shorter time limit or a smaller size. A cap of €0 allows only the runs your free minutes fully cover.
 
-**Concurrent ephemeral runs.** Runs beyond your limit are not refused: they wait in the queue and start in order. The usual limits on creating runs still apply.
+**Concurrent ephemeral runs.** Runs beyond your limit are not refused: they wait in the queue and start in order. Without a membership, the default is 5 and the maximum 10. The usual limits on creating runs still apply.
+
+## Prepaid minutes and auto-recharge
+
+You can pay for minutes in advance and keep a **prepaid balance**. It is open to every account with a payment method: members of any plan, Community included, and accounts without a membership. Without an Inference or Premium membership, ephemeral runs use your own key for the model, and an account without a membership runs on its prepaid balance only.
+
+**Buying.** In **Settings → Ephemeral runs**, use **Add funds** and pick €5, €10 or €25, or **Other amount**: any amount from €5 to €200, in whole euros. You pay once, by card, on a secure payment page; it is not a subscription. Prepaid minutes are S-minutes at €0.003, so €5 buys 1,666 S-minutes (the few cents left over stay in your balance and join your next purchase). The card you pay with is saved, so it also counts as your payment method.
+
+**Order of use.** Each run uses your free minutes first, then your prepaid balance, then, only for members, the usual per-minute billing on your membership. A run starts only if those together cover the most it can cost (see [Spend cap and concurrency](#spend-cap-and-concurrency)). Accounts without a membership have no per-minute billing, so a run that the balance cannot cover is refused with `402 ephemeral_funds_insufficient`.
+
+**Expiry.** Your balance is valid for **6 months from your last purchase or recharge**. Every new purchase or recharge extends the whole balance to 6 months from then. Expired balance is lost; we email you 30 days before. Settings shows the balance in euros, about how many S-minutes it buys and when it expires.
+
+**Auto-recharge.** Turn on **Recharge automatically** and set two amounts:
+
+| Setting | Default | Range |
+|---|---|---|
+| Recharge when the balance falls below | €2 | €1 to €50 |
+| Amount of each recharge | €10 | €5 to €100 |
+
+- The recharge must be larger than the threshold, and no larger than your monthly spend cap.
+- Auto-recharge needs a card. It always charges the card you chose when you turned it on, even if you change your default payment method later.
+- Turning it on does not charge you now. We charge the recharge amount only when a run uses your prepaid balance and leaves it below the threshold, or when a run needs more than you have and one recharge is enough to cover it. Expiry, refunds and disputes never trigger a recharge.
+- There is no daily limit. Recharges count towards your monthly spend cap, so the cap bounds how much is charged without a click each month. Manual purchases do not count towards the cap, and neither does spending your prepaid balance (it was paid when you bought it).
+- While a recharge is in progress, a new run gets `402 ephemeral_recharge_pending`: try again in a few seconds.
+- Auto-recharge turns itself off if your bank asks you to confirm a payment, after 3 declined payments in a row, if its card is removed, or after a refund or a payment dispute. Settings tells you why; turn it on again to keep using it.
+
+**Frozen balance.** If your membership payment is overdue (grace period) or your account is banned, the balance is kept but **Frozen**: new runs cannot use it, it cannot be topped up, auto-recharge is paused and the expiry keeps running. Runs that had already started still use it. Leaving a membership does not freeze it: your account keeps using it with your own key.
+
+**Refunds.** When you buy, you ask for the minutes to be added right away and accept that you lose your right of withdrawal once they are; the same applies to each automatic recharge. Prepaid minutes are non-refundable. If a run fails because of a problem on our side, write in `#support` and we credit the balance. The balance is lost if you delete your account. The full conditions are in the [terms](/terms#ephemeral-prepaid).
 
 ## Network
 
@@ -247,6 +275,10 @@ So clone over HTTPS, not SSH, and fetch dependencies from registries that serve 
 | What you see | Why, and what to do |
 |---|---|
 | `402 ephemeral_cap_reached` | The run could take your spend past your monthly cap. Raise it in **Settings → Ephemeral runs**, wait for running runs to end, or use a shorter time limit or a smaller size. |
+| `402 ephemeral_funds_insufficient` | Your free minutes and prepaid balance do not cover the most the run can cost, and you have no membership billing to cover the rest. Use **Add funds** in **Settings → Ephemeral runs**, turn on auto-recharge, or use a shorter time limit or a smaller size. |
+| `402 ephemeral_recharge_pending` | An automatic recharge is in progress. Try again in a few seconds. |
+| `409 card_required` | Auto-recharge needs a card. Add a card as your payment method, then turn it on again. |
+| `400 withdrawal_waiver_required` | To buy prepaid minutes, accept the withdrawal waiver in **Add funds**. |
 | `402 payment_method_required` | No payment method on file. Add one in **Settings → Ephemeral runs** with **Add a payment method**. |
 | `402 currency_migration_required` | Your membership is billed in US dollars. Use **Switch billing to EUR** in **Settings → Ephemeral runs** or in the **New run** form. |
 | `400 invalid_request`, `param: executor` | Ephemeral runs are not available for your account yet. |
