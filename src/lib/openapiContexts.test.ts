@@ -60,7 +60,7 @@ function examples(o: any): Array<[string, unknown, Schema]> {
 describe('openapi.json: the Contexts operations', () => {
   it('the Contexts tag comes after Workspaces and links the guide', () => {
     const names = s.tags.map((t: any) => t.name);
-    expect(names.slice(names.indexOf('Workspaces'))).toEqual(['Workspaces', 'Contexts']);
+    expect(names.slice(names.indexOf('Workspaces'))).toEqual(['Workspaces', 'Contexts', 'Partners']);
     const tag = s.tags.find((t: any) => t.name === 'Contexts').description as string;
     expect(tag).toContain('https://nan.builders/docs/contexts');
     expect(tag).toContain('`contexts:read`');

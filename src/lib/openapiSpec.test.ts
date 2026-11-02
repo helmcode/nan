@@ -93,6 +93,7 @@ const PUBLIC_SURFACE: Array<[string, string]> = [
   ['/runs/{id}/reject', 'post'],
   ['/api/workspaces', 'get'],
   ['/api/workspaces/{id}', 'get'],
+  ['/api/partners/{partner}/payouts', 'get'],
 ];
 
 /** NaN's real catalogue (src/data/modelos.json + the API reference). */
