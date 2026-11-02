@@ -125,13 +125,14 @@ describe.each(Object.entries(pages))('Notifications page (%s)', (_locale, page) 
   const order = (f: string) => (parseFrontmatter(read(page.dir + f)).frontmatter as { order: number }).order;
   const code = codeBlocks(body).join('\n');
 
-  test('is nested under Automations, after Secrets and before Webhooks', () => {
+  test('is nested under Automations, after Secrets and before Contexts and Webhooks', () => {
     expect(fm.title).toBe(page.title);
     expect(fm.group).toBe(page.group);
     expect(fm.parent).toBe('automations');
     expect(fm.description.length).toBeGreaterThan(40);
     expect(fm.order).toBe(order('secrets.mdx') + 1);
-    expect(order('webhooks.mdx')).toBe(fm.order + 1);
+    expect(order('contexts.mdx')).toBe(fm.order + 1);
+    expect(order('webhooks.mdx')).toBe(fm.order + 2);
   });
 
   test('is served by /api/docs without errors', async () => {

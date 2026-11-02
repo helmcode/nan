@@ -191,7 +191,8 @@ describe('openapi.json: the automation writes', () => {
   const sc = s.components.schemas;
 
   it('updated_by on the automation and trigger objects', () => {
-    expect(Object.keys(sc.Automation.properties).at(-1)).toBe('updated_by');
+    // updated_by closes the Phase 3 fields; the agent contexts (B4b) follow it.
+    expect(Object.keys(sc.Automation.properties).slice(-2)).toEqual(['updated_by', 'contexts']);
     expect(sc.Automation.properties.updated_by.enum).toEqual(UPDATED_BY);
     expect(Object.keys(sc.Trigger.properties).at(-1)).toBe('updated_by');
     expect(sc.Trigger.properties.updated_by.enum).toEqual(UPDATED_BY);
@@ -203,7 +204,7 @@ describe('openapi.json: the automation writes', () => {
       'name', 'description', 'template', 'workspace', 'agent', 'model', 'instructions', 'cwd', 'git_isolation',
       'timeout_seconds', 'approval_kinds', 'approval_ttl_seconds', 'inference', 'github_repo', 'secrets',
       'max_runs_per_hour', 'concurrency_policy', 'max_trigger_depth', 'enabled', 'checkout', 'sticky_pr_comment',
-      'checkout_untrusted_heads',
+      'checkout_untrusted_heads', 'contexts',
     ]);
     expect(sc.CreateAutomationRequest.required).toEqual(['name', 'workspace', 'agent']);
     expect(sc.UpdateAutomationRequest.additionalProperties).toBe(false);
@@ -211,6 +212,7 @@ describe('openapi.json: the automation writes', () => {
       'name', 'description', 'workspace', 'agent', 'model', 'instructions', 'cwd', 'git_isolation', 'timeout_seconds',
       'approval_kinds', 'approval_ttl_seconds', 'inference', 'github_repo', 'secrets', 'max_runs_per_hour',
       'concurrency_policy', 'max_trigger_depth', 'enabled', 'checkout', 'sticky_pr_comment', 'checkout_untrusted_heads',
+      'contexts',
     ]);
     expect(sc.UpdateAutomationRequest.properties.secrets.description).toMatch(/Replaces every assignment/);
     expect(sc.UpdateAutomationRequest.properties.approval_kinds.description).toMatch(/`\[\]`/);
