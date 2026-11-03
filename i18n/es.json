@@ -304,6 +304,20 @@
         "La comunidad vive en Discord. La web solo gestiona el acceso. Cada miembro paga por estar aquí. Solo entra quien de verdad quiere construir."
       ]
     },
+    "download": {
+      "label": "app de escritorio",
+      "title1": "Helmcode Desktop",
+      "title2": "para escritorio",
+      "sub": "Los modelos de NaN en una app nativa en tu máquina. Descárgala, inicia sesión y ponte a construir.",
+      "detected": "tu sistema",
+      "cta": "Descargar",
+      "requirements": "Requisitos: macOS 12+, Windows 10+, Ubuntu 22.04+ o equivalente.",
+      "platforms": {
+        "macos": { "name": "macOS", "formats": ".dmg" },
+        "windows": { "name": "Windows", "formats": ".msi o .exe" },
+        "linux": { "name": "Linux", "formats": ".deb · .rpm · .AppImage" }
+      }
+    },
     "built": {
       "label": "hecho con nan",
       "title1": "No quemamos tokens.",

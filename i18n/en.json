@@ -304,6 +304,20 @@
         "The community lives on Discord. The website only manages access. Every member pays to be here. Only those who truly want to build make it in."
       ]
     },
+    "download": {
+      "label": "desktop app",
+      "title1": "Helmcode Desktop",
+      "title2": "for desktop",
+      "sub": "NaN's models in a native app on your machine. Download it, sign in and start building.",
+      "detected": "your system",
+      "cta": "Download",
+      "requirements": "Requirements: macOS 12+, Windows 10+, Ubuntu 22.04+ or equivalent.",
+      "platforms": {
+        "macos": { "name": "macOS", "formats": ".dmg" },
+        "windows": { "name": "Windows", "formats": ".msi or .exe" },
+        "linux": { "name": "Linux", "formats": ".deb · .rpm · .AppImage" }
+      }
+    },
     "built": {
       "label": "built with nan",
       "title1": "We don't burn tokens.",

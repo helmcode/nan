@@ -1,0 +1,149 @@
+---
+// "Helmcode Desktop" — three download cards (macOS / Windows / Linux). Each
+// card is a plain link to the latest GitHub release, so it works with zero JS.
+// The script below is progressive enhancement only: it highlights the card
+// for the visitor's OS and reveals its "your system" tag.
+import { getLang, useT } from '../../../lib/i18n';
+import { DESKTOP_PLATFORMS, DESKTOP_RELEASES_URL } from '../../../lib/desktop';
+
+const tt = useT(getLang(Astro.url)).download;
+---
+
+<section class="download" id="download">
+  <div class="container">
+    <div class="sechead" data-reveal>
+      <span class="sechead__n">02</span><span class="sechead__label">{tt.label}</span>
+    </div>
+    <h2 class="download__title caret-type" data-reveal>{tt.title1}<br /><span class="hl">{tt.title2}</span></h2>
+    <p class="download__sub" data-reveal>{tt.sub}</p>
+
+    <ul class="download__grid" data-reveal-stagger data-download-grid>
+      {DESKTOP_PLATFORMS.map((os) => {
+        const p = tt.platforms[os];
+        return (
+          <li>
+            <a
+              class="dcard"
+              href={DESKTOP_RELEASES_URL}
+              rel="noopener"
+              data-platform={os}
+            >
+              <span class="dcard__top">
+                <span class="dcard__name">{p.name}</span>
+                <span class="dcard__tag" data-detected-tag hidden>{tt.detected}</span>
+              </span>
+              <span class="dcard__formats">{p.formats}</span>
+              <span class="dcard__cta">{tt.cta} <span aria-hidden="true">→</span></span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+
+    <p class="download__req" data-reveal>{tt.requirements}</p>
+  </div>
+</section>
+
+<style>
+  .download { padding-block: clamp(64px, 9vh, 130px); }
+
+  .download__title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    color: var(--color-text);
+    font-size: clamp(40px, 5vw, 76px);
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+  }
+  .download__sub {
+    margin-top: var(--space-8);
+    max-width: 56ch;
+    color: var(--color-text);
+    font-size: clamp(16px, 1.15vw, 18px);
+    line-height: 1.7;
+  }
+
+  .download__grid {
+    list-style: none;
+    margin: var(--space-12) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+  }
+
+  .dcard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    height: 100%;
+    padding: 22px 20px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    color: var(--color-text);
+    text-decoration: none;
+    transition: border-color var(--dur-micro) var(--ease);
+  }
+  .dcard:hover, .dcard:focus-visible { border-color: var(--color-violet); }
+  .dcard[data-detected] { border-color: var(--color-violet); background: var(--color-violet-dim); }
+
+  .dcard__top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+  .dcard__name {
+    font-family: var(--font-serif);
+    font-size: clamp(26px, 2.2vw, 34px);
+    line-height: 1.1;
+  }
+  .dcard__tag {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--color-violet-2);
+  }
+  .dcard__tag[hidden] { display: none; }
+  .dcard__formats {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+  .dcard__cta {
+    margin-top: auto;
+    padding-top: var(--space-4);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-violet-2);
+  }
+
+  .download__req {
+    margin-top: var(--space-8);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+
+  @media (max-width: 860px) {
+    .download { padding-block: var(--space-16); }
+    .download__grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  import { detectPlatform } from '../../../lib/desktop';
+
+  const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
+  const os = detectPlatform({
+    uaPlatform: nav.userAgentData?.platform,
+    platform: nav.platform,
+    userAgent: nav.userAgent,
+  });
+  const card = os && document.querySelector<HTMLElement>(`[data-download-grid] [data-platform="${os}"]`);
+  if (card) {
+    card.setAttribute('data-detected', '');
+    card.querySelector('[data-detected-tag]')?.removeAttribute('hidden');
+  }
+</script>

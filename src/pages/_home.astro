@@ -3,6 +3,7 @@ import NanPage from '../layouts/NanPage.astro';
 import StructuredData from '../components/nan/StructuredData.astro';
 import Hero from '../components/nan/home/Hero.astro';
 import WhyNan from '../components/nan/home/WhyNan.astro';
+import Download from '../components/nan/home/Download.astro';
 import BuiltWithNan from '../components/nan/home/BuiltWithNan.astro';
 import Models from '../components/nan/home/Models.astro';
 import Privacy from '../components/nan/home/Privacy.astro';
@@ -27,6 +28,7 @@ const canonical = new URL(Astro.url.pathname.replace(/\/+$/, '') || '/', site).h
 
   <Hero />
   <WhyNan />
+  <Download />
   <BuiltWithNan />
   <Models />
   <Privacy />

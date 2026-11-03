@@ -105,6 +105,7 @@ Static sections, SSR-rendered (`src/pages/_home.astro`, components in `src/compo
 | Nav (Login + Create account) | `nan/Nav.astro` | Small inline script (mobile menu) |
 | Hero: Create account + Log in buttons | `Hero.astro` | Canvas dither only |
 | What is NaN | `WhyNan.astro` | None |
+| Download Helmcode Desktop (`#download`) | `Download.astro` | Small script: highlights the visitor's OS card (`detectPlatform` in `src/lib/desktop.ts`); the cards are plain links to the latest GitHub release and work without JS |
 | Built with NaN | `BuiltWithNan.astro` | None |
 | Models | `Models.astro` | None |
 | Privacy | `Privacy.astro` | None |
