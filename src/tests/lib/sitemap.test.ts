@@ -85,6 +85,17 @@ describe('sitemap.xml', () => {
     expect(urls).not.toContain(`${SITE}/es/survey`);
   });
 
+  test('el formulario del reto queda fuera, en los dos idiomas', async () => {
+    const { xml } = await sitemap();
+    const urls = locs(xml);
+
+    // Se reparte por enlace para una campaña, igual que /survey: va con noindex
+    // y nofollow. Declararlo en el sitemap sería decir lo contrario de lo que
+    // dice la propia página, así que si alguien lo mete en BILINGUAL, falla aquí.
+    expect(urls).not.toContain(`${SITE}/prompt`);
+    expect(urls).not.toContain(`${SITE}/es/prompt`);
+  });
+
   test('no cuela el 404 ni las rutas de API', async () => {
     const { xml } = await sitemap();
     const urls = locs(xml);

@@ -23,6 +23,7 @@
     "@astrojs/mdx": "^5.0.6",
     "@astrojs/preact": "^5.0.2",
     "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource/caveat-brush": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@scalar/api-reference": "^1.64.0",
     "@tailwindcss/vite": "^4.2.2",

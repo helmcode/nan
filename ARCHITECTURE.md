@@ -41,9 +41,10 @@ nan.builders (Cloudflare Worker)
 │
 └── Worker (Edge Functions)
     ├── /api/auth/login-request POST — magic-link login from the events pages (proxy)
+    ├── /api/events/prompt-challenge POST — the public /prompt form (no login)
     ├── /api/events/*          events API proxy
     ├── /api/docs/*            docs manifest + markdown for the Discord bot
-    └── SSR pages              /, /es, /community, /events, /projects, /docs/*
+    └── SSR pages              /, /es, /community, /events, /projects, /prompt, /docs/*
 ```
 
 - **Static requests** (assets, images, favicon): served directly from CDN.
@@ -57,6 +58,7 @@ nan.builders (Cloudflare Worker)
 |-------|------|-----------|
 | `/`, `/es` | SSR (not prerendered) | Vanilla scripts: hero dither, reveal (the hero CTA's `?plan=` is resolved in SSR, no JS) |
 | `/community`, `/es/community` | SSR (not prerendered) | None beyond the shared shell (CTA links to the platform signup) |
+| `/prompt`, `/es/prompt` | SSR (not prerendered) | Three-step form (`src/scripts/promptChallenge.ts`): local validation, then `POST /api/events/prompt-challenge`; the answer is typed out token by token |
 | `/docs*` | SSR (not prerendered) | Minimal (sidebar mobile menu, TOC, copy-to-clipboard) |
 
 ## Pricing (Current)
@@ -144,7 +146,7 @@ The site is bilingual: English at the root (`/`) and Spanish under `/es`. Catalo
 | Mechanism | Implementation |
 |-----------|---------------|
 | CSP | Strict policy in `NanBase.astro` (`connect-src 'self'`, no external scripts, no frames, no objects) |
-| Bot protection | No public write form on the marketing pages; signup lives on cloud.nan.builders (cloud-api per-IP/per-email limits). Events forms go through `/api/events/*` |
+| Bot protection | One public write form: `/prompt` and `/es/prompt`, no login, posting `prompt`, an optional `twitter`, `lang` and a `website` honeypot to `POST /api/events/prompt-challenge` (201 answered, 409 `already_submitted`, 400 validation, 413 `body_too_large`, 429 `rate_limited`, 503 `challenge_full`). The backend keeps one answer per IP identity (IPv4 `/32`, IPv6 `/64`) and rate-limits by IP; the page is noindex and out of the sitemap. Signup still lives on cloud.nan.builders (cloud-api per-IP/per-email limits); the events forms go through `/api/events/*` |
 | IP detection | `cf-connecting-ip` only (never `x-forwarded-for` on Cloudflare) |
 | Secrets | All in Cloudflare Pages dashboard via `wrangler secret put`, never in code |
 | Error handling | Intentionally opaque error responses (no internal details leaked) |
