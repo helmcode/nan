@@ -1021,7 +1021,9 @@
         "submit": "Enviar prompt",
         "sending": "Enviando…"
       },
+      "thinking": "Pensando",
       "done": {
+        "joke": "Tras 2 segundos de razonamiento profundo, nuestro modelo concluye que tu prompt es… mejor que el nuestro. No se lo digas a nadie.",
         "title": "¡Respuesta recibida!",
         "body": "Pronto anunciaremos los resultados."
       },
