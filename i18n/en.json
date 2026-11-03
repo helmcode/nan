@@ -1014,7 +1014,7 @@
       "question": {
         "title": "The goal of the prompt is to make the Helmcode channel a reference. What should it upload to get there?",
         "promptLabel": "Your prompt",
-        "promptPlaceholder": "Write your prompt here…",
+        "promptPlaceholder": "What would you love to see on the Helmcode channel?",
         "promptHint": "Between 10 and 2000 characters.",
         "twitterLabel": "Your X/Twitter handle (optional)",
         "twitterPlaceholder": "@handle",

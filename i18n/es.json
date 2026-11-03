@@ -1014,7 +1014,7 @@
       "question": {
         "title": "El objetivo del prompt es conseguir que el canal de Helmcode sea referente. ¿Qué debe subir para conseguirlo?",
         "promptLabel": "Tu prompt",
-        "promptPlaceholder": "Escribe aquí tu prompt…",
+        "promptPlaceholder": "¿Qué te encantaría ver en el canal de Helmcode?",
         "promptHint": "Entre 10 y 2000 caracteres.",
         "twitterLabel": "Tu usuario de X/Twitter (opcional)",
         "twitterPlaceholder": "@usuario",
