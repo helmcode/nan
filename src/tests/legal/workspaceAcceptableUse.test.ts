@@ -81,7 +81,7 @@ describe.each(Object.entries(cases))('terms: workspace acceptable use (%s)', (_l
     expect(s).toContain(c.since);
     // Moved again on 2026-10-14 (open signup rewrote the community section)
     // on 2026-10-16 (token packs clause) and on 2026-11-01 (ephemeral prepaid clause).
-    expect(src).toContain('updated="November 1, 2026"');
+    expect(src).toContain('updated="November 3, 2026"');
   });
 
   test.each(c.prohibited)('prohibits: %s', (item) => {
