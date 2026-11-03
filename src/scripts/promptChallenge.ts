@@ -81,7 +81,9 @@ export function initPromptChallenge(): void {
   const form = root.querySelector<HTMLFormElement>('[data-prompt-form]');
   const startBtn = root.querySelector<HTMLButtonElement>('[data-prompt-start]');
   const errorBox = root.querySelector<HTMLElement>('[data-prompt-error]');
-  const answerFull = root.querySelector<HTMLElement>('[data-answer-full]');
+  const answerEl = root.querySelector<HTMLElement>('[data-answer]');
+  const answerSr = root.querySelector<HTMLElement>('[data-answer-sr]');
+  const answerHand = root.querySelector<HTMLElement>('[data-answer-hand]');
   const answerOut = root.querySelector<HTMLElement>('[data-answer-out]');
   const answerCaret = root.querySelector<HTMLElement>('[data-answer-caret]');
   const answerGhost = root.querySelector<HTMLElement>('[data-answer-ghost]');
@@ -110,22 +112,30 @@ export function initPromptChallenge(): void {
     errorBox.hidden = false;
   };
 
+  const answerText = answerEl?.dataset.answer ?? '';
+
   // `code` is set when the backend says this IP already answered: the
-  // "answer" is then that notice instead of the joke.
-  const finish = (code?: string) => {
+  // "answer" is then that notice, with no handwritten ending.
+  const finish = async (code?: string) => {
     remember();
-    const text = code ? (messages[code] ?? '') : (answerFull?.textContent ?? '');
+    const text = code ? (messages[code] ?? '') : answerText;
     if (code) {
-      if (answerFull) answerFull.textContent = text;
+      if (answerSr) answerSr.textContent = text;
       if (answerGhost) answerGhost.textContent = text;
     }
     show(3);
-    if (answerOut) void stream(text, answerOut, answerCaret);
+    if (!answerOut) return;
+    await stream(text, answerOut, answerCaret);
+    if (code || !answerHand) return;
+    // Then the last words are "written by hand".
+    answerHand.classList.add('is-writing');
+    answerHand.hidden = false;
   };
 
   // A returning visitor sees the answer already written, no replay.
   if (remembered()) {
-    if (answerOut) answerOut.textContent = answerFull?.textContent ?? '';
+    if (answerOut) answerOut.textContent = answerText;
+    if (answerHand) answerHand.hidden = false;
     show(3, false);
     return;
   }
@@ -173,8 +183,8 @@ export function initPromptChallenge(): void {
     await minThinking;
     submitBtn.disabled = false;
     submitBtn.textContent = submitLabel;
-    if (code === null) return finish();
-    if (code === 'already_submitted') return finish(code);
+    if (code === null) return void finish();
+    if (code === 'already_submitted') return void finish(code);
     show(2, false);
     showError(code);
     errorBox.focus();

@@ -16,6 +16,9 @@
  * viewport.
  */
 import NanBase from '../layouts/NanBase.astro';
+// Brush handwriting for the answer's last words; self-hosted like the rest
+// of the fonts (CSP font-src 'self') and loaded only on this page.
+import '@fontsource/caveat-brush/latin-400.css';
 import { getLang, useT } from '../lib/i18n';
 
 const lang = getLang(Astro.url);
@@ -90,12 +93,13 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
         {/* Only the model's "answer", on the bare background, written out token
             by token. Screen readers get the whole text at once from the hidden
             copy; the streamed one is decoration. An invisible ghost copy holds
-            the final height so the centered text does not creep up as it grows. */}
+            the final height so the centered text does not creep up as it grows.
+            The last words are then "written by hand" in brush ink. */}
         <div class="pc__step" data-step="3" hidden>
-          <p class="pc__answer" tabindex="-1" data-step-title>
-            <span class="pc__sr" data-answer-full>{tt.done.answer}</span>
-            <span class="pc__ghost" aria-hidden="true" data-answer-ghost>{tt.done.answer}</span>
-            <span class="pc__out" aria-hidden="true"><span data-answer-out></span><span class="pc__caret" data-answer-caret hidden></span></span>
+          <p class="pc__answer" tabindex="-1" data-step-title data-answer={tt.done.answer}>
+            <span class="pc__sr" data-answer-sr>{tt.done.answer} {tt.done.handwritten}</span>
+            <span class="pc__ghost" aria-hidden="true" data-answer-ghost>{tt.done.answer} <span class="pc__hand">{tt.done.handwritten}</span></span>
+            <span class="pc__out" aria-hidden="true"><span data-answer-out></span><span class="pc__caret" data-answer-caret hidden></span> <span class="pc__hand" data-answer-hand hidden>{tt.done.handwritten}</span></span>
           </p>
         </div>
       </div>
@@ -251,6 +255,38 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
   .pc__ghost {
     visibility: hidden;
   }
+  /* The answer carries blank lines (\n\n) for a dramatic pause. */
+  .pc__ghost,
+  .pc__out {
+    white-space: pre-line;
+  }
+  .pc__hand {
+    display: inline-block;
+    margin-left: 0.1em;
+    font-family: 'Caveat Brush', cursive;
+    font-size: 1.75em;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--color-text);
+    transform: rotate(-4deg);
+    transform-origin: left bottom;
+  }
+  .pc__hand[hidden] {
+    display: none;
+  }
+  /* Ink laid down left to right, like a pen stroke, with a small overshoot
+     margin so the brush swashes are not clipped. */
+  .pc__hand.is-writing {
+    animation: pc-write 1.6s cubic-bezier(0.55, 0.1, 0.35, 1) both;
+  }
+  @keyframes pc-write {
+    from {
+      clip-path: inset(-0.4em 100% -0.4em -0.2em);
+    }
+    to {
+      clip-path: inset(-0.4em -0.2em -0.4em -0.2em);
+    }
+  }
   /* The blinking block a chat UI shows at the end of a reply that is still streaming. */
   .pc__caret {
     display: inline-block;
@@ -310,6 +346,7 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
   @media (prefers-reduced-motion: reduce) {
     .pc__logo,
     .pc__caret,
+    .pc__hand.is-writing,
     .pc__shimmer,
     .pc__dots span {
       animation: none;
