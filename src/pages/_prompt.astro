@@ -31,15 +31,15 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
     data-sending={tt.question.sending}
     data-messages={JSON.stringify(tt.errors)}>
       <div class="pc__wrap">
-        <p class="eyebrow">{tt.kicker}</p>
-
         <div class="pc__step" data-step="1">
+          <p class="eyebrow">{tt.kicker}</p>
           <p class="pc__count">{step(1)}</p>
           <h1 class="pc__title" tabindex="-1" data-step-title>{tt.intro.title}</h1>
           <button class="btn btn-primary pc__cta" type="button" data-prompt-start>{tt.intro.cta}</button>
         </div>
 
         <div class="pc__step" data-step="2" hidden>
+          <p class="eyebrow">{tt.kicker}</p>
           <p class="pc__count">{step(2)}</p>
           <h2 class="pc__title" tabindex="-1" data-step-title>{tt.question.title}</h2>
           <form class="pc__form" data-prompt-form novalidate>
@@ -87,12 +87,16 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
           </p>
         </div>
 
+        {/* Only the model's "answer", on the bare background, written out token
+            by token. Screen readers get the whole text at once from the hidden
+            copy; the streamed one is decoration. An invisible ghost copy holds
+            the final height so the centered text does not creep up as it grows. */}
         <div class="pc__step" data-step="3" hidden>
-          <p class="pc__count">{step(3)}</p>
-          <h2 class="pc__title" tabindex="-1" data-step-title>{tt.done.title}</h2>
-          <p class="pc__lead pc__joke">{tt.done.joke}</p>
-          <p class="pc__lead">{tt.done.body}</p>
-          <p class="pc__hint" data-prompt-done-note hidden></p>
+          <p class="pc__answer" tabindex="-1" data-step-title>
+            <span class="pc__sr" data-answer-full>{tt.done.answer}</span>
+            <span class="pc__ghost" aria-hidden="true" data-answer-ghost>{tt.done.answer}</span>
+            <span class="pc__out" aria-hidden="true"><span data-answer-out></span><span class="pc__caret" data-answer-caret hidden></span></span>
+          </p>
         </div>
       </div>
   </section>
@@ -231,8 +235,47 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
   .pc__dots span:nth-child(3) {
     animation-delay: 0.4s;
   }
-  .pc__joke {
+  .pc__answer {
+    display: grid;
+    font-size: clamp(19px, 2.4vw, 23px);
+    line-height: 1.6;
     color: var(--color-text);
+  }
+  .pc__answer:focus {
+    outline: none;
+  }
+  .pc__ghost,
+  .pc__out {
+    grid-area: 1 / 1;
+  }
+  .pc__ghost {
+    visibility: hidden;
+  }
+  /* The blinking block a chat UI shows at the end of a reply that is still streaming. */
+  .pc__caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.1em;
+    margin-left: 2px;
+    vertical-align: -0.15em;
+    background: var(--color-violet);
+    animation: pc-blink 1s steps(1) infinite;
+  }
+  .pc__caret[hidden] {
+    display: none;
+  }
+  .pc__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  @keyframes pc-blink {
+    50% {
+      opacity: 0;
+    }
   }
   @keyframes pc-pulse {
     0%,
@@ -266,6 +309,7 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
   }
   @media (prefers-reduced-motion: reduce) {
     .pc__logo,
+    .pc__caret,
     .pc__shimmer,
     .pc__dots span {
       animation: none;
