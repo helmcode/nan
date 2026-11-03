@@ -1,6 +1,8 @@
 /* Prompt engineering challenge (/prompt): three steps on one page.
  *
- * Step 1 is the hook, step 2 the question, step 3 the "received" screen. The
+ * Step 1 is the hook, step 2 the question, step 3 the "received" screen with
+ * a joke. While the answer is sent, a "Thinking" screen (pulsing logo) stays up
+ * for at least THINKING_MS, like a reasoning model, then the result shows. The
  * answer goes to POST /api/events/prompt-challenge through the same-origin
  * events proxy; the backend enforces one answer per IP and the rate limits.
  *
@@ -11,6 +13,7 @@
 
 const SENT_KEY = 'nan.promptChallenge.sent';
 const ENDPOINT = '/api/events/prompt-challenge';
+const THINKING_MS = 2000;
 
 type Messages = Record<string, string>;
 
@@ -52,7 +55,7 @@ export function initPromptChallenge(): void {
   const submitLabel = submitBtn.textContent ?? '';
   const sendingLabel = root.dataset.sending ?? submitLabel;
 
-  const show = (n: number, focus = true) => {
+  const show = (n: number | 'thinking', focus = true) => {
     for (const step of steps) step.hidden = step.dataset.step !== String(n);
     if (!focus) return;
     // Move focus to the new step's heading so screen readers announce it.
@@ -98,22 +101,33 @@ export function initPromptChallenge(): void {
 
     submitBtn.disabled = true;
     submitBtn.textContent = sendingLabel;
+    show('thinking');
+    // The request and the minimum "thinking" time run together, so a fast
+    // answer still shows the animation and a slow one adds no extra wait.
+    const minThinking = new Promise((resolve) => setTimeout(resolve, THINKING_MS));
+    let code: string | null = 'generic';
     try {
       const resp = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (resp.status === 201) return finish();
-      const payload = (await resp.json().catch(() => ({}))) as { error?: string };
-      const code = payload.error ?? 'generic';
-      if (code === 'already_submitted') return finish(code);
-      showError(code);
+      if (resp.status === 201) {
+        code = null;
+      } else {
+        const payload = (await resp.json().catch(() => ({}))) as { error?: string };
+        code = payload.error ?? 'generic';
+      }
     } catch {
-      showError('generic');
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = submitLabel;
+      /* network error: keep 'generic' */
     }
+    await minThinking;
+    submitBtn.disabled = false;
+    submitBtn.textContent = submitLabel;
+    if (code === null) return finish();
+    if (code === 'already_submitted') return finish(code);
+    show(2, false);
+    showError(code);
+    errorBox.focus();
   });
 }

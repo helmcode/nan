@@ -73,14 +73,24 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
               <input id="pc-website" name="website" type="text" tabindex="-1" autocomplete="off" />
             </div>
 
-            <p class="pc__error" role="alert" data-prompt-error hidden></p>
+            <p class="pc__error" role="alert" tabindex="-1" data-prompt-error hidden></p>
             <button class="btn btn-primary pc__cta" type="submit">{tt.question.submit}</button>
           </form>
+        </div>
+
+        {/* Between steps 2 and 3: a reasoning-model style "Thinking" screen
+            shown while the answer is sent (at least two seconds). */}
+        <div class="pc__step pc__thinking" data-step="thinking" hidden>
+          <img class="pc__logo" src="/nan-logo.png" alt="" width="72" height="72" />
+          <p class="pc__think-label" role="status" tabindex="-1" data-step-title>
+            <span class="pc__shimmer">{tt.thinking}</span><span class="pc__dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+          </p>
         </div>
 
         <div class="pc__step" data-step="3" hidden>
           <p class="pc__count">{step(3)}</p>
           <h2 class="pc__title" tabindex="-1" data-step-title>{tt.done.title}</h2>
+          <p class="pc__lead pc__joke">{tt.done.joke}</p>
           <p class="pc__lead">{tt.done.body}</p>
           <p class="pc__hint" data-prompt-done-note hidden></p>
         </div>
@@ -178,6 +188,91 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
   .pc__form .pc__cta:disabled {
     opacity: 0.6;
     cursor: progress;
+  }
+  .pc__thinking {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-5);
+    padding: 48px 0;
+  }
+  .pc__thinking[hidden] {
+    display: none;
+  }
+  .pc__logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    animation: pc-pulse 1.4s ease-in-out infinite;
+  }
+  .pc__think-label {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: var(--color-muted);
+  }
+  .pc__think-label:focus {
+    outline: none;
+  }
+  /* The light sweep across the word, like the "Thinking" label of reasoning models. */
+  .pc__shimmer {
+    background: linear-gradient(90deg, var(--color-muted) 0%, var(--color-text) 50%, var(--color-muted) 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: pc-shimmer 1.6s linear infinite;
+  }
+  .pc__dots span {
+    animation: pc-dot 1.2s infinite;
+  }
+  .pc__dots span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .pc__dots span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  .pc__joke {
+    color: var(--color-text);
+  }
+  @keyframes pc-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+      filter: drop-shadow(0 0 0 transparent);
+    }
+    50% {
+      transform: scale(1.12);
+      opacity: 0.75;
+      filter: drop-shadow(0 0 18px var(--color-violet));
+    }
+  }
+  @keyframes pc-shimmer {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
+  @keyframes pc-dot {
+    0%,
+    100% {
+      opacity: 0.2;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pc__logo,
+    .pc__shimmer,
+    .pc__dots span {
+      animation: none;
+    }
+    .pc__shimmer {
+      color: var(--color-muted);
+    }
   }
   /* Off-screen rather than display:none: some bots skip fields that are not rendered. */
   .pc__trap {
