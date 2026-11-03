@@ -79,7 +79,11 @@ export function initPromptChallenge(): void {
   }
   show(1, false);
 
-  startBtn.addEventListener('click', () => show(2));
+  // "I'm ready" opens the question with the cursor already in the box.
+  startBtn.addEventListener('click', () => {
+    show(2, false);
+    form.querySelector<HTMLTextAreaElement>('textarea[name="prompt"]')?.focus();
+  });
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
