@@ -22,11 +22,12 @@ const reducedMotion = (): boolean =>
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Splits text into LLM-looking tokens: short words whole, long words in
- * 3-5 character pieces, each carrying the whitespace in front of it. */
+ * 3-5 character pieces, each carrying the spaces in front of it. Every line
+ * break is a token of its own, so the stream can pause on each one. */
 export function tokenize(text: string): string[] {
   const tokens: string[] = [];
-  for (const word of text.match(/\s*\S+/g) ?? []) {
-    if (word.trim().length <= 6) {
+  for (const word of text.match(/\n|[^\S\n]*\S+/g) ?? []) {
+    if (word === '\n' || word.trim().length <= 6) {
       tokens.push(word);
       continue;
     }
@@ -40,8 +41,17 @@ export function tokenize(text: string): string[] {
   return tokens;
 }
 
-/** Writes `text` into `out` token by token, with a short pause after
- * punctuation. Shows the caret while it streams. */
+// Stream pacing, in ms: [minimum, random extra].
+const PACE_TOKEN = [70, 80];
+const PACE_PUNCTUATION = [380, 220];
+const PACE_LINE_BREAK = [750, 200];
+
+const wait = ([min, extra]: number[]) =>
+  new Promise((resolve) => setTimeout(resolve, min + Math.random() * extra));
+
+/** Writes `text` into `out` token by token: a longer pause after punctuation
+ * and after each line break, so a blank line lands as one break, then the
+ * other, before the writing resumes. Shows the caret while it streams. */
 async function stream(text: string, out: HTMLElement, caret: HTMLElement | null): Promise<void> {
   out.textContent = '';
   if (reducedMotion()) {
@@ -51,8 +61,9 @@ async function stream(text: string, out: HTMLElement, caret: HTMLElement | null)
   if (caret) caret.hidden = false;
   for (const token of tokenize(text)) {
     out.textContent += token;
-    const pause = /[.,:;?!…]$/.test(token) ? 180 + Math.random() * 160 : 30 + Math.random() * 60;
-    await new Promise((resolve) => setTimeout(resolve, pause));
+    if (token === '\n') await wait(PACE_LINE_BREAK);
+    else if (/[.,:;?!…]$/.test(token)) await wait(PACE_PUNCTUATION);
+    else await wait(PACE_TOKEN);
   }
   if (caret) caret.hidden = true;
 }
