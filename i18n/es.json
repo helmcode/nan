@@ -1001,6 +1001,39 @@
         "<b>Sesgos a tener presentes.</b> La muestra es autoseleccionada, así que responde quien está más implicado y el descontento callado está subrepresentado. El motivo de baja era de opción única, lo que fuerza a elegir uno solo cuando casi una cuarta parte necesitó escribir el suyo. Y los cruces por huso horario o por producto en producción descansan en grupos pequeños: la dirección es clara, la magnitud no es precisa."
       ],
       "closing": "Esto no es una lista cerrada. Si algo que os importa no está aquí, decidlo: la encuesta fue el punto de partida, no el final. Lo que se vaya terminando lo contamos por los canales de siempre."
+    },
+    "prompt": {
+      "metaTitle": "Reto de prompt engineering · Helmcode",
+      "metaDesc": "Mide tus habilidades de prompt engineering con los mayores expertos del mundo.",
+      "kicker": "Reto de prompt engineering",
+      "stepLabel": "Paso {n} de 3",
+      "intro": {
+        "title": "Vamos a medir tus habilidades de prompt engineering con los mayores expertos del mundo, ¿estás preparado?",
+        "cta": "Estoy preparado"
+      },
+      "question": {
+        "title": "El objetivo del prompt es conseguir que el canal de Helmcode sea referente. ¿Qué debe subir para conseguirlo?",
+        "promptLabel": "Tu prompt",
+        "promptPlaceholder": "Escribe aquí tu prompt…",
+        "promptHint": "Entre 10 y 2000 caracteres.",
+        "twitterLabel": "Tu usuario de X/Twitter (opcional)",
+        "twitterPlaceholder": "@usuario",
+        "submit": "Enviar prompt",
+        "sending": "Enviando…"
+      },
+      "done": {
+        "title": "¡Respuesta recibida!",
+        "body": "Pronto anunciaremos los resultados."
+      },
+      "errors": {
+        "prompt_too_short": "El prompt es demasiado corto: escribe al menos 10 caracteres.",
+        "prompt_too_long": "El prompt supera los 2000 caracteres.",
+        "invalid_twitter": "Ese usuario de X/Twitter no es válido (solo letras, números y _, hasta 15).",
+        "already_submitted": "Ya habías enviado tu respuesta desde esta conexión.",
+        "rate_limited": "Demasiados intentos seguidos. Espera un minuto y vuelve a probar.",
+        "challenge_full": "El reto ya no admite más respuestas.",
+        "generic": "No se ha podido enviar. Inténtalo de nuevo en unos minutos."
+      }
     }
   }
 }

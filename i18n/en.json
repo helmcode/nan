@@ -1001,6 +1001,39 @@
         "<b>Biases to keep in mind.</b> The sample is self selected, so the people who answer are the most involved and quiet discontent is under represented. The cancellation reason was single choice, which forces one pick when almost a quarter needed to write their own. And the cross tabs by time zone or by product in production rest on small groups: the direction is clear, the magnitude is not precise."
       ],
       "closing": "This is not a closed list. If something you care about is missing, say so: the survey was the starting point, not the end. We will announce things as they land, through the usual channels."
+    },
+    "prompt": {
+      "metaTitle": "Prompt engineering challenge · Helmcode",
+      "metaDesc": "Measure your prompt engineering skills against the world's top experts.",
+      "kicker": "Prompt engineering challenge",
+      "stepLabel": "Step {n} of 3",
+      "intro": {
+        "title": "We're going to measure your prompt engineering skills against the world's top experts. Are you ready?",
+        "cta": "I'm ready"
+      },
+      "question": {
+        "title": "The goal of the prompt is to make the Helmcode channel a reference. What should it upload to get there?",
+        "promptLabel": "Your prompt",
+        "promptPlaceholder": "Write your prompt here…",
+        "promptHint": "Between 10 and 2000 characters.",
+        "twitterLabel": "Your X/Twitter handle (optional)",
+        "twitterPlaceholder": "@handle",
+        "submit": "Send prompt",
+        "sending": "Sending…"
+      },
+      "done": {
+        "title": "Answer received!",
+        "body": "We'll announce the results soon."
+      },
+      "errors": {
+        "prompt_too_short": "The prompt is too short: write at least 10 characters.",
+        "prompt_too_long": "The prompt is longer than 2000 characters.",
+        "invalid_twitter": "That X/Twitter handle is not valid (letters, digits and _ only, up to 15).",
+        "already_submitted": "You had already sent your answer from this connection.",
+        "rate_limited": "Too many attempts in a row. Wait a minute and try again.",
+        "challenge_full": "The challenge no longer accepts answers.",
+        "generic": "It could not be sent. Try again in a few minutes."
+      }
     }
   }
 }
