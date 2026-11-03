@@ -105,13 +105,15 @@ Static sections, SSR-rendered (`src/pages/_home.astro`, components in `src/compo
 | Nav (Login + Create account) | `nan/Nav.astro` | Small inline script (mobile menu) |
 | Hero: Create account + Log in buttons | `Hero.astro` | Canvas dither only |
 | What is NaN | `WhyNan.astro` | None |
-| Download Helmcode Desktop (`#download`) | `Download.astro` | Small script: highlights the visitor's OS card (`detectPlatform` in `src/lib/desktop.ts`); the cards are plain links to the latest GitHub release and work without JS |
+| Download Helmcode Desktop (`#download`) | `Download.astro` | `nan/desktop/PlatformHighlight.astro` highlights the visitor's OS card (`detectPlatform` in `src/lib/desktop.ts`); the cards are plain one-click links to the stable asset URLs and work without JS |
 | Built with NaN | `BuiltWithNan.astro` | None |
 | Models | `Models.astro` | None |
 | Privacy | `Privacy.astro` | None |
 | Pricing + workspaces | `Pricing.astro` | None |
 | Who is behind | `WhoBehind.astro` | None |
 | FAQ | `Faq.astro` | None (`<details>`) |
+
+`/download` and `/es/download` (`src/pages/_download.astro`) list one card per Helmcode Desktop build (macOS Apple silicon, macOS Intel, Windows x64, Linux amd64 + AppImage/rpm), plus the unsigned-builds note (SECURITY.md), the GitHub releases link and feedback via GitHub issues. Every download is a one-click stable URL `github.com/helmcode/nan-desktop/releases/latest/download/<asset>`: the desktop release CI renames each release's assets to the exact names in `src/lib/desktop.ts`, so these URLs never carry a version. Zero JS required; the same `PlatformHighlight` enhancement marks the visitor's OS.
 
 `/community` (`src/pages/_community.astro`) has no form of its own: its CTAs link to `signup?plan=community`, and the platform runs the per-user Stripe Checkout.
 

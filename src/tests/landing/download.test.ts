@@ -3,42 +3,123 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { useT } from '../../lib/i18n';
-import { DESKTOP_PLATFORMS, DESKTOP_RELEASES_URL, detectPlatform } from '../../lib/desktop';
+import {
+  DESKTOP_BUILDS,
+  DESKTOP_ISSUES_URL,
+  DESKTOP_PLATFORMS,
+  DESKTOP_RELEASES_URL,
+  DESKTOP_SECURITY_URL,
+  buildsFor,
+  desktopAssetUrl,
+  detectPlatform,
+  fileExt,
+} from '../../lib/desktop';
 
 /**
- * "Helmcode Desktop" download section on the landing.
+ * Helmcode Desktop downloads: the landing section and the /download page.
  *
- * Spec: right after the main pitch (WhyNan), a title, one value-prop line,
- * three cards (macOS / Windows / Linux) linking to the latest GitHub release
- * with per-OS format hints, and a system-requirements line. Links must work
- * with zero JS; a small script only highlights the visitor's OS.
+ * Spec:
+ *  - Every download link is a ONE-CLICK stable URL
+ *    `github.com/helmcode/nan-desktop/releases/latest/download/<asset>`. The
+ *    release CI renames each release's assets to exactly these names, so the
+ *    URLs are permanent and must never carry a version.
+ *  - Builds: macOS Apple silicon (.dmg), macOS Intel (.dmg), Windows x64
+ *    (setup .exe), Linux amd64 (.deb, plus .AppImage and .rpm alternates).
+ *  - Requirements: macOS 12+, Windows 10+, Ubuntu 22.04+.
+ *  - /download (EN) and /es/download (ES): title "Download Helmcode Desktop" /
+ *    "Descarga Helmcode Desktop", one card per build, unsigned-builds note
+ *    linking SECURITY.md, a GitHub releases link and feedback → GitHub issues.
+ *  - Zero JS: plain anchors; a script only highlights the visitor's OS.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
 const read = (p: string) => readFileSync(resolve(here, '../..', p), 'utf-8');
-const component = read('components/nan/home/Download.astro');
-const markup = component.slice(component.indexOf('---', 3) + 3, component.indexOf('<style>'));
+const markupOf = (src: string) => src.slice(src.indexOf('---', 3) + 3, src.indexOf('<style>'));
 
-describe('Download — copy in both locales', () => {
-  test('title matches the spec', () => {
+const section = read('components/nan/home/Download.astro');
+const sectionMarkup = markupOf(section);
+const page = read('pages/_download.astro');
+const pageMarkup = markupOf(page);
+const highlight = read('components/nan/desktop/PlatformHighlight.astro');
+
+const BASE = 'https://github.com/helmcode/nan-desktop/releases/latest/download/';
+
+describe('stable download URLs', () => {
+  test('exact asset URLs, one per build', () => {
+    expect(DESKTOP_BUILDS.map((b) => desktopAssetUrl(b.file))).toEqual([
+      `${BASE}Helmcode.Desktop-macOS-AppleSilicon.dmg`,
+      `${BASE}Helmcode.Desktop-macOS-Intel.dmg`,
+      `${BASE}Helmcode.Desktop-Windows-x64-setup.exe`,
+      `${BASE}Helmcode.Desktop-Linux-amd64.deb`,
+    ]);
+  });
+
+  test('Linux alternates: AppImage and rpm', () => {
+    const linux = buildsFor('linux');
+    expect(linux).toHaveLength(1);
+    expect(linux[0].alternates.map(desktopAssetUrl)).toEqual([
+      `${BASE}Helmcode.Desktop-Linux-amd64.AppImage`,
+      `${BASE}Helmcode.Desktop-Linux-x86_64.rpm`,
+    ]);
+  });
+
+  test('no file name carries a version', () => {
+    const files = DESKTOP_BUILDS.flatMap((b) => [b.file, ...b.alternates]);
+    for (const f of files) expect(f).not.toMatch(/\d+\.\d+/);
+  });
+
+  test('minimum OS per build', () => {
+    expect(Object.fromEntries(DESKTOP_BUILDS.map((b) => [b.id, b.minOs]))).toEqual({
+      macosArm: 'macOS 12+',
+      macosIntel: 'macOS 12+',
+      windows: 'Windows 10+',
+      linux: 'Ubuntu 22.04+',
+    });
+  });
+
+  test('every platform has at least one build', () => {
+    for (const os of DESKTOP_PLATFORMS) expect(buildsFor(os).length).toBeGreaterThan(0);
+  });
+
+  test('fileExt keeps the dot and the case', () => {
+    expect(fileExt('a.b-c.AppImage')).toBe('.AppImage');
+    expect(fileExt('x-setup.exe')).toBe('.exe');
+  });
+
+  test('repo links', () => {
+    expect(DESKTOP_RELEASES_URL).toBe('https://github.com/helmcode/nan-desktop/releases/latest');
+    expect(DESKTOP_SECURITY_URL).toBe('https://github.com/helmcode/nan-desktop/blob/main/SECURITY.md');
+    expect(DESKTOP_ISSUES_URL).toBe('https://github.com/helmcode/nan-desktop/issues');
+  });
+});
+
+describe('copy in both locales', () => {
+  test('landing title matches the spec', () => {
     expect(`${useT('es').download.title1} ${useT('es').download.title2}`).toBe('Helmcode Desktop para escritorio');
     expect(`${useT('en').download.title1} ${useT('en').download.title2}`).toBe('Helmcode Desktop for desktop');
+  });
+
+  test('/download title matches the spec', () => {
+    expect(useT('en').downloadPage.title).toBe('Download Helmcode Desktop');
+    expect(useT('es').downloadPage.title).toBe('Descarga Helmcode Desktop');
   });
 
   for (const locale of ['en', 'es'] as const) {
     describe(locale, () => {
       const tt = useT(locale).download;
+      const pg = useT(locale).downloadPage;
 
       test('has a value-prop line and a CTA', () => {
         expect(tt.sub.length).toBeGreaterThan(20);
         expect(tt.cta.length).toBeGreaterThan(0);
         expect(tt.detected.length).toBeGreaterThan(0);
+        expect(tt.allOptions.length).toBeGreaterThan(0);
       });
 
-      test('per-OS format hints', () => {
+      test('per-OS format hints match the published assets (no .msi)', () => {
         expect(tt.platforms.macos.formats).toContain('.dmg');
-        expect(tt.platforms.windows.formats).toContain('.msi');
         expect(tt.platforms.windows.formats).toContain('.exe');
+        expect(tt.platforms.windows.formats).not.toContain('.msi');
         for (const ext of ['.deb', '.rpm', '.AppImage']) expect(tt.platforms.linux.formats).toContain(ext);
       });
 
@@ -46,31 +127,102 @@ describe('Download — copy in both locales', () => {
         for (const req of ['macOS 12+', 'Windows 10+', 'Ubuntu 22.04+']) expect(tt.requirements).toContain(req);
       });
 
-      test('one entry per platform', () => {
+      test('one entry per platform and one arch label per build', () => {
         expect(Object.keys(tt.platforms).sort()).toEqual([...DESKTOP_PLATFORMS].sort());
+        expect(Object.keys(tt.arch).sort()).toEqual(DESKTOP_BUILDS.map((b) => b.id).sort());
+      });
+
+      test('/download notes: unsigned builds, both OS workarounds, releases, feedback', () => {
+        for (const key of ['metaTitle', 'metaDesc', 'unsignedTitle', 'unsignedBody', 'securityLink', 'releasesLink', 'feedbackLink', 'macHint'] as const) {
+          expect(pg[key].length, key).toBeGreaterThan(0);
+        }
+        expect(pg.unsignedBody).toMatch(/notari/i);
+        expect(pg.unsignedBody).toContain('Authenticode');
+        expect(pg.unsignedMac).toMatch(/^macOS/);
+        expect(pg.unsignedWin).toMatch(/^Windows/);
+        expect(pg.securityLink).toContain('SECURITY.md');
       });
     });
   }
 });
 
-describe('Download — links work without JS', () => {
-  test('releases URL is the latest release of nan-desktop', () => {
-    expect(DESKTOP_RELEASES_URL).toBe('https://github.com/helmcode/nan-desktop/releases/latest');
+describe('landing section — links work without JS', () => {
+  test('cards link to the stable asset URLs, never to a generic releases page', () => {
+    expect(sectionMarkup).toMatch(/<a[^>]*href=\{desktopAssetUrl\(b\.file\)\}/);
+    expect(sectionMarkup).toMatch(/href=\{desktopAssetUrl\(file\)\}/);
+    expect(sectionMarkup).not.toContain('DESKTOP_RELEASES_URL');
+    expect(sectionMarkup).toContain('DESKTOP_PLATFORMS.map');
+    expect(sectionMarkup).toContain('buildsFor(os)');
   });
 
-  test('every card is a plain anchor to the releases URL', () => {
-    expect(markup).toMatch(/<a[\s\S]*?href=\{DESKTOP_RELEASES_URL\}/);
-    expect(markup).toContain('DESKTOP_PLATFORMS.map');
+  test('links to the /download page in the current locale', () => {
+    expect(sectionMarkup).toContain("withLang('/download', lang)");
+  });
+
+  test('keeps the #download anchor', () => {
+    expect(sectionMarkup).toContain('id="download"');
   });
 
   test('the detected tag is hidden by default (no JS, no false highlight)', () => {
-    expect(markup).toMatch(/data-detected-tag hidden/);
-    expect(markup).not.toContain('data-detected ');
+    expect(sectionMarkup).toMatch(/data-detected-tag hidden/);
+    expect(sectionMarkup).not.toContain('data-detected ');
+    expect(sectionMarkup).toContain('data-download-grid');
+    expect(sectionMarkup).toContain('<PlatformHighlight />');
   });
 
-  test('the script only enhances: it never touches href', () => {
-    const script = component.slice(component.indexOf('<script>'));
+  test('no inline script: highlighting lives in the shared component', () => {
+    expect(section).not.toContain('<script');
+  });
+});
+
+describe('/download page', () => {
+  test('one card per build, each a plain anchor to its stable URL', () => {
+    expect(pageMarkup).toContain('DESKTOP_BUILDS.map');
+    expect(pageMarkup).toMatch(/<a[^>]*href=\{desktopAssetUrl\(b\.file\)\}/);
+    expect(pageMarkup).toMatch(/href=\{desktopAssetUrl\(file\)\}/);
+  });
+
+  test('links SECURITY.md, the GitHub releases and GitHub issues', () => {
+    expect(pageMarkup).toContain('href={DESKTOP_SECURITY_URL}');
+    expect(pageMarkup).toContain('href={`${DESKTOP_REPO_URL}/releases`}');
+    expect(pageMarkup).toContain('href={DESKTOP_ISSUES_URL}');
+  });
+
+  test('uses the page dictionary for the title and the shell layout', () => {
+    expect(pageMarkup).toMatch(/<NanPage title=\{tt\.metaTitle\} description=\{tt\.metaDesc\}>/);
+    expect(pageMarkup).toMatch(/<h1[^>]*>\{tt\.title\}<\/h1>/);
+  });
+
+  test('detected tag hidden by default, highlight is the shared enhancement', () => {
+    expect(pageMarkup).toMatch(/data-detected-tag hidden/);
+    expect(pageMarkup).toContain('data-download-grid');
+    expect(pageMarkup).toContain('<PlatformHighlight />');
+    expect(page).not.toContain('<script');
+  });
+
+  test('EN and ES routes are thin wrappers of the same body', () => {
+    expect(read('pages/download.astro')).toContain("import Page from './_download.astro'");
+    expect(read('pages/es/download.astro')).toContain("import Page from '../_download.astro'");
+  });
+});
+
+describe('PlatformHighlight', () => {
+  const script = highlight.slice(highlight.indexOf('<script>'));
+
+  test('only enhances: never touches href or navigation', () => {
     expect(script).not.toMatch(/href|location|preventDefault/);
+  });
+
+  test('marks every card of the detected platform (both Mac builds)', () => {
+    expect(script).toContain('querySelectorAll');
+    expect(script).toContain('[data-download-grid] [data-platform="${os}"]');
+  });
+});
+
+describe('home anchor scrolls below the sticky nav', () => {
+  test('the root reserves the nav height for anchor jumps', () => {
+    const css = read('styles/nan-system.css');
+    expect(css).toMatch(/html\s*\{[^}]*scroll-padding-top:\s*calc\(var\(--nav-h\)/);
   });
 });
 
@@ -93,7 +245,7 @@ describe('detectPlatform', () => {
   });
 });
 
-describe('Download — placement on the landing', () => {
+describe('placement on the landing', () => {
   const home = read('pages/_home.astro');
 
   test('renders right after the main pitch (WhyNan)', () => {

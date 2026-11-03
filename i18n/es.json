@@ -314,9 +314,34 @@
       "requirements": "Requisitos: macOS 12+, Windows 10+, Ubuntu 22.04+ o equivalente.",
       "platforms": {
         "macos": { "name": "macOS", "formats": ".dmg" },
-        "windows": { "name": "Windows", "formats": ".msi o .exe" },
+        "windows": { "name": "Windows", "formats": ".exe" },
         "linux": { "name": "Linux", "formats": ".deb · .rpm · .AppImage" }
-      }
+      },
+      "arch": {
+        "macosArm": "Apple silicon",
+        "macosIntel": "Intel",
+        "windows": "x64",
+        "linux": "x64 (amd64)"
+      },
+      "also": "También:",
+      "allOptions": "Todas las descargas y notas de instalación"
+    },
+    "downloadPage": {
+      "metaTitle": "Descarga Helmcode Desktop — NaN",
+      "metaDesc": "Descarga Helmcode Desktop para macOS (Apple silicon e Intel), Windows y Linux. Siempre la última versión.",
+      "eyebrow": "helmcode desktop",
+      "title": "Descarga Helmcode Desktop",
+      "sub": "Los modelos de NaN en una app nativa en tu máquina. Cada enlace de esta página apunta siempre a la última versión.",
+      "requires": "Requiere",
+      "macHint": "¿No sabes qué Mac tienes? Menú Apple → Acerca de este Mac: si pone \"Chip Apple M…\", elige Apple silicon; si pone \"Procesador Intel…\", elige Intel.",
+      "unsignedTitle": "Las builds aún no están firmadas",
+      "unsignedBody": "La notarización de macOS y la firma Authenticode de Windows están pendientes, así que tu sistema te avisará la primera vez que abras la app.",
+      "unsignedMac": "macOS: clic derecho sobre la app → Abrir, o Ajustes del Sistema → Privacidad y seguridad → Abrir igualmente.",
+      "unsignedWin": "Windows: en el aviso de SmartScreen, pulsa Más información → Ejecutar de todas formas.",
+      "securityLink": "Lee la política de seguridad (SECURITY.md)",
+      "moreTitle": "Más",
+      "releasesLink": "Notas de versión y versiones anteriores en GitHub",
+      "feedbackLink": "¿Un bug o feedback? Abre un issue en GitHub"
     },
     "built": {
       "label": "hecho con nan",

@@ -1,0 +1,24 @@
+---
+// Progressive enhancement shared by the landing download section and the
+// /download page: highlights every card whose `data-platform` matches the
+// visitor's OS (both Mac cards on /download, since the CPU can't be detected
+// reliably) and reveals its "your system" tag. Links never depend on it.
+// Astro bundles this script once per page however many times it is rendered.
+---
+
+<script>
+  import { detectPlatform } from '../../../lib/desktop';
+
+  const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
+  const os = detectPlatform({
+    uaPlatform: nav.userAgentData?.platform,
+    platform: nav.platform,
+    userAgent: nav.userAgent,
+  });
+  if (os) {
+    document.querySelectorAll<HTMLElement>(`[data-download-grid] [data-platform="${os}"]`).forEach((card) => {
+      card.setAttribute('data-detected', '');
+      card.querySelector('[data-detected-tag]')?.removeAttribute('hidden');
+    });
+  }
+</script>

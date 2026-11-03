@@ -1,0 +1,9 @@
+---
+// Route wrapper: the body lives in the sibling _ file, outside the route tree
+// (a page importing another page loses its CSS; see routeWrappers.test.ts).
+import Page from './_download.astro';
+
+export const prerender = false;
+---
+
+<Page />

@@ -314,9 +314,34 @@
       "requirements": "Requirements: macOS 12+, Windows 10+, Ubuntu 22.04+ or equivalent.",
       "platforms": {
         "macos": { "name": "macOS", "formats": ".dmg" },
-        "windows": { "name": "Windows", "formats": ".msi or .exe" },
+        "windows": { "name": "Windows", "formats": ".exe" },
         "linux": { "name": "Linux", "formats": ".deb · .rpm · .AppImage" }
-      }
+      },
+      "arch": {
+        "macosArm": "Apple silicon",
+        "macosIntel": "Intel",
+        "windows": "x64",
+        "linux": "x64 (amd64)"
+      },
+      "also": "Also:",
+      "allOptions": "All downloads and install notes"
+    },
+    "downloadPage": {
+      "metaTitle": "Download Helmcode Desktop — NaN",
+      "metaDesc": "Download Helmcode Desktop for macOS (Apple silicon and Intel), Windows and Linux. Always the latest release.",
+      "eyebrow": "helmcode desktop",
+      "title": "Download Helmcode Desktop",
+      "sub": "NaN's models in a native app on your machine. Every link on this page always points to the latest release.",
+      "requires": "Requires",
+      "macHint": "Not sure which Mac you have? Apple menu → About This Mac: if it says \"Chip Apple M…\", pick Apple silicon; if it says \"Processor Intel…\", pick Intel.",
+      "unsignedTitle": "Builds are not code-signed yet",
+      "unsignedBody": "macOS notarization and Windows Authenticode signing are still pending, so your system will warn you the first time you open the app.",
+      "unsignedMac": "macOS: right-click the app → Open, or System Settings → Privacy & Security → Open Anyway.",
+      "unsignedWin": "Windows: on the SmartScreen prompt, click More info → Run anyway.",
+      "securityLink": "Read the security policy (SECURITY.md)",
+      "moreTitle": "More",
+      "releasesLink": "Release notes and previous versions on GitHub",
+      "feedbackLink": "Found a bug or have feedback? Open a GitHub issue"
     },
     "built": {
       "label": "built with nan",

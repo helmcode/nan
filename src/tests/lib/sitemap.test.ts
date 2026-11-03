@@ -42,7 +42,7 @@ describe('sitemap.xml', () => {
     const { xml } = await sitemap();
     const urls = locs(xml);
 
-    for (const path of ['/events', '/gauntlet', '/projects', '/community', '/privacy', '/terms', '/cookies']) {
+    for (const path of ['/events', '/gauntlet', '/projects', '/community', '/download', '/privacy', '/terms', '/cookies']) {
       expect(urls).toContain(`${SITE}${path}`);
       expect(urls).toContain(`${SITE}/es${path}`);
     }

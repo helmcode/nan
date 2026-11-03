@@ -1,0 +1,9 @@
+---
+// Same page as the EN version. getLang(Astro.url) resolves the locale inside
+// the body, so neither markup nor copy is duplicated.
+import Page from '../_download.astro';
+
+export const prerender = false;
+---
+
+<Page />

@@ -1,12 +1,14 @@
 ---
-// "Helmcode Desktop" — three download cards (macOS / Windows / Linux). Each
-// card is a plain link to the latest GitHub release, so it works with zero JS.
-// The script below is progressive enhancement only: it highlights the card
-// for the visitor's OS and reveals its "your system" tag.
-import { getLang, useT } from '../../../lib/i18n';
-import { DESKTOP_PLATFORMS, DESKTOP_RELEASES_URL } from '../../../lib/desktop';
+// "Helmcode Desktop" — three download cards (macOS / Windows / Linux). Every
+// link is a one-click stable URL to the asset of the latest GitHub release
+// (see lib/desktop), so it works with zero JS. PlatformHighlight is
+// progressive enhancement only: it highlights the card for the visitor's OS.
+import { getLang, useT, withLang } from '../../../lib/i18n';
+import { DESKTOP_PLATFORMS, buildsFor, desktopAssetUrl, fileExt } from '../../../lib/desktop';
+import PlatformHighlight from '../desktop/PlatformHighlight.astro';
 
-const tt = useT(getLang(Astro.url)).download;
+const lang = getLang(Astro.url);
+const tt = useT(lang).download;
 ---
 
 <section class="download" id="download">
@@ -20,29 +22,43 @@ const tt = useT(getLang(Astro.url)).download;
     <ul class="download__grid" data-reveal-stagger data-download-grid>
       {DESKTOP_PLATFORMS.map((os) => {
         const p = tt.platforms[os];
+        const builds = buildsFor(os);
         return (
-          <li>
-            <a
-              class="dcard"
-              href={DESKTOP_RELEASES_URL}
-              rel="noopener"
-              data-platform={os}
-            >
-              <span class="dcard__top">
-                <span class="dcard__name">{p.name}</span>
-                <span class="dcard__tag" data-detected-tag hidden>{tt.detected}</span>
+          <li class="dcard" data-platform={os}>
+            <span class="dcard__top">
+              <span class="dcard__name">{p.name}</span>
+              <span class="dcard__tag" data-detected-tag hidden>{tt.detected}</span>
+            </span>
+            <span class="dcard__formats">{p.formats}</span>
+            <span class="dcard__links">
+              {builds.map((b) => (
+                <a class="dcard__cta" href={desktopAssetUrl(b.file)} rel="noopener">
+                  {builds.length > 1 ? `${tt.cta} · ${tt.arch[b.id]}` : `${tt.cta} ${fileExt(b.file)}`}{' '}
+                  <span aria-hidden="true">↓</span>
+                </a>
+              ))}
+            </span>
+            {builds.flatMap((b) => b.alternates).length > 0 && (
+              <span class="dcard__alt">
+                {tt.also}{' '}
+                {builds.flatMap((b) => b.alternates).map((file, i) => (
+                  <>{i > 0 && ' · '}<a href={desktopAssetUrl(file)} rel="noopener">{fileExt(file)}</a></>
+                ))}
               </span>
-              <span class="dcard__formats">{p.formats}</span>
-              <span class="dcard__cta">{tt.cta} <span aria-hidden="true">→</span></span>
-            </a>
+            )}
           </li>
         );
       })}
     </ul>
 
-    <p class="download__req" data-reveal>{tt.requirements}</p>
+    <p class="download__req" data-reveal>
+      {tt.requirements}{' '}
+      <a href={withLang('/download', lang)}>{tt.allOptions} →</a>
+    </p>
   </div>
 </section>
+
+<PlatformHighlight />
 
 <style>
   .download { padding-block: clamp(64px, 9vh, 130px); }
@@ -81,10 +97,9 @@ const tt = useT(getLang(Astro.url)).download;
     background: var(--color-surface);
     border: 1px solid var(--color-line);
     color: var(--color-text);
-    text-decoration: none;
     transition: border-color var(--dur-micro) var(--ease);
   }
-  .dcard:hover, .dcard:focus-visible { border-color: var(--color-violet); }
+  .dcard:hover, .dcard:focus-within { border-color: var(--color-violet); }
   .dcard[data-detected] { border-color: var(--color-violet); background: var(--color-violet-dim); }
 
   .dcard__top {
@@ -110,14 +125,28 @@ const tt = useT(getLang(Astro.url)).download;
     font-size: 14px;
     color: var(--color-muted);
   }
-  .dcard__cta {
+  .dcard__links {
     margin-top: auto;
     padding-top: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .dcard__cta {
     font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 500;
     color: var(--color-violet-2);
+    text-decoration: none;
   }
+  .dcard__cta:hover, .dcard__cta:focus-visible { color: var(--color-text); text-decoration: underline; }
+  .dcard__alt {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--color-muted);
+  }
+  .dcard__alt a { color: var(--color-muted); }
+  .dcard__alt a:hover, .dcard__alt a:focus-visible { color: var(--color-violet-2); }
 
   .download__req {
     margin-top: var(--space-8);
@@ -125,25 +154,10 @@ const tt = useT(getLang(Astro.url)).download;
     font-size: 13px;
     color: var(--color-muted);
   }
+  .download__req a { color: var(--color-violet-2); }
 
   @media (max-width: 860px) {
     .download { padding-block: var(--space-16); }
     .download__grid { grid-template-columns: 1fr; }
   }
 </style>
-
-<script>
-  import { detectPlatform } from '../../../lib/desktop';
-
-  const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
-  const os = detectPlatform({
-    uaPlatform: nav.userAgentData?.platform,
-    platform: nav.platform,
-    userAgent: nav.userAgent,
-  });
-  const card = os && document.querySelector<HTMLElement>(`[data-download-grid] [data-platform="${os}"]`);
-  if (card) {
-    card.setAttribute('data-detected', '');
-    card.querySelector('[data-detected-tag]')?.removeAttribute('hidden');
-  }
-</script>

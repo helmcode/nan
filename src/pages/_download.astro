@@ -1,0 +1,198 @@
+---
+// /download — one card per Helmcode Desktop build. Every button is a one-click
+// stable URL (`releases/latest/download/<asset>`, see lib/desktop): it always
+// serves the newest release and never carries a version. Zero JS required;
+// PlatformHighlight only highlights the visitor's OS.
+import NanPage from '../layouts/NanPage.astro';
+import PlatformHighlight from '../components/nan/desktop/PlatformHighlight.astro';
+import { getLang, useT } from '../lib/i18n';
+import {
+  DESKTOP_BUILDS,
+  DESKTOP_ISSUES_URL,
+  DESKTOP_REPO_URL,
+  DESKTOP_SECURITY_URL,
+  desktopAssetUrl,
+  fileExt,
+} from '../lib/desktop';
+
+const lang = getLang(Astro.url);
+const dict = useT(lang);
+const tt = dict.downloadPage;
+const dl = dict.download;
+---
+
+<NanPage title={tt.metaTitle} description={tt.metaDesc}>
+  <section class="dlp">
+    <div class="container">
+      <p class="eyebrow">{tt.eyebrow}</p>
+      <h1 class="dlp__title caret-type">{tt.title}</h1>
+      <p class="dlp__sub">{tt.sub}</p>
+
+      <ul class="dlp__grid" data-download-grid>
+        {DESKTOP_BUILDS.map((b) => (
+          <li class="dlcard" data-platform={b.platform} data-build={b.id}>
+            <span class="dlcard__top">
+              <span class="dlcard__name">{dl.platforms[b.platform].name}</span>
+              <span class="dlcard__tag" data-detected-tag hidden>{dl.detected}</span>
+            </span>
+            <span class="dlcard__arch">{dl.arch[b.id]}</span>
+            <span class="dlcard__req">{tt.requires} {b.minOs}</span>
+            <a class="btn btn-primary dlcard__btn" href={desktopAssetUrl(b.file)} rel="noopener">
+              {dl.cta} {fileExt(b.file)}
+            </a>
+            <span class="dlcard__file">{b.file}</span>
+            {b.alternates.length > 0 && (
+              <span class="dlcard__alt">
+                {dl.also}{' '}
+                {b.alternates.map((file, i) => (
+                  <>{i > 0 && ' · '}<a href={desktopAssetUrl(file)} rel="noopener">{fileExt(file)}</a></>
+                ))}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      <p class="dlp__hint">{tt.macHint}</p>
+
+      <div class="dlp__notes">
+        <div class="dlp__note" id="unsigned">
+          <h2 class="dlp__h2">{tt.unsignedTitle}</h2>
+          <p>{tt.unsignedBody}</p>
+          <ul>
+            <li>{tt.unsignedMac}</li>
+            <li>{tt.unsignedWin}</li>
+          </ul>
+          <p><a href={DESKTOP_SECURITY_URL} rel="noopener">{tt.securityLink} →</a></p>
+        </div>
+        <div class="dlp__note">
+          <h2 class="dlp__h2">{tt.moreTitle}</h2>
+          <ul class="dlp__links">
+            <li><a href={`${DESKTOP_REPO_URL}/releases`} rel="noopener">{tt.releasesLink} →</a></li>
+            <li><a href={DESKTOP_ISSUES_URL} rel="noopener">{tt.feedbackLink} →</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <PlatformHighlight />
+</NanPage>
+
+<style>
+  .dlp { padding-block: clamp(48px, 8vh, 120px) clamp(64px, 10vh, 140px); }
+
+  .dlp__title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: var(--fs-h1);
+    line-height: 1.0;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+  .dlp__sub {
+    margin-top: var(--space-8);
+    max-width: 60ch;
+    font-size: clamp(16px, 1.15vw, 18px);
+    line-height: 1.7;
+  }
+
+  .dlp__grid {
+    list-style: none;
+    margin: var(--space-12) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-6);
+  }
+
+  .dlcard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: 22px 20px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    transition: border-color var(--dur-micro) var(--ease);
+  }
+  .dlcard:hover, .dlcard:focus-within { border-color: var(--color-violet); }
+  .dlcard[data-detected] { border-color: var(--color-violet); background: var(--color-violet-dim); }
+
+  .dlcard__top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+  .dlcard__name {
+    font-family: var(--font-serif);
+    font-size: clamp(26px, 2.2vw, 34px);
+    line-height: 1.1;
+  }
+  .dlcard__tag {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--color-violet-2);
+  }
+  .dlcard__tag[hidden] { display: none; }
+  .dlcard__arch {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--color-text);
+  }
+  .dlcard__req, .dlcard__file, .dlcard__alt {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--color-muted);
+  }
+  .dlcard__file { overflow-wrap: anywhere; }
+  .dlcard__req { margin-bottom: var(--space-4); }
+  .dlcard__btn { margin-top: auto; }
+  .dlcard__alt a { color: var(--color-muted); }
+  .dlcard__alt a:hover, .dlcard__alt a:focus-visible { color: var(--color-violet-2); }
+
+  .dlp__hint {
+    margin-top: var(--space-6);
+    max-width: 80ch;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+
+  .dlp__notes {
+    margin-top: var(--space-16);
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--space-12);
+    border-top: 1px solid var(--color-line);
+    padding-top: var(--space-12);
+  }
+  .dlp__h2 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: var(--fs-h3);
+    color: var(--color-text);
+    margin-bottom: var(--space-4);
+  }
+  .dlp__note p, .dlp__note li {
+    color: var(--color-body);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  .dlp__note ul { padding-left: 1.2em; margin-block: var(--space-4); }
+  .dlp__note a { color: var(--color-link); text-decoration-color: var(--color-link-line); }
+  .dlp__note a:hover { color: var(--color-text); }
+  .dlp__links { list-style: none; padding: 0 !important; margin-top: 0 !important; }
+  .dlp__links li + li { margin-top: var(--space-3); }
+
+  @media (max-width: 1100px) {
+    .dlp__grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 860px) {
+    .dlp__notes { grid-template-columns: 1fr; gap: var(--space-8); }
+  }
+  @media (max-width: 600px) {
+    .dlp__grid { grid-template-columns: 1fr; }
+  }
+</style>

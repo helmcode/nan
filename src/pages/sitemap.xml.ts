@@ -23,6 +23,7 @@ const BILINGUAL = [
   '/gauntlet',
   '/projects',
   '/community',
+  '/download',
   '/privacy',
   '/terms',
   '/cookies',
