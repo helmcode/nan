@@ -71,6 +71,30 @@ describe('terms: token packs v2 (EN)', () => {
     expect(p).toContain('grace period the balance is paused and the expiry date keeps running');
   });
 
+  // §1.3 and §3.2: the perk and the allowance-first draw are Inference,
+  // Premium and Gentle only; a Community member pays list price and draws
+  // every token from the pack balance, like an account without a membership.
+  test('names the plans with the 5% perk and the allowance-first draw (never Community)', () => {
+    expect(p).toContain('Members with an active Inference, Premium or Gentle subscription pay 5% less on every pack');
+    expect(p).toContain('With an active Inference, Premium or Gentle subscription, pack tokens are only used once');
+    expect(p).toContain('Without one (including a Community membership), every token you use is drawn from your pack balance');
+    expect(p).not.toContain('Members with an active subscription pay 5% less');
+    expect(p).not.toContain('With a membership, pack tokens');
+    expect(para(src, 'token-packs-holds')).toContain('if you have no active Inference, Premium or Gentle subscription, your API key is revoked');
+  });
+
+  // §2: while glm5.3 is not sold as a pack (flag off), a v1 glm5.3 balance
+  // is only usable by a subscribed premium member.
+  test('a premium-model balance from an earlier offer needs the premium tier', () => {
+    expect(p).toContain(
+      'A balance for a premium model bought under an earlier offer can only be used while you have an active Premium subscription, as long as that model is not sold as a pack',
+    );
+  });
+
+  test('a payment completed after the checkout session expired is refunded', () => {
+    expect(para(src, 'token-packs-refunds')).toContain('completes after the checkout expired');
+  });
+
   test('EUR catalogue and the USD rule', () => {
     expect(p).toContain('Prices are in euros');
     expect(p).toContain('already set to US dollars');
@@ -142,6 +166,29 @@ describe('terms: token packs v2 (ES)', () => {
     expect(p).toContain('cada token que usas se descuenta de tu saldo de ese modelo');
     expect(p).toContain('no incluyen Discord, Spaces, generación de imágenes, el endpoint MCP');
     expect(p).toContain('periodo de gracia, el saldo queda en pausa y la fecha de caducidad sigue corriendo');
+  });
+
+  test('nombra los planes con el 5% y con la cuota primero (nunca Community)', () => {
+    expect(p).toContain('Los miembros con una suscripción activa a Inference, Premium o Gentle pagan un 5% menos en cada paquete');
+    expect(p).toContain('Con una suscripción activa a Inference, Premium o Gentle, los tokens de un paquete solo se usan');
+    expect(p).toContain('Sin ella (también con una membresía Community), cada token que usas se descuenta de tu saldo');
+    expect(p).not.toContain('Los miembros con una suscripción activa pagan');
+    expect(p).not.toContain('Con membresía, los tokens');
+    expect(para(src, 'token-packs-holds')).toContain(
+      'si no tienes una suscripción activa a Inference, Premium o Gentle, tu clave de API se revoca',
+    );
+  });
+
+  test('un saldo de un modelo premium de una oferta anterior necesita el nivel premium', () => {
+    expect(p).toContain(
+      'Un saldo de un modelo premium comprado con una oferta anterior, mientras ese modelo no se venda como paquete, solo se puede usar con una suscripción Premium activa',
+    );
+  });
+
+  test('un pago completado tras caducar la sesión de pago se reembolsa', () => {
+    const r = para(src, 'token-packs-refunds');
+    expect(r).toContain('después de que la sesión de pago haya caducado');
+    expect(r).not.toContain('después de que el pago haya caducado');
   });
 
   test('catálogo en euros y regla del dólar', () => {

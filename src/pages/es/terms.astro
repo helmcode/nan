@@ -62,16 +62,19 @@ import Legal from '../../layouts/NanLegal.astro';
     una suscripción y no se renueva. Puedes comprar paquetes de tokens con o sin membresía. Los paquetes se venden en
     cuatro tamaños (500M, 1.000M, 5.000M y 15.000M tokens) para los modelos que ofrece el portal en el momento de la
     compra; un paquete solo funciona con el modelo para el que se compró, y los tokens de entrada y de salida cuentan
-    igual. Los miembros con una suscripción activa pagan un 5% menos en cada paquete. Los tokens comprados son válidos
+    igual. Los miembros con una suscripción activa a
+    Inference, Premium o Gentle pagan un 5% menos en cada paquete. Los tokens comprados son válidos
     durante 6 meses desde tu última compra para ese modelo: cada nueva compra para el mismo modelo, manual o
     automática, suma sus tokens y amplía todo el saldo restante de ese modelo a 6 meses desde esa compra. Los tokens
-    caducados se pierden. Con membresía, los tokens de un paquete solo se usan cuando has agotado tu cuota mensual o
+    caducados se pierden. Con una suscripción activa a Inference, Premium o Gentle, los tokens de un
+    paquete solo se usan cuando has agotado tu cuota mensual o
     del periodo para ese modelo; la cuota se sigue renovando con normalidad y nunca consume ni reinicia el saldo del
-    paquete. Sin membresía, cada token que usas se descuenta de tu saldo de ese modelo, y las peticiones a ese modelo
+    paquete. Sin ella (también con una membresía Community), cada token que usas se
+    descuenta de tu saldo de ese modelo, y las peticiones a ese modelo
     se detienen cuando el saldo llega a cero. Los paquetes de tokens dan acceso a la API de inferencia para los modelos
     en los que tienes saldo; no incluyen Discord, Spaces, generación de imágenes, el endpoint MCP ni ninguna otra
-    función de los planes. Un saldo comprado con una oferta anterior para un modelo que ya no se vende como paquete se
-    puede seguir usando hasta que se agote o caduque. Mientras el pago de tu membresía está en su periodo de gracia, el
+    función de los planes. Un saldo comprado con una oferta anterior para un modelo que ya no se vende como paquete se puede seguir usando hasta que se agote o caduque. Un saldo de un modelo premium comprado con una oferta
+    anterior, mientras ese modelo no se venda como paquete, solo se puede usar con una suscripción Premium activa. Mientras el pago de tu membresía está en su periodo de gracia, el
     saldo queda en pausa y la fecha de caducidad sigue corriendo. Los precios están en euros. Si tu cuenta de
     facturación ya está en dólares estadounidenses, se te cobra en dólares: el precio en euros por 1,08, redondeado al
     alza al dólar entero, antes del descuento para suscriptores. Los precios se muestran antes de la compra e incluyen
@@ -84,7 +87,7 @@ import Legal from '../../layouts/NanLegal.astro';
     ley, o un contracargo o disputa del pago, retira los tokens abonados por esa compra de tu saldo. Para proteger a
     los miembros y a los titulares de tarjetas, limitamos cuántos paquetes se pueden comprar al día por cuenta y por
     tarjeta, y podemos pedir a tu banco que autentique el pago. Un pago que supera esos límites, que no coincide con el
-    precio mostrado en el pago o que se completa después de que el pago haya caducado se reembolsa íntegramente y no
+    precio mostrado en el pago o que se completa después de que la sesión de pago haya caducado se reembolsa íntegramente y no
     se abona ningún token. Los paquetes de tokens no levantan ningún otro límite: siguen aplicándose la concurrencia,
     límites de peticiones y uso razonable.
   </p>
@@ -92,7 +95,8 @@ import Legal from '../../layouts/NanLegal.astro';
     <strong>Retenciones y bloqueos.</strong> Si un pago de paquetes de tokens, o cualquier otro pago de tu cuenta, se
     disputa o el emisor de la tarjeta lo marca como posible fraude, o si una tarjeta se usa en más cuentas de las que
     permitimos, podemos retener los paquetes de tokens de tu cuenta: todos los saldos de paquetes quedan congelados,
-    las recargas automáticas se desactivan y, si no tienes membresía, tu clave de API se revoca hasta que se resuelva
+    las recargas automáticas se desactivan y, si no tienes una suscripción activa a Inference, Premium o
+    Gentle, tu clave de API se revoca hasta que se resuelva
     la retención. Una disputa resuelta a tu favor restaura los tokens y cierra la retención, y podemos cerrar una
     retención tras revisarla; la recarga automática sigue desactivada hasta que la vuelvas a activar. Si tu cuenta se
     bloquea por incumplir estos términos, tu clave de API se revoca, las recargas automáticas se desactivan y el saldo

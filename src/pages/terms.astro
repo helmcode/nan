@@ -55,16 +55,18 @@ import Legal from '../layouts/NanLegal.astro';
     <strong>Token packs.</strong> A token pack is a one-time purchase of tokens for a single model; it is not a
     subscription and does not renew. You can buy token packs with or without a membership. Packs are sold in four
     sizes (500M, 1,000M, 5,000M and 15,000M tokens) for the models offered in the portal at the time of purchase; a
-    pack only works with the model it was bought for, and input and output tokens count alike. Members with an active
+    pack only works with the model it was bought for, and input and output tokens count alike. Members with an active Inference, Premium or Gentle
     subscription pay 5% less on every pack. Purchased tokens are valid for 6 months from your last purchase for that
     model: each new purchase for the same model, manual or automatic, adds its tokens and extends the whole remaining
-    balance of that model to 6 months from that purchase. Expired tokens are lost. With a membership, pack tokens are
+    balance of that model to 6 months from that purchase. Expired tokens are lost. With an active Inference, Premium or Gentle subscription, pack tokens are
     only used once your monthly or period allowance for that model is used up; the allowance keeps resetting as usual
-    and never consumes or resets the pack balance. Without a membership, every token you use is drawn from your pack
-    balance for that model, and requests to that model stop when the balance reaches zero. Token packs give access to
+    and never consumes or resets the pack balance. Without one (including a Community membership), every token you use is drawn from
+    your pack balance for that model, and requests to that model stop when the balance reaches zero. Token packs give access to
     the inference API for the models you hold a balance for; they do not include Discord, Spaces, image generation,
     the MCP endpoint or any other plan feature. A balance bought under an earlier offer for a model that is no longer
-    sold as a pack stays usable until it runs out or expires. While your membership payment is in its grace period the
+    sold as a pack stays usable until it runs out or expires. A balance for a premium model bought under an
+    earlier offer can only be used while you have an active Premium subscription, as long as that model is not sold
+    as a pack. While your membership payment is in its grace period the
     balance is paused and the expiry date keeps running. Prices are in euros. If your billing account is already set
     to US dollars, you are charged in dollars: the euro price times 1.08, rounded up to the whole dollar, before the
     subscriber discount. Prices are shown before purchase and include taxes; no VAT is added at checkout.
@@ -82,8 +84,8 @@ import Legal from '../layouts/NanLegal.astro';
   <p id="token-packs-holds">
     <strong>Holds and bans.</strong> If a token pack payment, or any other payment on your account, is disputed or
     flagged as possible fraud by the card issuer, or if a card is used on more accounts than we allow, we may put
-    token packs on hold for your account: all pack balances are frozen, automatic recharges are turned off and, if you
-    have no membership, your API key is revoked until the hold is resolved. A dispute decided in your favour restores
+    token packs on hold for your account: all pack balances are frozen, automatic recharges are turned off and, if you have no active Inference, Premium or Gentle
+    subscription, your API key is revoked until the hold is resolved. A dispute decided in your favour restores
     the tokens and closes the hold, and we may close a hold after review; automatic recharge stays off until you turn
     it on again. If your account is banned for a breach of these terms, your API key is revoked, automatic recharges
     are turned off and any remaining pack balance is forfeited without refund.
