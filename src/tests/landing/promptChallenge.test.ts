@@ -4,7 +4,13 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import en from '../../../i18n/en.json';
 import es from '../../../i18n/es.json';
-import { PROMPT_CHALLENGE_ERROR_CODES, outcomeFromStored, tokenize, validateAnswer } from '../../scripts/promptChallenge';
+import {
+  PROMPT_CHALLENGE_ERROR_CODES,
+  errorMessage,
+  outcomeFromStored,
+  tokenize,
+  validateAnswer,
+} from '../../scripts/promptChallenge';
 
 /**
  * /prompt es un formulario público, sin login, que escribe en el backend de
@@ -17,6 +23,9 @@ import { PROMPT_CHALLENGE_ERROR_CODES, outcomeFromStored, tokenize, validateAnsw
  *    para acabar en un error genérico.
  *  - **Los códigos de error son un contrato con el backend.** Una clave que
  *    falte en un idioma sale vacía y nadie se entera hasta producción.
+ *  - **El visitante nunca ve un código crudo.** El backend puede contestar con
+ *    algo fuera del contrato (`internal`, un código nuevo): si se cae el
+ *    filtro, el usuario lee "internal" en pantalla.
  *
  * El estado del DOM (los tres pasos, localStorage) vive en un script vainilla
  * y el entorno de test es `node`, sin jsdom: se prueba la lógica pura y el
@@ -132,6 +141,7 @@ describe('códigos de error del backend', () => {
       'prompt_too_short',
       'prompt_too_long',
       'invalid_twitter',
+      'body_too_large',
       'already_submitted',
       'rate_limited',
       'challenge_full',
@@ -144,7 +154,7 @@ describe('códigos de error del backend', () => {
   ] as const) {
     test(`los errores de ${lang} son el contrato más el mensaje genérico`, () => {
       // Una clave que el backend manda y el diccionario no tiene sale como el
-      // mensaje genérico, o como el código crudo si tampoco hay genérico.
+      // mensaje genérico, nunca como el código crudo.
       const keys = Object.keys(dict.nan.prompt.errors);
       expect([...keys].sort()).toEqual([...PROMPT_CHALLENGE_ERROR_CODES, 'generic'].sort());
     });
@@ -164,6 +174,61 @@ describe('códigos de error del backend', () => {
     for (const lang of LANGS) {
       const question = (lang === 'en' ? en : es).nan.prompt.question as Record<string, unknown>;
       expect(question).not.toHaveProperty('sending');
+    }
+  });
+});
+
+describe('el mensaje que se enseña por un código de error', () => {
+  // Diccionario mínimo, en inglés: la función es pura y el idioma es cosa del
+  // diccionario, así que aquí solo importa qué mensaje elige.
+  const DICT = {
+    prompt_too_long: 'Too long.',
+    already_submitted: 'One answer per network.',
+    generic: 'Try again.',
+  };
+
+  test('un código del contrato con mensaje devuelve ese mensaje', () => {
+    expect(errorMessage('prompt_too_long', DICT)).toBe('Too long.');
+    expect(errorMessage('already_submitted', DICT)).toBe('One answer per network.');
+  });
+
+  test('un código del contrato sin mensaje en el diccionario cae al genérico', () => {
+    // rate_limited está en el contrato pero no en este diccionario.
+    expect(errorMessage('rate_limited', DICT)).toBe('Try again.');
+  });
+
+  test('un código fuera del contrato nunca se enseña crudo', () => {
+    // El backend puede contestar cualquier cosa; el filtro es lo que impide que
+    // el visitante lea "internal" en pantalla. El diccionario lleva una entrada
+    // para ese código a propósito: aunque exista, un código fuera del contrato
+    // no la usa.
+    const hostile = { internal: 'RAW internal', nope: 'RAW nope', generic: 'Try again.' };
+    for (const code of ['internal', 'nope', '', '__proto__', 'toString', 'constructor']) {
+      expect(errorMessage(code, hostile), `código ${JSON.stringify(code)}`).toBe('Try again.');
+    }
+  });
+
+  test('los códigos de siempre siguen enseñando su mensaje del diccionario', () => {
+    // Comportamiento previo al extraer la función: `messages[code] ?? messages.generic`.
+    // Si el filtro empezara a rechazar códigos del contrato, esto se rompe.
+    for (const code of PROMPT_CHALLENGE_ERROR_CODES) {
+      expect(errorMessage(code, es.nan.prompt.errors), `código ${code}`).toBe(
+        (es.nan.prompt.errors as Record<string, string>)[code],
+      );
+    }
+  });
+
+  test('un código del contrato sin diccionario devuelve una frase estable', () => {
+    // Sin `data-messages` no hay nada que enseñar: nunca `undefined` ni el
+    // código crudo, y siempre la misma frase.
+    const fallback = errorMessage('body_too_large', {});
+    expect(typeof fallback).toBe('string');
+    expect(fallback.length).toBeGreaterThan(0);
+    expect(fallback).not.toBe('body_too_large');
+    expect(fallback).not.toBe('generic');
+    expect(fallback).not.toBe('undefined');
+    for (const code of ['generic', 'internal', '', '__proto__']) {
+      expect(errorMessage(code, {}), `código ${JSON.stringify(code)}`).toBe(fallback);
     }
   });
 });

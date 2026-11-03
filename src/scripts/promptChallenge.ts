@@ -22,11 +22,15 @@ const THINKING_MS = 2000;
 type Outcome = 'answered' | 'already_submitted';
 
 /** The error codes the backend can answer with. Anything else is not part of
- * the contract and falls back to the generic message, never to a raw code. */
+ * the contract and falls back to the generic message, never to a raw code.
+ * Matches the status codes ARCHITECTURE.md documents for this endpoint (400
+ * validation, 413 `body_too_large`, 409 `already_submitted`, 429
+ * `rate_limited`, 503 `challenge_full`). */
 export const PROMPT_CHALLENGE_ERROR_CODES = [
   'prompt_too_short',
   'prompt_too_long',
   'invalid_twitter',
+  'body_too_large',
   'already_submitted',
   'rate_limited',
   'challenge_full',
@@ -39,6 +43,26 @@ const PROMPT_MAX = 2000;
 const HANDLE = /^@?[A-Za-z0-9_]{1,15}$/;
 
 type Messages = Record<string, string>;
+
+/** Last resort when the page arrives without its `data-messages` dictionary:
+ * a stable sentence, never a raw code and never `undefined`. */
+const FALLBACK_MESSAGE = 'Something went wrong. Try again in a few minutes.';
+
+/**
+ * Turns a backend error code into the line the visitor reads. Only the codes in
+ * PROMPT_CHALLENGE_ERROR_CODES are part of the contract: anything else — a code
+ * added to the backend but not here, `internal`, an empty string, a prototype
+ * key such as `__proto__` — gets the generic message, so nobody ever sees a raw
+ * code on screen. A contract code whose dictionary entry is missing falls back
+ * the same way, and the generic message itself falls back to FALLBACK_MESSAGE.
+ */
+export function errorMessage(code: string, messages: Messages): string {
+  const inContract = (PROMPT_CHALLENGE_ERROR_CODES as readonly string[]).includes(code);
+  const own = inContract ? messages[code] : undefined;
+  if (typeof own === 'string') return own;
+  const generic = messages.generic;
+  return typeof generic === 'string' ? generic : FALLBACK_MESSAGE;
+}
 
 const reducedMotion = (): boolean =>
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -161,10 +185,6 @@ export function initPromptChallenge(): void {
   }
   const lang = root.dataset.lang === 'es' ? 'es' : 'en';
 
-  const known = new Set<string>([...PROMPT_CHALLENGE_ERROR_CODES, 'generic']);
-  const message = (code: string): string =>
-    known.has(code) ? (messages[code] ?? messages.generic ?? code) : (messages.generic ?? code);
-
   const show = (n: number | 'thinking', focus = true) => {
     for (const step of steps) step.hidden = step.dataset.step !== String(n);
     if (!focus) return;
@@ -173,7 +193,7 @@ export function initPromptChallenge(): void {
   };
 
   const showError = (code: string) => {
-    errorBox.textContent = message(code);
+    errorBox.textContent = errorMessage(code, messages);
     errorBox.hidden = false;
   };
 
@@ -195,7 +215,7 @@ export function initPromptChallenge(): void {
   const finish = async (outcome: Outcome) => {
     remember(outcome);
     if (outcome === 'already_submitted') {
-      const text = message('already_submitted');
+      const text = errorMessage('already_submitted', messages);
       if (answerSr) answerSr.textContent = text;
       if (answerGhost) answerGhost.textContent = text;
       show(3);
@@ -215,7 +235,7 @@ export function initPromptChallenge(): void {
   // with no replay and no request.
   const restore = (outcome: Outcome) => {
     if (outcome === 'already_submitted') {
-      const text = message('already_submitted');
+      const text = errorMessage('already_submitted', messages);
       if (answerSr) answerSr.textContent = text;
       if (answerGhost) answerGhost.textContent = text;
       if (answerOut) answerOut.textContent = text;

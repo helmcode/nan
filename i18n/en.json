@@ -1029,6 +1029,7 @@
         "prompt_too_short": "The prompt is too short: write at least 10 characters.",
         "prompt_too_long": "The prompt is longer than 2000 characters.",
         "invalid_twitter": "That X/Twitter handle is not valid (letters, digits and _ only, up to 15).",
+        "body_too_large": "The request body was too large for the endpoint to accept it.",
         "already_submitted": "We already got an answer from this network. Only one is accepted per connection.",
         "rate_limited": "Too many attempts in a row. Wait a minute and try again.",
         "challenge_full": "The challenge no longer accepts answers.",
