@@ -2,7 +2,7 @@
 import Legal from '../../layouts/NanLegal.astro';
 ---
 
-<Legal title="Términos del servicio" updated="November 1, 2026">
+<Legal title="Términos del servicio" updated="November 3, 2026">
   <p>
     NaN está operada por <strong>Helmcode S.L.</strong> (NIF B44788511), Avenida Quinto Centenario 27,
     Santiago del Teide, España. Contacto: <a href="mailto:info@helmcode.com">info@helmcode.com</a>.
@@ -58,20 +58,63 @@ import Legal from '../../layouts/NanLegal.astro';
   </p>
 
   <p id="token-packs">
-    <strong>Paquetes de tokens.</strong> Un paquete de tokens es una compra única de tokens extra para un solo modelo;
-    no es una suscripción y no se renueva. Los tokens comprados son válidos durante 6 meses desde tu última compra para
-    ese modelo: cada nueva compra para el mismo modelo suma sus tokens y amplía todo el saldo restante de ese modelo a
-    6 meses desde esa compra. Los tokens caducados se pierden. Los tokens extra solo se usan cuando has agotado tu
-    cuota mensual o del periodo para ese modelo; la cuota se sigue renovando con normalidad y nunca consume ni
-    reinicia el saldo extra. Los tokens extra solo se pueden usar mientras tengas una membresía de inferencia activa
-    (y el tier premium para los modelos premium). Si tu membresía termina o pierdes el acceso a un modelo premium, el
-    saldo queda en pausa y la fecha de caducidad sigue corriendo. Los paquetes de tokens no son reembolsables. Según
-    la normativa de consumo de la UE, el contenido digital está sujeto normalmente a un derecho de desistimiento: los
-    paquetes de tokens se suministran de inmediato a petición expresa tuya, y aceptas que pierdes tu derecho de
-    desistimiento una vez suministrados. Un reembolso exigido por ley, o un contracargo o disputa del pago, retira
-    los tokens abonados por esa compra de tu saldo. Los paquetes de tokens no levantan ningún otro límite: siguen
-    aplicándose la concurrencia, límites de peticiones y uso razonable. Los precios se muestran antes de la compra e
-    incluyen impuestos; no se añade IVA en el pago.
+    <strong>Paquetes de tokens.</strong> Un paquete de tokens es una compra única de tokens para un solo modelo; no es
+    una suscripción y no se renueva. Puedes comprar paquetes de tokens con o sin membresía. Los paquetes se venden en
+    cuatro tamaños (500M, 1.000M, 5.000M y 15.000M tokens) para los modelos que ofrece el portal en el momento de la
+    compra; un paquete solo funciona con el modelo para el que se compró, y los tokens de entrada y de salida cuentan
+    igual. Los miembros con una suscripción activa a
+    Inference, Premium o Gentle pagan un 5% menos en cada paquete. Los tokens comprados son válidos
+    durante 6 meses desde tu última compra para ese modelo: cada nueva compra para el mismo modelo, manual o
+    automática, suma sus tokens y amplía todo el saldo restante de ese modelo a 6 meses desde esa compra. Los tokens
+    caducados se pierden. Con una suscripción activa a Inference, Premium o Gentle, los tokens de un
+    paquete solo se usan cuando has agotado tu cuota mensual o
+    del periodo para ese modelo; la cuota se sigue renovando con normalidad y nunca consume ni reinicia el saldo del
+    paquete. Sin ella (también con una membresía Community), cada token que usas se
+    descuenta de tu saldo de ese modelo, y las peticiones a ese modelo
+    se detienen cuando el saldo llega a cero. Los paquetes de tokens dan acceso a la API de inferencia para los modelos
+    en los que tienes saldo; no incluyen Discord, Spaces, generación de imágenes, el endpoint MCP ni ninguna otra
+    función de los planes. Un saldo comprado con una oferta anterior para un modelo que ya no se vende como paquete se puede seguir usando hasta que se agote o caduque. Un saldo de un modelo premium comprado con una oferta
+    anterior, mientras ese modelo no se venda como paquete, solo se puede usar con una suscripción Premium activa. Mientras el pago de tu membresía está en su periodo de gracia, el
+    saldo queda en pausa y la fecha de caducidad sigue corriendo. Los precios están en euros. Si tu cuenta de
+    facturación ya está en dólares estadounidenses, se te cobra en dólares: el precio en euros por 1,08, redondeado al
+    alza al dólar entero, antes del descuento para suscriptores. Los precios se muestran antes de la compra e incluyen
+    impuestos; no se añade IVA en el pago.
+  </p>
+  <p id="token-packs-refunds">
+    Los paquetes de tokens no son reembolsables. Según la normativa de consumo de la UE, el contenido digital está
+    sujeto normalmente a un derecho de desistimiento: los paquetes de tokens se suministran de inmediato a petición
+    expresa tuya, y aceptas que pierdes tu derecho de desistimiento una vez suministrados. Un reembolso exigido por
+    ley, o un contracargo o disputa del pago, retira los tokens abonados por esa compra de tu saldo. Para proteger a
+    los miembros y a los titulares de tarjetas, limitamos cuántos paquetes se pueden comprar al día por cuenta y por
+    tarjeta, y podemos pedir a tu banco que autentique el pago. Un pago que supera esos límites, que no coincide con el
+    precio mostrado en el pago o que se completa después de que la sesión de pago haya caducado se reembolsa íntegramente y no
+    se abona ningún token. Los paquetes de tokens no levantan ningún otro límite: siguen aplicándose la concurrencia,
+    límites de peticiones y uso razonable.
+  </p>
+  <p id="token-packs-holds">
+    <strong>Retenciones y bloqueos.</strong> Si un pago de paquetes de tokens, o cualquier otro pago de tu cuenta, se
+    disputa o el emisor de la tarjeta lo marca como posible fraude, o si una tarjeta se usa en más cuentas de las que
+    permitimos, podemos retener los paquetes de tokens de tu cuenta: todos los saldos de paquetes quedan congelados,
+    las recargas automáticas se desactivan y, si no tienes una suscripción activa a Inference, Premium o
+    Gentle, tu clave de API se revoca hasta que se resuelva
+    la retención. Una disputa resuelta a tu favor restaura los tokens y cierra la retención, y podemos cerrar una
+    retención tras revisarla; la recarga automática sigue desactivada hasta que la vuelvas a activar. Si tu cuenta se
+    bloquea por incumplir estos términos, tu clave de API se revoca, las recargas automáticas se desactivan y el saldo
+    restante de paquetes se pierde sin reembolso.
+  </p>
+  <p id="token-packs-auto-recharge">
+    <strong>Recarga automática.</strong> Cuando esté disponible, puedes activar la recarga automática para cada
+    modelo: cada vez que tu saldo de ese modelo valga menos que el umbral que fijes (valorado a tu precio actual del
+    paquete de 1.000M de ese modelo), cobramos a tu tarjeta guardada el precio del paquete que elegiste. Está
+    desactivada por defecto; activarla requiere tu aceptación expresa de esos cobros, que registramos con su fecha, y
+    no cobra nada por sí misma. Las recargas automáticas están limitadas por un tope mensual que tú fijas (10 euros
+    por defecto) y a 3 recargas automáticas cada 24 horas entre todos los modelos. Si se rechaza un cobro, lo
+    reintentamos hasta tres veces más, tras 1 hora, 24 horas y 72 horas; si tu banco te pide confirmar un pago, te
+    pedimos confirmarlo en un plazo de 72 horas en lugar de reintentarlo. Tras el último intento fallido, un pago sin
+    confirmar o la eliminación de la tarjeta, la recarga automática de ese modelo se desactiva. Puedes desactivarla en
+    cualquier momento; un cobro ya enviado a tu banco se completa igualmente. La recarga automática solo está
+    disponible en euros. Cada recarga automática es una compra de paquete de tokens sujeta a estos términos, incluida
+    la pérdida del derecho de desistimiento y que los paquetes no son reembolsables.
   </p>
 
   <p id="ephemeral-prepaid">
