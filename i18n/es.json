@@ -1023,7 +1023,8 @@
       },
       "thinking": "Pensando",
       "done": {
-        "answer": "Tu prompt es bastante complejo. Tardaremos unos meses, quizás años, en conseguirlo: ya hemos pedido más GPUs y a nuestro modelo le ha salido la primera cana. Pero tarde o temprano, lo tendrás."
+        "answer": "Tu prompt es bastante complejo. Tardaremos unos meses, quizás años, en conseguirlo...\n\nYa hemos pedido más GPUs y a nuestro modelo le ha salido la primera cana. Pero tarde o temprano,",
+        "handwritten": "lo tendrás."
       },
       "errors": {
         "prompt_too_short": "El prompt es demasiado corto: escribe al menos 10 caracteres.",

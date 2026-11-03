@@ -1023,7 +1023,8 @@
       },
       "thinking": "Thinking",
       "done": {
-        "answer": "Your prompt is quite complex. It will take us a few months, maybe years, to get there: we've already ordered more GPUs and our model just found its first grey hair. But sooner or later, you will have it."
+        "answer": "Your prompt is quite complex. It will take us a few months, maybe years, to get there...\n\nWe've already ordered more GPUs and our model just found its first grey hair. But sooner or later,",
+        "handwritten": "you will have it."
       },
       "errors": {
         "prompt_too_short": "The prompt is too short: write at least 10 characters.",
