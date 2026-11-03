@@ -1,0 +1,179 @@
+---
+/**
+ * Prompt engineering challenge: a three-step form with no login.
+ *
+ * Shared body of `/prompt` and `/es/prompt`. The answers go to the events
+ * backend (POST /api/events/prompt-challenge, through the /api/events/*
+ * proxy), which limits by IP and keeps one answer per IP. The behaviour lives
+ * in scripts/promptChallenge.ts.
+ *
+ * Shared by link for a campaign, not search content: noindex and left out of
+ * the sitemap, like /survey.
+ */
+import NanPage from '../layouts/NanPage.astro';
+import { getLang, useT } from '../lib/i18n';
+
+const lang = getLang(Astro.url);
+const tt = useT(lang).prompt;
+const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
+---
+
+<NanPage title={tt.metaTitle} description={tt.metaDesc} noindex nofollow>
+  <section
+    class="pc"
+    data-prompt-challenge
+    data-lang={lang}
+    data-sending={tt.question.sending}
+    data-messages={JSON.stringify(tt.errors)}>
+    <div class="container">
+      <div class="pc__wrap">
+        <p class="eyebrow">{tt.kicker}</p>
+
+        <div class="pc__step" data-step="1">
+          <p class="pc__count">{step(1)}</p>
+          <h1 class="pc__title" tabindex="-1" data-step-title>{tt.intro.title}</h1>
+          <button class="btn btn-primary pc__cta" type="button" data-prompt-start>{tt.intro.cta}</button>
+        </div>
+
+        <div class="pc__step" data-step="2" hidden>
+          <p class="pc__count">{step(2)}</p>
+          <h2 class="pc__title" tabindex="-1" data-step-title>{tt.question.title}</h2>
+          <form class="pc__form" data-prompt-form novalidate>
+            <label class="pc__label" for="pc-prompt">{tt.question.promptLabel}</label>
+            <textarea
+              class="field pc__textarea"
+              id="pc-prompt"
+              name="prompt"
+              rows="8"
+              minlength="10"
+              maxlength="2000"
+              required
+              aria-describedby="pc-prompt-hint"
+              placeholder={tt.question.promptPlaceholder}></textarea>
+            <p class="pc__hint" id="pc-prompt-hint">{tt.question.promptHint}</p>
+
+            <label class="pc__label" for="pc-twitter">{tt.question.twitterLabel}</label>
+            <input
+              class="field pc__input"
+              id="pc-twitter"
+              name="twitter"
+              type="text"
+              maxlength="16"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder={tt.question.twitterPlaceholder} />
+
+            {/* Honeypot: hidden from people and assistive tech, filled in by bots. */}
+            <div class="pc__trap" aria-hidden="true">
+              <label for="pc-website">Website</label>
+              <input id="pc-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <p class="pc__error" role="alert" data-prompt-error hidden></p>
+            <button class="btn btn-primary pc__cta" type="submit">{tt.question.submit}</button>
+          </form>
+        </div>
+
+        <div class="pc__step" data-step="3" hidden>
+          <p class="pc__count">{step(3)}</p>
+          <h2 class="pc__title" tabindex="-1" data-step-title>{tt.done.title}</h2>
+          <p class="pc__lead">{tt.done.body}</p>
+          <p class="pc__hint" data-prompt-done-note hidden></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</NanPage>
+
+<style>
+  .pc {
+    padding: clamp(64px, 12vw, 140px) 0 clamp(64px, 10vw, 120px);
+  }
+  .pc__wrap {
+    max-width: 760px;
+  }
+  .pc__step {
+    margin-top: var(--space-4);
+  }
+  .pc__count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .pc__title {
+    margin-top: var(--space-3);
+    font-size: clamp(28px, 4.4vw, 44px);
+    line-height: 1.15;
+    color: var(--color-text);
+  }
+  .pc__title:focus {
+    outline: none;
+  }
+  .pc__lead {
+    margin-top: var(--space-4);
+    font-size: 18px;
+    color: var(--color-body);
+  }
+  .pc__cta {
+    margin-top: clamp(28px, 4vw, 40px);
+  }
+  .pc__form {
+    margin-top: clamp(24px, 3.6vw, 36px);
+    display: flex;
+    flex-direction: column;
+  }
+  .pc__label {
+    margin-top: var(--space-5);
+    margin-bottom: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-text);
+  }
+  .pc__label:first-child {
+    margin-top: 0;
+  }
+  .pc__textarea {
+    height: auto;
+    min-height: 180px;
+    padding: 14px 16px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  .pc__input {
+    max-width: 320px;
+  }
+  .pc__hint {
+    margin-top: var(--space-2);
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+  .pc__error {
+    margin-top: var(--space-5);
+    padding: 12px 16px;
+    border: 1px solid var(--color-violet);
+    color: var(--color-text);
+    font-size: 14.5px;
+  }
+  .pc__form .pc__cta {
+    align-self: flex-start;
+  }
+  .pc__form .pc__cta:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+  /* Off-screen rather than display:none: some bots skip fields that are not rendered. */
+  .pc__trap {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  import { initPromptChallenge } from '../scripts/promptChallenge';
+  initPromptChallenge();
+</script>

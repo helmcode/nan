@@ -1,0 +1,10 @@
+---
+// Route wrapper: the body lives in the sibling `_` file, outside the route
+// tree. A page that imports another page loses its CSS attribution and is
+// served without <link rel="stylesheet"> (guarded by routeWrappers.test.ts).
+import Page from './_prompt.astro';
+
+export const prerender = false;
+---
+
+<Page />
