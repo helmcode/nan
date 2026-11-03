@@ -44,6 +44,9 @@ const BILINGUAL = [
  *                                  queramos en el buscador. Si algún día se
  *                                  quiere indexar, se quitan las dos banderas
  *                                  de _survey.astro y se añade aquí.
+ *   /prompt y /es/prompt        -> prompt engineering challenge form, shared
+ *                                  by link for a campaign: noindex and
+ *                                  nofollow, like /survey.
  *   /404                        -> noindex
  *   /api/*                      -> no son páginas
  */
