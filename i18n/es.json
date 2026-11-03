@@ -1023,9 +1023,7 @@
       },
       "thinking": "Pensando",
       "done": {
-        "joke": "Tras 2 segundos de razonamiento profundo, nuestro modelo concluye que tu prompt es… mejor que el nuestro. No se lo digas a nadie.",
-        "title": "¡Respuesta recibida!",
-        "body": "Pronto anunciaremos los resultados."
+        "answer": "Tu prompt es bastante complejo. Tardaremos unos meses, quizás años, en conseguirlo: ya hemos pedido más GPUs y a nuestro modelo le ha salido la primera cana. Pero tarde o temprano, lo tendrás."
       },
       "errors": {
         "prompt_too_short": "El prompt es demasiado corto: escribe al menos 10 caracteres.",
