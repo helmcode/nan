@@ -31,7 +31,6 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
     class="pc"
     data-prompt-challenge
     data-lang={lang}
-    data-sending={tt.question.sending}
     data-messages={JSON.stringify(tt.errors)}>
       <div class="pc__wrap">
         <div class="pc__step" data-step="1">
@@ -44,7 +43,7 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
         <div class="pc__step" data-step="2" hidden>
           <p class="eyebrow">{tt.kicker}</p>
           <p class="pc__count">{step(2)}</p>
-          <h2 class="pc__title" tabindex="-1" data-step-title>{tt.question.title}</h2>
+          <h2 class="pc__title" id="pc-question" tabindex="-1" data-step-title>{tt.question.title}</h2>
           <form class="pc__form" data-prompt-form novalidate>
             <label class="pc__label" for="pc-prompt">{tt.question.promptLabel}</label>
             <textarea
@@ -55,7 +54,7 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
               minlength="10"
               maxlength="2000"
               required
-              aria-describedby="pc-prompt-hint"
+              aria-describedby="pc-question pc-prompt-hint pc-error"
               placeholder={tt.question.promptPlaceholder}></textarea>
             <p class="pc__hint" id="pc-prompt-hint">{tt.question.promptHint}</p>
 
@@ -68,6 +67,7 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
               maxlength="16"
               autocomplete="off"
               spellcheck="false"
+              aria-describedby="pc-error"
               placeholder={tt.question.twitterPlaceholder} />
 
             {/* Honeypot: hidden from people and assistive tech, filled in by bots. */}
@@ -76,7 +76,7 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
               <input id="pc-website" name="website" type="text" tabindex="-1" autocomplete="off" />
             </div>
 
-            <p class="pc__error" role="alert" tabindex="-1" data-prompt-error hidden></p>
+            <p class="pc__error" id="pc-error" role="alert" tabindex="-1" data-prompt-error hidden></p>
             <button class="btn btn-primary pc__cta" type="submit">{tt.question.submit}</button>
           </form>
         </div>
@@ -140,12 +140,6 @@ const step = (n: number) => tt.stepLabel.replace('{n}', String(n));
   }
   .pc__title:focus {
     outline: none;
-  }
-  .pc__lead {
-    margin-top: var(--space-4);
-    font-size: 18px;
-    line-height: 1.5;
-    color: var(--color-body);
   }
   .pc__cta {
     margin-top: 32px;

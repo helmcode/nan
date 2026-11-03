@@ -7,14 +7,36 @@
  * answer goes to POST /api/events/prompt-challenge through the same-origin
  * events proxy; the backend enforces one answer per IP and the rate limits.
  *
- * Once an answer is in (201) or the backend says this IP already answered
- * (409), the browser remembers it and opens straight on step 3 next time, so
- * a returning visitor costs no request at all. That is a convenience, not the
- * guard: clearing storage only leads back to the backend's 409. */
+ * The browser also remembers which outcome it saw: an answer of this browser
+ * (201) or the backend's "this network already answered" notice (409). They
+ * are not the same thing — the 409 is decided per IP, so it never says this
+ * person answered — and a returning visitor must see the state they ended on,
+ * so the outcome is what gets stored. That is a convenience, not the guard:
+ * clearing storage only leads back to the backend's 409. */
 
 const SENT_KEY = 'nan.promptChallenge.sent';
 const ENDPOINT = '/api/events/prompt-challenge';
 const THINKING_MS = 2000;
+
+/** What this browser can remember about its last visit. */
+type Outcome = 'answered' | 'already_submitted';
+
+/** The error codes the backend can answer with. Anything else is not part of
+ * the contract and falls back to the generic message, never to a raw code. */
+export const PROMPT_CHALLENGE_ERROR_CODES = [
+  'prompt_too_short',
+  'prompt_too_long',
+  'invalid_twitter',
+  'already_submitted',
+  'rate_limited',
+  'challenge_full',
+] as const;
+
+type ErrorCode = (typeof PROMPT_CHALLENGE_ERROR_CODES)[number];
+
+const PROMPT_MIN = 10;
+const PROMPT_MAX = 2000;
+const HANDLE = /^@?[A-Za-z0-9_]{1,15}$/;
 
 type Messages = Record<string, string>;
 
@@ -39,6 +61,22 @@ export function tokenize(text: string): string[] {
     }
   }
   return tokens;
+}
+
+/**
+ * Checks the two fields before the request leaves the browser, so a typo costs
+ * no round trip and no rate-limit budget, and the visitor is told which field
+ * to fix while still on step 2. Length is counted in code points, not UTF-16
+ * units: 2000 emoji are 4000 `.length` and the backend would take them.
+ * Returns the matching error code, or null when the answer can be sent.
+ */
+export function validateAnswer(prompt: string, handle: string): ErrorCode | null {
+  const length = [...prompt.trim()].length;
+  if (length < PROMPT_MIN) return 'prompt_too_short';
+  if (length > PROMPT_MAX) return 'prompt_too_long';
+  const user = handle.trim();
+  if (user !== '' && !HANDLE.test(user)) return 'invalid_twitter';
+  return null;
 }
 
 // Stream pacing, in ms: [minimum, random extra].
@@ -68,17 +106,27 @@ async function stream(text: string, out: HTMLElement, caret: HTMLElement | null)
   if (caret) caret.hidden = true;
 }
 
-function remembered(): boolean {
+/** The outcome stored by the last visit, or null when there is none worth
+ * replaying. Pure, so the screening rule is testable in node: '1' is what
+ * early builds stored for both outcomes and can only have been an accepted
+ * answer, so it is read as one; a foreign value (another page, a hand-edited
+ * key) opens the form as usual. */
+export function outcomeFromStored(value: string | null): Outcome | null {
+  if (value === 'answered' || value === 'already_submitted') return value;
+  return value === '1' ? 'answered' : null;
+}
+
+function remembered(): Outcome | null {
   try {
-    return localStorage.getItem(SENT_KEY) === '1';
+    return outcomeFromStored(localStorage.getItem(SENT_KEY));
   } catch {
-    return false;
+    return null;
   }
 }
 
-function remember(): void {
+function remember(outcome: Outcome): void {
   try {
-    localStorage.setItem(SENT_KEY, '1');
+    localStorage.setItem(SENT_KEY, outcome);
   } catch {
     /* private mode or blocked storage: the backend still refuses a repeat */
   }
@@ -101,6 +149,10 @@ export function initPromptChallenge(): void {
   const submitBtn = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
   if (!form || !startBtn || !errorBox || !submitBtn) return;
 
+  const promptField = form.querySelector<HTMLTextAreaElement>('textarea[name="prompt"]');
+  const twitterField = form.querySelector<HTMLInputElement>('input[name="twitter"]');
+  const fields = [promptField, twitterField];
+
   let messages: Messages = {};
   try {
     messages = JSON.parse(root.dataset.messages ?? '{}') as Messages;
@@ -108,8 +160,10 @@ export function initPromptChallenge(): void {
     /* keep the generic fallback below */
   }
   const lang = root.dataset.lang === 'es' ? 'es' : 'en';
-  const submitLabel = submitBtn.textContent ?? '';
-  const sendingLabel = root.dataset.sending ?? submitLabel;
+
+  const known = new Set<string>([...PROMPT_CHALLENGE_ERROR_CODES, 'generic']);
+  const message = (code: string): string =>
+    known.has(code) ? (messages[code] ?? messages.generic ?? code) : (messages.generic ?? code);
 
   const show = (n: number | 'thinking', focus = true) => {
     for (const step of steps) step.hidden = step.dataset.step !== String(n);
@@ -119,48 +173,73 @@ export function initPromptChallenge(): void {
   };
 
   const showError = (code: string) => {
-    errorBox.textContent = messages[code] ?? messages.generic ?? code;
+    errorBox.textContent = message(code);
     errorBox.hidden = false;
   };
 
+  // The message and the red field both go away as soon as the visitor starts
+  // fixing the field the message is about.
+  const clearFieldError = () => {
+    errorBox.hidden = true;
+    errorBox.textContent = '';
+    for (const field of fields) field?.removeAttribute('aria-invalid');
+  };
+  for (const field of fields) field?.addEventListener('input', clearFieldError);
+
   const answerText = answerEl?.dataset.answer ?? '';
 
-  // `code` is set when the backend says this IP already answered: the
-  // "answer" is then that notice, with no handwritten ending.
-  const finish = async (code?: string) => {
-    remember();
-    const text = code ? (messages[code] ?? '') : answerText;
-    if (code) {
+  // `answered` is this browser's accepted answer: the joke, then the last
+  // words written by hand. `already_submitted` is only "this network answered",
+  // which the backend decides per IP, so the answer never appears and neither
+  // does the handwriting.
+  const finish = async (outcome: Outcome) => {
+    remember(outcome);
+    if (outcome === 'already_submitted') {
+      const text = message('already_submitted');
       if (answerSr) answerSr.textContent = text;
       if (answerGhost) answerGhost.textContent = text;
+      show(3);
+      if (answerOut) await stream(text, answerOut, answerCaret);
+      return;
     }
     show(3);
     if (!answerOut) return;
-    await stream(text, answerOut, answerCaret);
-    if (code || !answerHand) return;
+    await stream(answerText, answerOut, answerCaret);
+    if (!answerHand) return;
     // Then the last words are "written by hand".
     answerHand.classList.add('is-writing');
     answerHand.hidden = false;
   };
 
-  // A returning visitor sees the answer already written, no replay.
-  if (remembered()) {
+  // A returning visitor sees the outcome they ended on, already written and
+  // with no replay and no request.
+  const restore = (outcome: Outcome) => {
+    if (outcome === 'already_submitted') {
+      const text = message('already_submitted');
+      if (answerSr) answerSr.textContent = text;
+      if (answerGhost) answerGhost.textContent = text;
+      if (answerOut) answerOut.textContent = text;
+      show(3, false);
+      return;
+    }
     if (answerOut) answerOut.textContent = answerText;
     if (answerHand) answerHand.hidden = false;
     show(3, false);
-    return;
-  }
+  };
+
+  const previous = remembered();
+  if (previous) return restore(previous);
   show(1, false);
 
   // "I'm ready" opens the question with the cursor already in the box.
   startBtn.addEventListener('click', () => {
     show(2, false);
-    form.querySelector<HTMLTextAreaElement>('textarea[name="prompt"]')?.focus();
+    promptField?.focus();
   });
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    errorBox.hidden = true;
+    clearFieldError();
     const data = new FormData(form);
     const body = {
       prompt: String(data.get('prompt') ?? ''),
@@ -169,8 +248,18 @@ export function initPromptChallenge(): void {
       lang,
     };
 
+    // Checked here, not by the backend: an empty or half-typed answer must not
+    // swap in the "Thinking" screen, spend a request or eat the IP's budget.
+    const invalid = validateAnswer(body.prompt, body.twitter);
+    if (invalid) {
+      const field = invalid === 'invalid_twitter' ? twitterField : promptField;
+      field?.setAttribute('aria-invalid', 'true');
+      showError(invalid);
+      field?.focus();
+      return;
+    }
+
     submitBtn.disabled = true;
-    submitBtn.textContent = sendingLabel;
     show('thinking');
     // The request and the minimum "thinking" time run together, so a fast
     // answer still shows the animation and a slow one adds no extra wait.
@@ -193,9 +282,8 @@ export function initPromptChallenge(): void {
     }
     await minThinking;
     submitBtn.disabled = false;
-    submitBtn.textContent = submitLabel;
-    if (code === null) return void finish();
-    if (code === 'already_submitted') return void finish(code);
+    if (code === null) return void finish('answered');
+    if (code === 'already_submitted') return void finish('already_submitted');
     show(2, false);
     showError(code);
     errorBox.focus();

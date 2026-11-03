@@ -1018,8 +1018,7 @@
         "promptHint": "Between 10 and 2000 characters.",
         "twitterLabel": "Your X/Twitter handle (optional)",
         "twitterPlaceholder": "@handle",
-        "submit": "Send prompt",
-        "sending": "Sending…"
+        "submit": "Send prompt"
       },
       "thinking": "Thinking",
       "done": {
@@ -1030,7 +1029,7 @@
         "prompt_too_short": "The prompt is too short: write at least 10 characters.",
         "prompt_too_long": "The prompt is longer than 2000 characters.",
         "invalid_twitter": "That X/Twitter handle is not valid (letters, digits and _ only, up to 15).",
-        "already_submitted": "You had already sent your answer from this connection.",
+        "already_submitted": "We already got an answer from this network. Only one is accepted per connection.",
         "rate_limited": "Too many attempts in a row. Wait a minute and try again.",
         "challenge_full": "The challenge no longer accepts answers.",
         "generic": "It could not be sent. Try again in a few minutes."
