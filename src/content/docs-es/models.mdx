@@ -530,6 +530,8 @@ mira el [límite de stream solo-razonamiento](#límite-de-stream-solo-razonamien
 más abajo. Todos los modelos de chat soportan streaming en los dos endpoints
 (`/v1/chat/completions` y `/v1/responses`).
 
+Un stream no trae recuento de tokens salvo que lo pidas: añade `stream_options: {"include_usage": true}` a una petición de `/v1/chat/completions` y el último chunk antes de `[DONE]` lleva el `usage` de todo el turno (tokens de prompt, de respuesta y de razonamiento). Sin eso los frames solo llevan la respuesta, y un cliente que necesite cuadrar su cuota mensual tiene que contar tokens por su cuenta. `/v1/responses` informa el uso en su evento final, sin flag.
+
 ## Límite de stream solo-razonamiento.
 
 Los prompts que exigen mucho razonamiento pueden dejar al modelo pensando

@@ -514,6 +514,8 @@ A request without `stream: true` returns nothing until the whole answer is ready
 
 If you ask for long outputs (a large `max_tokens`, long code files, agents that write whole documents), use `stream: true`. A stream has no total time limit while it keeps producing: tokens reach you as they are generated, however long the answer runs. The one exception is a turn that produces only reasoning for a long time, see the [reasoning-only stream limit](#reasoning-only-stream-limit) below. Every chat model supports streaming on both endpoints (`/v1/chat/completions` and `/v1/responses`).
 
+A stream carries no token counts unless you ask for them: add `stream_options: {"include_usage": true}` to a `/v1/chat/completions` request and the last chunk before `[DONE]` carries `usage` for the whole turn (prompt, completion and reasoning tokens). Without it the frames carry the answer only, and a client that needs to budget against its monthly quota has to count tokens itself. `/v1/responses` reports usage in its terminal event, no flag needed.
+
 ## Reasoning-only stream limit.
 
 Reasoning-heavy prompts can keep a model thinking for a long time before it writes anything. When a streaming turn has produced only reasoning — no `content`, no tool calls — for **420 seconds**, the platform closes the turn instead of letting it run into a dead end. A turn that is demonstrably thinking — it has already produced more than 45,000 reasoning characters — gets until **600 seconds**. The reasoning-character budget also scales with the size of your prompt: roughly 150,000 characters of headroom plus half the prompt's size in characters, capped at 300,000. When the platform closes the turn you receive `finish_reason: "length"` on an empty delta, followed by a usage chunk.
