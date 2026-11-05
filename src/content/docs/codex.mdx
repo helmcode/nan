@@ -85,6 +85,19 @@ Mind the name: Codex wants "a plain name" and **rejects dots**, so `qwen3.6` is 
 
 The rest of your `config.toml` - your provider, your MCP servers, your permissions - still applies; the profile only overrides what it names. The [NaN CLI](/docs/nan-cli) writes them for you, one per chat model on the cluster, prefixed `nan-` and with the dots dropped: `nan-glm53-flash`, `nan-deepseek-v4-flash`, `nan-mimo-v26-flash`, `nan-qwen36`... Disconnecting Codex takes them away again.
 
+### Switching inside a session with `/model`
+
+On its own, `/model` in a NaN session lists only OpenAI's models, and the cluster answers every one of them with a `401`: Codex fills the picker from OpenAI's catalogue and cannot read the cluster's `/v1/models` as one. A catalogue file of your own fixes that. From v0.1.31 the NaN CLI writes `~/.codex/nan-models.json` with the cluster's chat models, each with its window, and points the `nan-` profiles at it:
+
+```toml
+# in each ~/.codex/nan-*.config.toml
+model_catalog_json = "C:/Users/you/.codex/nan-models.json"
+```
+
+Start with any of them, `codex --profile nan-glm53-flash`, and `/model` then lists every NaN model; pick another and the session carries on with it, at that model's window. It goes in the profiles and not in `config.toml` because a catalogue replaces OpenAI's: there it would take their models out of your OpenAI sessions.
+
+What it cannot do is mix the two. The provider is fixed for the whole session, so going from an OpenAI model to a NaN one, or back, is a relaunch: `codex` on its own for OpenAI, `codex --profile nan-...` for NaN. `codex resume --profile nan-glm53-flash` picks up an earlier conversation with a NaN model.
+
 ## Recommended model
 
 `glm5.3-flash` for coding work. If you have the premium tier, `glm5.3`. For one-off questions that do not touch files, `deepseek-v4-flash` is more than enough.
@@ -97,6 +110,6 @@ The rest of your `config.toml` - your provider, your MCP servers, your permissio
 - **A repeated `model_context_window`.** NaN CLI versions before 0.1.20 appended one at the end of the file on every setup run. Two of them is a duplicate key and Codex will not load the file: the CLI says `duplicate key` and the desktop app opens an error dialog and nothing else. 0.1.20 leaves one and puts it where it is read from.
 - **`401 This API key does not have access to the requested model`.** Despite the wording, the key is usually fine: the model is one the cluster does not serve. Either `model_provider` points at the cluster but `model` is still an OpenAI one, or the model has been retired - `mimo-v2.5` is now `mimo-v2.6-flash`. Check the id against [Models](/docs/models). NaN CLI 0.1.30 swaps the `nan-mimo-v25` profile for `nan-mimo-v26-flash` the next time you run its Setup.
 - **On `qwen3.6` and `gemma4` the answer still arrives all at once** at the end of the turn. It is not a hang: on those two the cluster's `/responses` holds the answer until it is complete. Every other model streams it as it is written.
-- **`Model metadata for ... not found. Defaulting to fallback metadata`** on every turn. It is noise: Codex prints it before it reads your `model_context_window`, and the window it ends up using is yours.
+- **`Model metadata for ... not found. Defaulting to fallback metadata`** on every turn. It means Codex has no catalogue entry for the model, and it is harmless: it prints it before it reads your `model_context_window`, and the window it ends up using is yours. With the catalogue above (NaN CLI 0.1.31) it no longer appears.
 
 </Details>
