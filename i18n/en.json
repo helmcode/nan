@@ -1064,6 +1064,101 @@
         "challenge_full": "The challenge no longer accepts answers.",
         "generic": "It could not be sent. Try again in a few minutes."
       }
+    },
+    "factcheck": {
+      "metaTitle": "#2 NaN Hackathon: Fact Check",
+      "metaDesc": "NaN's second hackathon: fact-checking software built with Clef, Cloudflare's decision model. November 13, 14 and 15, 2026.",
+      "hero": {
+        "hash": "#2",
+        "brand": "NaN",
+        "title": "Hackathon",
+        "kicker": "Fact Check",
+        "sub": "We all know what happens on November 29 in Spain.",
+        "dates": "November 13 · 14 · 15, 2026",
+        "datesLabel": "Dates",
+        "cta": "Sign up"
+      },
+      "loop": {
+        "label": "Clef checking claims",
+        "steps": [
+          "Parsing the claim",
+          "Retrieving evidence",
+          "Clef decides"
+        ],
+        "verdicts": {
+          "true": "True",
+          "false": "False"
+        },
+        "claims": [
+          {
+            "text": "Humans only use 10% of their brain.",
+            "verdict": "false"
+          },
+          {
+            "text": "Bananas are slightly radioactive.",
+            "verdict": "true"
+          },
+          {
+            "text": "The Great Wall of China is visible to the naked eye from the Moon.",
+            "verdict": "false"
+          },
+          {
+            "text": "Octopuses have three hearts.",
+            "verdict": "true"
+          },
+          {
+            "text": "Lightning never strikes the same place twice.",
+            "verdict": "false"
+          },
+          {
+            "text": "Sharks have been around longer than trees.",
+            "verdict": "true"
+          },
+          {
+            "text": "Goldfish only have a three-second memory.",
+            "verdict": "false"
+          },
+          {
+            "text": "A day on Venus lasts longer than a year on Venus.",
+            "verdict": "true"
+          }
+        ]
+      },
+      "qa": {
+        "when": {
+          "q": "When?",
+          "month": "November 2026",
+          "weekdays": [
+            "M",
+            "T",
+            "W",
+            "T",
+            "F",
+            "S",
+            "S"
+          ],
+          "a": "Friday 13, Saturday 14 and Sunday 15 November 2026",
+          "start": "Kicks off on Friday at 17:00 (Madrid time)"
+        },
+        "where": {
+          "q": "Where?",
+          "big": "Discord",
+          "a": "In the NaN community"
+        },
+        "goal": {
+          "q": "What's the goal?",
+          "a": "Build an app that tells whether a claim is",
+          "t": "true",
+          "or": "or",
+          "f": "false",
+          "sub": "Using Clef, Cloudflare's decision model, through NaN."
+        },
+        "prize": {
+          "q": "What's the prize?",
+          "amount": "€200",
+          "a": "A €200 NaN subscription for one month"
+        }
+      }
     }
   }
 }

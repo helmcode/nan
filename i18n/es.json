@@ -1064,6 +1064,101 @@
         "challenge_full": "El reto ya no admite más respuestas.",
         "generic": "No se ha podido enviar. Inténtalo de nuevo en unos minutos."
       }
+    },
+    "factcheck": {
+      "metaTitle": "#2 NaN Hackathon: Fact Check",
+      "metaDesc": "El segundo hackathon de NaN: software de fact-checking con Clef, el modelo de decisión de Cloudflare. 13, 14 y 15 de noviembre de 2026.",
+      "hero": {
+        "hash": "#2",
+        "brand": "NaN",
+        "title": "Hackathon",
+        "kicker": "Fact Check",
+        "sub": "Todos sabemos lo que pasa el 29 de noviembre en España.",
+        "dates": "13 · 14 · 15 noviembre 2026",
+        "datesLabel": "Fechas",
+        "cta": "Apúntate"
+      },
+      "loop": {
+        "label": "Clef verificando afirmaciones",
+        "steps": [
+          "Analizando la afirmación",
+          "Buscando evidencias",
+          "Clef decide"
+        ],
+        "verdicts": {
+          "true": "Verdadero",
+          "false": "Falso"
+        },
+        "claims": [
+          {
+            "text": "Los humanos solo usamos el 10 % del cerebro.",
+            "verdict": "false"
+          },
+          {
+            "text": "Los plátanos son ligeramente radiactivos.",
+            "verdict": "true"
+          },
+          {
+            "text": "La Gran Muralla China se ve a simple vista desde la Luna.",
+            "verdict": "false"
+          },
+          {
+            "text": "Los pulpos tienen tres corazones.",
+            "verdict": "true"
+          },
+          {
+            "text": "Un rayo nunca cae dos veces en el mismo sitio.",
+            "verdict": "false"
+          },
+          {
+            "text": "Los tiburones existen desde antes que los árboles.",
+            "verdict": "true"
+          },
+          {
+            "text": "Los peces de colores solo recuerdan tres segundos.",
+            "verdict": "false"
+          },
+          {
+            "text": "Un día en Venus dura más que un año en Venus.",
+            "verdict": "true"
+          }
+        ]
+      },
+      "qa": {
+        "when": {
+          "q": "¿Cuándo?",
+          "month": "Noviembre 2026",
+          "weekdays": [
+            "L",
+            "M",
+            "X",
+            "J",
+            "V",
+            "S",
+            "D"
+          ],
+          "a": "Viernes 13, sábado 14 y domingo 15 de noviembre de 2026",
+          "start": "Arranca el viernes a las 17:00 (hora peninsular)"
+        },
+        "where": {
+          "q": "¿Dónde?",
+          "big": "Discord",
+          "a": "En la comunidad de NaN"
+        },
+        "goal": {
+          "q": "¿Cuál es el objetivo?",
+          "a": "Crea una app que diga si una afirmación es",
+          "t": "verdadera",
+          "or": "o",
+          "f": "falsa",
+          "sub": "Con Clef, el modelo de decisión de Cloudflare, a través de NaN."
+        },
+        "prize": {
+          "q": "¿Cuál es el premio?",
+          "amount": "200 €",
+          "a": "Suscripción de 200 € durante un mes en NaN"
+        }
+      }
     }
   }
 }
