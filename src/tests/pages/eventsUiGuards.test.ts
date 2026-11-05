@@ -156,3 +156,28 @@ describe('event cover (B-27)', () => {
     expect(base).toContain('const ogImageGeneric = !image;');
   });
 });
+
+describe('event access (B-28)', () => {
+  const page = readFileSync(resolve(src, 'pages/events/[slug]/_index.astro'), 'utf-8');
+  const es = JSON.parse(readFileSync(resolve(src, '../i18n/es.json'), 'utf-8'));
+  const en = JSON.parse(readFileSync(resolve(src, '../i18n/en.json'), 'utf-8'));
+
+  test('the published panel picks its copy from ev.access, with a neutral fallback', () => {
+    expect(page).toMatch(/ev\.access === 'members'\s*\? \{ title: phase\.publishedMembersTitle, body: phase\.publishedMembers \}/);
+    expect(page).toMatch(/ev\.access === 'open'\s*\? \{ title: phase\.publishedOpenTitle, body: phase\.publishedOpen \}/);
+    expect(page).toMatch(/: \{ title: phase\.publishedTitle, body: phase\.published \}/);
+  });
+
+  test('both locales carry the three variants and only the open one says "everyone"', () => {
+    for (const dict of [es, en]) {
+      const phase = dict.events.phase;
+      for (const key of ['publishedTitle', 'published', 'publishedOpenTitle', 'publishedOpen', 'publishedMembersTitle', 'publishedMembers']) {
+        expect(phase[key], key).toBeTruthy();
+      }
+      expect(phase.publishedTitle).not.toMatch(/todos|everyone/i);
+      expect(phase.publishedMembersTitle).not.toMatch(/todos|everyone/i);
+    }
+    expect(es.events.phase.publishedOpenTitle).toBe('Abierto a todos');
+    expect(en.events.phase.publishedOpenTitle).toBe('Open to everyone');
+  });
+});
