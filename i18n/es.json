@@ -32,17 +32,21 @@
       "ics": "o descarga el .ics"
     },
     "login": {
-      "prompt": "Entra con tu cuenta NaN",
-      "description": "Introduce el email de tu cuenta NaN y te enviaremos un enlace para iniciar sesión. Es el mismo acceso que la plataforma.",
+      "prompt": "¿Ya eres de NaN? Inicia sesión",
+      "description": "Escribe el email de tu cuenta de NaN y te mandamos un enlace para entrar. Es el mismo acceso que la plataforma: no hace falta contraseña.",
       "emailLabel": "Email",
       "emailPlaceholder": "tu@email.com",
       "submit": "Enviar enlace",
       "submitting": "Enviando…",
-      "success": "Si ese email pertenece a un miembro de NaN, te hemos enviado un enlace para entrar. Revisa tu correo (y la carpeta de spam) y luego vuelve aquí.",
+      "success": "Si ese email tiene cuenta en NaN, te hemos mandado un enlace para entrar. Revisa tu correo (y la carpeta de spam) y vuelve aquí desde el enlace.",
       "errorEmail": "Introduce un email válido.",
       "errorRate": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
       "errorServer": "No se pudo enviar el enlace. Inténtalo de nuevo.",
-      "errorNetwork": "Error de red. Inténtalo de nuevo."
+      "errorNetwork": "Error de red. Inténtalo de nuevo.",
+      "noEmail": "¿No te llega en unos minutos? Puede que ese email no tenga cuenta en NaN.",
+      "newTitle": "¿Aún no eres de NaN?",
+      "newBody": "Para participar hace falta ser miembro de la comunidad de NaN (desde 14,99 €/mes). Únete y, después, vuelve a esta página para apuntarte.",
+      "newCta": "Únete a la comunidad"
     },
     "phase": {
       "notOpenTitle": "Todavía no está abierto",

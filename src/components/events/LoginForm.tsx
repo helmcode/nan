@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { TargetedSubmitEvent } from 'preact';
+import { HACKATHON_UNLOCK_URL } from '../../lib/eventEntitlement';
 
 export interface LoginStrings {
   prompt: string;
@@ -13,6 +14,12 @@ export interface LoginStrings {
   errorRate: string;
   errorServer: string;
   errorNetwork: string;
+  /** Hint under the success message: the link never arrives for an email without an account. */
+  noEmail: string;
+  /** Second path, for people who are not in NaN yet. */
+  newTitle: string;
+  newBody: string;
+  newCta: string;
 }
 
 type Status =
@@ -27,6 +34,21 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // NaN que usa la plataforma (POST /api/auth/login/request vía proxy same-origin)
 // y produce una sesión nan_session completa. Una vez validado el email, al
 // volver a la página del evento el usuario ya tiene sesión y puede inscribirse / votar.
+//
+// Quien llega sin sesión puede ser de dos tipos, y los dos tienen que ver su
+// camino: el miembro que no ha iniciado sesión (el formulario) y quien aún no
+// es de NaN (el bloque de abajo, que lleva al plan Community). El backend
+// responde 202 también para un email sin cuenta, así que el mensaje de éxito
+// no puede decir nada más: por eso recuerda el segundo camino.
+function JoinNaN({ t, compact = false }: { t: LoginStrings; compact?: boolean }) {
+  return (
+    <div class={compact ? 'mt-6 border-t border-neutral-800 pt-6 text-left' : 'border-t border-neutral-800 pt-6'}>
+      <p class="font-mono text-sm uppercase tracking-[0.2em] text-neutral-400">{t.newTitle}</p>
+      <p class="mt-3 max-w-prose text-base leading-relaxed text-neutral-300">{t.newBody}</p>
+      <a href={HACKATHON_UNLOCK_URL} rel="noopener" class="btn btn-ghost mt-5">{t.newCta} →</a>
+    </div>
+  );
+}
 export default function LoginForm({ t }: { t: LoginStrings }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
@@ -68,6 +90,8 @@ export default function LoginForm({ t }: { t: LoginStrings }) {
     return (
       <div role="status" class="border border-violet-500/40 bg-violet-500/10 p-8 text-center md:p-10">
         <p class="text-lg leading-relaxed text-white">{t.success}</p>
+        <p class="mt-4 text-base leading-relaxed text-neutral-400">{t.noEmail}</p>
+        <JoinNaN t={t} compact />
       </div>
     );
   }
@@ -95,6 +119,7 @@ export default function LoginForm({ t }: { t: LoginStrings }) {
       <button type="submit" disabled={submitting} class="btn btn-primary w-full disabled:opacity-50">
         {submitting ? t.submitting : t.submit}
       </button>
+      <JoinNaN t={t} />
     </form>
   );
 }

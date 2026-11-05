@@ -32,17 +32,21 @@
       "ics": "or download the .ics"
     },
     "login": {
-      "prompt": "Sign in with your NaN account",
-      "description": "Enter your NaN account email and we'll send you a link to sign in. It's the same access as the platform.",
+      "prompt": "Already in NaN? Sign in",
+      "description": "Enter your NaN account email and we'll send you a sign-in link. It's the same access as the platform: no password needed.",
       "emailLabel": "Email",
       "emailPlaceholder": "you@email.com",
       "submit": "Send link",
       "submitting": "Sending…",
-      "success": "If that email belongs to a NaN member, we've sent you a sign-in link. Check your inbox (and spam folder), then come back here.",
+      "success": "If that email has a NaN account, we've sent you a sign-in link. Check your inbox (and spam folder) and come back here through the link.",
       "errorEmail": "Enter a valid email.",
       "errorRate": "Too many attempts. Wait a moment and try again.",
       "errorServer": "Couldn't send the link. Try again.",
-      "errorNetwork": "Network error. Try again."
+      "errorNetwork": "Network error. Try again.",
+      "noEmail": "Nothing after a few minutes? That email may not have a NaN account.",
+      "newTitle": "Not in NaN yet?",
+      "newBody": "You need to be a member of the NaN community to take part (from €14.99/month). Join, then come back to this page to sign up.",
+      "newCta": "Join the community"
     },
     "phase": {
       "notOpenTitle": "Not open yet",
