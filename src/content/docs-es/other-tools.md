@@ -33,7 +33,7 @@ models:
     roles:
       - chat
       - edit
-  - name: DeepSeek V4 Flash
+  - name: DeepSeek V4-Flash (4.1-1017 version)
     provider: openai
     model: deepseek-v4-flash
     apiBase: https://api.nan.builders/v1
