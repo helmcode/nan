@@ -1066,62 +1066,92 @@
       }
     },
     "factcheck": {
-      "metaTitle": "#2 NaN Hackathon: Fact Check",
-      "metaDesc": "NaN's second hackathon: fact-checking software built with Clef, Cloudflare's decision model. November 13, 14 and 15, 2026.",
+      "metaTitle": "#2 NaN Hackathon: Decide with Clef",
+      "metaDesc": "NaN's second hackathon: apps that make decisions with Clef, Cloudflare's decision model, now on NaN. November 13, 14 and 15, 2026.",
       "hero": {
         "hash": "#2",
         "brand": "NaN",
         "title": "Hackathon",
-        "kicker": "Fact Check",
+        "kicker": "Decide with Clef",
         "dates": "November 13 · 14 · 15, 2026",
         "datesLabel": "Dates",
         "cta": "Sign up"
       },
       "loop": {
-        "label": "Clef checking claims",
+        "label": "Clef making decisions",
         "steps": [
-          "Parsing the claim",
-          "Retrieving evidence",
+          "Reading the case",
+          "Weighing the options",
           "Clef decides"
         ],
-        "verdicts": {
-          "true": "True",
-          "false": "False"
-        },
-        "claims": [
+        "cases": [
           {
-            "text": "Humans only use 10% of their brain.",
-            "verdict": "false"
+            "text": "The agent wants to run rm -rf / in production. Allow it?",
+            "tone": "no",
+            "answer": "Blocked"
           },
           {
-            "text": "Bananas are slightly radioactive.",
-            "verdict": "true"
+            "text": "“Write a haiku about cats.” Which model answers?",
+            "tone": "pick",
+            "answer": "qwen3.8-flash"
           },
           {
-            "text": "The Great Wall of China is visible to the naked eye from the Moon.",
-            "verdict": "false"
+            "text": "A carbonara made with cream. Is it carbonara?",
+            "tone": "no",
+            "answer": "Not a carbonara"
           },
           {
-            "text": "Octopuses have three hearts.",
-            "verdict": "true"
+            "text": "Ticket: “I can't log in and the demo is in an hour.” Urgency?",
+            "tone": "pick",
+            "answer": "High urgency"
           },
           {
-            "text": "Lightning never strikes the same place twice.",
-            "verdict": "false"
+            "text": "The defender handles the ball inside the box. Penalty?",
+            "tone": "yes",
+            "answer": "Penalty"
           },
           {
-            "text": "Sharks have been around longer than trees.",
-            "verdict": "true"
+            "text": "“Refactor this 40-file repo.” Which model answers?",
+            "tone": "pick",
+            "answer": "glm5.3"
           },
           {
-            "text": "Goldfish only have a three-second memory.",
-            "verdict": "false"
+            "text": "Comment: “Great talk, thanks for sharing!” Publish it?",
+            "tone": "yes",
+            "answer": "Publish"
           },
           {
-            "text": "A day on Venus lasts longer than a year on Venus.",
-            "verdict": "true"
+            "text": "The agent wants to email all 3,000 contacts. Allow it?",
+            "tone": "pick",
+            "answer": "Ask first"
           }
         ]
+      },
+      "clef": {
+        "label": "New on NaN",
+        "title": "Clef lands on NaN",
+        "lead": "Cloudflare's decision model joins the NaN models. It doesn't write text: you give it a case and some questions, and it returns the answer with its probability, ready for your code to use.",
+        "kinds": [
+          {
+            "name": "Yes or no",
+            "desc": "The probability that the answer is yes."
+          },
+          {
+            "name": "Choose",
+            "desc": "One option out of the ones you define, with its confidence."
+          },
+          {
+            "name": "Score",
+            "desc": "A grade against the rubric you give it."
+          }
+        ],
+        "facts": [
+          "~200 ms median",
+          "64K context",
+          "up to 4 images",
+          "open weights, Apache 2.0"
+        ],
+        "source": "Figures from Cloudflare."
       },
       "qa": {
         "when": {
@@ -1146,11 +1176,26 @@
         },
         "goal": {
           "q": "What's the goal?",
-          "a": "Build an app that tells whether a claim is",
-          "t": "true",
-          "or": "or",
-          "f": "false",
-          "sub": "Using Clef, Cloudflare's decision model, through NaN."
+          "a": "Build an app where Clef makes the call.",
+          "pick": "Pick a track",
+          "tracks": [
+            {
+              "name": "Model router",
+              "desc": "Let Clef pick which NaN model answers each request: a fast one for simple things, a large one for hard ones."
+            },
+            {
+              "name": "Agent guardrails",
+              "desc": "Let Clef decide whether an agent may run an action before it does."
+            },
+            {
+              "name": "Fact Check",
+              "desc": "An app that says whether a claim is true or false."
+            },
+            {
+              "name": "Open theme",
+              "desc": "Any other app where Clef decides. Surprise us."
+            }
+          ]
         },
         "prize": {
           "q": "What's the prize?",

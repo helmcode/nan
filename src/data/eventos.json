@@ -3,7 +3,7 @@
     { "date": "2026-07-31", "type": "workshop", "title": { "en": "Agent evaluation and tracing", "es": "Evaluación y trazabilidad de agentes" }, "by": "@Jasonjimnz" },
     { "date": "2026-08-07", "type": "workshop", "title": { "en": "#5 NaN Workshop: Gauntlet Loop", "es": "#5 Workshop de NaN: Gauntlet Loop" }, "by": "@sahul_125" },
     { "date": "2026-08-08", "until": "2026-09-03", "type": "event", "title": "Gauntlet Challenge", "href": "/gauntlet" },
-    { "date": "2026-11-13", "until": "2026-11-15", "type": "hackathon", "title": "#2 NaN Hackathon: Fact Check", "href": "/factcheck" }
+    { "date": "2026-11-13", "until": "2026-11-15", "type": "hackathon", "title": "#2 NaN Hackathon: Decide con Clef", "href": "/2hackaton" }
   ],
   "factcheck": {
     "start": "2026-11-13",

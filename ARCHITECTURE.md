@@ -165,7 +165,7 @@ website/
 │   │   │   ├── events/[...path].ts        # Events API proxy
 │   │   │   └── docs/                      # Docs manifest + markdown
 │   │   ├── docs/, events/, projects.astro, gauntlet.astro, survey.astro
-│   │   ├── _factcheck.astro, factcheck.astro  # Fact-Check Hackathon landing (13–15 Nov 2026, Clef). Announcement only: no form, no API; dates in data/eventos.json `factcheck`, CTA → /events/<eventSlug> (falls back to /community when `eventSlug` is null)
+│   │   ├── _factcheck.astro, 2hackaton.astro  # #2 NaN Hackathon landing at /2hackaton (13–15 Nov 2026, deciding with Clef). Announcement only: no form, no API; dates in data/eventos.json `factcheck`, CTA → /events/<eventSlug> (falls back to /community when `eventSlug` is null)
 │   ├── components/
 │   │   ├── nan/                           # Nav, Footer, CookieBanner, home/ sections
 │   │   ├── docs/                          # Docs shell components

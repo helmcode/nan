@@ -21,7 +21,7 @@ const BILINGUAL = [
   '/',
   '/events',
   '/gauntlet',
-  '/factcheck',
+  '/2hackaton',
   '/projects',
   '/community',
   '/download',

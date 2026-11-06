@@ -3,12 +3,13 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import eventos from '../../data/eventos.json';
+import modelos from '../../data/modelos.json';
 import { tObj } from '../../lib/i18n';
 
 /**
- * La landing del #2 Hackathon: Fact Check es, como la del Gauntlet, una PÁGINA
- * DE ANUNCIO: no guarda datos. Se construye sección a sección; por ahora solo
- * tiene el hero con el bucle afirmación → procesamiento → veredicto.
+ * La landing del #2 NaN Hackathon (decidir con Clef) es, como la del Gauntlet,
+ * una PÁGINA DE ANUNCIO: no guarda datos. Hero con el bucle caso → Clef evalúa
+ * → decisión, anuncio de Clef en NaN y preguntas con selector de categorías.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -41,7 +42,7 @@ describe('fechas del hackathon en eventos.json', () => {
   });
 
   test('la entrada de la agenda cubre exactamente el fin de semana', () => {
-    const row = (eventos.agenda ?? []).find((a) => a.href === '/factcheck');
+    const row = (eventos.agenda ?? []).find((a) => a.href === '/2hackaton');
     expect(row).toBeDefined();
     expect(row!.date).toBe(f.start);
     expect(row!.until).toBe(f.end);
@@ -81,15 +82,14 @@ describe('enlaces', () => {
 });
 
 type Hero = { hash: string; brand: string; title: string; kicker: string; dates: string; cta: string };
-type Loop = { steps: string[]; verdicts: Record<'true' | 'false', string>; claims: { text: string; verdict: string }[] };
+type Loop = { steps: string[]; cases: { text: string; tone: string; answer: string }[] };
 
 describe('hero', () => {
   for (const lang of ['en', 'es'] as const) {
-    test(`en ${lang} se titula #2 NaN Hackathon, con Fact Check y sin frase debajo`, () => {
+    test(`en ${lang} se titula #2 NaN Hackathon y va de decidir con Clef`, () => {
       const h = tObj<Hero>('nan.factcheck.hero', lang);
       expect(`${h.hash}${h.brand} ${h.title}`).toBe('#2NaN Hackathon');
-      expect(h.kicker).toBe('Fact Check');
-      // La frase del 29 de noviembre se quitó: el hero es título, Fact Check y el bucle.
+      expect(h.kicker).toContain('Clef');
       expect(h).not.toHaveProperty('sub');
     });
 
@@ -98,34 +98,59 @@ describe('hero', () => {
       for (const d of ['13', '14', '15']) expect(h.dates).toContain(d);
     });
 
-    test(`en ${lang} el bucle alterna verdaderas y falsas`, () => {
+    test(`en ${lang} el bucle mezcla sí, no y elegir una opción`, () => {
       const l = tObj<Loop>('nan.factcheck.loop', lang);
-      expect(l.claims.length).toBeGreaterThanOrEqual(2);
-      for (const c of l.claims) expect(['true', 'false']).toContain(c.verdict);
-      const vs = new Set(l.claims.map((c) => c.verdict));
-      expect(vs.size).toBe(2);
+      expect(l.cases.length).toBeGreaterThanOrEqual(3);
+      for (const c of l.cases) {
+        expect(['yes', 'no', 'pick']).toContain(c.tone);
+        expect(c.answer.length).toBeGreaterThan(0);
+      }
+      expect(new Set(l.cases.map((c) => c.tone)).size).toBe(3);
       expect(l.steps.length).toBeGreaterThan(0);
     });
   }
 
-  test('las afirmaciones son las mismas en los dos idiomas, con el mismo veredicto', () => {
-    const es = tObj<Loop>('nan.factcheck.loop', 'es').claims.map((c) => c.verdict);
-    const en = tObj<Loop>('nan.factcheck.loop', 'en').claims.map((c) => c.verdict);
+  test('los casos son los mismos en los dos idiomas, con la misma decisión', () => {
+    const es = tObj<Loop>('nan.factcheck.loop', 'es').cases.map((c) => c.tone);
+    const en = tObj<Loop>('nan.factcheck.loop', 'en').cases.map((c) => c.tone);
     expect(en).toEqual(es);
   });
 
-  test('sin JS la primera afirmación ya sale resuelta', () => {
+  test('los modelos que elige el bucle son modelos reales de NaN', () => {
+    const ids = new Set(modelos.categorias.flatMap((c) => c.modelos.map((m) => m.id)));
+    for (const lang of ['es', 'en'] as const) {
+      const picks = tObj<Loop>('nan.factcheck.loop', lang).cases.filter((c) => /model/i.test(c.text));
+      expect(picks.length).toBeGreaterThan(0);
+      for (const c of picks) expect(ids).toContain(c.answer);
+    }
+  });
+
+  test('sin JS el primer caso ya sale resuelto', () => {
     expect(page).toContain('data-phase="verdict"');
     expect(page).toContain('{first.text}');
+    expect(page).toContain('{first.answer}');
   });
 });
 
-type QA = {
-  when: { q: string; weekdays: string[]; a: string; start: string };
-  where: { q: string; big: string; a: string };
-  goal: { q: string; a: string; t: string; f: string; sub: string };
-  prize: { q: string; amount: string; a: string };
-};
+type Clef = { label: string; title: string; lead: string; kinds: { name: string; desc: string }[]; facts: string[]; source: string };
+
+describe('anuncio de Clef en NaN', () => {
+  for (const lang of ['en', 'es'] as const) {
+    test(`en ${lang} anuncia Clef en NaN con los tres tipos de pregunta`, () => {
+      const c = tObj<Clef>('nan.factcheck.clef', lang);
+      expect(c.title).toContain('Clef');
+      expect(c.title).toContain('NaN');
+      expect(c.kinds).toHaveLength(3);
+      expect(c.facts.length).toBeGreaterThan(0);
+      expect(c.source).toContain('Cloudflare');
+    });
+  }
+
+  test('la sección está en la página', () => {
+    expect(page).toContain('tt.clef.title');
+    expect(page).toContain('aria-labelledby="clef-title"');
+  });
+});
 
 describe('preguntas bajo el hero', () => {
   for (const lang of ['en', 'es'] as const) {
@@ -135,12 +160,27 @@ describe('preguntas bajo el hero', () => {
       for (const d of ['13', '14', '15']) expect(qa.when.a).toContain(d);
       expect(qa.when.start).toContain('17:00');
       expect(qa.where.big).toBe('Discord');
-      expect(qa.goal.sub).toContain('Clef');
-      expect(qa.goal.sub).toContain('NaN');
+      expect(qa.goal.a).toContain('Clef');
+      expect(qa.goal).not.toHaveProperty('sub');
       expect(qa.prize.amount).toContain('200');
       expect(qa.prize.amount).toContain('€');
     });
   }
+
+  test('el objetivo ofrece cuatro categorías: enrutador, guardarraíles, Fact Check y tema libre (Fact Check no va primero)', () => {
+    const es = tObj<QA>('nan.factcheck.qa', 'es').goal.tracks.map((t) => t.name);
+    const en = tObj<QA>('nan.factcheck.qa', 'en').goal.tracks.map((t) => t.name);
+    expect(es).toEqual(['Enrutador de modelos', 'Guardarraíles para agentes', 'Fact Check', 'Tema libre']);
+    expect(en).toEqual(['Model router', 'Agent guardrails', 'Fact Check', 'Open theme']);
+  });
+
+  test('el selector son botones, no un formulario, y sin JS se ven todas', () => {
+    expect(page).toContain('role="tablist"');
+    expect(page).toContain('type="button"');
+    // las pestañas llegan ocultas y el script las muestra
+    expect(page).toMatch(/role="tablist"[^>]*hidden/);
+    expect(script).toContain('list.hidden = false');
+  });
 
   test('el calendario sale de las fechas de eventos.json, no de un literal', () => {
     expect(page).toContain("dates.start.split('-')");

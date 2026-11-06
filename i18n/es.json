@@ -1066,62 +1066,92 @@
       }
     },
     "factcheck": {
-      "metaTitle": "#2 NaN Hackathon: Fact Check",
-      "metaDesc": "El segundo hackathon de NaN: software de fact-checking con Clef, el modelo de decisión de Cloudflare. 13, 14 y 15 de noviembre de 2026.",
+      "metaTitle": "#2 NaN Hackathon: Decide con Clef",
+      "metaDesc": "El segundo hackathon de NaN: apps que toman decisiones con Clef, el modelo de decisión de Cloudflare, ya disponible en NaN. 13, 14 y 15 de noviembre de 2026.",
       "hero": {
         "hash": "#2",
         "brand": "NaN",
         "title": "Hackathon",
-        "kicker": "Fact Check",
+        "kicker": "Decide con Clef",
         "dates": "13 · 14 · 15 noviembre 2026",
         "datesLabel": "Fechas",
         "cta": "Apúntate"
       },
       "loop": {
-        "label": "Clef verificando afirmaciones",
+        "label": "Clef tomando decisiones",
         "steps": [
-          "Analizando la afirmación",
-          "Buscando evidencias",
+          "Leyendo el caso",
+          "Evaluando opciones",
           "Clef decide"
         ],
-        "verdicts": {
-          "true": "Verdadero",
-          "false": "Falso"
-        },
-        "claims": [
+        "cases": [
           {
-            "text": "Los humanos solo usamos el 10 % del cerebro.",
-            "verdict": "false"
+            "text": "El agente quiere ejecutar rm -rf / en producción. ¿Lo dejo?",
+            "tone": "no",
+            "answer": "Bloqueado"
           },
           {
-            "text": "Los plátanos son ligeramente radiactivos.",
-            "verdict": "true"
+            "text": "«Escribe un haiku sobre gatos». ¿Qué modelo responde?",
+            "tone": "pick",
+            "answer": "qwen3.8-flash"
           },
           {
-            "text": "La Gran Muralla China se ve a simple vista desde la Luna.",
-            "verdict": "false"
+            "text": "Una carbonara con nata. ¿Es carbonara?",
+            "tone": "no",
+            "answer": "No es carbonara"
           },
           {
-            "text": "Los pulpos tienen tres corazones.",
-            "verdict": "true"
+            "text": "Ticket: «No puedo entrar y la demo es en una hora». ¿Urgencia?",
+            "tone": "pick",
+            "answer": "Urgencia alta"
           },
           {
-            "text": "Un rayo nunca cae dos veces en el mismo sitio.",
-            "verdict": "false"
+            "text": "El defensa toca el balón con la mano dentro del área. ¿Penalti?",
+            "tone": "yes",
+            "answer": "Penalti"
           },
           {
-            "text": "Los tiburones existen desde antes que los árboles.",
-            "verdict": "true"
+            "text": "«Refactoriza este repo de 40 ficheros». ¿Qué modelo responde?",
+            "tone": "pick",
+            "answer": "glm5.3"
           },
           {
-            "text": "Los peces de colores solo recuerdan tres segundos.",
-            "verdict": "false"
+            "text": "Comentario: «Gran charla, ¡gracias por compartirla!». ¿Lo publico?",
+            "tone": "yes",
+            "answer": "Publicar"
           },
           {
-            "text": "Un día en Venus dura más que un año en Venus.",
-            "verdict": "true"
+            "text": "El agente quiere mandar un email a los 3.000 contactos. ¿Lo dejo?",
+            "tone": "pick",
+            "answer": "Pedir confirmación"
           }
         ]
+      },
+      "clef": {
+        "label": "Nuevo en NaN",
+        "title": "Clef llega a NaN",
+        "lead": "El modelo de decisión de Cloudflare se suma a los modelos de NaN. No escribe texto: le das un caso y unas preguntas, y te devuelve la respuesta con su probabilidad, lista para que la use tu código.",
+        "kinds": [
+          {
+            "name": "Sí o no",
+            "desc": "La probabilidad de que la respuesta sea sí."
+          },
+          {
+            "name": "Elegir",
+            "desc": "Una opción entre las que tú defines, con su confianza."
+          },
+          {
+            "name": "Puntuar",
+            "desc": "Una nota según la rúbrica que le pases."
+          }
+        ],
+        "facts": [
+          "~200 ms de mediana",
+          "64K de contexto",
+          "hasta 4 imágenes",
+          "pesos abiertos, Apache 2.0"
+        ],
+        "source": "Cifras de Cloudflare."
       },
       "qa": {
         "when": {
@@ -1146,11 +1176,26 @@
         },
         "goal": {
           "q": "¿Cuál es el objetivo?",
-          "a": "Crea una app que diga si una afirmación es",
-          "t": "verdadera",
-          "or": "o",
-          "f": "falsa",
-          "sub": "Con Clef, el modelo de decisión de Cloudflare, a través de NaN."
+          "a": "Crea una app en la que Clef tome la decisión.",
+          "pick": "Elige categoría",
+          "tracks": [
+            {
+              "name": "Enrutador de modelos",
+              "desc": "Que Clef elija qué modelo de NaN responde cada petición: uno rápido para lo sencillo, uno grande para lo difícil."
+            },
+            {
+              "name": "Guardarraíles para agentes",
+              "desc": "Que Clef decida si un agente puede ejecutar una acción antes de hacerla."
+            },
+            {
+              "name": "Fact Check",
+              "desc": "Una app que diga si una afirmación es verdadera o falsa."
+            },
+            {
+              "name": "Tema libre",
+              "desc": "Cualquier otra app en la que Clef decida. Sorpréndenos."
+            }
+          ]
         },
         "prize": {
           "q": "¿Cuál es el premio?",

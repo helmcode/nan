@@ -1,11 +1,14 @@
 /**
- * Bucle del hero de /factcheck: afirmación → procesamiento → veredicto, y
- * vuelta a empezar con la siguiente. El HTML trae la primera ya resuelta; esto
+ * Bucle del hero del hackathon: caso → Clef lo evalúa → decisión, y vuelta a
+ * empezar con el siguiente. El HTML trae la primera ya resuelta; esto
  * solo la anima. Se pausa fuera de pantalla o con la pestaña oculta, y con
  * movimiento reducido se salta el tecleo pero sigue rotando.
  */
 
-type Claim = { text: string; verdict: 'true' | 'false' };
+type Tone = 'yes' | 'no' | 'pick';
+type Case = { text: string; tone: Tone; answer: string };
+
+const MARK: Record<Tone, string> = { yes: '✓', no: '✕', pick: '→' };
 
 const TYPE_MS = 28;
 const PAUSE_MS = 500;
@@ -16,17 +19,16 @@ const OUT_MS = 400;
 export function initFactcheck(): void {
   initLoop();
   initQA();
+  initTracks();
 }
 
 function initLoop(): void {
   const root = document.querySelector<HTMLElement>('[data-fc-loop]');
   if (!root) return;
 
-  let claims: Claim[];
-  let labels: Record<'true' | 'false', string>;
+  let claims: Case[];
   try {
-    claims = JSON.parse(root.dataset.claims ?? '[]');
-    labels = JSON.parse(root.dataset.labels ?? '{}');
+    claims = JSON.parse(root.dataset.cases ?? '[]');
   } catch {
     return;
   }
@@ -76,9 +78,9 @@ function initLoop(): void {
     const c = claims[i];
     steps.forEach((s) => s.classList.remove('is-on', 'is-done'));
     setProgress(0);
-    verdictEl!.dataset.v = c.verdict;
-    verdictText!.textContent = labels[c.verdict];
-    if (markEl) markEl.textContent = c.verdict === 'true' ? '✓' : '✕';
+    verdictEl!.dataset.v = c.tone;
+    verdictText!.textContent = c.answer;
+    if (markEl) markEl.textContent = MARK[c.tone] ?? '→';
 
     setPhase('claim');
     if (reduced) {
@@ -153,4 +155,54 @@ function initQA(): void {
   window.addEventListener('scroll', schedule, { passive: true });
   window.addEventListener('resize', schedule);
   update();
+}
+
+/**
+ * Selector de categorías del objetivo. Sin JS se ven todas seguidas; con JS se
+ * muestran las pestañas (patrón tablist de ARIA, flechas para moverse) y solo
+ * la categoría elegida.
+ */
+function initTracks(): void {
+  const root = document.querySelector<HTMLElement>('[data-tracks]');
+  const list = root?.querySelector<HTMLElement>('[role="tablist"]');
+  if (!root || !list) return;
+  const tabs = [...list.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+  const panels = [...root.querySelectorAll<HTMLElement>('[data-track]')];
+  if (tabs.length !== panels.length || tabs.length === 0) return;
+
+  panels.forEach((panel, i) => {
+    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('aria-labelledby', tabs[i].id);
+    panel.tabIndex = 0;
+  });
+
+  const select = (i: number, focus = false) => {
+    tabs.forEach((tab, j) => {
+      const on = i === j;
+      tab.setAttribute('aria-selected', String(on));
+      tab.tabIndex = on ? 0 : -1;
+      panels[j].hidden = !on;
+    });
+    if (focus) tabs[i].focus();
+  };
+
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => select(i));
+    tab.addEventListener('keydown', (e) => {
+      const n = tabs.length;
+      const to =
+        e.key === 'ArrowRight' || e.key === 'ArrowDown' ? (i + 1) % n
+        : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? (i - 1 + n) % n
+        : e.key === 'Home' ? 0
+        : e.key === 'End' ? n - 1
+        : -1;
+      if (to < 0) return;
+      e.preventDefault();
+      select(to, true);
+    });
+  });
+
+  list.hidden = false;
+  root.classList.add('is-on');
+  select(0);
 }
