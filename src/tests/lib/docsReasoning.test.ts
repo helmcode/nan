@@ -424,10 +424,10 @@ describe('es: no voseo', () => {
 
 /**
  * The reasoning aliases (enable_thinking: false and friends) are only mapped
- * on the models the hook knows. On kimi-k3.1-pro, deepseek-v4-pro and hy4 they
- * are NOT, and hy4 keeps reasoning with enable_thinking: false (Security
- * review 2026-11-06): every surface that promises the aliases carves them out
- * and points at reasoning_effort.
+ * on the models the hook knows. On kimi-k3.1-pro and deepseek-v4-pro they are
+ * NOT (Security review 2026-11-06): every surface that promises the aliases
+ * carves those two out and points at reasoning_effort. hy4 has its own hook
+ * family: aliases mapped, default reasoning_effort low.
  */
 describe('reasoning aliases: the pack-only carve-out', () => {
   // The reasoning-effort hook does not map the aliases on these two (devops
