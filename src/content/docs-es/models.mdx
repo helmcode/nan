@@ -229,7 +229,7 @@ OpenAI y la misma `base URL`.
   ]}
   items={[
     'Tool calling (function calling)',
-    'Razona por defecto. Si envías un <code>max_tokens</code> pequeño sin <code>reasoning_effort</code> puede gastar todo el presupuesto razonando y devolver <code>content</code> vacío; envía <code>reasoning_effort</code> (por ejemplo <code>low</code>) o un presupuesto de al menos 16K',
+    'Razona por defecto; si no envías <code>reasoning_effort</code> (ni un alias) aplicamos <code>low</code>, y tu valor siempre gana. Un <code>max_tokens</code> pequeño (unos 2K) aún puede devolver <code>content</code> vacío en tareas de código: usa un presupuesto de al menos 4K a 16K o fija tú <code>reasoning_effort</code>',
     'Visión (entrada de imagen)',
     'Contexto de 1M tokens',
     'Generación en streaming (SSE)',
@@ -451,9 +451,9 @@ El código escrito para otro proveedor sigue funcionando: también aceptamos
 en el primer nivel del cuerpo o dentro de `extra_body`. Cada uno significa
 exactamente `none`. Si una petición lleva un valor y además uno de estos, gana
 el valor.
-Estos alias no están mapeados en `kimi-k3.1-pro`, `deepseek-v4-pro` ni `hy4`
-(`hy4` sigue razonando incluso con `enable_thinking: false`): en esos tres, usa
-`reasoning_effort`.
+Estos alias no están mapeados en `kimi-k3.1-pro` ni `deepseek-v4-pro`: en esos
+dos, usa `reasoning_effort`. En `hy4` sí lo están, y una petición que no indica
+ningún nivel recibe `low`.
 
 | Modelo | Para apagar (`none`) | El resto de valores |
 | --- | --- | --- |

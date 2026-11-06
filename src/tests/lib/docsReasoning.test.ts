@@ -430,7 +430,9 @@ describe('es: no voseo', () => {
  * and points at reasoning_effort.
  */
 describe('reasoning aliases: the pack-only carve-out', () => {
-  const UNMAPPED = ['kimi-k3.1-pro', 'deepseek-v4-pro', 'hy4'];
+  // The reasoning-effort hook does not map the aliases on these two (devops
+  // 34155612); hy4 has its own family since then: aliases mapped, default low.
+  const UNMAPPED = ['kimi-k3.1-pro', 'deepseek-v4-pro'];
   const desc: string = spec.info.description;
   const apiReasoning = desc.slice(desc.indexOf('## Reasoning'), desc.indexOf('\n## ', desc.indexOf('## Reasoning') + 3));
 
@@ -439,10 +441,13 @@ describe('reasoning aliases: the pack-only carve-out', () => {
     ['en', section('')],
     ['es', section('-es')],
   ] as const) {
-    it(`${label}: names the three models the aliases do not reach, and says to use reasoning_effort`, () => {
-      for (const id of UNMAPPED) expect(text, `${label}: ${id}`).toContain(`\`${id}\``);
-      expect(text).toMatch(/`hy4` (keeps reasoning|sigue razonando)/);
+    it(`${label}: carves out only kimi-k3.1-pro and deepseek-v4-pro, says hy4 maps them and defaults to low`, () => {
+      const carve = text.slice(text.indexOf('`kimi-k3.1-pro`'));
+      for (const id of UNMAPPED) expect(carve, `${label}: ${id}`).toContain(`\`${id}\``);
       expect(text).toMatch(/(use|usa)\s+`reasoning_effort`/);
+      expect(text).toMatch(/On `hy4` they are\s+mapped|En `hy4` sí lo están/);
+      expect(text).toMatch(/`low`/);
+      expect(text).not.toMatch(/`hy4` (keeps reasoning|sigue razonando)/);
     });
   }
 });

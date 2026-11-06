@@ -229,7 +229,7 @@ with the same `base URL`.
   ]}
   items={[
     'Tool calling (function calling)',
-    'Reasons by default. If you send a small <code>max_tokens</code> without <code>reasoning_effort</code> it can spend the whole budget reasoning and return empty <code>content</code>; send <code>reasoning_effort</code> (e.g. <code>low</code>) or a budget of at least 16K',
+    'Reasons by default; if you send no <code>reasoning_effort</code> (nor an alias) we apply <code>low</code>, and your own value always wins. A small <code>max_tokens</code> (around 2K) can still come back with empty <code>content</code> on code tasks: use a budget of at least 4K to 16K or set <code>reasoning_effort</code> yourself',
     'Vision (image input)',
     '1M token context',
     'Streaming generation (SSE)',
@@ -447,9 +447,9 @@ Code written for another provider keeps working: we also accept
 `enable_thinking: false` and `chat_template_kwargs: {"enable_thinking": false}`,
 at the top level of the body or inside `extra_body`. Each one means exactly
 `none`. If a request carries both a value and one of these, the value wins.
-These aliases are not mapped on `kimi-k3.1-pro`, `deepseek-v4-pro` and `hy4`
-(`hy4` keeps reasoning even with `enable_thinking: false`): on those three, use
-`reasoning_effort`.
+These aliases are not mapped on `kimi-k3.1-pro` and `deepseek-v4-pro`: on those
+two, use `reasoning_effort`. On `hy4` they are mapped, and a request that names
+no level at all gets `low`.
 
 | Model | Off switch (`none`) | The other values |
 | --- | --- | --- |
