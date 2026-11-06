@@ -299,8 +299,8 @@ describe('token-packs-only models', () => {
 
   it('the hy4 card warns that it reasons by default and how to avoid an empty answer', () => {
     for (const [dir, words] of [
-      [enDir, ['Reasons by default', 'we apply <code>low</code>', 'your own value always wins', '4K to 16K']],
-      [esDir, ['Razona por defecto', 'aplicamos <code>low</code>', 'tu valor siempre gana', '4K a 16K']],
+      [enDir, ['Reasons by default', 'we apply <code>low</code>', 'your own value always wins', 'use at least 4K']],
+      [esDir, ['Razona por defecto', 'aplicamos <code>low</code>', 'tu valor siempre gana', 'usa al menos 4K']],
     ] as const) {
       const cards = readFileSync(resolve(dir, 'models.mdx'), 'utf-8');
       const start = cards.indexOf('name="hy4"');
