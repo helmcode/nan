@@ -51,14 +51,14 @@
         {
           "id": "kimi-k3.1-pro",
           "by": "Moonshot AI",
-          "specs": "1M context · tool calling · reasoning",
+          "specs": "1M context · vision · tool calling · reasoning",
           "cuota": "solo token packs",
           "frontier": true
         },
         {
           "id": "qwen3.8-max",
           "by": "Alibaba",
-          "specs": "1M context · tool calling · reasoning",
+          "specs": "1M context · vision · tool calling · reasoning",
           "cuota": "solo token packs",
           "frontier": true
         },
@@ -72,7 +72,7 @@
         {
           "id": "hy4",
           "by": "Tencent",
-          "specs": "1M context · tool calling · reasoning",
+          "specs": "1M context · vision · tool calling · reasoning",
           "cuota": "solo token packs",
           "frontier": true
         },

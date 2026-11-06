@@ -47,10 +47,10 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 | `glm5.3-flash` | Agentes de código, sin premium | 1M | texto · imagen | 2B tokens/mes |
 | `qwen3.8-flash` | Respuestas rápidas | 1M | texto · imagen | 500M tokens/mes |
 | `mimo-v2.6-flash` | El MiMo más nuevo, omnimodal | 1M | texto · imagen · audio | 1.0B tokens/mes |
-| `kimi-k3.1-pro` | Razonamiento de frontera para agentes y código | 1M | texto | solo token packs |
-| `qwen3.8-max` | El Qwen 3.8 más grande, razonamiento difícil | 1M | texto | solo token packs |
+| `kimi-k3.1-pro` | Razonamiento de frontera para agentes y código | 1M | texto · imagen | solo token packs |
+| `qwen3.8-max` | El Qwen 3.8 más grande, razonamiento difícil | 1M | texto · imagen | solo token packs |
 | `deepseek-v4-pro` | Modelo grande de razonamiento y código | 1M | texto | solo token packs |
-| `hy4` | Agentes y documentos largos, más barato por token | 1M | texto | solo token packs |
+| `hy4` | Agentes y documentos largos, más barato por token | 1M | texto · imagen | solo token packs |
 | `gemma4` | Tareas cortas y pruebas | 262K | texto · imagen | sin contador |
 | `qwen3.6` | Generación anterior | 262K | texto · imagen | sin contador |
 | `qwen3-embedding` | Vectores de 4096 dimensiones | - | texto | sin contador |

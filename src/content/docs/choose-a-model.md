@@ -47,10 +47,10 @@ If you do not know which one to pick, look for what you want to do in the first 
 | `glm5.3-flash` | Coding agents, without premium | 1M | text · image | 2B tokens/month |
 | `qwen3.8-flash` | Fast answers | 1M | text · image | 500M tokens/month |
 | `mimo-v2.6-flash` | The newest MiMo, omnimodal | 1M | text · image · audio | 1.0B tokens/month |
-| `kimi-k3.1-pro` | Frontier reasoning for agents and coding | 1M | text | token packs only |
-| `qwen3.8-max` | The largest Qwen 3.8, hard reasoning | 1M | text | token packs only |
+| `kimi-k3.1-pro` | Frontier reasoning for agents and coding | 1M | text · image | token packs only |
+| `qwen3.8-max` | The largest Qwen 3.8, hard reasoning | 1M | text · image | token packs only |
 | `deepseek-v4-pro` | Large reasoning and coding model | 1M | text | token packs only |
-| `hy4` | Agents and long documents, cheaper per token | 1M | text | token packs only |
+| `hy4` | Agents and long documents, cheaper per token | 1M | text · image | token packs only |
 | `gemma4` | Short tasks and testing | 262K | text · image | no counter |
 | `qwen3.6` | Previous generation | 262K | text · image | no counter |
 | `qwen3-embedding` | 4096-dimension vectors | - | text | no counter |

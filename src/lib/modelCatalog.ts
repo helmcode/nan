@@ -135,14 +135,16 @@ export const MODELS: ModelSpec[] = [
     },
   },
   // Token packs only (2026-11-06): no plan includes a quota for these; every
-  // token comes from a pack balance. Inputs are listed as text only because
-  // that is all that has been verified; widen them only after a live probe.
+  // token comes from a pack balance. Inputs as verified with real requests
+  // (2026-11-06): image on kimi, qwen3.8-max and hy4; deepseek-v4-pro rejects
+  // images (400). Video is listed upstream for some but NOT verified: not
+  // published.
   {
     id: 'kimi-k3.1-pro',
     by: 'Moonshot AI',
     kind: 'chat',
     contextTokens: 1_000_000,
-    inputs: ['text'],
+    inputs: ['text', 'image'],
     quota: { kind: 'packOnly' },
     endpoint: '/chat/completions',
     bestFor: {
@@ -155,7 +157,7 @@ export const MODELS: ModelSpec[] = [
     by: 'Alibaba',
     kind: 'chat',
     contextTokens: 1_000_000,
-    inputs: ['text'],
+    inputs: ['text', 'image'],
     quota: { kind: 'packOnly' },
     endpoint: '/chat/completions',
     bestFor: {
@@ -181,7 +183,7 @@ export const MODELS: ModelSpec[] = [
     by: 'Tencent',
     kind: 'chat',
     contextTokens: 1_000_000,
-    inputs: ['text'],
+    inputs: ['text', 'image'],
     quota: { kind: 'packOnly' },
     endpoint: '/chat/completions',
     bestFor: {

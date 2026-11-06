@@ -246,6 +246,38 @@ describe('token-packs-only models', () => {
     }
   });
 
+  /**
+   * Inputs as verified with real requests (2026-11-06): kimi, qwen3.8-max and
+   * hy4 read images; deepseek-v4-pro answers 400 "vision not support". Video
+   * is listed upstream for some but was never verified, so it is not published.
+   */
+  it('publish the verified inputs, and never video', () => {
+    const VISION = ['kimi-k3.1-pro', 'qwen3.8-max', 'hy4'];
+    for (const id of PACK_ONLY) {
+      const m = MODELS.find((x) => x.id === id)!;
+      expect(m.inputs, id).toEqual(VISION.includes(id) ? ['text', 'image'] : ['text']);
+    }
+    for (const [dir, img] of [[enDir, 'text · image'], [esDir, 'texto · imagen']] as const) {
+      const cards = readFileSync(resolve(dir, 'models.mdx'), 'utf-8');
+      const table = readFileSync(resolve(dir, 'choose-a-model.md'), 'utf-8');
+      for (const id of PACK_ONLY) {
+        const start = cards.indexOf(`name="${id}"`);
+        const card = cards.slice(start, cards.indexOf('/>', start));
+        const row = table.split('\n').find((l) => l.startsWith(`| \`${id}\` |`)) ?? '';
+        expect(card.includes(img), `${dir} card ${id}`).toBe(VISION.includes(id));
+        expect(row.includes(img), `${dir} row ${id}`).toBe(VISION.includes(id));
+        expect(card, id).not.toMatch(/video|vídeo/i);
+      }
+    }
+    const home = modelos.categorias.flatMap((c) => c.modelos);
+    for (const id of PACK_ONLY) {
+      const r = home.find((m) => m.id === id)!;
+      expect(r.specs.includes('vision'), id).toBe(VISION.includes(id));
+      const api = spec.info.description.split('\n').find((l) => l.startsWith(`| \`${id}\` |`)) ?? '';
+      expect(api.includes('image input'), id).toBe(VISION.includes(id));
+    }
+  });
+
   it('carry a fixed quota label in both languages, never a counter', () => {
     for (const m of MODELS.filter((x) => x.quota.kind === 'packOnly')) {
       expect(quotaLabel(m, 'en')).toBe('token packs only');
