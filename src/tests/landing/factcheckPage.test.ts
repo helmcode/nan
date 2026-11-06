@@ -80,18 +80,17 @@ describe('enlaces', () => {
   });
 });
 
-type Hero = { hash: string; brand: string; title: string; kicker: string; sub: string; dates: string; cta: string };
+type Hero = { hash: string; brand: string; title: string; kicker: string; dates: string; cta: string };
 type Loop = { steps: string[]; verdicts: Record<'true' | 'false', string>; claims: { text: string; verdict: string }[] };
 
 describe('hero', () => {
-  const sub = { es: 'Todos sabemos lo que pasa el 29 de noviembre en España.', en: 'We all know what happens on November 29 in Spain.' };
-
   for (const lang of ['en', 'es'] as const) {
-    test(`en ${lang} se titula #2 NaN Hackathon, con Fact Check y la frase del 29`, () => {
+    test(`en ${lang} se titula #2 NaN Hackathon, con Fact Check y sin frase debajo`, () => {
       const h = tObj<Hero>('nan.factcheck.hero', lang);
       expect(`${h.hash}${h.brand} ${h.title}`).toBe('#2NaN Hackathon');
       expect(h.kicker).toBe('Fact Check');
-      expect(h.sub).toBe(sub[lang]);
+      // La frase del 29 de noviembre se quitó: el hero es título, Fact Check y el bucle.
+      expect(h).not.toHaveProperty('sub');
     });
 
     test(`en ${lang} la fecha cubre el 13, 14 y 15`, () => {
