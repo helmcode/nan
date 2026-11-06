@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { formatTokens } from '../../lib/rateLimits';
+import { MODELS, formatContext } from '../../lib/modelCatalog';
 
 /**
  * The opencode.json block the docs publish must be a config opencode can
@@ -223,6 +224,16 @@ const VSCODE_MODEL_PROPS = new Set([
 ]);
 
 /**
+ * Token-packs-only models (modelCatalog `packOnly`, 2026-11-06) stay OUT of the
+ * copy-paste agent configs: no plan includes tokens for them, so a config that
+ * lists them hands every subscriber a model picker entry that answers 402 until
+ * they buy a pack, and their output ceilings have not been measured. They are
+ * derived from the catalogue, never listed here, so a new pack-only model is
+ * excluded without touching this file and a model that gains a quota is not.
+ */
+const PACK_ONLY_IDS: string[] = MODELS.filter((m) => m.quota.kind === 'packOnly').map((m) => m.id);
+
+/**
  * The model catalogue this very site publishes at /docs/models. Anchoring to it
  * closes the #8 bug class at its root: the reviewer deleted `qwen3.8-flash`
  * from both blocks, from the prose and from EXPECTED_MODELS and the suite
@@ -233,7 +244,7 @@ const VSCODE_MODEL_PROPS = new Set([
 const CATALOGUE_LLMS: string[] = (() => {
   const data = JSON.parse(readFileSync(resolve(here, '../../data/modelos.json'), 'utf-8'));
   const llm = data.categorias.find((c: any) => c.id === 'llm');
-  return llm.modelos.map((m: any) => m.id);
+  return llm.modelos.map((m: any) => m.id).filter((id: string) => !PACK_ONLY_IDS.includes(id));
 })();
 
 const LOCALES = ['docs', 'docs-es'] as const;
@@ -616,6 +627,13 @@ test('the home table states the same window as the config blocks', () => {
     for (const model of cat.modelos) {
       const stated = /(\d+(?:\.\d+)?[KM]) context/.exec(model.specs);
       if (!stated) continue;
+      // Pack-only models are not in the config blocks (see PACK_ONLY_IDS):
+      // their stated window is checked against the catalogue instead.
+      const packOnly = MODELS.find((m) => m.id === model.id && m.quota.kind === 'packOnly');
+      if (packOnly) {
+        expect(stated[1], `${model.id} on the home table`).toBe(formatContext(packOnly.contextTokens!));
+        continue;
+      }
       const expected = WINDOWS[model.id];
       expect(expected, `${model.id}: states a window but has no measured one`).toBeDefined();
       expect(stated[1], `${model.id} on the home table`).toBe(formatTokens(expected.context));

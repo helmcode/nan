@@ -45,7 +45,7 @@ describe('the catalog itself', () => {
   /** An unmetered model has no label to show, a metered one must have both. */
   it('labels every quota that is not unmetered, in both languages', () => {
     for (const m of MODELS) {
-      if (m.quota.kind === 'unmetered') continue;
+      if (m.quota.kind === 'unmetered' || m.quota.kind === 'packOnly') continue;
       expect(m.quota.label?.en, m.id).toBeTruthy();
       expect(m.quota.label?.es, m.id).toBeTruthy();
     }
@@ -224,5 +224,84 @@ describe('the shared home table reads in both languages', () => {
   it.each([...new Set(rows.map((m) => m.cuota))])('quota "%s" translates', (cuota) => {
     expect(homeQuotaLabel(cuota, 'en')).not.toMatch(SPANISH);
     expect(homeQuotaLabel(cuota, 'es')).toBe(cuota);
+  });
+});
+
+/**
+ * The token-packs-only models (2026-11-06): no plan includes tokens for them,
+ * every token comes from a pack balance. Each surface that lists them must say
+ * so, or a subscriber reads them as covered by the plan and meets a 402. The
+ * upstream that serves them is never named.
+ */
+describe('token-packs-only models', () => {
+  const PACK_ONLY = ['kimi-k3.1-pro', 'qwen3.8-max', 'deepseek-v4-pro', 'hy4'];
+
+  it('are exactly the packOnly models of the catalog, 1M-context chat models', () => {
+    expect(MODELS.filter((m) => m.quota.kind === 'packOnly').map((m) => m.id).sort()).toEqual([...PACK_ONLY].sort());
+    for (const id of PACK_ONLY) {
+      const m = MODELS.find((x) => x.id === id)!;
+      expect(m.kind, id).toBe('chat');
+      expect(formatContext(m.contextTokens!), id).toBe('1M');
+      expect(m.premium, id).toBeFalsy();
+    }
+  });
+
+  it('carry a fixed quota label in both languages, never a counter', () => {
+    for (const m of MODELS.filter((x) => x.quota.kind === 'packOnly')) {
+      expect(quotaLabel(m, 'en')).toBe('token packs only');
+      expect(quotaLabel(m, 'es')).toBe('solo token packs');
+    }
+  });
+
+  it('the home table says "token packs only", translated on the English home', () => {
+    const rows = modelos.categorias.flatMap((c) => c.modelos).filter((m) => PACK_ONLY.includes(m.id));
+    expect(rows.map((r) => r.id).sort()).toEqual([...PACK_ONLY].sort());
+    for (const r of rows) {
+      expect(r.cuota, r.id).toBe('solo token packs');
+      expect(homeQuotaLabel(r.cuota, 'en')).toBe('token packs only');
+      expect('premium' in r && r.premium, r.id).toBeFalsy();
+    }
+  });
+
+  for (const [label, dir, word] of [
+    ['en', enDir, 'token packs only'],
+    ['es', esDir, 'solo token packs'],
+  ] as const) {
+    it(`the decision page marks each one and explains the 402 (${label})`, () => {
+      const source = readFileSync(resolve(dir, 'choose-a-model.md'), 'utf-8');
+      for (const id of PACK_ONLY) {
+        const row = source.split('\n').find((l) => l.startsWith(`| \`${id}\` |`)) ?? '';
+        expect(row.trim().endsWith(`| ${word} |`), `${label}: ${id}`).toBe(true);
+      }
+      expect(source).toContain('`insufficient_balance`');
+    });
+
+    it(`each card says token packs only and links to buy them (${label})`, () => {
+      const source = readFileSync(resolve(dir, 'models.mdx'), 'utf-8');
+      for (const id of PACK_ONLY) {
+        const start = source.indexOf(`name="${id}"`);
+        expect(start, `${label}: ${id}`).toBeGreaterThan(-1);
+        const card = source.slice(start, source.indexOf('/>', start));
+        expect(card, `${label}: ${id}`).toContain(word);
+        expect(card, `${label}: ${id}`).toContain('https://cloud.nan.builders/tokens');
+      }
+    });
+  }
+
+  it('the API reference lists them as token packs only', () => {
+    const desc = spec.info.description;
+    for (const id of PACK_ONLY) {
+      const row = desc.split('\n').find((l) => l.startsWith(`| \`${id}\` |`)) ?? '';
+      expect(row, id).toMatch(/Token packs only \|$/);
+    }
+  });
+
+  it('no surface names the upstream provider', () => {
+    const surfaces = [
+      JSON.stringify(modelos),
+      spec.info.description,
+      ...docFiles.map(([, source]) => source),
+    ];
+    for (const text of surfaces) expect(text).not.toMatch(/novita/i);
   });
 });

@@ -143,6 +143,94 @@ OpenAI y la misma `base URL`.
 />
 
 <ModelCard
+  id="kimi-k3-1-pro"
+  name="kimi-k3.1-pro"
+  tag="solo token packs"
+  leftLabel="generación de texto y chat · razonamiento"
+  rightLabel="capacidades"
+  description="Kimi K3.1 Pro: el modelo de razonamiento de frontera de Moonshot AI, para agentes y código. Contexto de 1M tokens. Solo token packs: ningún plan incluye tokens de este modelo, así que cada token sale de un token pack comprado para él, tengas suscripción o no."
+  specs={[
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Modalidades de entrada', value: 'texto' },
+    { label: 'Modalidades de salida', value: 'texto' },
+    { label: 'Cuota', value: 'solo token packs' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Modelo de razonamiento',
+    'Contexto de 1M tokens',
+    'Generación en streaming (SSE)',
+    'Compra tokens en <a href="https://cloud.nan.builders/tokens">cloud.nan.builders/tokens</a>',
+  ]}
+/>
+
+<ModelCard
+  id="qwen3-8-max"
+  name="qwen3.8-max"
+  tag="solo token packs"
+  leftLabel="generación de texto y chat · razonamiento"
+  rightLabel="capacidades"
+  description="Qwen3.8 Max: el modelo más grande de Qwen 3.8, para razonamiento difícil y agentes. Contexto de 1M tokens. Solo token packs: ningún plan incluye tokens de este modelo, así que cada token sale de un token pack comprado para él, tengas suscripción o no."
+  specs={[
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Modalidades de entrada', value: 'texto' },
+    { label: 'Modalidades de salida', value: 'texto' },
+    { label: 'Cuota', value: 'solo token packs' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Modelo de razonamiento',
+    'Contexto de 1M tokens',
+    'Generación en streaming (SSE)',
+    'Compra tokens en <a href="https://cloud.nan.builders/tokens">cloud.nan.builders/tokens</a>',
+  ]}
+/>
+
+<ModelCard
+  id="deepseek-v4-pro"
+  name="deepseek-v4-pro"
+  tag="solo token packs"
+  leftLabel="generación de texto y chat · razonamiento"
+  rightLabel="capacidades"
+  description="DeepSeek V4-Pro (0813 version): el modelo grande de DeepSeek para razonamiento y código, servido en su versión 0813. Contexto de 1M tokens. Solo token packs: ningún plan incluye tokens de este modelo, así que cada token sale de un token pack comprado para él, tengas suscripción o no."
+  specs={[
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Modalidades de entrada', value: 'texto' },
+    { label: 'Modalidades de salida', value: 'texto' },
+    { label: 'Cuota', value: 'solo token packs' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Modelo de razonamiento',
+    'Contexto de 1M tokens',
+    'Generación en streaming (SSE)',
+    'Compra tokens en <a href="https://cloud.nan.builders/tokens">cloud.nan.builders/tokens</a>',
+  ]}
+/>
+
+<ModelCard
+  id="hy4"
+  name="hy4"
+  tag="solo token packs"
+  leftLabel="generación de texto y chat · razonamiento"
+  rightLabel="capacidades"
+  description="Hy4: el modelo Hunyuan 4 de Tencent, para agentes y documentos largos a menor precio por token. Contexto de 1M tokens. Solo token packs: ningún plan incluye tokens de este modelo, así que cada token sale de un token pack comprado para él, tengas suscripción o no."
+  specs={[
+    { label: 'Contexto', value: '1M tokens' },
+    { label: 'Modalidades de entrada', value: 'texto' },
+    { label: 'Modalidades de salida', value: 'texto' },
+    { label: 'Cuota', value: 'solo token packs' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Modelo de razonamiento',
+    'Contexto de 1M tokens',
+    'Generación en streaming (SSE)',
+    'Compra tokens en <a href="https://cloud.nan.builders/tokens">cloud.nan.builders/tokens</a>',
+  ]}
+/>
+
+<ModelCard
   id="gemma4"
   name="gemma4"
   tag="26B-A4B"
@@ -329,7 +417,11 @@ OpenAI y la misma `base URL`.
 
 ## Controlar el razonamiento.
 
-Todos los modelos de chat de arriba razonan antes de responder. El
+Todos los modelos de chat de arriba razonan antes de responder. Los cuatro
+modelos de solo token packs (`kimi-k3.1-pro`, `qwen3.8-max`, `deepseek-v4-pro`,
+`hy4`) todavía no están en la tabla de abajo: aceptan `reasoning_effort` como
+cualquier otro, pero cómo se comporta cada nivel en ellos no forma parte de
+este contrato. El
 razonamiento llega separado de la respuesta: en `message.reasoning_content` en
 Chat Completions y como un elemento de salida `reasoning` en Responses. Lo
 controla un único parámetro, igual en todos los modelos:

@@ -102,6 +102,11 @@ const NAN_MODELS = [
   'mimo-v2.6-flash',
   'qwen3.8-flash',
   'glm5.3-flash',
+  // Token packs only (2026-11-06).
+  'kimi-k3.1-pro',
+  'qwen3.8-max',
+  'deepseek-v4-pro',
+  'hy4',
   'qwen3.6',
   'gemma4',
   'glm5.3',
@@ -214,7 +219,7 @@ describe('openapi.json: the model catalogue', () => {
       (raw.match(/`([a-z0-9][a-z0-9.-]{2,})`/g) ?? [])
         .map((m) => m.slice(1, -1))
         .filter((token) =>
-          /^(deepseek|qwen|gemma|glm|mimo|kokoro|whisper|flux|rerank|claude|gpt|gemini|llama|mistral)/.test(
+          /^(deepseek|qwen|gemma|glm|mimo|kimi|hy[0-9]|kokoro|whisper|flux|rerank|claude|gpt|gemini|llama|mistral)/.test(
             token,
           ),
         ),

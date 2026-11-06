@@ -143,6 +143,94 @@ with the same `base URL`.
 />
 
 <ModelCard
+  id="kimi-k3-1-pro"
+  name="kimi-k3.1-pro"
+  tag="token packs only"
+  leftLabel="text generation & chat · reasoning"
+  rightLabel="capabilities"
+  description="Kimi K3.1 Pro: Moonshot AI's frontier reasoning model, for agents and coding. 1M token context. Token packs only: no plan includes tokens for this model, so every token is drawn from a token pack bought for it, with or without a subscription."
+  specs={[
+    { label: 'Context', value: '1M tokens' },
+    { label: 'Input modalities', value: 'text' },
+    { label: 'Output modalities', value: 'text' },
+    { label: 'Quota', value: 'token packs only' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Reasoning model',
+    '1M token context',
+    'Streaming generation (SSE)',
+    'Buy tokens at <a href="https://cloud.nan.builders/tokens">cloud.nan.builders/tokens</a>',
+  ]}
+/>
+
+<ModelCard
+  id="qwen3-8-max"
+  name="qwen3.8-max"
+  tag="token packs only"
+  leftLabel="text generation & chat · reasoning"
+  rightLabel="capabilities"
+  description="Qwen3.8 Max: The largest Qwen 3.8 model, for hard reasoning and agents. 1M token context. Token packs only: no plan includes tokens for this model, so every token is drawn from a token pack bought for it, with or without a subscription."
+  specs={[
+    { label: 'Context', value: '1M tokens' },
+    { label: 'Input modalities', value: 'text' },
+    { label: 'Output modalities', value: 'text' },
+    { label: 'Quota', value: 'token packs only' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Reasoning model',
+    '1M token context',
+    'Streaming generation (SSE)',
+    'Buy tokens at <a href="https://cloud.nan.builders/tokens">cloud.nan.builders/tokens</a>',
+  ]}
+/>
+
+<ModelCard
+  id="deepseek-v4-pro"
+  name="deepseek-v4-pro"
+  tag="token packs only"
+  leftLabel="text generation & chat · reasoning"
+  rightLabel="capabilities"
+  description="DeepSeek V4-Pro (0813 version): DeepSeek's large reasoning and coding model, served as its 0813 release. 1M token context. Token packs only: no plan includes tokens for this model, so every token is drawn from a token pack bought for it, with or without a subscription."
+  specs={[
+    { label: 'Context', value: '1M tokens' },
+    { label: 'Input modalities', value: 'text' },
+    { label: 'Output modalities', value: 'text' },
+    { label: 'Quota', value: 'token packs only' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Reasoning model',
+    '1M token context',
+    'Streaming generation (SSE)',
+    'Buy tokens at <a href="https://cloud.nan.builders/tokens">cloud.nan.builders/tokens</a>',
+  ]}
+/>
+
+<ModelCard
+  id="hy4"
+  name="hy4"
+  tag="token packs only"
+  leftLabel="text generation & chat · reasoning"
+  rightLabel="capabilities"
+  description="Hy4: Tencent's Hunyuan 4 model, for agents and long documents at a lower price per token. 1M token context. Token packs only: no plan includes tokens for this model, so every token is drawn from a token pack bought for it, with or without a subscription."
+  specs={[
+    { label: 'Context', value: '1M tokens' },
+    { label: 'Input modalities', value: 'text' },
+    { label: 'Output modalities', value: 'text' },
+    { label: 'Quota', value: 'token packs only' },
+  ]}
+  items={[
+    'Tool calling (function calling)',
+    'Reasoning model',
+    '1M token context',
+    'Streaming generation (SSE)',
+    'Buy tokens at <a href="https://cloud.nan.builders/tokens">cloud.nan.builders/tokens</a>',
+  ]}
+/>
+
+<ModelCard
   id="gemma4"
   name="gemma4"
   tag="26B-A4B"
@@ -328,7 +416,10 @@ with the same `base URL`.
 
 ## Controlling reasoning.
 
-Every chat model above reasons before it answers. The reasoning arrives
+Every chat model above reasons before it answers. The four token-packs-only
+models (`kimi-k3.1-pro`, `qwen3.8-max`, `deepseek-v4-pro`, `hy4`) are not in
+the table below yet: they take `reasoning_effort` like any other model, but how
+each level behaves on them is not part of this contract. The reasoning arrives
 separately from the answer: in `message.reasoning_content` on Chat Completions,
 as a `reasoning` output item on Responses. One parameter controls it, the same
 on every model:
