@@ -32,17 +32,21 @@
       "ics": "or download the .ics"
     },
     "login": {
-      "prompt": "Sign in with your NaN account",
-      "description": "Enter your NaN account email and we'll send you a link to sign in. It's the same access as the platform.",
+      "prompt": "Already in NaN? Sign in",
+      "description": "Enter your NaN account email and we'll send you a sign-in link. It's the same access as the platform: no password needed.",
       "emailLabel": "Email",
       "emailPlaceholder": "you@email.com",
       "submit": "Send link",
       "submitting": "Sending…",
-      "success": "If that email belongs to a NaN member, we've sent you a sign-in link. Check your inbox (and spam folder), then come back here.",
+      "success": "If that email has a NaN account, we've sent you a sign-in link. Check your inbox (and spam folder) and come back here through the link.",
       "errorEmail": "Enter a valid email.",
       "errorRate": "Too many attempts. Wait a moment and try again.",
       "errorServer": "Couldn't send the link. Try again.",
-      "errorNetwork": "Network error. Try again."
+      "errorNetwork": "Network error. Try again.",
+      "noEmail": "Nothing after a few minutes? That email may not have a NaN account.",
+      "newTitle": "Not in NaN yet?",
+      "newBody": "You need to be a member of the NaN community to take part (from €14.99/month). Join, then come back to this page to sign up.",
+      "newCta": "Join the community"
     },
     "phase": {
       "notOpenTitle": "Not open yet",
@@ -1059,6 +1063,151 @@
         "rate_limited": "Too many attempts in a row. Wait a minute and try again.",
         "challenge_full": "The challenge no longer accepts answers.",
         "generic": "It could not be sent. Try again in a few minutes."
+      }
+    },
+    "factcheck": {
+      "metaTitle": "#2 NaN Hackathon: Decide with Clef",
+      "metaDesc": "NaN's second hackathon: apps that make decisions with Clef, Cloudflare's decision model, now on NaN. November 13, 14 and 15, 2026.",
+      "hero": {
+        "hash": "#2",
+        "brand": "NaN",
+        "title": "Hackathon",
+        "kicker": "Decide with Clef",
+        "dates": "November 13 · 14 · 15, 2026",
+        "datesLabel": "Dates",
+        "cta": "Sign up"
+      },
+      "loop": {
+        "label": "Clef making decisions",
+        "steps": [
+          "Reading the case",
+          "Weighing the options",
+          "Clef decides"
+        ],
+        "cases": [
+          {
+            "text": "The agent wants to run rm -rf / in production. Allow it?",
+            "tone": "no",
+            "answer": "Blocked"
+          },
+          {
+            "text": "“Write a haiku about cats.” Which model answers?",
+            "tone": "pick",
+            "answer": "qwen3.8-flash"
+          },
+          {
+            "text": "A carbonara made with cream. Is it carbonara?",
+            "tone": "no",
+            "answer": "Not a carbonara"
+          },
+          {
+            "text": "Ticket: “I can't log in and the demo is in an hour.” Urgency?",
+            "tone": "pick",
+            "answer": "High urgency"
+          },
+          {
+            "text": "The defender handles the ball inside the box. Penalty?",
+            "tone": "yes",
+            "answer": "Penalty"
+          },
+          {
+            "text": "“Refactor this 40-file repo.” Which model answers?",
+            "tone": "pick",
+            "answer": "glm5.3"
+          },
+          {
+            "text": "Comment: “Great talk, thanks for sharing!” Publish it?",
+            "tone": "yes",
+            "answer": "Publish"
+          },
+          {
+            "text": "The agent wants to email all 3,000 contacts. Allow it?",
+            "tone": "pick",
+            "answer": "Ask first"
+          }
+        ]
+      },
+      "clef": {
+        "label": "New on NaN",
+        "title": "Clef lands on NaN",
+        "lead": "Cloudflare's decision model joins the NaN models. It doesn't write text: you give it a case and some questions, and it returns the answer with its probability, ready for your code to use.",
+        "kinds": [
+          {
+            "name": "Yes or no",
+            "desc": "The probability that the answer is yes."
+          },
+          {
+            "name": "Choose",
+            "desc": "One option out of the ones you define, with its confidence."
+          },
+          {
+            "name": "Score",
+            "desc": "A grade against the rubric you give it."
+          }
+        ],
+        "facts": [
+          "~200 ms median",
+          "64K context",
+          "up to 4 images",
+          "open weights, Apache 2.0"
+        ],
+        "source": "Figures from Cloudflare."
+      },
+      "qa": {
+        "when": {
+          "q": "When?",
+          "month": "November 2026",
+          "weekdays": [
+            "M",
+            "T",
+            "W",
+            "T",
+            "F",
+            "S",
+            "S"
+          ],
+          "a": "Friday 13, Saturday 14 and Sunday 15 November 2026",
+          "start": "Kicks off on Friday at 17:00 (Madrid time)"
+        },
+        "where": {
+          "q": "Where?",
+          "big": "Discord",
+          "a": "In the NaN community"
+        },
+        "team": {
+          "q": "Solo or in a team?",
+          "big": "3",
+          "a": "Teams of 3 people at most",
+          "how": "Teams are formed automatically. If you want to team up with your friends, message us on Discord once you have signed up."
+        },
+        "goal": {
+          "q": "What's the goal?",
+          "a": "Build an app where Clef makes the call.",
+          "pick": "Pick a track",
+          "tracks": [
+            {
+              "name": "Model router",
+              "desc": "Let Clef pick which NaN model answers each request: a fast one for simple things, a large one for hard ones."
+            },
+            {
+              "name": "Agent guardrails",
+              "desc": "Let Clef decide whether an agent may run an action before it does."
+            },
+            {
+              "name": "Fact Check",
+              "desc": "An app that says whether a claim is true or false."
+            },
+            {
+              "name": "Open theme",
+              "desc": "Any other app where Clef decides. Surprise us."
+            }
+          ]
+        },
+        "prize": {
+          "q": "What's the prize?",
+          "amount": "€200",
+          "a": "A €200 NaN subscription for one month"
+        }
       }
     }
   }

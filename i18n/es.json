@@ -32,17 +32,21 @@
       "ics": "o descarga el .ics"
     },
     "login": {
-      "prompt": "Entra con tu cuenta NaN",
-      "description": "Introduce el email de tu cuenta NaN y te enviaremos un enlace para iniciar sesión. Es el mismo acceso que la plataforma.",
+      "prompt": "¿Ya eres de NaN? Inicia sesión",
+      "description": "Escribe el email de tu cuenta de NaN y te mandamos un enlace para entrar. Es el mismo acceso que la plataforma: no hace falta contraseña.",
       "emailLabel": "Email",
       "emailPlaceholder": "tu@email.com",
       "submit": "Enviar enlace",
       "submitting": "Enviando…",
-      "success": "Si ese email pertenece a un miembro de NaN, te hemos enviado un enlace para entrar. Revisa tu correo (y la carpeta de spam) y luego vuelve aquí.",
+      "success": "Si ese email tiene cuenta en NaN, te hemos mandado un enlace para entrar. Revisa tu correo (y la carpeta de spam) y vuelve aquí desde el enlace.",
       "errorEmail": "Introduce un email válido.",
       "errorRate": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
       "errorServer": "No se pudo enviar el enlace. Inténtalo de nuevo.",
-      "errorNetwork": "Error de red. Inténtalo de nuevo."
+      "errorNetwork": "Error de red. Inténtalo de nuevo.",
+      "noEmail": "¿No te llega en unos minutos? Puede que ese email no tenga cuenta en NaN.",
+      "newTitle": "¿Aún no eres de NaN?",
+      "newBody": "Para participar hace falta ser miembro de la comunidad de NaN (desde 14,99 €/mes). Únete y, después, vuelve a esta página para apuntarte.",
+      "newCta": "Únete a la comunidad"
     },
     "phase": {
       "notOpenTitle": "Todavía no está abierto",
@@ -1059,6 +1063,151 @@
         "rate_limited": "Demasiados intentos seguidos. Espera un minuto y vuelve a probar.",
         "challenge_full": "El reto ya no admite más respuestas.",
         "generic": "No se ha podido enviar. Inténtalo de nuevo en unos minutos."
+      }
+    },
+    "factcheck": {
+      "metaTitle": "#2 NaN Hackathon: Decide con Clef",
+      "metaDesc": "El segundo hackathon de NaN: apps que toman decisiones con Clef, el modelo de decisión de Cloudflare, ya disponible en NaN. 13, 14 y 15 de noviembre de 2026.",
+      "hero": {
+        "hash": "#2",
+        "brand": "NaN",
+        "title": "Hackathon",
+        "kicker": "Decide con Clef",
+        "dates": "13 · 14 · 15 noviembre 2026",
+        "datesLabel": "Fechas",
+        "cta": "Apúntate"
+      },
+      "loop": {
+        "label": "Clef tomando decisiones",
+        "steps": [
+          "Leyendo el caso",
+          "Evaluando opciones",
+          "Clef decide"
+        ],
+        "cases": [
+          {
+            "text": "El agente quiere ejecutar rm -rf / en producción. ¿Lo dejo?",
+            "tone": "no",
+            "answer": "Bloqueado"
+          },
+          {
+            "text": "«Escribe un haiku sobre gatos». ¿Qué modelo responde?",
+            "tone": "pick",
+            "answer": "qwen3.8-flash"
+          },
+          {
+            "text": "Una carbonara con nata. ¿Es carbonara?",
+            "tone": "no",
+            "answer": "No es carbonara"
+          },
+          {
+            "text": "Ticket: «No puedo entrar y la demo es en una hora». ¿Urgencia?",
+            "tone": "pick",
+            "answer": "Urgencia alta"
+          },
+          {
+            "text": "El defensa toca el balón con la mano dentro del área. ¿Penalti?",
+            "tone": "yes",
+            "answer": "Penalti"
+          },
+          {
+            "text": "«Refactoriza este repo de 40 ficheros». ¿Qué modelo responde?",
+            "tone": "pick",
+            "answer": "glm5.3"
+          },
+          {
+            "text": "Comentario: «Gran charla, ¡gracias por compartirla!». ¿Lo publico?",
+            "tone": "yes",
+            "answer": "Publicar"
+          },
+          {
+            "text": "El agente quiere mandar un email a los 3.000 contactos. ¿Lo dejo?",
+            "tone": "pick",
+            "answer": "Pedir confirmación"
+          }
+        ]
+      },
+      "clef": {
+        "label": "Nuevo en NaN",
+        "title": "Clef llega a NaN",
+        "lead": "El modelo de decisión de Cloudflare se suma a los modelos de NaN. No escribe texto: le das un caso y unas preguntas, y te devuelve la respuesta con su probabilidad, lista para que la use tu código.",
+        "kinds": [
+          {
+            "name": "Sí o no",
+            "desc": "La probabilidad de que la respuesta sea sí."
+          },
+          {
+            "name": "Elegir",
+            "desc": "Una opción entre las que tú defines, con su confianza."
+          },
+          {
+            "name": "Puntuar",
+            "desc": "Una nota según la rúbrica que le pases."
+          }
+        ],
+        "facts": [
+          "~200 ms de mediana",
+          "64K de contexto",
+          "hasta 4 imágenes",
+          "pesos abiertos, Apache 2.0"
+        ],
+        "source": "Cifras de Cloudflare."
+      },
+      "qa": {
+        "when": {
+          "q": "¿Cuándo?",
+          "month": "Noviembre 2026",
+          "weekdays": [
+            "L",
+            "M",
+            "X",
+            "J",
+            "V",
+            "S",
+            "D"
+          ],
+          "a": "Viernes 13, sábado 14 y domingo 15 de noviembre de 2026",
+          "start": "Arranca el viernes a las 17:00 (hora peninsular)"
+        },
+        "where": {
+          "q": "¿Dónde?",
+          "big": "Discord",
+          "a": "En la comunidad de NaN"
+        },
+        "team": {
+          "q": "¿Solo o en equipo?",
+          "big": "3",
+          "a": "Equipos de 3 personas como máximo",
+          "how": "Los equipos se forman automáticamente. Si quieres formar equipo con tus amigos, escríbenos por Discord una vez apuntado."
+        },
+        "goal": {
+          "q": "¿Cuál es el objetivo?",
+          "a": "Crea una app en la que Clef tome la decisión.",
+          "pick": "Elige categoría",
+          "tracks": [
+            {
+              "name": "Enrutador de modelos",
+              "desc": "Que Clef elija qué modelo de NaN responde cada petición: uno rápido para lo sencillo, uno grande para lo difícil."
+            },
+            {
+              "name": "Guardarraíles para agentes",
+              "desc": "Que Clef decida si un agente puede ejecutar una acción antes de hacerla."
+            },
+            {
+              "name": "Fact Check",
+              "desc": "Una app que diga si una afirmación es verdadera o falsa."
+            },
+            {
+              "name": "Tema libre",
+              "desc": "Cualquier otra app en la que Clef decida. Sorpréndenos."
+            }
+          ]
+        },
+        "prize": {
+          "q": "¿Cuál es el premio?",
+          "amount": "200 €",
+          "a": "Suscripción de 200 € durante un mes en NaN"
+        }
       }
     }
   }

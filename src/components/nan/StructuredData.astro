@@ -12,7 +12,7 @@ import eventos from '../../data/eventos.json';
 
 interface Props {
   lang: Locale;
-  page: 'home' | 'events' | 'gauntlet' | 'other';
+  page: 'home' | 'events' | 'gauntlet' | 'factcheck' | 'other';
   canonical: string;
   origin: string;
 }
@@ -76,6 +76,24 @@ if (page === 'gauntlet') {
     description: t.gauntlet.metaDesc,
     startDate: eventos.gauntlet.start,
     endDate: eventos.gauntlet.close,
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+    location: { '@type': 'VirtualLocation', url: canonical },
+    url: canonical,
+    organizer: { '@id': `${origin}/#organization` },
+  });
+}
+
+if (page === 'factcheck') {
+  // Igual que el gauntlet: nombre, fechas del fin de semana y que es en línea.
+  // El premio no va aquí: schema.org no tiene un campo honesto para él.
+  graph.push({
+    '@type': 'Event',
+    '@id': `${canonical}#event`,
+    name: t.factcheck.metaTitle,
+    description: t.factcheck.metaDesc,
+    startDate: eventos.factcheck.kickoff,
+    endDate: eventos.factcheck.deadline,
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
     location: { '@type': 'VirtualLocation', url: canonical },

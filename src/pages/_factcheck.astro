@@ -1,0 +1,611 @@
+---
+/**
+ * Landing del #2 NaN Hackathon: decidir con Clef.
+ *
+ * El hero muestra un bucle continuo: aparece un caso, Clef lo evalúa y sale su
+ * decisión. El HTML ya trae el primer caso resuelto, así que sin JS (o con
+ * movimiento reducido) la página se lee igual; el script solo anima. Lo mismo
+ * con el selector de categorías: sin JS se ven todas seguidas.
+ */
+import NanPage from '../layouts/NanPage.astro';
+import StructuredData from '../components/nan/StructuredData.astro';
+import eventos from '../data/eventos.json';
+import { getLang, useT, withLang } from '../lib/i18n';
+import type { FactcheckDates } from '../lib/factcheck';
+
+const lang = getLang(Astro.url);
+const tt = useT(lang).factcheck;
+const site = Astro.site ?? new URL('https://nan.builders');
+const canonical = new URL(Astro.url.pathname.replace(/\/+$/, '') || '/', site).href;
+
+const dates = eventos.factcheck as FactcheckDates;
+const communityHref = withLang('/community', lang);
+// Mientras no haya evento en la API, el botón lleva a la comunidad.
+const ctaHref = dates.eventSlug ? withLang(`/events/${dates.eventSlug}`, lang) : communityHref;
+
+// Calendario del mes del evento, semana de lunes a domingo, con los días del
+// fin de semana marcados. Sale de eventos.json, no de un literal.
+const [calY, calM, firstPick] = dates.start.split('-').map(Number);
+const lastPick = Number(dates.end.split('-')[2]);
+const daysInMonth = new Date(Date.UTC(calY, calM, 0)).getUTCDate();
+const offset = (new Date(Date.UTC(calY, calM - 1, 1)).getUTCDay() + 6) % 7;
+const calCells: { day: number; pick: number | null }[] = [
+  ...Array.from({ length: offset }, () => ({ day: 0, pick: null })),
+  ...Array.from({ length: daysInMonth }, (_, i) => {
+    const day = i + 1;
+    return { day, pick: day >= firstPick && day <= lastPick ? day - firstPick : null };
+  }),
+];
+
+type Tone = 'yes' | 'no' | 'pick';
+const cases = tt.loop.cases as { text: string; tone: Tone; answer: string }[];
+const first = cases[0];
+// sí ✓ verde, no ✕ rojo, elegir → neutro
+const mark = (tone: Tone) => (tone === 'yes' ? '✓' : tone === 'no' ? '✕' : '→');
+const tracks = tt.qa.goal.tracks;
+---
+
+<NanPage title={tt.metaTitle} description={tt.metaDesc}>
+  <StructuredData slot="head" lang={lang} page="factcheck" canonical={canonical} origin={site.origin} />
+
+  <section class="hero" aria-labelledby="fc-title">
+    <div class="container hero__inner">
+      <header class="hero__head">
+        <h1 id="fc-title" class="hero__title">
+          <span class="hero__hash">{tt.hero.hash}</span><span class="hero__brand">{tt.hero.brand}</span> {tt.hero.title}
+        </h1>
+        <p class="hero__kicker">{tt.hero.kicker}</p>
+      </header>
+
+      <figure
+        class="loop"
+        data-fc-loop
+        data-phase="verdict"
+        data-cases={JSON.stringify(cases)}
+      >
+        <div class="loop__stage" aria-hidden="true">
+          <div class="loop__body">
+            <p class="loop__claim"><span data-fc-claim>{first.text}</span><span class="loop__caret"></span></p>
+
+            <ol class="loop__steps">
+              {tt.loop.steps.map((s) => (
+                <li class="loop__step is-done" data-fc-step>
+                  <span class="loop__tick"></span>{s}
+                </li>
+              ))}
+            </ol>
+
+            <div class="loop__progress"><span data-fc-bar></span></div>
+
+            <div class="loop__verdict" data-fc-verdict data-v={first.tone}>
+              <span class="loop__mark">{mark(first.tone)}</span>
+              <span data-fc-verdict-text>{first.answer}</span>
+            </div>
+          </div>
+          <span class="loop__scan"></span>
+        </div>
+
+        <figcaption class="sr-only">
+          {tt.loop.label}
+          <ul>
+            {cases.map((c) => (
+              <li>{c.text} {c.answer}</li>
+            ))}
+          </ul>
+        </figcaption>
+      </figure>
+
+      <div class="hero__foot">
+        <a class="btn btn-primary hero__cta" href={ctaHref}>{tt.hero.cta}</a>
+        <p class="hero__dates">
+          <span class="sr-only">{tt.hero.datesLabel}: </span>{tt.hero.dates}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="clef" aria-labelledby="clef-title">
+    <div class="container clef__inner">
+      <p class="clef__label">{tt.clef.label}</p>
+      <h2 id="clef-title" class="clef__title">{tt.clef.title}</h2>
+      <p class="clef__lead">{tt.clef.lead}</p>
+      <ul class="clef__kinds">
+        {tt.clef.kinds.map((k) => (
+          <li class="clef__kind">
+            <h3 class="clef__kind-name">{k.name}</h3>
+            <p class="clef__kind-desc">{k.desc}</p>
+          </li>
+        ))}
+      </ul>
+      <p class="clef__facts">
+        {tt.clef.facts.map((f, i) => (
+          <>{i > 0 && <span class="clef__dot" aria-hidden="true">·</span>}<span>{f}</span></>
+        ))}
+      </p>
+      <p class="clef__source">{tt.clef.source}</p>
+    </div>
+  </section>
+
+  <!-- Preguntas: cada una se queda fija mientras se baja; primero sale la
+       pregunta y, al seguir, la respuesta. Sin JS se ven enteras. -->
+  <div class="qa" data-qa>
+    <section class="qa__step" data-qa-step aria-labelledby="qa-when">
+      <div class="qa__stage">
+        <h2 id="qa-when" class="qa__q">{tt.qa.when.q}</h2>
+        <div class="qa__a">
+          <div class="cal" aria-hidden="true">
+            <p class="cal__month">{tt.qa.when.month}</p>
+            <div class="cal__grid">
+              {tt.qa.when.weekdays.map((w) => <span class="cal__wd">{w}</span>)}
+              {calCells.map((c) =>
+                c.day === 0 ? (
+                  <span></span>
+                ) : c.pick !== null ? (
+                  <span class="cal__day is-pick" style={`--i:${c.pick}`}>{c.day}</span>
+                ) : (
+                  <span class="cal__day">{c.day}</span>
+                ),
+              )}
+            </div>
+          </div>
+          <p class="qa__line">{tt.qa.when.a}</p>
+          <p class="qa__start">{tt.qa.when.start}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="qa__step" data-qa-step aria-labelledby="qa-where">
+      <div class="qa__stage">
+        <h2 id="qa-where" class="qa__q">{tt.qa.where.q}</h2>
+        <div class="qa__a">
+          <svg class="qa__discord" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z" />
+          </svg>
+          <p class="qa__big">{tt.qa.where.big}</p>
+          <p class="qa__line"><a class="qa__link" href={communityHref}>{tt.qa.where.a}</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="qa__step" data-qa-step aria-labelledby="qa-team">
+      <div class="qa__stage">
+        <h2 id="qa-team" class="qa__q">{tt.qa.team.q}</h2>
+        <div class="qa__a">
+          <div class="team" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <svg class="team__p" style={`--i:${i}`} viewBox="0 0 24 24" focusable="false">
+                <circle cx="12" cy="7.5" r="4" fill="currentColor" />
+                <path fill="currentColor" d="M3.5 21c0-4.7 3.8-8 8.5-8s8.5 3.3 8.5 8z" />
+              </svg>
+            ))}
+          </div>
+          <p class="qa__big">{tt.qa.team.big}</p>
+          <p class="qa__line">{tt.qa.team.a}</p>
+          <p class="qa__start">{tt.qa.team.how}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="qa__step" data-qa-step aria-labelledby="qa-goal">
+      <div class="qa__stage">
+        <h2 id="qa-goal" class="qa__q">{tt.qa.goal.q}</h2>
+        <div class="qa__a">
+          <p class="qa__statement">{tt.qa.goal.a}</p>
+          <div class="tracks" data-tracks>
+            <div class="tracks__tabs" role="tablist" aria-label={tt.qa.goal.pick} hidden>
+              {tracks.map((tr, i) => (
+                <button
+                  type="button"
+                  class="tracks__tab"
+                  role="tab"
+                  id={`track-tab-${i}`}
+                  aria-controls={`track-${i}`}
+                  aria-selected={i === 0 ? 'true' : 'false'}
+                  tabindex={i === 0 ? 0 : -1}
+                >{tr.name}</button>
+              ))}
+            </div>
+            {tracks.map((tr, i) => (
+              <div class="tracks__panel" id={`track-${i}`} data-track>
+                <h3 class="tracks__name">{tr.name}</h3>
+                <p class="tracks__desc">{tr.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="qa__step" data-qa-step aria-labelledby="qa-prize">
+      <div class="qa__stage">
+        <h2 id="qa-prize" class="qa__q">{tt.qa.prize.q}</h2>
+        <div class="qa__a">
+          <p class="qa__big qa__big--accent">{tt.qa.prize.amount}</p>
+          <p class="qa__line">{tt.qa.prize.a}</p>
+          <a class="btn btn-primary qa__cta" href={ctaHref}>{tt.hero.cta}</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</NanPage>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .hero {
+    min-height: calc(100svh - var(--nav-h));
+    display: flex;
+    align-items: center;
+    padding-block: clamp(24px, 4vh, 48px);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(60% 45% at 50% 0%, color-mix(in srgb, var(--color-violet) 18%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .hero__inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(22px, 3.5vh, 36px);
+    text-align: center;
+    width: 100%;
+  }
+  .hero__head { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: clamp(16px, 5vh, 48px); }
+  .hero__title {
+    font-size: var(--fs-h1);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+    margin: 0;
+  }
+  .hero__hash { color: var(--color-violet); margin-right: 0.04em; }
+  /* la marca se escribe NaN aunque el título vaya en mayúsculas */
+  .hero__brand { text-transform: none; }
+  .hero__kicker {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(22px, 3.6vw, 36px);
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: #fff;
+    position: relative;
+    padding-bottom: 0.3em;
+    /* el tracking deja un hueco a la derecha; se compensa para centrar */
+    margin-right: -0.24em;
+  }
+  .hero__kicker::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0.24em;
+    bottom: 0;
+    height: 0.14em;
+    background: var(--color-violet);
+  }
+
+  /* ---------- bucle ---------- */
+  .loop { margin: clamp(8px, 2vh, 20px) 0 0; width: min(640px, 100%); }
+  .loop__stage {
+    position: relative;
+    text-align: center;
+  }
+  .loop__body { display: grid; justify-items: center; gap: 16px; }
+  .loop__claim {
+    margin: 0;
+    min-height: 2.6em;
+    max-width: 30ch;
+    font-size: clamp(20px, 2.6vw, 28px);
+    line-height: 1.3;
+    color: #fff;
+    transition: opacity 0.4s var(--ease);
+  }
+  .loop__caret {
+    display: inline-block;
+    width: 0.5ch; height: 1em;
+    margin-left: 2px;
+    vertical-align: -0.12em;
+    background: var(--color-violet);
+    opacity: 0;
+  }
+  [data-phase='claim'] .loop__caret { opacity: 1; animation: fc-blink 0.8s steps(1) infinite; }
+
+  .loop__steps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 22px; }
+  .loop__step {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-muted);
+    opacity: 0.35;
+    transition: opacity 0.3s var(--ease), color 0.3s var(--ease);
+  }
+  .loop__tick {
+    width: 10px; height: 10px; flex: none;
+    border: 1px solid currentColor;
+    transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
+  }
+  .loop__step.is-on { opacity: 1; color: var(--color-body); }
+  .loop__step.is-on .loop__tick { border-color: var(--color-violet); animation: fc-pulse 0.7s var(--ease) infinite; }
+  .loop__step.is-done { opacity: 0.85; }
+  .loop__step.is-done .loop__tick { background: var(--color-violet); border-color: var(--color-violet); }
+
+  .loop__progress {
+    width: min(420px, 100%);
+    height: 2px;
+    background: var(--color-line);
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 15%, #000 85%, transparent);
+  }
+  .loop__progress span {
+    display: block; height: 100%;
+    background: var(--color-violet);
+    transform-origin: left;
+    transform: scaleX(var(--p, 1));
+    transition: transform 0.6s var(--ease);
+  }
+
+  /* Veredicto: solo texto en verde o rojo con su icono, para que no se
+     confunda con el botón violeta de inscripción. */
+  .loop, .qa {
+    --fc-true: #3ecf8e;
+    --fc-false: #ff5c5c;
+  }
+  .loop__verdict {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono);
+    font-size: clamp(18px, 2.4vw, 22px);
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--fc-true);
+    visibility: hidden;
+  }
+  .loop__verdict[data-v='no'] { color: var(--fc-false); }
+  .loop__verdict[data-v='pick'] { color: #fff; }
+  .loop__mark { font-size: 1.15em; line-height: 1; }
+  [data-phase='verdict'] .loop__verdict { visibility: visible; animation: fc-stamp 0.45s var(--ease) both; }
+  [data-phase='out'] .loop__verdict { visibility: visible; opacity: 0; transition: opacity 0.4s var(--ease); }
+  [data-phase='out'] .loop__claim { opacity: 0; }
+
+  .loop__scan {
+    position: absolute; left: 0; right: 0; top: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-violet-2), transparent);
+    box-shadow: 0 0 18px 2px color-mix(in srgb, var(--color-violet) 45%, transparent);
+    opacity: 0;
+    pointer-events: none;
+  }
+  [data-phase='process'] .loop__scan { opacity: 1; animation: fc-scan 1.4s linear infinite; }
+
+  .hero__foot { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .hero__cta { min-width: 200px; justify-content: center; }
+  .hero__dates {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(14px, 1.6vw, 16px);
+    letter-spacing: 0.12em;
+    color: var(--color-body);
+  }
+
+  /* ---------- preguntas ---------- */
+  .qa__step { height: 190svh; }
+  .qa__stage {
+    position: sticky;
+    top: var(--nav-h);
+    height: calc(100svh - var(--nav-h));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(28px, 5vh, 56px);
+    padding-inline: 16px;
+    text-align: center;
+  }
+  /* El tamaño de la pregunta lo fija la escala de titulares del sistema. */
+  .qa__q { margin: 0; }
+  .qa__a { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .qa__line {
+    margin: 0;
+    max-width: 44ch;
+    font-size: clamp(16px, 2vw, 20px);
+    color: var(--color-body);
+  }
+  .qa__big {
+    margin: 0;
+    font-size: clamp(48px, 10vw, 128px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+  .qa__big--accent { color: var(--color-violet); }
+  .qa__start {
+    margin: -6px 0 0;
+    font-family: var(--font-mono);
+    font-size: clamp(14px, 1.6vw, 16px);
+    letter-spacing: 0.08em;
+    color: var(--color-violet-2);
+  }
+  .qa__cta { min-width: 200px; justify-content: center; margin-top: clamp(12px, 3vh, 28px); }
+  .qa__discord {
+    width: clamp(56px, 8vw, 96px);
+    height: auto;
+    color: #5865f2; /* azul de marca de Discord */
+    margin-bottom: -6px;
+  }
+  .qa__statement {
+    margin: 0;
+    max-width: 24ch;
+    font-size: clamp(24px, 3.4vw, 40px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  /* ---------- categorías ---------- */
+  .tracks { display: grid; justify-items: center; gap: 18px; width: min(640px, 100%); }
+  .tracks__tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .tracks__tabs[hidden] { display: none; }
+  .tracks__tab {
+    font: inherit;
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 1.4vw, 14px);
+    letter-spacing: 0.06em;
+    padding: 9px 14px;
+    color: var(--color-body);
+    background: transparent;
+    border: 1px solid var(--color-line);
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .tracks__tab:hover { border-color: var(--color-violet); color: #fff; }
+  .tracks__tab[aria-selected='true'] { background: var(--color-violet); border-color: var(--color-violet); color: #fff; }
+  .tracks__tab:focus-visible { outline: 2px solid var(--color-violet-2); outline-offset: 2px; }
+  .tracks__panel { display: grid; gap: 6px; max-width: 46ch; }
+  .tracks__name { margin: 0; font-size: clamp(18px, 2vw, 22px); }
+  .tracks__desc { margin: 0; font-size: clamp(16px, 1.9vw, 19px); color: var(--color-body); min-height: 2.8em; }
+  /* Con JS: una sola visible; el nombre ya está en la pestaña. */
+  .tracks.is-on .tracks__panel[hidden] { display: none; }
+  .tracks.is-on .tracks__name {
+    position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .tracks.is-on .tracks__panel:not([hidden]) { animation: fc-stamp 0.35s var(--ease) both; }
+  .qa__link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--color-violet);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+  }
+  .qa__link:hover { color: #fff; }
+
+  /* ---------- Clef llega a NaN ---------- */
+  .clef { padding-block: clamp(72px, 14vh, 140px); border-top: 1px solid var(--color-line); }
+  .clef__inner { display: grid; justify-items: center; text-align: center; gap: 20px; }
+  .clef__label {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-violet-2);
+  }
+  .clef__title { margin: 0; }
+  .clef__lead { margin: 0; max-width: 56ch; font-size: clamp(16px, 2vw, 20px); color: var(--color-body); }
+  .clef__kinds {
+    list-style: none; margin: 16px 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+    width: min(880px, 100%);
+  }
+  .clef__kind { border: 1px solid var(--color-line); padding: 22px 20px; text-align: left; display: grid; gap: 8px; align-content: start; }
+  .clef__kind-name { margin: 0; font-size: 18px; color: #fff; }
+  .clef__kind-desc { margin: 0; font-size: 15px; color: var(--color-body); }
+  .clef__facts {
+    margin: 12px 0 0;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 12px;
+    font-family: var(--font-mono);
+    font-size: clamp(13px, 1.5vw, 15px);
+    letter-spacing: 0.06em;
+    color: #fff;
+  }
+  .clef__dot { color: var(--color-violet); }
+  .clef__source { margin: -8px 0 0; font-size: 13px; color: var(--color-muted); }
+  @media (max-width: 720px) {
+    .clef__kinds { grid-template-columns: 1fr; }
+  }
+
+  .team { display: flex; gap: clamp(10px, 2vw, 18px); color: var(--color-violet); }
+  .team__p { width: clamp(40px, 6vw, 64px); height: auto; }
+  .qa.is-armed .team__p { opacity: 0.15; transition: opacity 0.35s var(--ease); }
+  .qa.is-armed [data-state='a'] .team__p { opacity: 1; transition-delay: calc(0.45s + var(--i) * 0.2s); }
+  .team + .qa__big { margin-top: -4px; }
+  .team ~ .qa__start { max-width: 46ch; line-height: 1.6; }
+
+  .cal { display: grid; gap: 14px; justify-items: center; }
+  .cal__month {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .cal__grid {
+    display: grid;
+    grid-template-columns: repeat(7, clamp(34px, 7vw, 52px));
+    gap: 4px;
+    font-family: var(--font-mono);
+  }
+  .cal__wd, .cal__day {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    font-size: clamp(12px, 1.6vw, 15px);
+  }
+  .cal__wd { color: var(--color-muted); font-size: 11px; aspect-ratio: auto; padding-bottom: 6px; }
+  .cal__day { color: var(--color-muted); border: 1px solid var(--color-line); }
+  .cal__day.is-pick { background: var(--color-violet); border-color: var(--color-violet); color: #fff; font-weight: 700; }
+
+  /* Con JS: la pregunta entra al llegar y la respuesta al seguir bajando. */
+  .qa.is-armed .qa__q,
+  .qa.is-armed .qa__a {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+  }
+  .qa.is-armed [data-state] .qa__q,
+  .qa.is-armed [data-state='a'] .qa__a { opacity: 1; transform: none; }
+  .qa.is-armed .cal__day.is-pick {
+    background: transparent;
+    border-color: var(--color-line);
+    color: var(--color-muted);
+    transition: background 0.3s var(--ease), border-color 0.3s var(--ease), color 0.3s var(--ease);
+  }
+  .qa.is-armed [data-state='a'] .cal__day.is-pick {
+    background: var(--color-violet);
+    border-color: var(--color-violet);
+    color: #fff;
+    transition-delay: calc(0.45s + var(--i) * 0.22s);
+  }
+
+  /* Sin JS o con movimiento reducido: todo visible, sin pantallas fijas. */
+  .qa:not(.is-armed) .qa__step { height: auto; }
+  .qa:not(.is-armed) .qa__stage {
+    position: static;
+    height: auto;
+    padding-block: clamp(64px, 12vh, 120px);
+  }
+
+  @keyframes fc-pulse { 50% { opacity: 0.35; } }
+  @keyframes fc-blink { 50% { opacity: 0; } }
+  @keyframes fc-scan { 0%, 100% { top: 8%; opacity: 0; } 15%, 85% { opacity: 1; } 50% { top: 92%; } }
+  @keyframes fc-stamp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .loop__step.is-on .loop__tick, [data-phase='claim'] .loop__caret { animation: none; }
+    [data-phase='process'] .loop__scan { animation: none; opacity: 0; }
+    [data-phase='verdict'] .loop__verdict { animation: none; }
+    .loop__progress span { transition: none; }
+  }
+</style>
+
+<script>
+  import { initFactcheck } from '../scripts/factcheck';
+  initFactcheck();
+</script>
