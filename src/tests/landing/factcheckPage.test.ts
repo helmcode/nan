@@ -39,6 +39,8 @@ describe('fechas del hackathon en eventos.json', () => {
     // arranca el viernes a las 17:00, hora peninsular
     expect(f.kickoff).toBe(`${f.start}T17:00:00+01:00`);
     expect(f.deadline.startsWith(f.end)).toBe(true);
+    // se entrega el domingo a las 17:00, la misma hora que el evento del backend
+    expect(f.deadline).toBe(`${f.end}T17:00:00+01:00`);
   });
 
   test('la entrada de la agenda cubre exactamente el fin de semana', () => {
