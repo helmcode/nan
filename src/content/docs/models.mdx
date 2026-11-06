@@ -172,7 +172,7 @@ with the same `base URL`.
   tag="token packs only"
   leftLabel="text generation, chat & vision · reasoning"
   rightLabel="capabilities"
-  description="Qwen3.8 Max: The largest Qwen 3.8 model, for hard reasoning and agents. Vision (image input). 1M token context. Token packs only: no plan includes tokens for this model, so every token is drawn from a token pack bought for it, with or without a subscription."
+  description="Qwen3.8 Max: the largest Qwen 3.8 model, for hard reasoning and agents. Vision (image input). 1M token context. Token packs only: no plan includes tokens for this model, so every token is drawn from a token pack bought for it, with or without a subscription."
   specs={[
     { label: 'Context', value: '1M tokens' },
     { label: 'Max answer', value: '131K tokens' },
@@ -219,7 +219,7 @@ with the same `base URL`.
   tag="token packs only"
   leftLabel="text generation, chat & vision · reasoning"
   rightLabel="capabilities"
-  description="Hy4: Tencent's Hunyuan 4 model, for agents and long documents at a lower price per token. Vision (image input). 1M token context. Token packs only: no plan includes tokens for this model, so every token is drawn from a token pack bought for it, with or without a subscription."
+  description="Hy4: Tencent's Hunyuan 4 model, for agents and long documents, and the lowest-priced token-packs-only model. Vision (image input). 1M token context. Token packs only: no plan includes tokens for this model, so every token is drawn from a token pack bought for it, with or without a subscription."
   specs={[
     { label: 'Context', value: '1M tokens' },
     { label: 'Max answer', value: '64K tokens' },
@@ -229,7 +229,7 @@ with the same `base URL`.
   ]}
   items={[
     'Tool calling (function calling)',
-    'Reasoning model',
+    'Reasons by default. If you send a small <code>max_tokens</code> without <code>reasoning_effort</code> it can spend the whole budget reasoning and return empty <code>content</code>; send <code>reasoning_effort</code> (e.g. <code>low</code>) or a budget of at least 16K',
     'Vision (image input)',
     '1M token context',
     'Streaming generation (SSE)',

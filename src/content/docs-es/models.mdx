@@ -219,7 +219,7 @@ OpenAI y la misma `base URL`.
   tag="solo token packs"
   leftLabel="generación de texto, chat y visión · razonamiento"
   rightLabel="capacidades"
-  description="Hy4: el modelo Hunyuan 4 de Tencent, para agentes y documentos largos a menor precio por token. Visión (entrada de imagen). Contexto de 1M tokens. Solo token packs: ningún plan incluye tokens de este modelo, así que cada token sale de un token pack comprado para él, tengas suscripción o no."
+  description="Hy4: el modelo Hunyuan 4 de Tencent, para agentes y documentos largos, y el más económico de los modelos de solo token packs. Visión (entrada de imagen). Contexto de 1M tokens. Solo token packs: ningún plan incluye tokens de este modelo, así que cada token sale de un token pack comprado para él, tengas suscripción o no."
   specs={[
     { label: 'Contexto', value: '1M tokens' },
     { label: 'Respuesta máxima', value: '64K tokens' },
@@ -229,7 +229,7 @@ OpenAI y la misma `base URL`.
   ]}
   items={[
     'Tool calling (function calling)',
-    'Modelo de razonamiento',
+    'Razona por defecto. Si envías un <code>max_tokens</code> pequeño sin <code>reasoning_effort</code> puede gastar todo el presupuesto razonando y devolver <code>content</code> vacío; envía <code>reasoning_effort</code> (por ejemplo <code>low</code>) o un presupuesto de al menos 16K',
     'Visión (entrada de imagen)',
     'Contexto de 1M tokens',
     'Generación en streaming (SSE)',

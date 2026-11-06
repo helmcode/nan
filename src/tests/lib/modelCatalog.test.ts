@@ -278,6 +278,37 @@ describe('token-packs-only models', () => {
     }
   });
 
+  /**
+   * hy4 is the cheapest of the pack-only models but ~9x a DeepSeek V4-Flash
+   * pack: no surface may sell it as cheap per token in general.
+   */
+  it('hy4 is never sold as cheaper per token, only as the lowest-priced token-packs-only model', () => {
+    const hy4 = MODELS.find((m) => m.id === 'hy4')!;
+    const texts = [hy4.bestFor.en, hy4.bestFor.es];
+    for (const dir of [enDir, esDir]) {
+      const cards = readFileSync(resolve(dir, 'models.mdx'), 'utf-8');
+      const start = cards.indexOf('name="hy4"');
+      texts.push(cards.slice(start, cards.indexOf('/>', start)));
+      texts.push(readFileSync(resolve(dir, 'choose-a-model.md'), 'utf-8').split('\n').find((l) => l.startsWith('| `hy4` |')) ?? '');
+    }
+    for (const t of texts) {
+      expect(t).not.toMatch(/cheaper per token|lower price per token|menor precio por token|más barato por token/i);
+      expect(t).toMatch(/lowest-priced token-packs-only model|más económico de los modelos de solo token packs/);
+    }
+  });
+
+  it('the hy4 card warns that it reasons by default and how to avoid an empty answer', () => {
+    for (const [dir, words] of [
+      [enDir, ['Reasons by default', '<code>reasoning_effort</code>', '16K']],
+      [esDir, ['Razona por defecto', '<code>reasoning_effort</code>', '16K']],
+    ] as const) {
+      const cards = readFileSync(resolve(dir, 'models.mdx'), 'utf-8');
+      const start = cards.indexOf('name="hy4"');
+      const card = cards.slice(start, cards.indexOf('/>', start));
+      for (const w of words) expect(card, `${dir}: ${w}`).toContain(w);
+    }
+  });
+
   it('carry a fixed quota label in both languages, never a counter', () => {
     for (const m of MODELS.filter((x) => x.quota.kind === 'packOnly')) {
       expect(quotaLabel(m, 'en')).toBe('token packs only');

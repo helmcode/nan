@@ -187,8 +187,8 @@ export const MODELS: ModelSpec[] = [
     quota: { kind: 'packOnly' },
     endpoint: '/chat/completions',
     bestFor: {
-      en: 'Agents and long documents at a lower price per token',
-      es: 'Agentes y documentos largos a menor precio por token',
+      en: 'Agents and long documents, the lowest-priced token-packs-only model',
+      es: 'Agentes y documentos largos, el más económico de los modelos de solo token packs',
     },
   },
   {
