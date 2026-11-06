@@ -447,6 +447,9 @@ Code written for another provider keeps working: we also accept
 `enable_thinking: false` and `chat_template_kwargs: {"enable_thinking": false}`,
 at the top level of the body or inside `extra_body`. Each one means exactly
 `none`. If a request carries both a value and one of these, the value wins.
+These aliases are not mapped on `kimi-k3.1-pro`, `deepseek-v4-pro` and `hy4`
+(`hy4` keeps reasoning even with `enable_thinking: false`): on those three, use
+`reasoning_effort`.
 
 | Model | Off switch (`none`) | The other values |
 | --- | --- | --- |

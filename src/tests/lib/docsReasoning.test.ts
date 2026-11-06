@@ -421,3 +421,39 @@ describe('es: no voseo', () => {
     expect(page('-es')).not.toContain('Bajá');
   });
 });
+
+/**
+ * The reasoning aliases (enable_thinking: false and friends) are only mapped
+ * on the models the hook knows. On kimi-k3.1-pro, deepseek-v4-pro and hy4 they
+ * are NOT, and hy4 keeps reasoning with enable_thinking: false (Security
+ * review 2026-11-06): every surface that promises the aliases carves them out
+ * and points at reasoning_effort.
+ */
+describe('reasoning aliases: the pack-only carve-out', () => {
+  const UNMAPPED = ['kimi-k3.1-pro', 'deepseek-v4-pro', 'hy4'];
+  const desc: string = spec.info.description;
+  const apiReasoning = desc.slice(desc.indexOf('## Reasoning'), desc.indexOf('\n## ', desc.indexOf('## Reasoning') + 3));
+
+  for (const [label, text] of [
+    ['api', apiReasoning],
+    ['en', section('')],
+    ['es', section('-es')],
+  ] as const) {
+    it(`${label}: names the three models the aliases do not reach, and says to use reasoning_effort`, () => {
+      for (const id of UNMAPPED) expect(text, `${label}: ${id}`).toContain(`\`${id}\``);
+      expect(text).toMatch(/`hy4` (keeps reasoning|sigue razonando)/);
+      expect(text).toMatch(/(use|usa)\s+`reasoning_effort`/);
+    });
+  }
+});
+
+describe('API reference: the 402 codes', () => {
+  const desc: string = spec.info.description;
+  it('lists insufficient_balance next to monthly_cap_reached, both not retryable', () => {
+    const rows = desc.split('\n').filter((l) => l.startsWith('| `402` |'));
+    expect(rows.some((r) => r.endsWith('| `monthly_cap_reached` |'))).toBe(true);
+    const ib = rows.find((r) => r.endsWith('| `insufficient_balance` |')) ?? '';
+    expect(ib).toMatch(/Not retryable: buy a token pack/);
+    expect(desc).toContain('`insufficient_balance` when you buy a token pack for that model');
+  });
+});

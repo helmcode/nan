@@ -451,6 +451,9 @@ El código escrito para otro proveedor sigue funcionando: también aceptamos
 en el primer nivel del cuerpo o dentro de `extra_body`. Cada uno significa
 exactamente `none`. Si una petición lleva un valor y además uno de estos, gana
 el valor.
+Estos alias no están mapeados en `kimi-k3.1-pro`, `deepseek-v4-pro` ni `hy4`
+(`hy4` sigue razonando incluso con `enable_thinking: false`): en esos tres, usa
+`reasoning_effort`.
 
 | Modelo | Para apagar (`none`) | El resto de valores |
 | --- | --- | --- |
