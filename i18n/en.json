@@ -1130,7 +1130,7 @@
       "clef": {
         "label": "New on NaN",
         "title": "Clef lands on NaN",
-        "lead": "Cloudflare's decision model joins the NaN models. It doesn't write text: you give it a case and some questions, and it returns the answer with its probability, ready for your code to use.",
+        "lead": "Cloudflare's decision model joins the NaN models.",
         "kinds": [
           {
             "name": "Yes or no",
