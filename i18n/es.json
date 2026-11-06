@@ -1130,7 +1130,7 @@
       "clef": {
         "label": "Nuevo en NaN",
         "title": "Clef llega a NaN",
-        "lead": "El modelo de decisión de Cloudflare se suma a los modelos de NaN. No escribe texto: le das un caso y unas preguntas, y te devuelve la respuesta con su probabilidad, lista para que la use tu código.",
+        "lead": "El modelo de decisión de Cloudflare se suma a los modelos de NaN.",
         "kinds": [
           {
             "name": "Sí o no",
