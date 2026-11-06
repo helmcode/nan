@@ -1174,6 +1174,12 @@
           "big": "Discord",
           "a": "En la comunidad de NaN"
         },
+        "team": {
+          "q": "¿Solo o en equipo?",
+          "big": "3",
+          "a": "Equipos de 3 personas como máximo",
+          "how": "Los equipos se forman automáticamente. Si quieres formar equipo con tus amigos, escríbenos por Discord una vez apuntado."
+        },
         "goal": {
           "q": "¿Cuál es el objetivo?",
           "a": "Crea una app en la que Clef tome la decisión.",

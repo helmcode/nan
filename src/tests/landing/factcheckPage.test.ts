@@ -160,6 +160,10 @@ describe('preguntas bajo el hero', () => {
       for (const d of ['13', '14', '15']) expect(qa.when.a).toContain(d);
       expect(qa.when.start).toContain('17:00');
       expect(qa.where.big).toBe('Discord');
+      // el evento del backend es por equipos de 3 como máximo
+      expect(qa.team.big).toBe('3');
+      expect(qa.team.a).toContain('3');
+      expect(qa.team.how).toContain('Discord');
       expect(qa.goal.a).toContain('Clef');
       expect(qa.goal).not.toHaveProperty('sub');
       expect(qa.prize.amount).toContain('200');
@@ -180,6 +184,14 @@ describe('preguntas bajo el hero', () => {
     // las pestañas llegan ocultas y el script las muestra
     expect(page).toMatch(/role="tablist"[^>]*hidden/);
     expect(script).toContain('list.hidden = false');
+  });
+
+  test('la pregunta de equipos va entre el dónde y el objetivo', () => {
+    const w = page.indexOf('id="qa-where"');
+    const t = page.indexOf('id="qa-team"');
+    const g = page.indexOf('id="qa-goal"');
+    expect(w).toBeLessThan(t);
+    expect(t).toBeLessThan(g);
   });
 
   test('el calendario sale de las fechas de eventos.json, no de un literal', () => {

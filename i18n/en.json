@@ -1174,6 +1174,12 @@
           "big": "Discord",
           "a": "In the NaN community"
         },
+        "team": {
+          "q": "Solo or in a team?",
+          "big": "3",
+          "a": "Teams of 3 people at most",
+          "how": "Teams are formed automatically. If you want to team up with your friends, message us on Discord once you have signed up."
+        },
         "goal": {
           "q": "What's the goal?",
           "a": "Build an app where Clef makes the call.",

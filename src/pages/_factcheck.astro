@@ -167,6 +167,25 @@ const tracks = tt.qa.goal.tracks;
       </div>
     </section>
 
+    <section class="qa__step" data-qa-step aria-labelledby="qa-team">
+      <div class="qa__stage">
+        <h2 id="qa-team" class="qa__q">{tt.qa.team.q}</h2>
+        <div class="qa__a">
+          <div class="team" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <svg class="team__p" style={`--i:${i}`} viewBox="0 0 24 24" focusable="false">
+                <circle cx="12" cy="7.5" r="4" fill="currentColor" />
+                <path fill="currentColor" d="M3.5 21c0-4.7 3.8-8 8.5-8s8.5 3.3 8.5 8z" />
+              </svg>
+            ))}
+          </div>
+          <p class="qa__big">{tt.qa.team.big}</p>
+          <p class="qa__line">{tt.qa.team.a}</p>
+          <p class="qa__start">{tt.qa.team.how}</p>
+        </div>
+      </div>
+    </section>
+
     <section class="qa__step" data-qa-step aria-labelledby="qa-goal">
       <div class="qa__stage">
         <h2 id="qa-goal" class="qa__q">{tt.qa.goal.q}</h2>
@@ -507,6 +526,13 @@ const tracks = tt.qa.goal.tracks;
   @media (max-width: 720px) {
     .clef__kinds { grid-template-columns: 1fr; }
   }
+
+  .team { display: flex; gap: clamp(10px, 2vw, 18px); color: var(--color-violet); }
+  .team__p { width: clamp(40px, 6vw, 64px); height: auto; }
+  .qa.is-armed .team__p { opacity: 0.15; transition: opacity 0.35s var(--ease); }
+  .qa.is-armed [data-state='a'] .team__p { opacity: 1; transition-delay: calc(0.45s + var(--i) * 0.2s); }
+  .team + .qa__big { margin-top: -4px; }
+  .team ~ .qa__start { max-width: 46ch; line-height: 1.6; }
 
   .cal { display: grid; gap: 14px; justify-items: center; }
   .cal__month {
