@@ -47,6 +47,10 @@ Si no sabes cuál coger, busca en la primera columna lo que quieres hacer.
 | `glm5.3-flash` | Agentes de código, sin premium | 1M | texto · imagen | 2B tokens/mes |
 | `qwen3.8-flash` | Respuestas rápidas | 1M | texto · imagen | 500M tokens/mes |
 | `mimo-v2.6-flash` | El MiMo más nuevo, omnimodal | 1M | texto · imagen · audio | 1.0B tokens/mes |
+| `kimi-k3.1-pro` | Razonamiento de frontera para agentes y código | 1M | texto · imagen | solo token packs |
+| `qwen3.8-max` | El Qwen 3.8 más grande, razonamiento difícil | 1M | texto · imagen | solo token packs |
+| `deepseek-v4-pro` | Modelo grande de razonamiento y código | 1M | texto | solo token packs |
+| `hy4` | Agentes y documentos largos, el más económico de los modelos de solo token packs | 1M | texto · imagen | solo token packs |
 | `gemma4` | Tareas cortas y pruebas | 262K | texto · imagen | sin contador |
 | `qwen3.6` | Generación anterior | 262K | texto · imagen | sin contador |
 | `qwen3-embedding` | Vectores de 4096 dimensiones | - | texto | sin contador |
@@ -61,7 +65,7 @@ Las fichas completas, con parámetros, licencias y modos de razonamiento, están
 > **`glm5.3` es el único que no entra con la suscripción normal**
 > Necesita una clave en el tier premium. Si lo pides sin él, la respuesta es un **`401`**, no un `403`: "This API key does not have access to the requested model". Parece una clave rota y no lo es, así que mira el tier antes de ponerte a rotar credenciales. Tampoco aparece en `GET /v1/models`.
 >
-> Todos los demás **de la tabla de arriba** los puede llamar cualquier miembro. Guíate por esa tabla y no por `GET /v1/models`: ese endpoint contesta con lo que el clúster tiene levantado, que no es la misma pregunta que qué puede llamar tu clave, así que un id puede salir ahí y aun así devolver un `401`.
+> Todos los demás **de la tabla de arriba** los puede llamar cualquier miembro. Los cuatro marcados como **solo token packs** (`kimi-k3.1-pro`, `qwen3.8-max`, `deepseek-v4-pro`, `hy4`) se llaman igual, pero ningún plan incluye tokens de ellos: cada token sale de un [token pack](https://cloud.nan.builders/tokens) de ese modelo, tengas suscripción o no. Sin saldo la respuesta es un **`402`** `insufficient_balance`, que se arregla con un pack nuevo y no reintentando. Guíate por esa tabla y no por `GET /v1/models`: ese endpoint contesta con lo que el clúster tiene levantado, que no es la misma pregunta que qué puede llamar tu clave, así que un id puede salir ahí y aun así devolver un `401`.
 
 ## Cómo se leen los ids
 
@@ -73,11 +77,12 @@ Las fichas completas, con parámetros, licencias y modos de razonamiento, están
 
 ## Qué significa la cuota
 
-La columna de cuota cuenta tres cosas distintas:
+La columna de cuota cuenta cuatro cosas distintas:
 
 - **`/mes`** es un contador de tokens que vuelve a cero con el mes natural.
 - **`/periodo de facturación`** vuelve a cero cuando arranca tu periodo en Stripe, que casi nunca es el día 1. Solo `glm5.3` va así, y además tiene un tope aparte de tokens por cada ventana móvil de 4 horas, que es con el que topa antes una sesión intensiva de agente.
 - **`sin contador`** significa que no hay contador de tokens asociado, no que sea infinito: los límites de peticiones por minuto se aplican igual a todos.
+- **`solo token packs`** significa que ningún plan incluye tokens de ese modelo: compras un token pack para él y cada llamada descuenta de ese saldo. Con Inference o Premium, los packs te salen un 5% más baratos.
 
 Cuando agotas una cuota, la API responde `402` o `429` y no se arregla reintentando. Las cifras vigentes de límites están al final de [Modelos](/es/docs/models).
 

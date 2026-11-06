@@ -47,6 +47,10 @@ If you do not know which one to pick, look for what you want to do in the first 
 | `glm5.3-flash` | Coding agents, without premium | 1M | text · image | 2B tokens/month |
 | `qwen3.8-flash` | Fast answers | 1M | text · image | 500M tokens/month |
 | `mimo-v2.6-flash` | The newest MiMo, omnimodal | 1M | text · image · audio | 1.0B tokens/month |
+| `kimi-k3.1-pro` | Frontier reasoning for agents and coding | 1M | text · image | token packs only |
+| `qwen3.8-max` | The largest Qwen 3.8, hard reasoning | 1M | text · image | token packs only |
+| `deepseek-v4-pro` | Large reasoning and coding model | 1M | text | token packs only |
+| `hy4` | Agents and long documents, the lowest-priced token-packs-only model | 1M | text · image | token packs only |
 | `gemma4` | Short tasks and testing | 262K | text · image | no counter |
 | `qwen3.6` | Previous generation | 262K | text · image | no counter |
 | `qwen3-embedding` | 4096-dimension vectors | - | text | no counter |
@@ -61,7 +65,7 @@ The full spec sheets, with parameters, licenses and reasoning modes, are in [Mod
 > **`glm5.3` is the only one the normal subscription does not cover**
 > It needs a key on the premium tier. If you ask for it without one, the answer is a **`401`**, not a `403`: "This API key does not have access to the requested model". It reads like a broken key and it is not, so check the tier before you go rotating credentials. It does not show up in `GET /v1/models` either.
 >
-> Every other model **in the table above** can be called by any member. Go by that table rather than by `GET /v1/models`: that endpoint answers with what the cluster is running, which is not the same question as what your key can call, so an id can appear there and still come back `401`.
+> Every other model **in the table above** can be called by any member. The four marked **token packs only** (`kimi-k3.1-pro`, `qwen3.8-max`, `deepseek-v4-pro`, `hy4`) are called the same way, but no plan includes tokens for them: every token comes from a [token pack](https://cloud.nan.builders/tokens) for that model, subscriber or not. Without a balance the answer is a **`402`** `insufficient_balance`, which a new pack fixes and retrying does not. Go by that table rather than by `GET /v1/models`: that endpoint answers with what the cluster is running, which is not the same question as what your key can call, so an id can appear there and still come back `401`.
 
 ## How to read the ids
 
@@ -73,11 +77,12 @@ The full spec sheets, with parameters, licenses and reasoning modes, are in [Mod
 
 ## What the quota means
 
-The quota column counts three different things:
+The quota column counts four different things:
 
 - **`/month`** is a token counter that goes back to zero with the calendar month.
 - **`/billing period`** goes back to zero when your period starts in Stripe, which is almost never the 1st. Only `glm5.3` works that way, and it also has a separate token cap for each rolling 4-hour window, which is the one an intensive agent session hits first.
 - **`no counter`** means there is no token counter attached, not that it is infinite: the requests-per-minute limits apply to all of them just the same.
+- **`token packs only`** means no plan includes any tokens of that model: you buy a token pack for it and every call draws from that balance. Inference and Premium members pay 5% less for the packs.
 
 When you exhaust a quota, the API answers `402` or `429` and retrying does not fix it. The current limit figures are at the end of [Models](/docs/models).
 

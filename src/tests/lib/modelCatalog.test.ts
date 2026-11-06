@@ -45,7 +45,7 @@ describe('the catalog itself', () => {
   /** An unmetered model has no label to show, a metered one must have both. */
   it('labels every quota that is not unmetered, in both languages', () => {
     for (const m of MODELS) {
-      if (m.quota.kind === 'unmetered') continue;
+      if (m.quota.kind === 'unmetered' || m.quota.kind === 'packOnly') continue;
       expect(m.quota.label?.en, m.id).toBeTruthy();
       expect(m.quota.label?.es, m.id).toBeTruthy();
     }
@@ -224,5 +224,147 @@ describe('the shared home table reads in both languages', () => {
   it.each([...new Set(rows.map((m) => m.cuota))])('quota "%s" translates', (cuota) => {
     expect(homeQuotaLabel(cuota, 'en')).not.toMatch(SPANISH);
     expect(homeQuotaLabel(cuota, 'es')).toBe(cuota);
+  });
+});
+
+/**
+ * The token-packs-only models (2026-11-06): no plan includes tokens for them,
+ * every token comes from a pack balance. Each surface that lists them must say
+ * so, or a subscriber reads them as covered by the plan and meets a 402. The
+ * upstream that serves them is never named.
+ */
+describe('token-packs-only models', () => {
+  const PACK_ONLY = ['kimi-k3.1-pro', 'qwen3.8-max', 'deepseek-v4-pro', 'hy4'];
+
+  it('are exactly the packOnly models of the catalog, 1M-context chat models', () => {
+    expect(MODELS.filter((m) => m.quota.kind === 'packOnly').map((m) => m.id).sort()).toEqual([...PACK_ONLY].sort());
+    for (const id of PACK_ONLY) {
+      const m = MODELS.find((x) => x.id === id)!;
+      expect(m.kind, id).toBe('chat');
+      expect(formatContext(m.contextTokens!), id).toBe('1M');
+      expect(m.premium, id).toBeFalsy();
+    }
+  });
+
+  /**
+   * Inputs as verified with real requests (2026-11-06): kimi, qwen3.8-max and
+   * hy4 read images; deepseek-v4-pro answers 400 "vision not support". Video
+   * is listed upstream for some but was never verified, so it is not published.
+   */
+  it('publish the verified inputs, and never video', () => {
+    const VISION = ['kimi-k3.1-pro', 'qwen3.8-max', 'hy4'];
+    for (const id of PACK_ONLY) {
+      const m = MODELS.find((x) => x.id === id)!;
+      expect(m.inputs, id).toEqual(VISION.includes(id) ? ['text', 'image'] : ['text']);
+    }
+    for (const [dir, img] of [[enDir, 'text · image'], [esDir, 'texto · imagen']] as const) {
+      const cards = readFileSync(resolve(dir, 'models.mdx'), 'utf-8');
+      const table = readFileSync(resolve(dir, 'choose-a-model.md'), 'utf-8');
+      for (const id of PACK_ONLY) {
+        const start = cards.indexOf(`name="${id}"`);
+        const card = cards.slice(start, cards.indexOf('/>', start));
+        const row = table.split('\n').find((l) => l.startsWith(`| \`${id}\` |`)) ?? '';
+        expect(card.includes(img), `${dir} card ${id}`).toBe(VISION.includes(id));
+        expect(row.includes(img), `${dir} row ${id}`).toBe(VISION.includes(id));
+        expect(card, id).not.toMatch(/video|vídeo/i);
+      }
+    }
+    const home = modelos.categorias.flatMap((c) => c.modelos);
+    for (const id of PACK_ONLY) {
+      const r = home.find((m) => m.id === id)!;
+      expect(r.specs.includes('vision'), id).toBe(VISION.includes(id));
+      const api = spec.info.description.split('\n').find((l) => l.startsWith(`| \`${id}\` |`)) ?? '';
+      expect(api.includes('image input'), id).toBe(VISION.includes(id));
+    }
+  });
+
+  /**
+   * hy4 is the cheapest of the pack-only models but ~9x a DeepSeek V4-Flash
+   * pack: no surface may sell it as cheap per token in general.
+   */
+  it('hy4 is never sold as cheaper per token, only as the lowest-priced token-packs-only model', () => {
+    const hy4 = MODELS.find((m) => m.id === 'hy4')!;
+    const texts = [hy4.bestFor.en, hy4.bestFor.es];
+    for (const dir of [enDir, esDir]) {
+      const cards = readFileSync(resolve(dir, 'models.mdx'), 'utf-8');
+      const start = cards.indexOf('name="hy4"');
+      texts.push(cards.slice(start, cards.indexOf('/>', start)));
+      texts.push(readFileSync(resolve(dir, 'choose-a-model.md'), 'utf-8').split('\n').find((l) => l.startsWith('| `hy4` |')) ?? '');
+    }
+    for (const t of texts) {
+      expect(t).not.toMatch(/cheaper per token|lower price per token|menor precio por token|más barato por token/i);
+      expect(t).toMatch(/lowest-priced token-packs-only model|más económico de los modelos de solo token packs/);
+    }
+  });
+
+  it('the hy4 card warns that it reasons by default and how to avoid an empty answer', () => {
+    for (const [dir, words] of [
+      [enDir, ['Reasons by default', 'we apply <code>low</code>', 'your own value always wins', 'use at least 4K']],
+      [esDir, ['Razona por defecto', 'aplicamos <code>low</code>', 'tu valor siempre gana', 'usa al menos 4K']],
+    ] as const) {
+      const cards = readFileSync(resolve(dir, 'models.mdx'), 'utf-8');
+      const start = cards.indexOf('name="hy4"');
+      const card = cards.slice(start, cards.indexOf('/>', start));
+      for (const w of words) expect(card, `${dir}: ${w}`).toContain(w);
+    }
+  });
+
+  it('carry a fixed quota label in both languages, never a counter', () => {
+    for (const m of MODELS.filter((x) => x.quota.kind === 'packOnly')) {
+      expect(quotaLabel(m, 'en')).toBe('token packs only');
+      expect(quotaLabel(m, 'es')).toBe('solo token packs');
+    }
+  });
+
+  it('the home table says "token packs only", translated on the English home', () => {
+    const rows = modelos.categorias.flatMap((c) => c.modelos).filter((m) => PACK_ONLY.includes(m.id));
+    expect(rows.map((r) => r.id).sort()).toEqual([...PACK_ONLY].sort());
+    for (const r of rows) {
+      expect(r.cuota, r.id).toBe('solo token packs');
+      expect(homeQuotaLabel(r.cuota, 'en')).toBe('token packs only');
+      expect('premium' in r && r.premium, r.id).toBeFalsy();
+    }
+  });
+
+  for (const [label, dir, word] of [
+    ['en', enDir, 'token packs only'],
+    ['es', esDir, 'solo token packs'],
+  ] as const) {
+    it(`the decision page marks each one and explains the 402 (${label})`, () => {
+      const source = readFileSync(resolve(dir, 'choose-a-model.md'), 'utf-8');
+      for (const id of PACK_ONLY) {
+        const row = source.split('\n').find((l) => l.startsWith(`| \`${id}\` |`)) ?? '';
+        expect(row.trim().endsWith(`| ${word} |`), `${label}: ${id}`).toBe(true);
+      }
+      expect(source).toContain('`insufficient_balance`');
+    });
+
+    it(`each card says token packs only and links to buy them (${label})`, () => {
+      const source = readFileSync(resolve(dir, 'models.mdx'), 'utf-8');
+      for (const id of PACK_ONLY) {
+        const start = source.indexOf(`name="${id}"`);
+        expect(start, `${label}: ${id}`).toBeGreaterThan(-1);
+        const card = source.slice(start, source.indexOf('/>', start));
+        expect(card, `${label}: ${id}`).toContain(word);
+        expect(card, `${label}: ${id}`).toContain('https://cloud.nan.builders/tokens');
+      }
+    });
+  }
+
+  it('the API reference lists them as token packs only', () => {
+    const desc = spec.info.description;
+    for (const id of PACK_ONLY) {
+      const row = desc.split('\n').find((l) => l.startsWith(`| \`${id}\` |`)) ?? '';
+      expect(row, id).toMatch(/Token packs only \|$/);
+    }
+  });
+
+  it('no surface names the upstream provider', () => {
+    const surfaces = [
+      JSON.stringify(modelos),
+      spec.info.description,
+      ...docFiles.map(([, source]) => source),
+    ];
+    for (const text of surfaces) expect(text).not.toMatch(/novita/i);
   });
 });

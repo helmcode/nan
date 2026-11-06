@@ -421,3 +421,44 @@ describe('es: no voseo', () => {
     expect(page('-es')).not.toContain('Bajá');
   });
 });
+
+/**
+ * The reasoning aliases (enable_thinking: false and friends) are only mapped
+ * on the models the hook knows. On kimi-k3.1-pro and deepseek-v4-pro they are
+ * NOT (Security review 2026-11-06): every surface that promises the aliases
+ * carves those two out and points at reasoning_effort. hy4 has its own hook
+ * family: aliases mapped, default reasoning_effort low.
+ */
+describe('reasoning aliases: the pack-only carve-out', () => {
+  // The reasoning-effort hook does not map the aliases on these two (devops
+  // 34155612); hy4 has its own family since then: aliases mapped, default low.
+  const UNMAPPED = ['kimi-k3.1-pro', 'deepseek-v4-pro'];
+  const desc: string = spec.info.description;
+  const apiReasoning = desc.slice(desc.indexOf('## Reasoning'), desc.indexOf('\n## ', desc.indexOf('## Reasoning') + 3));
+
+  for (const [label, text] of [
+    ['api', apiReasoning],
+    ['en', section('')],
+    ['es', section('-es')],
+  ] as const) {
+    it(`${label}: carves out only kimi-k3.1-pro and deepseek-v4-pro, says hy4 maps them and defaults to low`, () => {
+      const carve = text.slice(text.indexOf('`kimi-k3.1-pro`'));
+      for (const id of UNMAPPED) expect(carve, `${label}: ${id}`).toContain(`\`${id}\``);
+      expect(text).toMatch(/(use|usa)\s+`reasoning_effort`/);
+      expect(text).toMatch(/On `hy4` they are\s+mapped|En `hy4` sí lo están/);
+      expect(text).toMatch(/`low`/);
+      expect(text).not.toMatch(/`hy4` (keeps reasoning|sigue razonando)/);
+    });
+  }
+});
+
+describe('API reference: the 402 codes', () => {
+  const desc: string = spec.info.description;
+  it('lists insufficient_balance next to monthly_cap_reached, both not retryable', () => {
+    const rows = desc.split('\n').filter((l) => l.startsWith('| `402` |'));
+    expect(rows.some((r) => r.endsWith('| `monthly_cap_reached` |'))).toBe(true);
+    const ib = rows.find((r) => r.endsWith('| `insufficient_balance` |')) ?? '';
+    expect(ib).toMatch(/Not retryable: buy a token pack/);
+    expect(desc).toContain('`insufficient_balance` when you buy a token pack for that model');
+  });
+});

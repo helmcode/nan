@@ -32,8 +32,12 @@ export type Modality = 'text' | 'image' | 'audio' | 'video';
  * exists because glm5.3's counter returns to zero when the Stripe period
  * starts, not on the first of the month, and writing it as monthly is the
  * mistake every surface made at least once.
+ *
+ * `packOnly` means no plan includes any tokens for the model: every token is
+ * paid from a token-pack balance, subscriber or not. It is neither unmetered
+ * nor a quota, so it has a fixed label of its own (quotaLabel).
  */
-export type QuotaKind = 'unmetered' | 'monthly' | 'billingPeriod';
+export type QuotaKind = 'unmetered' | 'monthly' | 'billingPeriod' | 'packOnly';
 
 export interface ModelSpec {
   /** Exactly what goes in the `model` field of a request. */
@@ -128,6 +132,63 @@ export const MODELS: ModelSpec[] = [
     bestFor: {
       en: 'The newest MiMo, omnimodal: text, image and audio in one model',
       es: 'El MiMo más nuevo, omnimodal: texto, imagen y audio en un modelo',
+    },
+  },
+  // Token packs only (2026-11-06): no plan includes a quota for these; every
+  // token comes from a pack balance. Inputs as verified with real requests
+  // (2026-11-06): image on kimi, qwen3.8-max and hy4; deepseek-v4-pro rejects
+  // images (400). Video is listed upstream for some but NOT verified: not
+  // published.
+  {
+    id: 'kimi-k3.1-pro',
+    by: 'Moonshot AI',
+    kind: 'chat',
+    contextTokens: 1_000_000,
+    inputs: ['text', 'image'],
+    quota: { kind: 'packOnly' },
+    endpoint: '/chat/completions',
+    bestFor: {
+      en: 'Frontier reasoning for agents and coding, paid per token',
+      es: 'Razonamiento de frontera para agentes y código, pagando por token',
+    },
+  },
+  {
+    id: 'qwen3.8-max',
+    by: 'Alibaba',
+    kind: 'chat',
+    contextTokens: 1_000_000,
+    inputs: ['text', 'image'],
+    quota: { kind: 'packOnly' },
+    endpoint: '/chat/completions',
+    bestFor: {
+      en: 'The largest Qwen 3.8, for hard reasoning and agents',
+      es: 'El Qwen 3.8 más grande, para razonamiento difícil y agentes',
+    },
+  },
+  {
+    id: 'deepseek-v4-pro',
+    by: 'DeepSeek',
+    kind: 'chat',
+    contextTokens: 1_000_000,
+    inputs: ['text'],
+    quota: { kind: 'packOnly' },
+    endpoint: '/chat/completions',
+    bestFor: {
+      en: 'The large DeepSeek model for reasoning and coding',
+      es: 'El modelo grande de DeepSeek para razonamiento y código',
+    },
+  },
+  {
+    id: 'hy4',
+    by: 'Tencent',
+    kind: 'chat',
+    contextTokens: 1_000_000,
+    inputs: ['text', 'image'],
+    quota: { kind: 'packOnly' },
+    endpoint: '/chat/completions',
+    bestFor: {
+      en: 'Agents and long documents, the lowest-priced token-packs-only model',
+      es: 'Agentes y documentos largos, el más económico de los modelos de solo token packs',
     },
   },
   {
@@ -255,6 +316,7 @@ export function formatContext(tokens: number): string {
 /** What the quota column shows, including the unmetered case. */
 export function quotaLabel(m: ModelSpec, lang: 'en' | 'es'): string {
   if (m.quota.kind === 'unmetered') return lang === 'es' ? 'sin contador' : 'unmetered';
+  if (m.quota.kind === 'packOnly') return lang === 'es' ? 'solo token packs' : 'token packs only';
   return m.quota.label![lang];
 }
 
@@ -284,6 +346,7 @@ export function homeQuotaLabel(cuota: string, lang: 'en' | 'es'): string {
   if (lang === 'es') return cuota;
   return cuota
     .replace('sin contador', 'unmetered')
+    .replace('solo token packs', 'token packs only')
     .replace('/periodo de facturación', ' / billing period')
     .replace('/mes', ' / mo');
 }
